@@ -13,6 +13,7 @@ services:
       - ./data/slapd/database:/var/lib/ldap
       - ./data/slapd/config:/etc/ldap/slapd.d
       - ./config/init.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/init.ldif
+    command: [ '--copy-service' ]
     environment: 
       - LDAP_ORGANISATION=example.com
       - LDAP_DOMAIN=example.com

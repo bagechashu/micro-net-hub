@@ -5,13 +5,13 @@ system:
   # url前缀
   url-path-prefix: api
   # 程序监听端口
-  port: 8888
+  port: 9000
   # 是否初始化数据(没有初始数据时使用, 已发布正式版改为false)
   init-data: true
   # rsa公钥文件路径(config.yml相对路径, 也可以填绝对路径)
-  rsa-public-key: go-ldap-admin-pub.pem
+  rsa-public-key: auth-pub.pem
   # rsa私钥文件路径(config.yml相对路径, 也可以填绝对路径)
-  rsa-private-key: go-ldap-admin-priv.pem
+  rsa-private-key: auth-priv-rsa.pem
 
 logs:
   # 日志等级(-1:Debug, 0:Info, 1:Warn, 2:Error, 3:DPanic, 4:Panic, 5:Fatal, -1<=level<=5, 参照zap.level源码)
@@ -31,15 +31,15 @@ database:
   # 数据库类型 mysql sqlite3
   driver: mysql
   # 数据库连接sqlite3数据文件的路径
-  source: go-ldap-admin.db
+  # source: go-ldap-admin.db
 
 mysql:
   # 用户名
   username: root
   # 密码
-  password: 123456
+  password: root_1234
   # 数据库名
-  database: go_ldap_admin
+  database: micro_net_hub
   # 主机地址
   host: localhost
   # 端口
@@ -94,13 +94,13 @@ ldap:
   # ladp最大连接数设置
   max-conn: 10
   # ldap服务器基础DN
-  base-dn: "dc=eryajf,dc=net"
+  base-dn: "dc=example,dc=com"
   # ldap管理员DN
-  admin-dn: "cn=admin,dc=eryajf,dc=net"
+  admin-dn: "cn=admin,dc=example,dc=com"
   # ldap管理员密码
-  admin-pass: "123456"
+  admin-pass: "admin_pass"
   # ldap用户OU
-  user-dn: "ou=people,dc=eryajf,dc=net"
+  user-dn: "ou=people,dc=example,dc=com"
   # ldap用户初始默认密码
   user-init-password: "123456"
   # 是否允许更改分组DN

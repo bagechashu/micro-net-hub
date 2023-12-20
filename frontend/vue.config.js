@@ -13,7 +13,7 @@ const name = defaultSettings.title || 'Go Ldap Admin' // page title
 // For example, Mac: sudo npm run
 // You can change the port by the following method:
 // port = 8090 npm run dev OR npm run dev --port = 8090
-const port = process.env.port || process.env.npm_config_port || 8090 // dev port
+const port = process.env.port || process.env.npm_config_port || 3000 // dev port
 
 // All configuration item explanations can be find in https://cli.vuejs.org/config/
 module.exports = {
@@ -39,7 +39,7 @@ module.exports = {
     },
     proxy: {
       '/api': {
-        target: process.env.VUE_APP_BASE_API,
+        target: process.env.VUE_APP_BASE_API || "http://127.0.0.1:9000/",
         changeOrigin: true,
         pathRewrite: {
           '^/api': 'api'
