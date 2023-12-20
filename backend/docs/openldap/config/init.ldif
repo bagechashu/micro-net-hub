@@ -1,0 +1,10 @@
+dn: ou=people,dc=example,dc=com
+ou: people
+description: "all users"
+objectClass: organizationalUnit
+
+dn: ou=allhands,dc=example,dc=com
+ou: allhands
+description: "base group"
+objectClass: top
+objectClass: organizationalUnit

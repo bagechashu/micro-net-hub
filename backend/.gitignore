@@ -1,0 +1,4 @@
+docs/openldap/data
+docs/docker-compose/data
+logs
+bin
