@@ -44,10 +44,12 @@ func OperationLogMiddleware() gin.HandlerFunc {
 		path := strings.TrimPrefix(c.FullPath(), "/"+config.Conf.System.UrlPathPrefix)
 		// 请求方式
 		method := c.Request.Method
-
 		// 获取接口描述
 		api := new(model.Api)
-		_ = isql.Api.Find(tools.H{"path": path, "method": method}, api)
+
+		if !strings.HasPrefix(c.FullPath(), "/ui") {
+			_ = isql.Api.Find(tools.H{"path": path, "method": method}, api)
+		}
 
 		operationLog := model.OperationLog{
 			Username:   username,

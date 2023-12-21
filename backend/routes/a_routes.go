@@ -46,6 +46,7 @@ func InitRoutes() *gin.Engine {
 	apiGroup := r.Group("/" + config.Conf.System.UrlPathPrefix)
 
 	// 注册路由
+	InitUiRoutes(r)                                   // 注册基础路由, 不需要jwt认证中间件,不需要casbin中间件
 	InitBaseRoutes(apiGroup, authMiddleware)          // 注册基础路由, 不需要jwt认证中间件,不需要casbin中间件
 	InitUserRoutes(apiGroup, authMiddleware)          // 注册用户路由, jwt认证中间件,casbin鉴权中间件
 	InitGroupRoutes(apiGroup, authMiddleware)         // 注册分组路由, jwt认证中间件,casbin鉴权中间件

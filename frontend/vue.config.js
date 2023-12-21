@@ -24,7 +24,7 @@ module.exports = {
    * In most cases please use '/' !!!
    * Detail: https://cli.vuejs.org/config/#publicpath
    */
-  publicPath: '/',
+  publicPath: process.env.NODE_ENV === 'production' ? process.env.UI_BASE_PATH : "/",
   outputDir: '../backend/ui',
   assetsDir: 'static',
   // lintOnSave: process.env.NODE_ENV === 'development',//这个是设置eslint的代码规范，
@@ -39,7 +39,7 @@ module.exports = {
     },
     proxy: {
       '/api': {
-        target: process.env.VUE_APP_BASE_API || "http://127.0.0.1:9000/",
+        target: process.env.API_BASE_PATH || "http://127.0.0.1:9000/",
         changeOrigin: true,
         pathRewrite: {
           '^/api': 'api'
@@ -97,7 +97,7 @@ module.exports = {
             .plugin('ScriptExtHtmlWebpackPlugin')
             .after('html')
             .use('script-ext-html-webpack-plugin', [{
-            // `runtime` must same as runtimeChunk name. default is `runtime`
+              // `runtime` must same as runtimeChunk name. default is `runtime`
               inline: /runtime\..*\.js$/
             }])
             .end()

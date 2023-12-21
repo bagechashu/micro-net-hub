@@ -7,7 +7,7 @@ import router from '@/router'
 
 // create an axios instance
 const service = axios.create({
-  baseURL: process.env.NODE_ENV === 'production' ? process.env.VUE_APP_BASE_API : '/', // api 的 base_url
+  baseURL: process.env.NODE_ENV === 'production' ? process.env.API_BASE_PATH : '/' // api 的 base_url
   // withCredentials: true, // send cookies when cross-domain requests
   // timeout: 5000 // request timeout
 })
@@ -45,9 +45,9 @@ service.interceptors.response.use(
    */
   response => {
     const res = response.data
-    if (res.code==0 || res.code==200){
+    if (res.code === 0 || res.code === 200) {
       return res
-    }else{
+    } else {
       Message({
         message: res.msg,
         type: 'error'
@@ -86,7 +86,6 @@ service.interceptors.response.use(
     } else if (error.response.status === 403) {
       router.push({ path: '/401' })
     } else {
-
       Message({
         showClose: true,
         message: error.response.data.message || error.message,

@@ -1,7 +1,7 @@
 # delelopment
 system:
   # 设定模式(debug/release/test,正式版改为release)
-  mode: debug
+  mode: release
   # url前缀
   url-path-prefix: api
   # 程序监听端口
