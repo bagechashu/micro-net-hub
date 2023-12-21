@@ -25,7 +25,7 @@ module.exports = {
    * Detail: https://cli.vuejs.org/config/#publicpath
    */
   publicPath: '/',
-  outputDir: 'dist',
+  outputDir: '../backend/ui',
   assetsDir: 'static',
   // lintOnSave: process.env.NODE_ENV === 'development',//这个是设置eslint的代码规范，
   productionSourceMap: false,
