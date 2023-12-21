@@ -1,7 +1,8 @@
 package wechat
 
 import (
-	"github.com/eryajf/go-ldap-admin/config"
+	"micro-net-hub/config"
+
 	"github.com/wenerme/go-wecom/wecom"
 )
 

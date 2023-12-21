@@ -1,6 +1,6 @@
 package response
 
-import "github.com/eryajf/go-ldap-admin/model"
+import "micro-net-hub/model"
 
 type ApiTreeRsp struct {
 	ID       int          `json:"ID"`

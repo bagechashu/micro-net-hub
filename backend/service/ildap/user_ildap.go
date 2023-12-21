@@ -3,10 +3,10 @@ package ildap
 import (
 	"fmt"
 
-	"github.com/eryajf/go-ldap-admin/config"
-	"github.com/eryajf/go-ldap-admin/model"
-	"github.com/eryajf/go-ldap-admin/public/common"
-	"github.com/eryajf/go-ldap-admin/public/tools"
+	"micro-net-hub/config"
+	"micro-net-hub/model"
+	"micro-net-hub/public/common"
+	"micro-net-hub/public/tools"
 
 	ldap "github.com/go-ldap/ldap/v3"
 )

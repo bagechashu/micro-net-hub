@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/eryajf/go-ldap-admin/model"
-	"github.com/eryajf/go-ldap-admin/model/request"
-	"github.com/eryajf/go-ldap-admin/public/common"
-	"github.com/eryajf/go-ldap-admin/public/tools"
+	"micro-net-hub/model"
+	"micro-net-hub/model/request"
+	"micro-net-hub/public/common"
+	"micro-net-hub/public/tools"
 
 	"gorm.io/gorm"
 )

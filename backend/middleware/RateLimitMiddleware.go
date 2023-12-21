@@ -3,7 +3,7 @@ package middleware
 import (
 	"time"
 
-	"github.com/eryajf/go-ldap-admin/model/response"
+	"micro-net-hub/model/response"
 
 	"github.com/gin-gonic/gin"
 	"github.com/juju/ratelimit"

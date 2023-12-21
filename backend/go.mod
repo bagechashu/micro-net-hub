@@ -1,4 +1,4 @@
-module github.com/eryajf/go-ldap-admin
+module micro-net-hub
 
 go 1.21
 

@@ -1,6 +1,6 @@
 # 贡献者指南
 
-欢迎反馈、bug 报告和拉取请求，可点击[issue](https://github.com/eryajf/go-ldap-admin/issues) 提交.
+欢迎反馈、bug 报告和拉取请求，可点击[issue](https://micro-net-hub/issues) 提交.
 
 如果你是第一次进行 GitHub 协作，可参阅： [协同开发流程](https://howtosos.eryajf.net/HowToStartOpenSource/01-basic-content/03-collaborative-development-process.html)
 

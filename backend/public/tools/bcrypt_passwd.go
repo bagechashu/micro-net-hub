@@ -1,7 +1,7 @@
 package tools
 
 import (
-	"github.com/eryajf/go-ldap-admin/config"
+	"micro-net-hub/config"
 )
 
 // 密码加密 使用自适应hash算法, 不可逆

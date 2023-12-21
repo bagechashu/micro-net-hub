@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/eryajf/go-ldap-admin/config"
-	"github.com/eryajf/go-ldap-admin/model"
-	"github.com/eryajf/go-ldap-admin/public/tools"
-	"github.com/eryajf/go-ldap-admin/service/isql"
+	"micro-net-hub/config"
+	"micro-net-hub/model"
+	"micro-net-hub/public/tools"
+	"micro-net-hub/service/isql"
 
 	"github.com/gin-gonic/gin"
 )

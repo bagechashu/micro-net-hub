@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/eryajf/go-ldap-admin/model"
-	"github.com/eryajf/go-ldap-admin/model/request"
-	"github.com/eryajf/go-ldap-admin/public/common"
-	"github.com/eryajf/go-ldap-admin/public/tools"
+	"micro-net-hub/model"
+	"micro-net-hub/model/request"
+	"micro-net-hub/public/common"
+	"micro-net-hub/public/tools"
 
 	"github.com/gin-gonic/gin"
 	"github.com/patrickmn/go-cache"
@@ -179,7 +179,7 @@ func (s UserService) GetUserMinRoleSortsByIds(ids []uint) ([]int, error) {
 	return roleMinSortList, nil
 }
 
-//GetCurrentUserMinRoleSort  获取当前用户角色排序最小值（最高等级角色）以及当前用户信息
+// GetCurrentUserMinRoleSort  获取当前用户角色排序最小值（最高等级角色）以及当前用户信息
 func (s UserService) GetCurrentUserMinRoleSort(c *gin.Context) (uint, model.User, error) {
 	// 获取当前用户
 	ctxUser, err := s.GetCurrentLoginUser(c)

@@ -3,10 +3,11 @@ package logic
 import (
 	"fmt"
 
-	"github.com/eryajf/go-ldap-admin/model"
-	"github.com/eryajf/go-ldap-admin/model/request"
-	"github.com/eryajf/go-ldap-admin/public/tools"
-	"github.com/eryajf/go-ldap-admin/service/isql"
+	"micro-net-hub/model"
+	"micro-net-hub/model/request"
+	"micro-net-hub/public/tools"
+	"micro-net-hub/service/isql"
+
 	"gorm.io/datatypes"
 
 	"github.com/gin-gonic/gin"

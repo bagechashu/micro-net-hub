@@ -1,4 +1,4 @@
-# https://github.com/eryajf/go-ldap-admin/blob/main/docs/docker-compose/docker-compose.yaml
+# https://micro-net-hub/blob/main/docs/docker-compose/docker-compose.yaml
 
 ```
   openldap:

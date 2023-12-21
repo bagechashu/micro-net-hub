@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"strings"
 
+	"micro-net-hub/config"
+	"micro-net-hub/public/tools"
+
 	"github.com/chyroc/lark"
-	"github.com/eryajf/go-ldap-admin/config"
-	"github.com/eryajf/go-ldap-admin/public/tools"
 )
 
 // 官方文档： https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/reference/contact-v3/department/children

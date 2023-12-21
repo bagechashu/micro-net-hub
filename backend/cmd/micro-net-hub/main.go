@@ -8,13 +8,13 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/eryajf/go-ldap-admin/logic"
+	"micro-net-hub/logic"
 
-	"github.com/eryajf/go-ldap-admin/config"
-	"github.com/eryajf/go-ldap-admin/middleware"
-	"github.com/eryajf/go-ldap-admin/public/common"
-	"github.com/eryajf/go-ldap-admin/routes"
-	"github.com/eryajf/go-ldap-admin/service/isql"
+	"micro-net-hub/config"
+	"micro-net-hub/middleware"
+	"micro-net-hub/public/common"
+	"micro-net-hub/routes"
+	"micro-net-hub/service/isql"
 )
 
 func main() {

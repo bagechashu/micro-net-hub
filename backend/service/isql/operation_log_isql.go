@@ -6,18 +6,18 @@ import (
 	"strings"
 	"time"
 
-	"github.com/eryajf/go-ldap-admin/model"
-	"github.com/eryajf/go-ldap-admin/model/request"
-	"github.com/eryajf/go-ldap-admin/public/common"
-	"github.com/eryajf/go-ldap-admin/public/tools"
+	"micro-net-hub/model"
+	"micro-net-hub/model/request"
+	"micro-net-hub/public/common"
+	"micro-net-hub/public/tools"
 
 	"gorm.io/gorm"
 )
 
 type OperationLogService struct{}
 
-//var Logs []model.OperationLog //全局变量多个线程需要加锁，所以每个线程自己维护一个
-//处理OperationLogChan将日志记录到数据库
+// var Logs []model.OperationLog //全局变量多个线程需要加锁，所以每个线程自己维护一个
+// 处理OperationLogChan将日志记录到数据库
 func (s OperationLogService) SaveOperationLogChannel(olc <-chan *model.OperationLog) {
 	// 只会在线程开启的时候执行一次
 	Logs := make([]model.OperationLog, 0)

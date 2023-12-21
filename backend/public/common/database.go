@@ -3,8 +3,8 @@ package common
 import (
 	"fmt"
 
-	"github.com/eryajf/go-ldap-admin/config"
-	"github.com/eryajf/go-ldap-admin/model"
+	"micro-net-hub/config"
+	"micro-net-hub/model"
 
 	"github.com/glebarez/sqlite"
 	"gorm.io/driver/mysql"

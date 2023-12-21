@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/eryajf/go-ldap-admin/config"
+	"micro-net-hub/config"
 
 	ldap "github.com/go-ldap/ldap/v3"
 )

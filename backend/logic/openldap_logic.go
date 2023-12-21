@@ -4,18 +4,19 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/eryajf/go-ldap-admin/model"
-	"github.com/eryajf/go-ldap-admin/public/client/openldap"
+	"micro-net-hub/model"
+	"micro-net-hub/public/client/openldap"
 
-	"github.com/eryajf/go-ldap-admin/public/tools"
-	"github.com/eryajf/go-ldap-admin/service/isql"
+	"micro-net-hub/public/tools"
+	"micro-net-hub/service/isql"
+
 	"github.com/gin-gonic/gin"
 )
 
 type OpenLdapLogic struct {
 }
 
-//通过ldap获取部门信息
+// 通过ldap获取部门信息
 func (d *OpenLdapLogic) SyncOpenLdapDepts(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	// 1.获取所有部门
 	depts, err := openldap.GetAllDepts()
@@ -98,7 +99,7 @@ func (d OpenLdapLogic) getParentGroupID(group *model.Group) (id uint, err error)
 	return parentGroup.ID, nil
 }
 
-//根据现有数据库同步到的部门信息，开启用户同步
+// 根据现有数据库同步到的部门信息，开启用户同步
 func (d OpenLdapLogic) SyncOpenLdapUsers(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	// 1.获取ldap用户列表
 	staffs, err := openldap.GetAllUsers()

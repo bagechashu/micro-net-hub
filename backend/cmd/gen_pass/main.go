@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/eryajf/go-ldap-admin/config"
-	"github.com/eryajf/go-ldap-admin/public/tools"
+	"micro-net-hub/config"
+	"micro-net-hub/public/tools"
 )
 
 func main() {

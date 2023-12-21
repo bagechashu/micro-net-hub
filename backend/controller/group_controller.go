@@ -1,8 +1,8 @@
 package controller
 
 import (
-	"github.com/eryajf/go-ldap-admin/logic"
-	"github.com/eryajf/go-ldap-admin/model/request"
+	"micro-net-hub/logic"
+	"micro-net-hub/model/request"
 
 	"github.com/gin-gonic/gin"
 )
@@ -81,7 +81,7 @@ func (m *GroupController) RemoveUser(c *gin.Context) {
 	})
 }
 
-//同步钉钉部门信息
+// 同步钉钉部门信息
 func (m *GroupController) SyncDingTalkDepts(c *gin.Context) {
 	req := new(request.SyncDingTalkDeptsReq)
 	Run(c, req, func() (interface{}, interface{}) {
@@ -89,7 +89,7 @@ func (m *GroupController) SyncDingTalkDepts(c *gin.Context) {
 	})
 }
 
-//同步企业微信部门信息
+// 同步企业微信部门信息
 func (m *GroupController) SyncWeComDepts(c *gin.Context) {
 	req := new(request.SyncWeComDeptsReq)
 	Run(c, req, func() (interface{}, interface{}) {
@@ -97,7 +97,7 @@ func (m *GroupController) SyncWeComDepts(c *gin.Context) {
 	})
 }
 
-//同步飞书部门信息
+// 同步飞书部门信息
 func (m *GroupController) SyncFeiShuDepts(c *gin.Context) {
 	req := new(request.SyncFeiShuDeptsReq)
 	Run(c, req, func() (interface{}, interface{}) {
@@ -105,7 +105,7 @@ func (m *GroupController) SyncFeiShuDepts(c *gin.Context) {
 	})
 }
 
-//同步原ldap部门信息
+// 同步原ldap部门信息
 func (m *GroupController) SyncOpenLdapDepts(c *gin.Context) {
 	req := new(request.SyncOpenLdapDeptsReq)
 	Run(c, req, func() (interface{}, interface{}) {
@@ -113,7 +113,7 @@ func (m *GroupController) SyncOpenLdapDepts(c *gin.Context) {
 	})
 }
 
-//同步Sql中的分组信息到ldap
+// 同步Sql中的分组信息到ldap
 func (m *GroupController) SyncSqlGroups(c *gin.Context) {
 	req := new(request.SyncSqlGrooupsReq)
 	Run(c, req, func() (interface{}, interface{}) {

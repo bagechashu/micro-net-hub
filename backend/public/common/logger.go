@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/eryajf/go-ldap-admin/config"
+	"micro-net-hub/config"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -13,7 +13,7 @@ import (
 )
 
 // 全局日志变量
-//var Log *zap.Logger
+// var Log *zap.Logger
 var Log *zap.SugaredLogger
 
 /**

@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"regexp"
 
-	"github.com/eryajf/go-ldap-admin/public/tools"
+	"micro-net-hub/public/tools"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/locales/zh"

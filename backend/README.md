@@ -1,4 +1,4 @@
-# https://github.com/eryajf/go-ldap-admin (d00d6df)
+# https://micro-net-hub (d00d6df)
 
 # Notes
 

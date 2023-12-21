@@ -3,8 +3,8 @@ package isql
 import (
 	"errors"
 
-	"github.com/eryajf/go-ldap-admin/model"
-	"github.com/eryajf/go-ldap-admin/public/common"
+	"micro-net-hub/model"
+	"micro-net-hub/public/common"
 
 	"gorm.io/gorm"
 )

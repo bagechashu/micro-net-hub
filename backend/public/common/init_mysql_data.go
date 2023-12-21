@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/eryajf/go-ldap-admin/config"
-	"github.com/eryajf/go-ldap-admin/model"
-	"github.com/eryajf/go-ldap-admin/public/tools"
+	"micro-net-hub/config"
+	"micro-net-hub/model"
+	"micro-net-hub/public/tools"
 
 	"github.com/thoas/go-funk"
 	"gorm.io/gorm"

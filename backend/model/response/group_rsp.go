@@ -1,6 +1,6 @@
 package response
 
-import "github.com/eryajf/go-ldap-admin/model"
+import "micro-net-hub/model"
 
 type GroupListRsp struct {
 	Total  int64         `json:"total"`

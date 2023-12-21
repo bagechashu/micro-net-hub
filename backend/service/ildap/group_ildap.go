@@ -3,9 +3,9 @@ package ildap
 import (
 	"errors"
 
-	"github.com/eryajf/go-ldap-admin/config"
-	"github.com/eryajf/go-ldap-admin/model"
-	"github.com/eryajf/go-ldap-admin/public/common"
+	"micro-net-hub/config"
+	"micro-net-hub/model"
+	"micro-net-hub/public/common"
 
 	ldap "github.com/go-ldap/ldap/v3"
 )
