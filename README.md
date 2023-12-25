@@ -31,36 +31,30 @@ flowchart LR
   %% Main
   subgraph Micro-Net-Hub
     %% Service provide by Micro-Net-Hub
-    main[[<b style="color:yellow;">Micro-Net-Hub:9000</b>]]
-    radius[[<b style="color:yellow;">Micro-Net-Hub<br>RadiusService:1812/udp</b>]]
+    main[[Micro-Net-Hub:9000]]
+    radius[[Micro-Net-Hub<br>RadiusService:1812/udp]]
 
     %% Architecture
-    main --> LDAPController & CoreDnsController & VPNController & TOTPController
+    main --> CoreDnsController & LDAPController & VPNController & TOTPController
     radius --> VPNController & TOTPController
-
     ui([Embedded-UI])
   end
-  Micro-Net-Hub --> OpenLDAP-selfbuilt
-  Micro-Net-Hub --> Ocserv-selfbuilt 
-  Micro-Net-Hub --> CoreDNS-selfbuilt
-  Micro-Net-Hub --> MySQL
-  CoreDNS-selfbuilt --> mysql-coredns
+  Micro-Net-Hub ---> selfbuilt
+  Micro-Net-Hub --> mysql-main 
+  CoreDnsController --> mysql-coredns
+  coredns --> mysql-coredns
 
   %% Service provide by third-party, need deployed by yourself.
-  subgraph OpenLDAP-selfbuilt
-   openldap[[<b style="color:green;">OpenLDAP:389</b>]]
-  end
-  subgraph Ocserv-selfbuilt
-   ocserv[[<b style="color:green;">Ocserv:443</b>]]
-  end
-  subgraph CoreDNS-selfbuilt
-   coredns[[<b style="color:green;">CoreDns:53/udp</b>]]
+  subgraph selfbuilt
+   openldap[[OpenLDAP:389]]
+   ocserv[[Ocserv:443]]
+   coredns[[CoreDns:53/udp]]
   end
 
   %% Database
   subgraph MySQL
-    mysql-main[(MySQL main)]
     mysql-coredns[(MySQL coredns)]
+    mysql-main[(MySQL main)]
   end
 
 ```
