@@ -9,6 +9,7 @@ Basic tool for private network.
 - https://github.com/eryajf/go-ldap-admin (d00d6df)
 - https://github.com/eryajf/go-ldap-admin-ui (c75476d)
 - https://github.com/bjdgyc/anylink
+- https://github.com/fivexl/golang-radius-server-ldap-with-mfa
 - https://github.com/lework/lenav
 
 # TODO
@@ -27,30 +28,64 @@ Basic tool for private network.
 title: Micro Net Hub Architecture
 ---
 flowchart LR
-    main>Micro-Net-Hub] --> ui[[Embeded-UI]]
-    ui --> UserManager
-    ui --> VPNManager
-    ui --> CoreDnsManager
+  %% Main
+  subgraph Micro-Net-Hub
+    %% Service provide by Micro-Net-Hub
+    main[[<b style="color:yellow;">Micro-Net-Hub:9000</b>]]
+    radius[[<b style="color:yellow;">Micro-Net-Hub<br>RadiusService:1812/udp</b>]]
 
-    UserManager --> User
-    UserManager --> Group
+    %% Architecture
+    main --> LDAPController & CoreDnsController & VPNController & TOTPController
+    radius --> VPNController & TOTPController
 
-    VPNManager --> TOTPManager
-    VPNManager --> VPN-Config
-    VPNManager --> VPN-Status
+    ui([Embedded-UI])
+  end
+  Micro-Net-Hub --> OpenLDAP-selfbuilt
+  Micro-Net-Hub --> Ocserv-selfbuilt 
+  Micro-Net-Hub --> CoreDNS-selfbuilt
+  Micro-Net-Hub --> MySQL
+  CoreDNS-selfbuilt --> mysql-coredns
 
-    CoreDnsManager --> CoreDns-Config
-    CoreDnsManager --> CoreDns-Status
+  %% Service provide by third-party, need deployed by yourself.
+  subgraph OpenLDAP-selfbuilt
+   openldap[[<b style="color:green;">OpenLDAP:389</b>]]
+  end
+  subgraph Ocserv-selfbuilt
+   ocserv[[<b style="color:green;">Ocserv:443</b>]]
+  end
+  subgraph CoreDNS-selfbuilt
+   coredns[[<b style="color:green;">CoreDns:53/udp</b>]]
+  end
 
-    main --> srv[[Service]]
-    srv --> LDAPController --> OpenLDAP
-    LDAPController --> my-main[(MySQL main)]
-    srv --> my-main[(MySQL main)]
+  %% Database
+  subgraph MySQL
+    mysql-main[(MySQL main)]
+    mysql-coredns[(MySQL coredns)]
+  end
 
-    srv --> VPNController --> Ocserv --> TOTPController
-    VPNController --> TOTPController --> my-totp[(MySQL totp)]
+```
 
-    srv --> CoreDnsController --> CoreDns --> my-coredns[(MySQL coredns)]
-    CoreDnsController --> my-coredns[(MySQL coredns)]
+
+```mermaid
+---
+title: Micro Net Hub Architecture
+---
+flowchart LR
+  %% UI
+  subgraph Embedded-UI
+    ui-user-mgr([UserManager])
+    ui-vpn-mgr([VPNManager])
+    ui-coredns-mgr([CoreDnsManager])
+
+    ui-user-mgr --> ui-user([User])
+    ui-user-mgr --> ui-group([Group])
+
+    ui-vpn-mgr --> ui-totp([TOTPManager])
+    ui-vpn-mgr --> ui-vpn-config([VPN-Config])
+    ui-vpn-mgr --> ui-vpn-status([VPN-Status])
+
+    ui-coredns-mgr --> ui-coredns-config([CoreDns-Config])
+    ui-coredns-mgr --> ui-coredns-status([CoreDns-Status])
+  end
 
 ```
