@@ -8,13 +8,13 @@ import (
 	"os/signal"
 	"time"
 
-	"micro-net-hub/logic"
+	"micro-net-hub/internal/global"
+	"micro-net-hub/internal/global/setup"
+	operationLogModel "micro-net-hub/internal/module/operation_log/model"
 
-	"micro-net-hub/config"
-	"micro-net-hub/middleware"
-	"micro-net-hub/public/common"
-	"micro-net-hub/routes"
-	"micro-net-hub/service/isql"
+	"micro-net-hub/internal/server/config"
+	"micro-net-hub/internal/server/middleware"
+	"micro-net-hub/internal/server/routes"
 )
 
 func main() {
@@ -23,27 +23,27 @@ func main() {
 	config.InitConfig()
 
 	// 初始化日志
-	common.InitLogger()
+	setup.InitLogger()
 
 	// 初始化数据库(mysql)
-	common.InitDB()
+	setup.InitDB()
 
-	// 初始化ldap连接
-	common.InitLDAP()
+	// setup LdapPool
+	setup.InitLdapPool()
 
 	// 初始化casbin策略管理器
-	common.InitCasbinEnforcer()
+	setup.InitCasbinEnforcer()
 
 	// 初始化Validator数据校验
-	common.InitValidate()
+	setup.InitValidate()
 
 	// 初始化mysql数据
-	common.InitData()
+	setup.InitData()
 
 	// 操作日志中间件处理日志时没有将日志发送到rabbitmq或者kafka中, 而是发送到了channel中
 	// 这里开启3个goroutine处理channel将日志记录到数据库
 	for i := 0; i < 3; i++ {
-		go isql.OperationLog.SaveOperationLogChannel(middleware.OperationLogChan)
+		go operationLogModel.OperationLogSrvIns.SaveOperationLogChannel(middleware.OperationLogChan)
 	}
 
 	// 注册所有路由
@@ -61,14 +61,14 @@ func main() {
 	// it won't block the graceful shutdown handling below
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			common.Log.Fatalf("listen: %s\n", err)
+			global.Log.Fatalf("listen: %s\n", err)
 		}
 	}()
 
 	// 启动定时任务
-	logic.InitCron()
+	setup.InitCron()
 
-	common.Log.Info(fmt.Sprintf("Server is running at %s:%d/%s", host, port, config.Conf.System.UrlPathPrefix))
+	global.Log.Info(fmt.Sprintf("Server is running at %s:%d/%s", host, port, config.Conf.System.UrlPathPrefix))
 
 	// Wait for interrupt signal to gracefully shutdown the server with
 	// a timeout of 5 seconds.
@@ -79,16 +79,16 @@ func main() {
 	// signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	signal.Notify(quit, os.Interrupt)
 	<-quit
-	common.Log.Info("Shutting down server...")
+	global.Log.Info("Shutting down server...")
 
 	// The context is used to inform the server it has 5 seconds to finish
 	// the request it is currently handling
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
-		common.Log.Fatal("Server forced to shutdown:", err)
+		global.Log.Fatal("Server forced to shutdown:", err)
 	}
 
-	common.Log.Info("Server exiting!")
+	global.Log.Info("Server exiting!")
 
 }

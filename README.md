@@ -5,9 +5,9 @@
 Basic tool for private network.
 
 # References
-
-- https://github.com/eryajf/go-ldap-admin (d00d6df)
-- https://github.com/eryajf/go-ldap-admin-ui (c75476d)
+- https://github.com/eryajf/go-ldap-admin
+- https://github.com/gnimli/go-web-mini
+- https://github.com/m-vinc/go-ldap-pool
 - https://github.com/bjdgyc/anylink
 - https://github.com/fivexl/golang-radius-server-ldap-with-mfa
 - https://github.com/lework/lenav

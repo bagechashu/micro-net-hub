@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"testing"
 
-	"micro-net-hub/config"
-	"micro-net-hub/public/common"
-	"micro-net-hub/public/tools"
-	"micro-net-hub/service/isql"
+	"micro-net-hub/internal/global/setup"
+	userModel "micro-net-hub/internal/module/user/model"
+	"micro-net-hub/internal/server/config"
+	"micro-net-hub/internal/tools"
 )
 
 func InitConfig() {
@@ -15,25 +15,22 @@ func InitConfig() {
 	config.InitConfig()
 
 	// 初始化日志
-	common.InitLogger()
+	setup.InitLogger()
 
 	// 初始化数据库(mysql)
-	common.InitDB()
-
-	// 初始化ldap连接
-	common.InitLDAP()
+	setup.InitDB()
 
 	// 初始化casbin策略管理器
-	common.InitCasbinEnforcer()
+	setup.InitCasbinEnforcer()
 
 	// 初始化Validator数据校验
-	common.InitValidate()
+	setup.InitValidate()
 }
 
 func TestUserExist(t *testing.T) {
 	InitConfig()
 
-	var u isql.UserService
+	var u userModel.UserService
 	filter := tools.H{
 		"id": "111",
 	}

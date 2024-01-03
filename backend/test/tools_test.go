@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"micro-net-hub/config"
-	"micro-net-hub/public/tools"
+	"micro-net-hub/internal/server/config"
+	"micro-net-hub/internal/tools"
 )
 
 func TestUnGenPassword(t *testing.T) {

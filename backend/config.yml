@@ -89,7 +89,7 @@ email:
 
 # # ldap 配置
 ldap:
-  # ldap服务器地址
+  # ldap服务器地址, TODO: ldaps that use private SSL need adapt
   url: ldap://localhost:389
   # ladp最大连接数设置
   max-conn: 10
@@ -108,7 +108,7 @@ ldap:
   # 是否允许更改用户DN
   user-name-modify: false
   # 默认邮箱后缀
-  default-email-suffix: "eryajf.net"
+  default-email-suffix: "example.com"
 # 📢 即便用不到如下三段配置信息，也不要删除，否则会有一些奇怪的错误出现
 dingtalk:
   # 配置获取详细文档参考： http://ldapdoc.eryajf.net/pages/94f43a/
