@@ -262,7 +262,7 @@ func (l RoleLogic) GetApiList(c *gin.Context, req interface{}) (data interface{}
 
 	policies := global.CasbinEnforcer.GetFilteredPolicy(0, role.Keyword)
 
-	apis, err := apiMgrModel.ApiSrvIns.ListAll()
+	apis, err := apiMgrModel.ListAll()
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取资源列表失败: " + err.Error()))
 	}
@@ -309,7 +309,7 @@ func (l RoleLogic) UpdateMenus(c *gin.Context, req interface{}) (data interface{
 	}
 
 	// 获取当前用户所拥有的权限菜单
-	ctxUserMenus, err := userModel.MenuSrvIns.GetUserMenusByUserId(ctxUser.ID)
+	ctxUserMenus, err := userModel.GetUserMenusByUserId(ctxUser.ID)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取当前用户的可访问菜单列表失败: " + err.Error()))
 	}
@@ -342,7 +342,8 @@ func (l RoleLogic) UpdateMenus(c *gin.Context, req interface{}) (data interface{
 	} else {
 		// 管理员随意设置
 		// 根据menuIds查询查询菜单
-		menus, err := userModel.MenuSrvIns.List()
+		var menus = userModel.NewMenus()
+		err := menus.List()
 		if err != nil {
 			return nil, tools.NewValidatorError(fmt.Errorf("获取菜单列表失败: " + err.Error()))
 		}
@@ -405,7 +406,7 @@ func (l RoleLogic) UpdateApis(c *gin.Context, req interface{}) (data interface{}
 	}
 
 	// 根据apiID获取接口详情
-	apis, err := apiMgrModel.ApiSrvIns.GetApisById(r.ApiIds)
+	apis, err := apiMgrModel.GetApisById(r.ApiIds)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("根据接口ID获取接口信息失败"))
 	}

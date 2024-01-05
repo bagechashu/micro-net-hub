@@ -13,7 +13,7 @@ type ApiController struct{}
 func (m *ApiController) List(c *gin.Context) {
 	req := new(apiMgrModel.ApiListReq)
 	Run(c, req, func() (interface{}, interface{}) {
-		return apimgrLogic.ApiMgrLogicIns.List(c, req)
+		return apimgrLogic.List(c, req)
 	})
 }
 
@@ -21,7 +21,7 @@ func (m *ApiController) List(c *gin.Context) {
 func (m *ApiController) GetTree(c *gin.Context) {
 	req := new(apiMgrModel.ApiGetTreeReq)
 	Run(c, req, func() (interface{}, interface{}) {
-		return apimgrLogic.ApiMgrLogicIns.GetTree(c, req)
+		return apimgrLogic.GetTree(c, req)
 	})
 }
 
@@ -29,7 +29,7 @@ func (m *ApiController) GetTree(c *gin.Context) {
 func (m *ApiController) Add(c *gin.Context) {
 	req := new(apiMgrModel.ApiAddReq)
 	Run(c, req, func() (interface{}, interface{}) {
-		return apimgrLogic.ApiMgrLogicIns.Add(c, req)
+		return apimgrLogic.Add(c, req)
 	})
 }
 
@@ -37,7 +37,7 @@ func (m *ApiController) Add(c *gin.Context) {
 func (m *ApiController) Update(c *gin.Context) {
 	req := new(apiMgrModel.ApiUpdateReq)
 	Run(c, req, func() (interface{}, interface{}) {
-		return apimgrLogic.ApiMgrLogicIns.Update(c, req)
+		return apimgrLogic.Update(c, req)
 	})
 }
 
@@ -45,6 +45,6 @@ func (m *ApiController) Update(c *gin.Context) {
 func (m *ApiController) Delete(c *gin.Context) {
 	req := new(apiMgrModel.ApiDeleteReq)
 	Run(c, req, func() (interface{}, interface{}) {
-		return apimgrLogic.ApiMgrLogicIns.Delete(c, req)
+		return apimgrLogic.Delete(c, req)
 	})
 }

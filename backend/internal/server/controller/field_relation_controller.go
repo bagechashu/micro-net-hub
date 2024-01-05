@@ -13,7 +13,7 @@ type FieldRelationController struct{}
 func (m *FieldRelationController) List(c *gin.Context) {
 	req := new(fieldRelationModel.FieldRelationListReq)
 	Run(c, req, func() (interface{}, interface{}) {
-		return fieldRelationLogic.FieldRelationLogicIns.List(c, req)
+		return fieldRelationLogic.List(c, req)
 	})
 }
 
@@ -21,7 +21,7 @@ func (m *FieldRelationController) List(c *gin.Context) {
 func (m *FieldRelationController) Add(c *gin.Context) {
 	req := new(fieldRelationModel.FieldRelationAddReq)
 	Run(c, req, func() (interface{}, interface{}) {
-		return fieldRelationLogic.FieldRelationLogicIns.Add(c, req)
+		return fieldRelationLogic.Add(c, req)
 	})
 }
 
@@ -29,7 +29,7 @@ func (m *FieldRelationController) Add(c *gin.Context) {
 func (m *FieldRelationController) Update(c *gin.Context) {
 	req := new(fieldRelationModel.FieldRelationUpdateReq)
 	Run(c, req, func() (interface{}, interface{}) {
-		return fieldRelationLogic.FieldRelationLogicIns.Update(c, req)
+		return fieldRelationLogic.Update(c, req)
 	})
 }
 
@@ -37,6 +37,6 @@ func (m *FieldRelationController) Update(c *gin.Context) {
 func (m *FieldRelationController) Delete(c *gin.Context) {
 	req := new(fieldRelationModel.FieldRelationDeleteReq)
 	Run(c, req, func() (interface{}, interface{}) {
-		return fieldRelationLogic.FieldRelationLogicIns.Delete(c, req)
+		return fieldRelationLogic.Delete(c, req)
 	})
 }

@@ -11,17 +11,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type FieldRelationLogic struct{}
-
 // Add 添加数据
-func (l FieldRelationLogic) Add(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
+func Add(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*model.FieldRelationAddReq)
 	if !ok {
 		return nil, tools.ReqAssertErr
 	}
 	_ = c
 
-	if model.FieldRelationSrvIns.Exist(tools.H{"flag": r.Flag}) {
+	if model.Exist(tools.H{"flag": r.Flag}) {
 		return nil, tools.NewValidatorError(fmt.Errorf("对应平台的动态字段关系已存在，请勿重复添加"))
 	}
 
@@ -36,7 +34,7 @@ func (l FieldRelationLogic) Add(c *gin.Context, req interface{}) (data interface
 	}
 
 	// 创建接口
-	err = model.FieldRelationSrvIns.Add(&frObj)
+	err = model.Add(&frObj)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("创建动态字段关系失败: %s", err.Error()))
 	}
@@ -45,7 +43,7 @@ func (l FieldRelationLogic) Add(c *gin.Context, req interface{}) (data interface
 }
 
 // List 数据列表
-func (l FieldRelationLogic) List(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
+func List(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	_, ok := req.(*model.FieldRelationListReq)
 	if !ok {
 		return nil, tools.ReqAssertErr
@@ -53,7 +51,7 @@ func (l FieldRelationLogic) List(c *gin.Context, req interface{}) (data interfac
 	_ = c
 
 	// 获取数据列表
-	frs, err := model.FieldRelationSrvIns.List()
+	frs, err := model.List()
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("字段动态关系: %s", err.Error()))
 	}
@@ -62,7 +60,7 @@ func (l FieldRelationLogic) List(c *gin.Context, req interface{}) (data interfac
 }
 
 // Update 更新数据
-func (l FieldRelationLogic) Update(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
+func Update(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*model.FieldRelationUpdateReq)
 	if !ok {
 		return nil, tools.ReqAssertErr
@@ -71,12 +69,12 @@ func (l FieldRelationLogic) Update(c *gin.Context, req interface{}) (data interf
 
 	filter := tools.H{"flag": r.Flag}
 
-	if !model.FieldRelationSrvIns.Exist(filter) {
+	if !model.Exist(filter) {
 		return nil, tools.NewValidatorError(fmt.Errorf("对应平台的动态字段关系不存在"))
 	}
 
 	oldData := new(model.FieldRelation)
-	err := model.FieldRelationSrvIns.Find(filter, oldData)
+	err := model.Find(filter, oldData)
 	if err != nil {
 		return nil, tools.NewMySqlError(err)
 	}
@@ -92,7 +90,7 @@ func (l FieldRelationLogic) Update(c *gin.Context, req interface{}) (data interf
 		Attributes: datatypes.JSON(attr),
 	}
 
-	err = model.FieldRelationSrvIns.Update(&frObj)
+	err = model.Update(&frObj)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("更新动态字段关系失败: %s", err.Error()))
 	}
@@ -100,7 +98,7 @@ func (l FieldRelationLogic) Update(c *gin.Context, req interface{}) (data interf
 }
 
 // Delete 删除数据
-func (l FieldRelationLogic) Delete(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
+func Delete(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*model.FieldRelationDeleteReq)
 	if !ok {
 		return nil, tools.ReqAssertErr
@@ -109,12 +107,12 @@ func (l FieldRelationLogic) Delete(c *gin.Context, req interface{}) (data interf
 
 	for _, id := range r.FieldRelationIds {
 		filter := tools.H{"id": int(id)}
-		if !model.FieldRelationSrvIns.Exist(filter) {
+		if !model.Exist(filter) {
 			return nil, tools.NewMySqlError(fmt.Errorf("动态字段关系不存在"))
 		}
 	}
 	// 删除
-	err := model.FieldRelationSrvIns.Delete(r.FieldRelationIds)
+	err := model.Delete(r.FieldRelationIds)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("删除动态字段关系失败: %s", err.Error()))
 	}

@@ -20,18 +20,13 @@ func (l MenuLogic) Add(c *gin.Context, req interface{}) (data interface{}, rspEr
 	}
 	_ = c
 
-	if userModel.MenuSrvIns.Exist(tools.H{"name": r.Name}) {
-		return nil, tools.NewMySqlError(fmt.Errorf("菜单名称已存在"))
-
-	}
-
 	// 获取当前用户
 	ctxUser, err := userModel.UserSrvIns.GetCurrentLoginUser(c)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取当前登陆用户信息失败"))
 	}
 
-	menu := userModel.Menu{
+	var menu = &userModel.Menu{
 		Name:       r.Name,
 		Title:      r.Title,
 		Icon:       r.Icon,
@@ -48,8 +43,11 @@ func (l MenuLogic) Add(c *gin.Context, req interface{}) (data interface{}, rspEr
 		ParentId:   r.ParentId,
 		Creator:    ctxUser.Username,
 	}
+	if menu.Exist(tools.H{"name": r.Name}) {
+		return nil, tools.NewMySqlError(fmt.Errorf("菜单名称已存在"))
 
-	err = userModel.MenuSrvIns.Add(&menu)
+	}
+	err = menu.Add()
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("创建记录失败: %s", err.Error()))
 	}
@@ -93,8 +91,9 @@ func (l MenuLogic) Update(c *gin.Context, req interface{}) (data interface{}, rs
 	}
 	_ = c
 
+	oldMenu := new(userModel.Menu)
 	filter := tools.H{"id": int(r.ID)}
-	if !userModel.MenuSrvIns.Exist(filter) {
+	if !oldMenu.Exist(filter) {
 		return nil, tools.NewMySqlError(fmt.Errorf("该ID对应的记录不存在"))
 	}
 
@@ -104,14 +103,8 @@ func (l MenuLogic) Update(c *gin.Context, req interface{}) (data interface{}, rs
 		return nil, tools.NewMySqlError(fmt.Errorf("获取当前登陆用户失败"))
 	}
 
-	oldData := new(userModel.Menu)
-	err = userModel.MenuSrvIns.Find(filter, oldData)
-	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取记录失败: %s", err.Error()))
-	}
-
-	menu := userModel.Menu{
-		Model:      oldData.Model,
+	newMenu := &userModel.Menu{
+		Model:      oldMenu.Model,
 		Name:       r.Name,
 		Title:      r.Title,
 		Icon:       r.Icon,
@@ -128,8 +121,7 @@ func (l MenuLogic) Update(c *gin.Context, req interface{}) (data interface{}, rs
 		ParentId:   r.ParentId,
 		Creator:    ctxUser.Username,
 	}
-
-	err = userModel.MenuSrvIns.Update(&menu)
+	err = newMenu.Update()
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("更新记录失败: %s", err.Error()))
 	}
@@ -147,15 +139,15 @@ func (l MenuLogic) Delete(c *gin.Context, req interface{}) (data interface{}, rs
 
 	for _, id := range r.MenuIds {
 		filter := tools.H{"id": int(id)}
-		if !userModel.MenuSrvIns.Exist(filter) {
-			return nil, tools.NewMySqlError(fmt.Errorf("该ID对应的记录不存在"))
+		var menu = new(userModel.Menu)
+		if !menu.Exist(filter) {
+			return nil, tools.NewMySqlError(fmt.Errorf("Menu ID: %d 对应的记录不存在", menu.ID))
 		}
-	}
-
-	// 删除接口
-	err := userModel.MenuSrvIns.Delete(r.MenuIds)
-	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("删除接口失败: %s", err.Error()))
+		// 删除接口
+		err := menu.Delete()
+		if err != nil {
+			return nil, tools.NewMySqlError(fmt.Errorf("%s删除接口失败: %s", menu.Name, err.Error()))
+		}
 	}
 	return nil, nil
 }
@@ -167,7 +159,8 @@ func (l MenuLogic) GetTree(c *gin.Context, req interface{}) (data interface{}, r
 		return nil, tools.ReqAssertErr
 	}
 	_ = c
-	menus, err := userModel.MenuSrvIns.List()
+	var menus = userModel.NewMenus()
+	err := menus.List()
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取资源列表失败: " + err.Error()))
 	}
@@ -198,7 +191,8 @@ func (l MenuLogic) GetAccessTree(c *gin.Context, req interface{}) (data interfac
 	for _, role := range user.Roles {
 		roleIds = append(roleIds, role.ID)
 	}
-	menus, err := userModel.MenuSrvIns.ListUserMenus(roleIds)
+	var menus = userModel.NewMenus()
+	err = menus.ListUserMenus(roleIds)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取资源列表失败: " + err.Error()))
 	}

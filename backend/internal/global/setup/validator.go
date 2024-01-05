@@ -22,8 +22,9 @@ func InitValidate() {
 	global.Log.Infof("初始化validator.v10数据校验器完成")
 }
 
+// Match Chinese and international phone numbers
 func checkMobile(fl validator.FieldLevel) bool {
-	reg := `1\d{10}`
+	reg := `^(\+|00)??(\d{1,3})??((1|0)\d{8,10})??$`
 	rgx := regexp.MustCompile(reg)
 	return rgx.MatchString(fl.Field().String())
 }

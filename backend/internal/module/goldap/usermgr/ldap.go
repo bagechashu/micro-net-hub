@@ -53,7 +53,7 @@ func (mgr OpenLdap) SyncUsers(c *gin.Context, req interface{}) (data interface{}
 	}
 	// 2.遍历用户，开始写入
 	for _, staff := range staffs {
-		groupIds, err := userModel.GroupSrvIns.DeptIdsToGroupIds(staff.DepartmentIds)
+		groupIds, err := userModel.DeptIdsToGroupIds(staff.DepartmentIds)
 		if err != nil {
 			return nil, tools.NewMySqlError(fmt.Errorf("将部门ids转换为内部部门id失败：%s", err.Error()))
 		}

@@ -97,7 +97,8 @@ func (l PasswdLogic) Dashboard(c *gin.Context, req interface{}) (data interface{
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取用户总数失败"))
 	}
-	groupCount, err := userModel.GroupSrvIns.Count()
+
+	groupCount, err := userModel.GroupCount()
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取分组总数失败"))
 	}
@@ -105,15 +106,15 @@ func (l PasswdLogic) Dashboard(c *gin.Context, req interface{}) (data interface{
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取角色总数失败"))
 	}
-	menuCount, err := userModel.MenuSrvIns.Count()
+	menuCount, err := userModel.MenuCount()
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取菜单总数失败"))
 	}
-	apiCount, err := apiMgrModel.ApiSrvIns.Count()
+	apiCount, err := apiMgrModel.Count()
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取接口总数失败"))
 	}
-	logCount, err := opLogModel.OperationLogSrvIns.Count()
+	logCount, err := opLogModel.Count()
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取日志总数失败"))
 	}

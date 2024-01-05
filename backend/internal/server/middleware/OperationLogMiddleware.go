@@ -49,7 +49,7 @@ func OperationLogMiddleware() gin.HandlerFunc {
 		api := new(apiMgrModel.Api)
 
 		if !strings.HasPrefix(c.FullPath(), "/ui") {
-			_ = apiMgrModel.ApiSrvIns.Find(tools.H{"path": path, "method": method}, api)
+			_ = apiMgrModel.Find(tools.H{"path": path, "method": method}, api)
 		}
 
 		operationLog := operationLogModel.OperationLog{

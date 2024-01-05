@@ -85,16 +85,18 @@ func LdapUsersAdd(user *userModel.User) error {
 		}
 
 		// 获取用户将要添加的分组
-		groups, err := userModel.GroupSrvIns.GetGroupByIds(tools.StringToSlice(user.DepartmentId, ","))
+
+		var gs = userModel.NewGroups()
+		err = gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentId, ","))
 		if err != nil {
 			return tools.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
 		}
-		for _, group := range groups {
+		for _, group := range gs {
 			if group.GroupDN[:3] == "ou=" {
 				continue
 			}
 			// 先将用户和部门信息维护到MySQL
-			err := userModel.GroupSrvIns.AddUserToGroup(group, []userModel.User{*user})
+			err := group.AddUserToGroup([]userModel.User{*user})
 			if err != nil {
 				return tools.NewMySqlError(fmt.Errorf("向MySQL添加用户到分组关系失败：" + err.Error()))
 			}

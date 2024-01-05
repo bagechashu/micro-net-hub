@@ -1,6 +1,12 @@
 package model
 
 import (
+	"errors"
+	"fmt"
+	"micro-net-hub/internal/global"
+	"micro-net-hub/internal/tools"
+	"strings"
+
 	"gorm.io/gorm"
 )
 
@@ -37,6 +43,105 @@ func (g *Group) SetSourceDeptParentId(sourceDeptParentId string) {
 	g.SourceDeptParentId = sourceDeptParentId
 }
 
+// Add 添加资源
+func (g *Group) Add() error {
+	return global.DB.Create(g).Error
+}
+
+// Update 更新资源
+func (g *Group) Update() error {
+	return global.DB.Model(g).Where("id = ?", g.ID).Updates(g).Error
+}
+
+// ChangeSyncState 更新分组的同步状态
+func (g *Group) ChangeSyncState(status int) error {
+	return global.DB.Model(&Group{}).Where("id = ?", g.ID).Update("sync_state", status).Error
+}
+
+// Find 获取单个资源
+func (g *Group) Find(filter map[string]interface{}, args ...interface{}) error {
+	return global.DB.Where(filter, args).Preload("Users").First(&g).Error
+}
+
+// Exist 判断资源是否存在
+func (g *Group) Exist(filter map[string]interface{}) bool {
+	err := global.DB.Debug().Order("created_at DESC").Where(filter).First(&g).Error
+	return !errors.Is(err, gorm.ErrRecordNotFound)
+}
+
+// AddUserToGroup 添加用户到分组
+func (g *Group) AddUserToGroup(users []User) error {
+	return global.DB.Model(&g).Association("Users").Append(users)
+}
+
+// RemoveUserFromGroup 将用户从分组移除
+func (g *Group) RemoveUserFromGroup(users []User) error {
+	return global.DB.Model(&g).Association("Users").Delete(users)
+}
+
+// GroupCount 获取数据总数
+func GroupCount() (int64, error) {
+	var count int64
+	err := global.DB.Model(&Group{}).Count(&count).Error
+	return count, err
+}
+
+// DeptIdsToGroupIds 将企业IM部门id转换为MySQL分组id
+func DeptIdsToGroupIds(ids []string) (groupIds []uint, err error) {
+	var tempGroups []Group
+	err = global.DB.Model(&Group{}).Where("source_dept_id IN (?)", ids).Find(&tempGroups).Error
+	if err != nil {
+		return nil, err
+	}
+	var tempGroupIds []uint
+	for _, g := range tempGroups {
+		tempGroupIds = append(tempGroupIds, g.ID)
+	}
+	return tempGroupIds, nil
+}
+
+type Groups []*Group
+
+func NewGroups() Groups {
+	return make([]*Group, 0)
+}
+
+// List 获取数据列表
+func (gs *Groups) ListAll() (err error) {
+	err = global.DB.Model(&Group{}).Order("created_at DESC").Find(&gs).Error
+	return err
+}
+
+// GenGroupTree 生成分组树
+func (gs *Groups) GenGroupTree(parentId uint) []*Group {
+	tree := make([]*Group, 0)
+
+	for _, g := range *gs {
+		if g.ParentId == parentId {
+			children := gs.GenGroupTree(g.ID)
+			g.Children = children
+			tree = append(tree, g)
+		}
+	}
+	return tree
+}
+
+// Delete 批量删除
+func (gs *Groups) Delete() error {
+	for _, g := range *gs {
+		if err := global.DB.Debug().Unscoped().Delete(&g).Error; err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// GetApisById 根据接口ID获取接口列表
+func (gs *Groups) GetGroupsByIds(ids []uint) (err error) {
+	err = global.DB.Where("id IN (?)", ids).Find(&gs).Error
+	return err
+}
+
 // GroupListReq 获取资源列表结构体
 type GroupListReq struct {
 	GroupName string `json:"groupName" form:"groupName"`
@@ -44,6 +149,48 @@ type GroupListReq struct {
 	PageNum   int    `json:"pageNum" form:"pageNum"`
 	PageSize  int    `json:"pageSize" form:"pageSize"`
 	SyncState uint   `json:"syncState" form:"syncState"`
+}
+
+// List 获取数据列表
+func (req GroupListReq) List() ([]*Group, error) {
+	var list []*Group
+	db := global.DB.Model(&Group{}).Order("created_at DESC")
+
+	groupName := strings.TrimSpace(req.GroupName)
+	if groupName != "" {
+		db = db.Where("group_name LIKE ?", fmt.Sprintf("%%%s%%", groupName))
+	}
+	groupRemark := strings.TrimSpace(req.Remark)
+	if groupRemark != "" {
+		db = db.Where("remark LIKE ?", fmt.Sprintf("%%%s%%", groupRemark))
+	}
+	syncState := req.SyncState
+	if syncState != 0 {
+		db = db.Where("sync_state = ?", syncState)
+	}
+
+	pageReq := tools.NewPageOption(req.PageNum, req.PageSize)
+	err := db.Offset(pageReq.PageNum).Limit(pageReq.PageSize).Preload("Users").Find(&list).Error
+	return list, err
+}
+
+// List 获取数据列表
+func (req GroupListReq) ListTree() ([]*Group, error) {
+	var gs = NewGroups()
+	db := global.DB.Model(&Group{}).Order("created_at DESC")
+
+	groupName := strings.TrimSpace(req.GroupName)
+	if groupName != "" {
+		db = db.Where("group_name LIKE ?", fmt.Sprintf("%%%s%%", groupName))
+	}
+	groupRemark := strings.TrimSpace(req.Remark)
+	if groupRemark != "" {
+		db = db.Where("remark LIKE ?", fmt.Sprintf("%%%s%%", groupRemark))
+	}
+
+	pageReq := tools.NewPageOption(req.PageNum, req.PageSize)
+	err := db.Offset(pageReq.PageNum).Limit(pageReq.PageSize).Find(&gs).Error
+	return gs, err
 }
 
 // GroupListAllReq 获取资源列表结构体，不分页

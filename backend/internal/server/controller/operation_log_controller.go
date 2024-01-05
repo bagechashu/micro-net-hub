@@ -13,7 +13,7 @@ type OperationLogController struct{}
 func (m *OperationLogController) List(c *gin.Context) {
 	req := new(operationLogModel.OperationLogListReq)
 	Run(c, req, func() (interface{}, interface{}) {
-		return operationLogLogic.OperationLogLogicIns.List(c, req)
+		return operationLogLogic.List(c, req)
 	})
 }
 
@@ -21,6 +21,6 @@ func (m *OperationLogController) List(c *gin.Context) {
 func (m *OperationLogController) Delete(c *gin.Context) {
 	req := new(operationLogModel.OperationLogDeleteReq)
 	Run(c, req, func() (interface{}, interface{}) {
-		return operationLogLogic.OperationLogLogicIns.Delete(c, req)
+		return operationLogLogic.Delete(c, req)
 	})
 }

@@ -50,7 +50,7 @@ func LdapDeptAdd(g *userModel.Group) error { //organizationalUnit
 // AddGroup 添加部门数据
 func LdapDeptsAdd(group *userModel.Group) error {
 	// 判断部门名称是否存在,此处使用ldap中的唯一值dn,以免出现数据同步不全的问题
-	if !userModel.GroupSrvIns.Exist(tools.H{"group_dn": group.GroupDN}) {
+	if !group.Exist(tools.H{"group_dn": group.GroupDN}) {
 		// 此时的 group 已经附带了Build后动态关联好的字段，接下来将一些确定性的其他字段值添加上，就可以创建这个分组了
 		group.Creator = "system"
 		group.GroupType = strings.Split(strings.Split(group.GroupDN, ",")[0], "=")[0]
@@ -60,7 +60,7 @@ func LdapDeptsAdd(group *userModel.Group) error {
 		}
 		group.ParentId = parentid
 		group.Source = "openldap"
-		err = userModel.GroupSrvIns.Add(group)
+		err = group.Add()
 		if err != nil {
 			return err
 		}
@@ -114,6 +114,7 @@ func LdapDeptUpdate(oldGroup, newGroup *userModel.Group) error {
 
 // Delete 删除资源
 func LdapDeptDelete(gdn string) error {
+	// global.Log.Infof("LdapDeptDelete gdn:%s", gdn)
 	del := ldap.NewDelRequest(gdn, nil)
 
 	// 获取 LDAP 连接
@@ -249,7 +250,7 @@ func LdapDeptGetParentGroupID(group *userModel.Group) (id uint, err error) {
 		group.SourceDeptParentId = "wecom_1"
 	}
 	parentGroup := new(userModel.Group)
-	err = userModel.GroupSrvIns.Find(tools.H{"source_dept_id": group.SourceDeptParentId}, parentGroup)
+	err = parentGroup.Find(tools.H{"source_dept_id": group.SourceDeptParentId})
 	if err != nil {
 		return id, tools.NewMySqlError(fmt.Errorf("查询父级部门失败：%s,%s", err.Error(), group.GroupName))
 	}

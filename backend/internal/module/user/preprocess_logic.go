@@ -25,7 +25,7 @@ func CommonAddGroup(group *userModel.Group) error {
 	}
 
 	// 然后在数据库中创建组
-	err = userModel.GroupSrvIns.Add(group)
+	err = group.Add()
 	if err != nil {
 		return err
 	}
@@ -37,7 +37,7 @@ func CommonAddGroup(group *userModel.Group) error {
 		return err
 	}
 
-	err = userModel.GroupSrvIns.AddUserToGroup(group, []userModel.User{*adminInfo})
+	err = group.AddUserToGroup([]userModel.User{*adminInfo})
 	if err != nil {
 		return err
 	}
@@ -56,7 +56,7 @@ func CommonUpdateGroup(oldGroup, newGroup *userModel.Group) error {
 	if err != nil {
 		return err
 	}
-	err = userModel.GroupSrvIns.Update(newGroup)
+	err = newGroup.Update()
 	if err != nil {
 		return err
 	}
@@ -116,7 +116,7 @@ func CommonAddUser(user *userModel.User, groups []*userModel.Group) error {
 			continue
 		}
 		// 先将用户和部门信息维护到MySQL
-		err := userModel.GroupSrvIns.AddUserToGroup(group, []userModel.User{*user})
+		err := group.AddUserToGroup([]userModel.User{*user})
 		if err != nil {
 			return tools.NewMySqlError(fmt.Errorf("向MySQL添加用户到分组关系失败：" + err.Error()))
 		}
@@ -151,16 +151,17 @@ func CommonUpdateUser(oldUser, newUser *userModel.User, groupId []uint) error {
 	addDeptIds, removeDeptIds := tools.ArrUintCmp(oldDeptIds, groupId)
 
 	// 先处理添加的部门
-	addgroups, err := userModel.GroupSrvIns.GetGroupByIds(addDeptIds)
+	var addGroups = userModel.NewGroups()
+	err = addGroups.GetGroupsByIds(addDeptIds)
 	if err != nil {
 		return tools.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
 	}
-	for _, group := range addgroups {
+	for _, group := range addGroups {
 		if group.GroupDN[:3] == "ou=" {
 			continue
 		}
 		// 先将用户和部门信息维护到MySQL
-		err := userModel.GroupSrvIns.AddUserToGroup(group, []userModel.User{*newUser})
+		err := group.AddUserToGroup([]userModel.User{*newUser})
 		if err != nil {
 			return tools.NewMySqlError(fmt.Errorf("向MySQL添加用户到分组关系失败：" + err.Error()))
 		}
@@ -172,15 +173,16 @@ func CommonUpdateUser(oldUser, newUser *userModel.User, groupId []uint) error {
 	}
 
 	// 再处理删除的部门
-	removegroups, err := userModel.GroupSrvIns.GetGroupByIds(removeDeptIds)
+	var removeGroups = userModel.NewGroups()
+	err = removeGroups.GetGroupsByIds(removeDeptIds)
 	if err != nil {
 		return tools.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
 	}
-	for _, group := range removegroups {
+	for _, group := range removeGroups {
 		if group.GroupDN[:3] == "ou=" {
 			continue
 		}
-		err := userModel.GroupSrvIns.RemoveUserFromGroup(group, []userModel.User{*newUser})
+		err := group.RemoveUserFromGroup([]userModel.User{*newUser})
 		if err != nil {
 			return tools.NewMySqlError(fmt.Errorf("在MySQL将用户从分组移除失败：" + err.Error()))
 		}
@@ -200,7 +202,7 @@ func BuildGroupData(flag string, remoteData map[string]interface{}) (*userModel.
 	}
 
 	oldData := new(fieldRelationModel.FieldRelation)
-	err = fieldRelationModel.FieldRelationSrvIns.Find(tools.H{"flag": flag + "_group"}, oldData)
+	err = fieldRelationModel.Find(tools.H{"flag": flag + "_group"}, oldData)
 	if err != nil {
 		return nil, tools.NewMySqlError(err)
 	}
@@ -233,7 +235,7 @@ func BuildUserData(flag string, remoteData map[string]interface{}) (*userModel.U
 	}
 
 	fieldRelationSource := new(fieldRelationModel.FieldRelation)
-	err = fieldRelationModel.FieldRelationSrvIns.Find(tools.H{"flag": flag + "_user"}, fieldRelationSource)
+	err = fieldRelationModel.Find(tools.H{"flag": flag + "_user"}, fieldRelationSource)
 	if err != nil {
 		return nil, tools.NewMySqlError(err)
 	}
@@ -296,7 +298,7 @@ func ConvertDeptData(flag string, remoteData []map[string]interface{}) (groups [
 // ConvertUserData 将用户信息转成本地结构体
 func ConvertUserData(flag string, remoteData []map[string]interface{}) (users []*userModel.User, err error) {
 	for _, staff := range remoteData {
-		groupIds, err := userModel.GroupSrvIns.DeptIdsToGroupIds(staff["department_ids"].([]string))
+		groupIds, err := userModel.DeptIdsToGroupIds(staff["department_ids"].([]string))
 		if err != nil {
 			return nil, tools.NewMySqlError(fmt.Errorf("将部门ids转换为内部部门id失败：%s", err.Error()))
 		}

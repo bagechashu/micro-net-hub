@@ -12,10 +12,8 @@ import (
 	"github.com/thoas/go-funk"
 )
 
-type ApiLogic struct{}
-
 // Add 添加数据
-func (l ApiLogic) Add(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
+func Add(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*apiMgrModel.ApiAddReq)
 	if !ok {
 		return nil, tools.ReqAssertErr
@@ -37,7 +35,7 @@ func (l ApiLogic) Add(c *gin.Context, req interface{}) (data interface{}, rspErr
 	}
 
 	// 创建接口
-	err = apiMgrModel.ApiSrvIns.Add(&api)
+	err = apiMgrModel.Add(&api)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("创建接口失败: %s", err.Error()))
 	}
@@ -46,7 +44,7 @@ func (l ApiLogic) Add(c *gin.Context, req interface{}) (data interface{}, rspErr
 }
 
 // List 数据列表
-func (l ApiLogic) List(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
+func List(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*apiMgrModel.ApiListReq)
 	if !ok {
 		return nil, tools.ReqAssertErr
@@ -54,7 +52,7 @@ func (l ApiLogic) List(c *gin.Context, req interface{}) (data interface{}, rspEr
 	_ = c
 
 	// 获取数据列表
-	apis, err := apiMgrModel.ApiSrvIns.List(r)
+	apis, err := apiMgrModel.List(r)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取接口列表失败: %s", err.Error()))
 	}
@@ -63,7 +61,7 @@ func (l ApiLogic) List(c *gin.Context, req interface{}) (data interface{}, rspEr
 	for _, api := range apis {
 		rets = append(rets, *api)
 	}
-	count, err := apiMgrModel.ApiSrvIns.Count()
+	count, err := apiMgrModel.Count()
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取接口总数失败"))
 	}
@@ -75,7 +73,7 @@ func (l ApiLogic) List(c *gin.Context, req interface{}) (data interface{}, rspEr
 }
 
 // GetTree 数据树
-func (l ApiLogic) GetTree(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
+func GetTree(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*apiMgrModel.ApiGetTreeReq)
 	if !ok {
 		return nil, tools.ReqAssertErr
@@ -83,7 +81,7 @@ func (l ApiLogic) GetTree(c *gin.Context, req interface{}) (data interface{}, rs
 	_ = c
 	_ = r
 
-	apis, err := apiMgrModel.ApiSrvIns.ListAll()
+	apis, err := apiMgrModel.ListAll()
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取资源列表失败: " + err.Error()))
 	}
@@ -116,7 +114,7 @@ func (l ApiLogic) GetTree(c *gin.Context, req interface{}) (data interface{}, rs
 }
 
 // Update 更新数据
-func (l ApiLogic) Update(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
+func Update(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*apiMgrModel.ApiUpdateReq)
 	if !ok {
 		return nil, tools.ReqAssertErr
@@ -124,7 +122,7 @@ func (l ApiLogic) Update(c *gin.Context, req interface{}) (data interface{}, rsp
 	_ = c
 
 	filter := tools.H{"id": int(r.ID)}
-	if !apiMgrModel.ApiSrvIns.Exist(filter) {
+	if !apiMgrModel.Exist(filter) {
 		return nil, tools.NewMySqlError(fmt.Errorf("接口不存在"))
 	}
 
@@ -135,7 +133,7 @@ func (l ApiLogic) Update(c *gin.Context, req interface{}) (data interface{}, rsp
 	}
 
 	oldData := new(apiMgrModel.Api)
-	err = apiMgrModel.ApiSrvIns.Find(filter, oldData)
+	err = apiMgrModel.Find(filter, oldData)
 	if err != nil {
 		return nil, tools.NewMySqlError(err)
 	}
@@ -148,7 +146,7 @@ func (l ApiLogic) Update(c *gin.Context, req interface{}) (data interface{}, rsp
 		Remark:   r.Remark,
 		Creator:  ctxUser.Username,
 	}
-	err = apiMgrModel.ApiSrvIns.Update(&api)
+	err = apiMgrModel.Update(&api)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("更新接口失败: %s", err.Error()))
 	}
@@ -156,7 +154,7 @@ func (l ApiLogic) Update(c *gin.Context, req interface{}) (data interface{}, rsp
 }
 
 // Delete 删除数据
-func (l ApiLogic) Delete(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
+func Delete(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*apiMgrModel.ApiDeleteReq)
 	if !ok {
 		return nil, tools.ReqAssertErr
@@ -165,12 +163,12 @@ func (l ApiLogic) Delete(c *gin.Context, req interface{}) (data interface{}, rsp
 
 	for _, id := range r.ApiIds {
 		filter := tools.H{"id": int(id)}
-		if !apiMgrModel.ApiSrvIns.Exist(filter) {
+		if !apiMgrModel.Exist(filter) {
 			return nil, tools.NewMySqlError(fmt.Errorf("接口不存在"))
 		}
 	}
 	// 删除接口
-	err := apiMgrModel.ApiSrvIns.Delete(r.ApiIds)
+	err := apiMgrModel.Delete(r.ApiIds)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("删除接口失败: %s", err.Error()))
 	}

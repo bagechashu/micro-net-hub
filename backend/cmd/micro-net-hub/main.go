@@ -43,7 +43,7 @@ func main() {
 	// 操作日志中间件处理日志时没有将日志发送到rabbitmq或者kafka中, 而是发送到了channel中
 	// 这里开启3个goroutine处理channel将日志记录到数据库
 	for i := 0; i < 3; i++ {
-		go operationLogModel.OperationLogSrvIns.SaveOperationLogChannel(middleware.OperationLogChan)
+		go operationLogModel.SaveOperationLogChannel(middleware.OperationLogChan)
 	}
 
 	// 注册所有路由

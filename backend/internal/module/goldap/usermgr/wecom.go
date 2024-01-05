@@ -214,7 +214,7 @@ func (mgr WeChat) addDeptsRec(depts []*userModel.Group) error {
 func (mgr WeChat) AddDepts(group *userModel.Group) error {
 	// 判断部门名称是否存在
 	parentGroup := new(userModel.Group)
-	err := userModel.GroupSrvIns.Find(tools.H{"source_dept_id": group.SourceDeptParentId}, parentGroup)
+	err := parentGroup.Find(tools.H{"source_dept_id": group.SourceDeptParentId})
 	if err != nil {
 		return tools.NewMySqlError(fmt.Errorf("查询父级部门失败：%s", err.Error()))
 	}
@@ -226,7 +226,7 @@ func (mgr WeChat) AddDepts(group *userModel.Group) error {
 	group.Source = config.Conf.WeCom.Flag
 	group.GroupDN = fmt.Sprintf("cn=%s,%s", group.GroupName, parentGroup.GroupDN)
 
-	if !userModel.GroupSrvIns.Exist(tools.H{"group_dn": group.GroupDN}) {
+	if !group.Exist(tools.H{"group_dn": group.GroupDN}) {
 		err = userLogic.CommonAddGroup(group)
 		if err != nil {
 			return tools.NewOperationError(fmt.Errorf("添加部门: %s, 失败: %s", group.GroupName, err.Error()))
@@ -249,20 +249,21 @@ func (mgr WeChat) AddUsers(user *userModel.User) error {
 	user.UserDN = fmt.Sprintf("uid=%s,%s", user.Username, config.Conf.Ldap.UserDN)
 
 	// 根据 user_dn 查询用户,不存在则创建
+	var gs = userModel.NewGroups()
 	if !userModel.UserSrvIns.Exist(tools.H{"user_dn": user.UserDN}) {
 		// 获取用户将要添加的分组
-		groups, err := userModel.GroupSrvIns.GetGroupByIds(tools.StringToSlice(user.DepartmentId, ","))
+		err := gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentId, ","))
 		if err != nil {
 			return tools.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
 		}
 		var deptTmp string
-		for _, group := range groups {
+		for _, group := range gs {
 			deptTmp = deptTmp + group.GroupName + ","
 		}
 		user.Departments = strings.TrimRight(deptTmp, ",")
 
 		// 创建用户
-		err = userLogic.CommonAddUser(user, groups)
+		err = userLogic.CommonAddUser(user, gs)
 		if err != nil {
 			return tools.NewOperationError(fmt.Errorf("添加用户: %s, 失败: %s", user.Username, err.Error()))
 		}
@@ -276,12 +277,12 @@ func (mgr WeChat) AddUsers(user *userModel.User) error {
 				return err
 			}
 			// 获取用户将要添加的分组
-			groups, err := userModel.GroupSrvIns.GetGroupByIds(tools.StringToSlice(user.DepartmentId, ","))
+			err := gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentId, ","))
 			if err != nil {
 				return tools.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
 			}
 			var deptTmp string
-			for _, group := range groups {
+			for _, group := range gs {
 				deptTmp = deptTmp + group.GroupName + ","
 			}
 			user.Model = oldData.Model

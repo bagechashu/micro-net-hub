@@ -2,15 +2,12 @@ package controller
 
 import (
 	"fmt"
+	"micro-net-hub/internal/global"
 	"micro-net-hub/internal/tools"
 	"net/http"
-	"regexp"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/locales/zh"
-	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
-	zht "github.com/go-playground/validator/v10/translations/zh"
 )
 
 var (
@@ -22,23 +19,7 @@ var (
 	OperationLog  = &OperationLogController{}
 	Base          = &BaseController{}
 	FieldRelation = &FieldRelationController{}
-
-	validate = validator.New()
-	trans    ut.Translator
 )
-
-func init() {
-	uni := ut.New(zh.New())
-	trans, _ = uni.GetTranslator("zh")
-	_ = zht.RegisterDefaultTranslations(validate, trans)
-	_ = validate.RegisterValidation("checkMobile", checkMobile)
-}
-
-func checkMobile(fl validator.FieldLevel) bool {
-	reg := `1\d{10}`
-	rgx := regexp.MustCompile(reg)
-	return rgx.MatchString(fl.Field().String())
-}
 
 func Run(c *gin.Context, req interface{}, fn func() (interface{}, interface{})) {
 	var err error
@@ -49,10 +30,11 @@ func Run(c *gin.Context, req interface{}, fn func() (interface{}, interface{})) 
 		return
 	}
 	// 校验
-	err = validate.Struct(req)
+	err = global.Validate.Struct(req)
 	if err != nil {
 		for _, err := range err.(validator.ValidationErrors) {
-			tools.Err(c, tools.NewValidatorError(fmt.Errorf(err.Translate(trans))), nil)
+			global.Log.Errorf("bind req err: \nreq: %+v\nerr: %s", req, err)
+			tools.Err(c, tools.NewValidatorError(fmt.Errorf(err.Translate(global.Trans))), nil)
 			return
 		}
 	}

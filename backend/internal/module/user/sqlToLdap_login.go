@@ -38,11 +38,12 @@ func (d *SqlLogic) SyncSqlUsers(c *gin.Context, req interface{}) (data interface
 			return nil, tools.NewLdapError(fmt.Errorf("SyncUser向LDAP同步用户失败：" + err.Error()))
 		}
 		// 获取用户将要添加的分组
-		groups, err := userModel.GroupSrvIns.GetGroupByIds(tools.StringToSlice(user.DepartmentId, ","))
+		var gs = userModel.NewGroups()
+		err := gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentId, ","))
 		if err != nil {
 			return nil, tools.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
 		}
-		for _, group := range groups {
+		for _, group := range gs {
 			//根据选择的部门，添加到部门内
 			err = ldapmgr.LdapDeptAddUserToGroup(group.GroupDN, user.UserDN)
 			if err != nil {
@@ -68,16 +69,18 @@ func (d *SqlLogic) SyncSqlGroups(c *gin.Context, req interface{}) (data interfac
 	// 1.获取所有分组
 	for _, id := range r.GroupIds {
 		filter := tools.H{"id": int(id)}
-		if !userModel.GroupSrvIns.Exist(filter) {
+		var g = new(userModel.Group)
+		if !g.Exist(filter) {
 			return nil, tools.NewMySqlError(fmt.Errorf("有分组不存在"))
 		}
 	}
-	groups, err := userModel.GroupSrvIns.GetGroupByIds(r.GroupIds)
+	var gs = userModel.NewGroups()
+	err := gs.GetGroupsByIds(r.GroupIds)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取分组信息失败: " + err.Error()))
 	}
 	// 2.再将分组添加到ldap
-	for _, group := range groups {
+	for _, group := range gs {
 		err = ldapmgr.LdapDeptAdd(group)
 		if err != nil {
 			return nil, tools.NewLdapError(fmt.Errorf("SyncUser向LDAP同步分组失败：" + err.Error()))
@@ -93,7 +96,7 @@ func (d *SqlLogic) SyncSqlGroups(c *gin.Context, req interface{}) (data interfac
 				}
 			}
 		}
-		err = userModel.GroupSrvIns.ChangeSyncState(int(group.ID), 1)
+		err = group.ChangeSyncState(1)
 		if err != nil {
 			return nil, tools.NewLdapError(fmt.Errorf("分组同步完毕之后更新状态失败：" + err.Error()))
 		}
@@ -105,8 +108,8 @@ func (d *SqlLogic) SyncSqlGroups(c *gin.Context, req interface{}) (data interfac
 // SearchGroupDiff 检索未同步到ldap中的分组
 func SearchGroupDiff() (err error) {
 	// 获取sql中的数据
-	var sqlGroupList []*userModel.Group
-	sqlGroupList, err = userModel.GroupSrvIns.ListAll()
+	var gs = userModel.NewGroups()
+	err = gs.ListAll()
 	if err != nil {
 		return err
 	}
@@ -117,12 +120,12 @@ func SearchGroupDiff() (err error) {
 		return err
 	}
 	// 比对两个系统中的数据
-	groups := diffGroup(sqlGroupList, ldapGroupList)
+	groups := diffGroup(gs, ldapGroupList)
 	for _, group := range groups {
 		if group.GroupDN == config.Conf.Ldap.BaseDN {
 			continue
 		}
-		err = userModel.GroupSrvIns.ChangeSyncState(int(group.ID), 2)
+		err = group.ChangeSyncState(2)
 	}
 	return
 }
