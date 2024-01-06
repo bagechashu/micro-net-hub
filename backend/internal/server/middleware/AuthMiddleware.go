@@ -80,13 +80,13 @@ func login(c *gin.Context) (interface{}, error) {
 	}
 
 	// 密码校验
-	user, err := userModel.UserSrvIns.Login(u)
+	userLogined, err := u.Login()
 	if err != nil {
 		return nil, err
 	}
 	// 将用户以json格式写入, payloadFunc/authorizator会使用到
 	return tools.H{
-		"user": tools.Struct2Json(user),
+		"user": tools.Struct2Json(userLogined),
 	}, nil
 }
 

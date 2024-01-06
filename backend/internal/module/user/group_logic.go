@@ -25,7 +25,7 @@ func (l GroupLogic) Add(c *gin.Context, req interface{}) (data interface{}, rspE
 	_ = c
 
 	// 获取当前用户
-	ctxUser, err := userModel.UserSrvIns.GetCurrentLoginUser(c)
+	ctxUser, err := GetCurrentLoginUser(c)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取当前登陆用户信息失败"))
 	}
@@ -55,7 +55,7 @@ func (l GroupLogic) Add(c *gin.Context, req interface{}) (data interface{}, rspE
 	}
 
 	// 根据 group_dn 判断分组是否已存在
-	var g = new(userModel.Group)
+	var g userModel.Group
 	if g.Exist(tools.H{"group_dn": group.GroupDN}) {
 		return nil, tools.NewValidatorError(fmt.Errorf("该分组对应DN已存在"))
 	}
@@ -74,12 +74,12 @@ func (l GroupLogic) Add(c *gin.Context, req interface{}) (data interface{}, rspE
 
 	// 默认创建分组之后，需要将admin添加到分组中
 	adminInfo := new(userModel.User)
-	err = userModel.UserSrvIns.Find(tools.H{"id": 1}, adminInfo)
+	err = adminInfo.Find(tools.H{"id": 1})
 	if err != nil {
 		return nil, tools.NewMySqlError(err)
 	}
 
-	err = group.AddUserToGroup([]userModel.User{*adminInfo})
+	err = group.AddUserToGroup(adminInfo)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("添加用户到分组失败: %s", err.Error()))
 	}
@@ -145,13 +145,13 @@ func (l GroupLogic) Update(c *gin.Context, req interface{}) (data interface{}, r
 	_ = c
 
 	filter := tools.H{"id": int(r.ID)}
-	var g = new(userModel.Group)
+	var g userModel.Group
 	if !g.Exist(filter) {
 		return nil, tools.NewMySqlError(fmt.Errorf("分组不存在"))
 	}
 
 	// 获取当前登陆用户
-	ctxUser, err := userModel.UserSrvIns.GetCurrentLoginUser(c)
+	ctxUser, err := GetCurrentLoginUser(c)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取当前登陆用户失败"))
 	}
@@ -196,7 +196,7 @@ func (l GroupLogic) Delete(c *gin.Context, req interface{}) (data interface{}, r
 
 	for _, id := range r.GroupIds {
 		filter := tools.H{"id": int(id)}
-		var g = new(userModel.Group)
+		var g userModel.Group
 		if !g.Exist(filter) {
 			return nil, tools.NewMySqlError(fmt.Errorf("有分组不存在"))
 		}
@@ -242,12 +242,13 @@ func (l GroupLogic) AddUser(c *gin.Context, req interface{}) (data interface{}, 
 
 	filter := tools.H{"id": r.GroupID}
 
-	var g = new(userModel.Group)
+	var g userModel.Group
 	if !g.Exist(filter) {
 		return nil, tools.NewMySqlError(fmt.Errorf("分组不存在"))
 	}
 
-	users, err := userModel.UserSrvIns.GetUserByIds(r.UserIds)
+	var users = userModel.NewUsers()
+	err := users.GetUserByIds(r.UserIds)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取用户列表失败: %s", err.Error()))
 	}
@@ -263,7 +264,7 @@ func (l GroupLogic) AddUser(c *gin.Context, req interface{}) (data interface{}, 
 	}
 
 	// 先添加到MySQL
-	err = group.AddUserToGroup(users)
+	err = group.AddUsersToGroup(&users)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("添加用户到分组失败: %s", err.Error()))
 	}
@@ -278,7 +279,7 @@ func (l GroupLogic) AddUser(c *gin.Context, req interface{}) (data interface{}, 
 
 	for _, user := range users {
 		oldData := new(userModel.User)
-		err = userModel.UserSrvIns.Find(tools.H{"id": user.ID}, oldData)
+		err = oldData.Find(tools.H{"id": user.ID})
 		if err != nil {
 			return nil, tools.NewMySqlError(err)
 		}
@@ -296,7 +297,7 @@ func (l GroupLogic) AddUser(c *gin.Context, req interface{}) (data interface{}, 
 }
 
 func (l GroupLogic) updataUser(newUser *userModel.User) error {
-	err := userModel.UserSrvIns.Update(newUser)
+	err := newUser.Update()
 	if err != nil {
 		return tools.NewMySqlError(fmt.Errorf("在MySQL更新用户失败：" + err.Error()))
 	}
@@ -312,12 +313,13 @@ func (l GroupLogic) RemoveUser(c *gin.Context, req interface{}) (data interface{
 	_ = c
 
 	filter := tools.H{"id": r.GroupID}
-	var g = new(userModel.Group)
+	var g userModel.Group
 	if !g.Exist(filter) {
 		return nil, tools.NewMySqlError(fmt.Errorf("分组不存在"))
 	}
 
-	users, err := userModel.UserSrvIns.GetUserByIds(r.UserIds)
+	var users = userModel.NewUsers()
+	err := users.GetUserByIds(r.UserIds)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取用户列表失败: %s", err.Error()))
 	}
@@ -341,14 +343,14 @@ func (l GroupLogic) RemoveUser(c *gin.Context, req interface{}) (data interface{
 	}
 
 	// 再操作MySQL
-	err = group.RemoveUserFromGroup(users)
+	err = group.RemoveUsersFromGroup(&users)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("将用户从MySQL移除失败: %s", err.Error()))
 	}
 
 	for _, user := range users {
 		oldData := new(userModel.User)
-		err = userModel.UserSrvIns.Find(tools.H{"id": user.ID}, oldData)
+		err = oldData.Find(tools.H{"id": user.ID})
 		if err != nil {
 			return nil, tools.NewMySqlError(err)
 		}
@@ -389,7 +391,7 @@ func (l GroupLogic) UserInGroup(c *gin.Context, req interface{}) (data interface
 	_ = c
 
 	filter := tools.H{"id": r.GroupID}
-	var g = new(userModel.Group)
+	var g userModel.Group
 	if !g.Exist(filter) {
 		return nil, tools.NewMySqlError(fmt.Errorf("分组不存在"))
 	}
@@ -435,7 +437,7 @@ func (l GroupLogic) UserNoInGroup(c *gin.Context, req interface{}) (data interfa
 
 	filter := tools.H{"id": r.GroupID}
 
-	var g = new(userModel.Group)
+	var g userModel.Group
 	if !g.Exist(filter) {
 		return nil, tools.NewMySqlError(fmt.Errorf("分组不存在"))
 	}
@@ -446,8 +448,8 @@ func (l GroupLogic) UserNoInGroup(c *gin.Context, req interface{}) (data interfa
 		return nil, tools.NewMySqlError(fmt.Errorf("获取分组失败: %s", err.Error()))
 	}
 
-	var userList []*userModel.User
-	userList, err = userModel.UserSrvIns.ListAll()
+	var userList = userModel.NewUsers()
+	err = userList.ListAll()
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取资源列表失败: " + err.Error()))
 	}

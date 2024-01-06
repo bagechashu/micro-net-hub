@@ -81,13 +81,14 @@ func (mgr FeiShu) SyncUsers(c *gin.Context, req interface{}) (data interface{}, 
 	}
 	// 4.遍历id，开始处理
 	for _, uid := range userIds {
-		if userModel.UserSrvIns.Exist(
+		var u userModel.User
+		if u.Exist(
 			tools.H{
 				"status":          1, //只处理1在职的
 				"source_union_id": fmt.Sprintf("%s_%s", config.Conf.FeiShu.Flag, uid),
 			}) {
 			user := new(userModel.User)
-			err = userModel.UserSrvIns.Find(tools.H{"source_union_id": fmt.Sprintf("%s_%s", config.Conf.FeiShu.Flag, uid)}, user)
+			err = user.Find(tools.H{"source_union_id": fmt.Sprintf("%s_%s", config.Conf.FeiShu.Flag, uid)})
 			if err != nil {
 				return nil, tools.NewMySqlError(fmt.Errorf("在MySQL查询用户失败: " + err.Error()))
 			}
@@ -97,7 +98,7 @@ func (mgr FeiShu) SyncUsers(c *gin.Context, req interface{}) (data interface{}, 
 				return nil, tools.NewLdapError(fmt.Errorf("在LDAP删除用户失败" + err.Error()))
 			}
 			// 然后更新MySQL中用户状态
-			err = userModel.UserSrvIns.ChangeStatus(int(user.ID), 2)
+			err = user.ChangeStatus(2)
 			if err != nil {
 				return nil, tools.NewMySqlError(fmt.Errorf("在MySQL更新用户状态失败: " + err.Error()))
 			}
@@ -387,7 +388,7 @@ func (mgr FeiShu) AddUsers(user *userModel.User) error {
 
 	// 根据 user_dn 查询用户,不存在则创建
 	var gs = userModel.NewGroups()
-	if !userModel.UserSrvIns.Exist(tools.H{"user_dn": user.UserDN}) {
+	if !user.Exist(tools.H{"user_dn": user.UserDN}) {
 		// 获取用户将要添加的分组
 		err := gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentId, ","))
 		if err != nil {
@@ -409,7 +410,7 @@ func (mgr FeiShu) AddUsers(user *userModel.User) error {
 		if config.Conf.FeiShu.IsUpdateSyncd {
 			// 先获取用户信息
 			oldData := new(userModel.User)
-			err = userModel.UserSrvIns.Find(tools.H{"user_dn": user.UserDN}, oldData)
+			err = oldData.Find(tools.H{"user_dn": user.UserDN})
 			if err != nil {
 				return err
 			}

@@ -21,7 +21,7 @@ func (l MenuLogic) Add(c *gin.Context, req interface{}) (data interface{}, rspEr
 	_ = c
 
 	// 获取当前用户
-	ctxUser, err := userModel.UserSrvIns.GetCurrentLoginUser(c)
+	ctxUser, err := GetCurrentLoginUser(c)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取当前登陆用户信息失败"))
 	}
@@ -98,7 +98,7 @@ func (l MenuLogic) Update(c *gin.Context, req interface{}) (data interface{}, rs
 	}
 
 	// 获取当前登陆用户
-	ctxUser, err := userModel.UserSrvIns.GetCurrentLoginUser(c)
+	ctxUser, err := GetCurrentLoginUser(c)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取当前登陆用户失败"))
 	}
@@ -179,11 +179,12 @@ func (l MenuLogic) GetAccessTree(c *gin.Context, req interface{}) (data interfac
 	_ = c
 	// 校验
 	filter := tools.H{"id": r.ID}
-	if !userModel.UserSrvIns.Exist(filter) {
+	var u userModel.User
+	if !u.Exist(filter) {
 		return nil, tools.NewValidatorError(fmt.Errorf("该用户不存在"))
 	}
 	user := new(userModel.User)
-	err := userModel.UserSrvIns.Find(filter, user)
+	err := user.Find(filter)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("在MySQL查询用户失败: " + err.Error()))
 	}

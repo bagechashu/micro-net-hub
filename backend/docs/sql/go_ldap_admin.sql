@@ -441,7 +441,6 @@ CREATE TABLE `users` (
   `sync_state` tinyint(1) DEFAULT '1' COMMENT '''同步状态:1已同步, 2未同步''',
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`),
-  UNIQUE KEY `mobile` (`mobile`),
   KEY `idx_users_deleted_at` (`deleted_at`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
 

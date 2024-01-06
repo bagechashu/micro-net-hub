@@ -24,7 +24,7 @@ func (l PasswdLogic) SendCode(c *gin.Context, req interface{}) (data interface{}
 	_ = c
 	// 判断邮箱是否正确
 	user := new(userModel.User)
-	err := userModel.UserSrvIns.Find(tools.H{"mail": r.Mail}, user)
+	err := user.Find(tools.H{"mail": r.Mail})
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("通过邮箱查询用户失败" + err.Error()))
 	}
@@ -47,7 +47,8 @@ func (l PasswdLogic) ChangePwd(c *gin.Context, req interface{}) (data interface{
 	}
 	_ = c
 	// 判断邮箱是否正确
-	if !userModel.UserSrvIns.Exist(tools.H{"mail": r.Mail}) {
+	var u userModel.User
+	if !u.Exist(tools.H{"mail": r.Mail}) {
 		return nil, tools.NewValidatorError(fmt.Errorf("邮箱不存在,请检查邮箱是否正确"))
 	}
 	// 判断验证码是否过期
@@ -61,7 +62,7 @@ func (l PasswdLogic) ChangePwd(c *gin.Context, req interface{}) (data interface{
 	}
 
 	user := new(userModel.User)
-	err := userModel.UserSrvIns.Find(tools.H{"mail": r.Mail}, user)
+	err := user.Find(tools.H{"mail": r.Mail})
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("通过邮箱查询用户失败" + err.Error()))
 	}
@@ -77,7 +78,7 @@ func (l PasswdLogic) ChangePwd(c *gin.Context, req interface{}) (data interface{
 	}
 
 	// 更新数据库密码
-	err = userModel.UserSrvIns.ChangePwd(user.Username, tools.NewGenPasswd(newpass))
+	err = user.ChangePwd(tools.NewGenPasswd(newpass))
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("在MySQL更新密码失败: " + err.Error()))
 	}
@@ -93,7 +94,7 @@ func (l PasswdLogic) Dashboard(c *gin.Context, req interface{}) (data interface{
 	}
 	_ = c
 
-	userCount, err := userModel.UserSrvIns.Count()
+	userCount, err := userModel.UserCount()
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取用户总数失败"))
 	}

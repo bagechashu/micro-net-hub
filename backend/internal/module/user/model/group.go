@@ -70,12 +70,22 @@ func (g *Group) Exist(filter map[string]interface{}) bool {
 }
 
 // AddUserToGroup 添加用户到分组
-func (g *Group) AddUserToGroup(users []User) error {
+func (g *Group) AddUserToGroup(user *User) error {
+	return global.DB.Model(&g).Association("Users").Append(user)
+}
+
+// RemoveUserFromGroup 将用户从分组移除
+func (g *Group) RemoveUserFromGroup(user *User) error {
+	return global.DB.Model(&g).Association("Users").Delete(user)
+}
+
+// AddUserToGroup 添加用户到分组
+func (g *Group) AddUsersToGroup(users *Users) error {
 	return global.DB.Model(&g).Association("Users").Append(users)
 }
 
 // RemoveUserFromGroup 将用户从分组移除
-func (g *Group) RemoveUserFromGroup(users []User) error {
+func (g *Group) RemoveUsersFromGroup(users *Users) error {
 	return global.DB.Model(&g).Association("Users").Delete(users)
 }
 

@@ -32,12 +32,12 @@ func CommonAddGroup(group *userModel.Group) error {
 
 	// 默认创建分组之后，需要将admin添加到分组中
 	adminInfo := new(userModel.User)
-	err = userModel.UserSrvIns.Find(tools.H{"id": 1}, adminInfo)
+	err = adminInfo.Find(tools.H{"id": 1})
 	if err != nil {
 		return err
 	}
 
-	err = group.AddUserToGroup([]userModel.User{*adminInfo})
+	err = group.AddUserToGroup(adminInfo)
 	if err != nil {
 		return err
 	}
@@ -83,24 +83,24 @@ func CommonAddUser(user *userModel.User, groups []*userModel.Group) error {
 			user.Mail = user.Username + "@example.com"
 		}
 	}
-	if user.JobNumber == "" {
-		user.JobNumber = "0000"
-	}
-	if user.Departments == "" {
-		user.Departments = "默认:研发中心"
-	}
-	if user.Position == "" {
-		user.Position = "默认:打工人"
-	}
-	if user.PostalAddress == "" {
-		user.PostalAddress = "默认:地球"
-	}
-	if user.Mobile == "" {
-		user.Mobile = generateMobile()
-	}
+	// if user.JobNumber == "" {
+	// 	user.JobNumber = "0000"
+	// }
+	// if user.Departments == "" {
+	// 	user.Departments = "默认:研发中心"
+	// }
+	// if user.Position == "" {
+	// 	user.Position = "默认:打工人"
+	// }
+	// if user.PostalAddress == "" {
+	// 	user.PostalAddress = "默认:地球"
+	// }
+	// if user.Mobile == "" {
+	// 	user.Mobile = generateMobile()
+	// }
 
 	// 先将用户添加到MySQL
-	err := userModel.UserSrvIns.Add(user)
+	err := user.Add()
 	if err != nil {
 		return tools.NewMySqlError(fmt.Errorf("向MySQL创建用户失败：" + err.Error()))
 	}
@@ -116,7 +116,7 @@ func CommonAddUser(user *userModel.User, groups []*userModel.Group) error {
 			continue
 		}
 		// 先将用户和部门信息维护到MySQL
-		err := group.AddUserToGroup([]userModel.User{*user})
+		err := group.AddUserToGroup(user)
 		if err != nil {
 			return tools.NewMySqlError(fmt.Errorf("向MySQL添加用户到分组关系失败：" + err.Error()))
 		}
@@ -141,7 +141,7 @@ func CommonUpdateUser(oldUser, newUser *userModel.User, groupId []uint) error {
 		return tools.NewLdapError(fmt.Errorf("在LDAP更新用户失败：" + err.Error()))
 	}
 
-	err = userModel.UserSrvIns.Update(newUser)
+	err = newUser.Update()
 	if err != nil {
 		return tools.NewMySqlError(fmt.Errorf("在MySQL更新用户失败：" + err.Error()))
 	}
@@ -161,7 +161,7 @@ func CommonUpdateUser(oldUser, newUser *userModel.User, groupId []uint) error {
 			continue
 		}
 		// 先将用户和部门信息维护到MySQL
-		err := group.AddUserToGroup([]userModel.User{*newUser})
+		err := group.AddUserToGroup(newUser)
 		if err != nil {
 			return tools.NewMySqlError(fmt.Errorf("向MySQL添加用户到分组关系失败：" + err.Error()))
 		}
@@ -182,7 +182,7 @@ func CommonUpdateUser(oldUser, newUser *userModel.User, groupId []uint) error {
 		if group.GroupDN[:3] == "ou=" {
 			continue
 		}
-		err := group.RemoveUserFromGroup([]userModel.User{*newUser})
+		err := group.RemoveUserFromGroup(newUser)
 		if err != nil {
 			return tools.NewMySqlError(fmt.Errorf("在MySQL将用户从分组移除失败：" + err.Error()))
 		}
@@ -335,10 +335,10 @@ func groupListToTree(rootGroup *userModel.Group, list []*userModel.Group) []*use
 }
 
 func generateMobile() string {
-	rand.Seed(time.Now().UnixNano())
-	randNum := rand.Intn(9000000000) + 1000000000
-	randNum = randNum + 10000000000
-	if userModel.UserSrvIns.Exist(tools.H{"mobile": randNum}) {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	randNum := r.Intn(99999999) + 10000000000
+	var u userModel.User
+	if u.Exist(tools.H{"mobile": randNum}) {
 		generateMobile()
 	}
 	return fmt.Sprintf("%v", randNum)

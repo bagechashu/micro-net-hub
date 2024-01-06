@@ -30,7 +30,7 @@ func InitConfig() {
 func TestUserExist(t *testing.T) {
 	InitConfig()
 
-	var u userModel.UserService
+	var u userModel.User
 	filter := tools.H{
 		"id": "111",
 	}

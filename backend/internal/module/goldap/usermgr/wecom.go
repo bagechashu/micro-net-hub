@@ -77,7 +77,8 @@ func (mgr WeChat) SyncUsers(c *gin.Context, req interface{}) (data interface{}, 
 	// 拿到MySQL所有用户数据(来源为 wecom的用户)，远程没有的，则说明被删除了
 	// 如果以后企业微信透出了已离职用户列表的接口，则这里可以进行改进
 	var res []*userModel.User
-	users, err := userModel.UserSrvIns.ListAll()
+	var users = userModel.NewUsers()
+	err = users.ListAll()
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取用户列表失败：" + err.Error()))
 	}
@@ -99,7 +100,7 @@ func (mgr WeChat) SyncUsers(c *gin.Context, req interface{}) (data interface{}, 
 	// 4.遍历id，开始处理
 	for _, userTmp := range res {
 		user := new(userModel.User)
-		err = userModel.UserSrvIns.Find(tools.H{"source_user_id": userTmp.SourceUserId, "status": 1}, user)
+		err = user.Find(tools.H{"source_user_id": userTmp.SourceUserId, "status": 1})
 		if err != nil {
 			return nil, tools.NewMySqlError(fmt.Errorf("在MySQL查询用户失败: " + err.Error()))
 		}
@@ -109,7 +110,7 @@ func (mgr WeChat) SyncUsers(c *gin.Context, req interface{}) (data interface{}, 
 			return nil, tools.NewLdapError(fmt.Errorf("在LDAP删除用户失败" + err.Error()))
 		}
 		// 然后更新MySQL中用户状态
-		err = userModel.UserSrvIns.ChangeStatus(int(user.ID), 2)
+		err = user.ChangeStatus(2)
 		if err != nil {
 			return nil, tools.NewMySqlError(fmt.Errorf("在MySQL更新用户状态失败: " + err.Error()))
 		}
@@ -251,7 +252,7 @@ func (mgr WeChat) AddUsers(user *userModel.User) error {
 
 	// 根据 user_dn 查询用户,不存在则创建
 	var gs = userModel.NewGroups()
-	if !userModel.UserSrvIns.Exist(tools.H{"user_dn": user.UserDN}) {
+	if !user.Exist(tools.H{"user_dn": user.UserDN}) {
 		// 获取用户将要添加的分组
 		err := gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentId, ","))
 		if err != nil {
@@ -273,7 +274,7 @@ func (mgr WeChat) AddUsers(user *userModel.User) error {
 		if config.Conf.WeCom.IsUpdateSyncd {
 			// 先获取用户信息
 			oldData := new(userModel.User)
-			err = userModel.UserSrvIns.Find(tools.H{"user_dn": user.UserDN}, oldData)
+			err = oldData.Find(tools.H{"user_dn": user.UserDN})
 			if err != nil {
 				return err
 			}

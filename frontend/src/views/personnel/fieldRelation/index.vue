@@ -121,7 +121,13 @@
       <!-- 新增 -->
       <el-dialog :title="dialogFormTitle" :visible.sync="updateLoading">
         <div class="components-container">
-          <aside>动态关系管理说明文档参考： <a href="http://ldapdoc.eryajf.net/pages/84953d/" target="_blank">动态字段关系管理</a></aside>
+          <aside>
+            动态关系管理说明文档参考：
+            <a
+              href="http://ldapdoc.eryajf.net/pages/84953d/"
+              target="_blank"
+            >动态字段关系管理</a>
+          </aside>
         </div>
         <el-form
           ref="dialogForm"
@@ -143,7 +149,7 @@
             </el-checkbox-group>
           </el-form-item>
 
-          <template v-if="checked == '用户字段动态关联'">
+          <template v-if="checked === '用户字段动态关联'">
             <el-form-item label="类型标志">
               <el-select
                 v-model="userVal"
@@ -293,7 +299,13 @@
       <!-- 编辑 -->
       <el-dialog :title="dialogFormTitle" :visible.sync="dialogFormVisible">
         <div class="components-container">
-          <aside>动态关系管理说明文档参考： <a href="http://ldapdoc.eryajf.net/pages/84953d/" target="_blank">动态字段关系管理</a></aside>
+          <aside>
+            动态关系管理说明文档参考：
+            <a
+              href="http://ldapdoc.eryajf.net/pages/84953d/"
+              target="_blank"
+            >动态字段关系管理</a>
+          </aside>
         </div>
         <el-form
           ref="dialogForm"
@@ -302,7 +314,7 @@
           :rules="dialogFormRules"
           label-width="120px"
         >
-          <template v-if="checked == '用户字段动态关联'">
+          <template v-if="checked === '用户字段动态关联'">
             <el-form-item label="类型">
               <el-button type="primary">用户字段动态关联</el-button>
             </el-form-item>
@@ -457,58 +469,58 @@ import {
   relationAdd,
   relationUp,
   relationDel
-} from '@/api/personnel/fieldRelation'
-import { Message } from 'element-ui'
+} from "@/api/personnel/fieldRelation";
+import { Message } from "element-ui";
 
-const cityOptions = ['用户字段动态关联', '分组字段动态关联']
+const cityOptions = ["用户字段动态关联", "分组字段动态关联"];
 export default {
-  name: 'FieldRelation',
+  name: "FieldRelation",
   components: {
     // Treeselect
   },
   filters: {
     methodTagFilter(val) {
-      if (val === 'GET') {
-        return ''
-      } else if (val === 'POST') {
-        return 'success'
+      if (val === "GET") {
+        return "";
+      } else if (val === "POST") {
+        return "success";
       } else {
-        return 'info'
+        return "info";
       }
     }
   },
   data() {
-    var checkPhone = (rule, value, callback) => {
-      if (!value) {
-        return callback(new Error('手机号不能为空'))
-      } else {
-        const reg = /1\d{10}/
-        if (reg.test(value)) {
-          callback()
-        } else {
-          return callback(new Error('请输入正确的手机号'))
-        }
-      }
-    }
+    // var checkPhone = (rule, value, callback) => {
+    //   if (!value) {
+    //     return callback(new Error('手机号不能为空'))
+    //   } else {
+    //     const reg = /^(\+|00)??(\d{1,3})??((1|0)\d{8,10})??$/
+    //     if (reg.test(value)) {
+    //       callback()
+    //     } else {
+    //       return callback(new Error('请输入正确的手机号'))
+    //     }
+    //   }
+    // }
     return {
       options: [
-        { label: '飞书', value: 'feishu_group' },
-        { label: '钉钉', value: 'dingtalk_group' },
-        { label: '企业微信', value: 'wecom_group' }
+        { label: "飞书", value: "feishu_group" },
+        { label: "钉钉", value: "dingtalk_group" },
+        { label: "企业微信", value: "wecom_group" }
       ],
       userOptions: [
-        { label: '飞书', value: 'feishu_user' },
-        { label: '钉钉', value: 'dingtalk_user' },
-        { label: '企业微信', value: 'wecom_user' }
+        { label: "飞书", value: "feishu_user" },
+        { label: "钉钉", value: "dingtalk_user" },
+        { label: "企业微信", value: "wecom_user" }
       ],
-      userVal: '',
-      groupVal: '',
-      updateId: '',
-      checked: ['用户字段动态关联'], // 新增数据默认选中
+      userVal: "",
+      groupVal: "",
+      updateId: "",
+      checked: ["用户字段动态关联"], // 新增数据默认选中
       cities: cityOptions, // 新增默认选中
       // 查询参数
       params: {
-        flag: '',
+        flag: "",
         pageNum: 1,
         pageSize: 1000 // 平常百姓人家应该不会有这么多数据吧,后台限制最大单次获取1000条
       },
@@ -523,197 +535,244 @@ export default {
       updateLoading: false, // 新增
       // dialog对话框
       submitLoading: false,
-      dialogFormTitle: '',
-      dialogType: '',
+      dialogFormTitle: "",
+      dialogType: "",
       dialogFormVisible: false,
       dialogFormData: {
-        username: '', // 用户名(通常为用户名拼音) name_pinyin
-        nickname: '', // 中文名字 name
-        givenName: '', // 花名 name
-        mail: '', // 邮箱 email
-        jobNumber: '', // 工号 job_number
-        mobile: '', // 手机号 mobile
-        avatar: '', // 头像 avatar
-        postalAddress: '', // 地址 work_place
-        position: '', // 职位 title
-        introduction: '', // 说明 remark
-        sourceUserId: '', // 源用户ID  userid
-        sourceUnionId: '', // 源用户唯一ID   unionid
-        groupName: '', // 分组名称（通常为分组名的拼音）
-        remark: '', // 分组描述
-        sourceDeptId: '', // 部门ID
-        sourceDeptParentId: '' // 父部门ID
+        username: "", // 用户名(通常为用户名拼音) name_pinyin
+        nickname: "", // 中文名字 name
+        givenName: "", // 花名 name
+        mail: "", // 邮箱 email
+        jobNumber: "", // 工号 job_number
+        mobile: "", // 手机号 mobile
+        avatar: "", // 头像 avatar
+        postalAddress: "", // 地址 work_place
+        position: "", // 职位 title
+        introduction: "", // 说明 remark
+        sourceUserId: "", // 源用户ID  userid
+        sourceUnionId: "", // 源用户唯一ID   unionid
+        groupName: "", // 分组名称（通常为分组名的拼音）
+        remark: "", // 分组描述
+        sourceDeptId: "", // 部门ID
+        sourceDeptParentId: "" // 父部门ID
       },
       //   dialogFromGroup: {
 
       //   },
       dialogFormRules: {
         sourceDeptParentId: [
-          { required: true, message: '请输入父部门ID', trigger: 'blur' },
-          { min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur' }
-        ],
-        sourceDeptId: [
-          { required: true, message: '请输入部门ID', trigger: 'blur' },
-          { min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur' }
-        ],
-        username: [
-          { required: true, message: '请输入类型标志', trigger: 'blur' },
-          { min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur' }
-        ],
-        givenName: [
-          { required: true, message: '请输入所属类别', trigger: 'blur' },
-          { min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur' }
-        ],
-        avatar: [
-          { required: true, message: '请输入所属类别', trigger: 'blur' },
-          { min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur' }
-        ],
-        postalAddress: [
-          { required: true, message: '请输入所属类别', trigger: 'blur' },
-          { min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur' }
-        ],
-        position: [
-          { required: true, message: '请输入所属类别', trigger: 'blur' },
-          { min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur' }
-        ],
-        sourceUserId: [
-          { required: true, message: '请输入所属类别', trigger: 'blur' },
-          { min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: ['blur', 'change'] }
-        ],
-        sourceUnionId: [
-          { required: true, message: '请输入所属类别', trigger: 'blur' },
-          { min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: ['blur', 'change'] }
-        ],
-        groupName: [
-          { required: true, message: '请输入分组名称', trigger: 'blur' },
-          { min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur' }
-        ],
-        remark: [
-          { required: true, message: '请输入描述', trigger: 'blur' },
+          { required: true, message: "请输入父部门ID", trigger: "blur" },
           {
             min: 1,
             max: 50,
-            message: '长度在 1 到 50 个字符',
-            trigger: 'blur'
+            message: "长度在 1 到 50 个字符",
+            trigger: "blur"
+          }
+        ],
+        sourceDeptId: [
+          { required: true, message: "请输入部门ID", trigger: "blur" },
+          {
+            min: 1,
+            max: 50,
+            message: "长度在 1 到 50 个字符",
+            trigger: "blur"
+          }
+        ],
+        username: [
+          { required: true, message: "请输入类型标志", trigger: "blur" },
+          {
+            min: 1,
+            max: 50,
+            message: "长度在 1 到 50 个字符",
+            trigger: "blur"
+          }
+        ],
+        givenName: [
+          { required: true, message: "请输入所属类别", trigger: "blur" },
+          {
+            min: 1,
+            max: 50,
+            message: "长度在 1 到 50 个字符",
+            trigger: "blur"
+          }
+        ],
+        avatar: [
+          { required: true, message: "请输入所属类别", trigger: "blur" },
+          {
+            min: 1,
+            max: 50,
+            message: "长度在 1 到 50 个字符",
+            trigger: "blur"
+          }
+        ],
+        postalAddress: [
+          { required: true, message: "请输入所属类别", trigger: "blur" },
+          {
+            min: 1,
+            max: 50,
+            message: "长度在 1 到 50 个字符",
+            trigger: "blur"
+          }
+        ],
+        position: [
+          { required: true, message: "请输入所属类别", trigger: "blur" },
+          {
+            min: 1,
+            max: 50,
+            message: "长度在 1 到 50 个字符",
+            trigger: "blur"
+          }
+        ],
+        sourceUserId: [
+          { required: true, message: "请输入所属类别", trigger: "blur" },
+          {
+            min: 1,
+            max: 50,
+            message: "长度在 1 到 50 个字符",
+            trigger: ["blur", "change"]
+          }
+        ],
+        sourceUnionId: [
+          { required: true, message: "请输入所属类别", trigger: "blur" },
+          {
+            min: 1,
+            max: 50,
+            message: "长度在 1 到 50 个字符",
+            trigger: ["blur", "change"]
+          }
+        ],
+        groupName: [
+          { required: true, message: "请输入分组名称", trigger: "blur" },
+          {
+            min: 1,
+            max: 50,
+            message: "长度在 1 到 50 个字符",
+            trigger: "blur"
+          }
+        ],
+        remark: [
+          { required: true, message: "请输入描述", trigger: "blur" },
+          {
+            min: 1,
+            max: 50,
+            message: "长度在 1 到 50 个字符",
+            trigger: "blur"
           }
         ],
         // mail: [
         //   { required: true, message: '请输入邮箱', trigger: 'blur' },
         //   { type: 'email', message: '请输入正确的邮箱地址', trigger: ['blur', 'change'] }
         // ],
-         mail: [
-          { required: true, message: '请输入邮箱', trigger: 'blur' },
-          { min:1,max:50, message: '请输入邮箱地址', trigger: 'blur' }
+        mail: [
+          { required: true, message: "请输入邮箱", trigger: "blur" },
+          { min: 1, max: 50, message: "请输入邮箱地址", trigger: "blur" }
         ],
         jobNumber: [
-          { required: true, message: '请输入工号', trigger: 'blur' },
+          { required: false, message: "请输入工号", trigger: "blur" },
           {
             min: 0,
             max: 20,
-            message: '长度在 0 到 20 个字符',
-            trigger: 'blur'
+            message: "长度在 0 到 20 个字符",
+            trigger: "blur"
           }
         ],
         nickname: [
-          { required: true, message: '请输入昵称', trigger: 'blur' },
+          { required: true, message: "请输入昵称", trigger: "blur" },
           {
             min: 2,
             max: 20,
-            message: '长度在 2 到 20 个字符',
-            trigger: 'blur'
+            message: "长度在 2 到 20 个字符",
+            trigger: "blur"
           }
         ],
-        mobile: [{ required: true, message: '请输入手机号', trigger: 'blur'}],
+        mobile: [{ required: false, message: "请输入手机号", trigger: "blur" }],
         introduction: [
-          { required: true, message: '说明', trigger: 'blur' },
+          { required: false, message: "说明", trigger: "blur" },
           {
             min: 0,
             max: 100,
-            message: '长度在 0 到 100 个字符',
-            trigger: 'blur'
+            message: "长度在 0 到 100 个字符",
+            trigger: "blur"
           }
         ]
       },
       // 表格多选
       multipleSelection: []
       // typeFlag:
-    }
+    };
   },
   created() {
-    this.getTableData()
+    this.getTableData();
   },
   methods: {
     checkbox(city) {
-      this.checked = this.checked.includes(city) ? [city] : []
-      this.value = this.city
+      this.checked = this.checked.includes(city) ? [city] : [];
+      this.value = this.city;
     },
     changeUser(e) {
-
-      this.userVal = e
+      this.userVal = e;
     },
     changeGroup(e) {
-
-      this.groupVal = e
+      this.groupVal = e;
     },
     // 查询
     search() {
-        // 初始化表格数据
-        this.infoTableData = JSON.parse(JSON.stringify(this.tableData))
-        this.infoTableData = this.deal(this.infoTableData, (node) =>
+      // 初始化表格数据
+      this.infoTableData = JSON.parse(JSON.stringify(this.tableData));
+      this.infoTableData = this.deal(this.infoTableData, (node) =>
         node.Flag.includes(this.params.flag)
-      )
+      );
     },
     resetData() {
-      this.infoTableData = JSON.parse(JSON.stringify(this.tableData))
+      this.infoTableData = JSON.parse(JSON.stringify(this.tableData));
     },
     // 页面数据过滤
     deal(nodes, predicate) {
       // 如果已经没有节点了，结束递归
       if (!(nodes && nodes.length)) {
-        return []
+        return [];
       }
-      const newChildren = []
+      const newChildren = [];
       for (const node of nodes) {
         if (predicate(node)) {
           // 如果节点符合条件，直接加入新的节点集
-          newChildren.push(node)
-          node.children = this.deal(node.children, predicate)
+          newChildren.push(node);
+          node.children = this.deal(node.children, predicate);
         } else {
           // 如果当前节点不符合条件，递归过滤子节点，
           // 把符合条件的子节点提升上来，并入新节点集
-          newChildren.push(...this.deal(node.children, predicate))
+          newChildren.push(...this.deal(node.children, predicate));
         }
       }
-      return newChildren
+      return newChildren;
     },
     // 获取表格数据
     async getTableData() {
-      this.loading = true
+      this.loading = true;
       try {
-        const { data } = await relationList(this.params)
-        this.tableData = data
+        const { data } = await relationList(this.params);
+        this.tableData = data;
 
-        this.infoTableData = JSON.parse(JSON.stringify(data))
+        this.infoTableData = JSON.parse(JSON.stringify(data));
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
     // 新增
     create() {
-      this.checked = ['用户字段动态关联'];
-      this.userVal = '',
-      this.groupVal = '',
-      this.dialogFormData = {},
-      this.dialogFromGroup = {},
-      this.dialogFormTitle = '新增'
-      this.updateLoading = true // 新增的展示
-      this.dialogType = 'create'
+      this.checked = ["用户字段动态关联"];
+      this.userVal = "";
+      this.groupVal = "";
+      this.dialogFormData = {};
+      this.dialogFromGroup = {};
+      this.dialogFormTitle = "新增";
+      this.updateLoading = true; // 新增的展示
+      this.dialogType = "create";
     },
     // 修改
     update(row) {
-
-      const typeDialog = row.Flag.split('_')[1]
+      const typeDialog = row.Flag.split("_")[1];
 
       const {
         avatar,
@@ -732,177 +791,176 @@ export default {
         remark,
         sourceDeptId,
         sourceDeptParentId
-      } = row.Attributes
+      } = row.Attributes;
 
-      if (typeDialog === 'user') {
-        this.updateId = row.ID
-        this.checked = ['用户字段动态关联'];
+      if (typeDialog === "user") {
+        this.updateId = row.ID;
+        this.checked = ["用户字段动态关联"];
 
-
-        this.userVal = row.Flag,
-        this.dialogFormData.username = username, // 用户名(通常为用户名拼音) name_pinyin
-        this.dialogFormData.nickname = nickname, // 中文名字 name
-        this.dialogFormData.givenName = givenName, // 花名 name
-        this.dialogFormData.mail = mail, // 邮箱 email
-        this.dialogFormData.jobNumber = jobNumber, // 工号 job_number
-        this.dialogFormData.mobile = mobile, // 手机号 mobile
-        this.dialogFormData.avatar = avatar, // 头像 avatar
-        this.dialogFormData.postalAddress = postalAddress, // 地址 work_place
-        this.dialogFormData.position = position, // 职位 title
-        this.dialogFormData.introduction = introduction, // 说明 remark
-        this.dialogFormData.sourceUserId = sourceUserId, // 源用户ID  userid
-        this.dialogFormData.sourceUnionId = sourceUnionId // 源用户唯一ID   unionid
+        this.userVal = row.Flag;
+        this.dialogFormData.username = username; // 用户名(通常为用户名拼音) name_pinyin
+        this.dialogFormData.nickname = nickname; // 中文名字 name
+        this.dialogFormData.givenName = givenName; // 花名 name
+        this.dialogFormData.mail = mail; // 邮箱 email
+        this.dialogFormData.jobNumber = jobNumber; // 工号 job_number
+        this.dialogFormData.mobile = mobile; // 手机号 mobile
+        this.dialogFormData.avatar = avatar; // 头像 avatar
+        this.dialogFormData.postalAddress = postalAddress; // 地址 work_place
+        this.dialogFormData.position = position; // 职位 title
+        this.dialogFormData.introduction = introduction; // 说明 remark
+        this.dialogFormData.sourceUserId = sourceUserId; // 源用户ID  userid
+        this.dialogFormData.sourceUnionId = sourceUnionId; // 源用户唯一ID   unionid
       } else {
-        this.updateId = row.ID
-        this.checked = ['分组字段动态关联'];
-        this.groupVal = row.Flag
-        this.dialogFormData.groupName = groupName, // 分组名称（通常为分组名的拼音）
-        this.dialogFormData.remark = remark, // 分组描述
-        this.dialogFormData.sourceDeptId = sourceDeptId, // 部门ID
-        this.dialogFormData.sourceDeptParentId = sourceDeptParentId // 父部门ID
+        this.updateId = row.ID;
+        this.checked = ["分组字段动态关联"];
+        this.groupVal = row.Flag;
+        this.dialogFormData.groupName = groupName; // 分组名称（通常为分组名的拼音）
+        this.dialogFormData.remark = remark; // 分组描述
+        this.dialogFormData.sourceDeptId = sourceDeptId; // 部门ID
+        this.dialogFormData.sourceDeptParentId = sourceDeptParentId; // 父部门ID
       }
 
-      this.dialogFormTitle = '修改'
-      this.dialogType = 'update'
-      this.dialogFormVisible = true
+      this.dialogFormTitle = "修改";
+      this.dialogType = "update";
+      this.dialogFormVisible = true;
     },
 
     // 提交表单
     submitForm(e) {
-      let flag, attributes
-      if (this.checked[0] === '用户字段动态关联') {
-        if (this.userVal === '') {
+      let flag, attributes;
+      if (this.checked[0] === "用户字段动态关联") {
+        if (this.userVal === "") {
           Message({
-            message: '请选择类型标志',
-            type: 'warning'
-          })
-          return false
+            message: "请选择类型标志",
+            type: "warning"
+          });
+          return false;
         }
-        flag = this.userVal
-        attributes = this.dialogFormData
+        flag = this.userVal;
+        attributes = this.dialogFormData;
       } else {
-        if (this.groupVal === '') {
+        if (this.groupVal === "") {
           Message({
-            message: '请选择类型标志',
-            type: 'warning'
-          })
-          return false
+            message: "请选择类型标志",
+            type: "warning"
+          });
+          return false;
         }
-        flag = this.groupVal
-        attributes = this.dialogFormData
+        flag = this.groupVal;
+        attributes = this.dialogFormData;
       }
-      this.$refs['dialogForm'].validate(async(valid) => {
+      this.$refs["dialogForm"].validate(async(valid) => {
         if (valid) {
-          this.submitLoading = true
+          this.submitLoading = true;
           try {
-            if (this.dialogType === 'create') {
+            if (this.dialogType === "create") {
               await relationAdd({
                 flag: flag,
                 attributes: attributes
-              })
+              });
             } else {
               await relationUp({
                 id: this.updateId,
                 flag: flag,
                 attributes: attributes
-              })
+              });
             }
           } finally {
-            this.submitLoading = false
+            this.submitLoading = false;
           }
-          this.resetForm()
-          this.getTableData()
+          this.resetForm();
+          this.getTableData();
           Message({
             showClose: true,
             message: "操作成功",
-            type: 'success'
-          })
+            type: "success"
+          });
         } else {
           Message({
             showClose: true,
-            message: '表单校验失败',
-            type: 'warn'
-          })
-          return false
+            message: "表单校验失败",
+            type: "warn"
+          });
+          return false;
         }
-      })
+      });
     },
 
     // 提交表单
     cancelForm() {
-      this.resetForm()
+      this.resetForm();
     },
 
     resetForm() {
-      this.dialogFormVisible = false
-      this.updateLoading = false
-      this.$refs['dialogForm'].resetFields()
+      this.dialogFormVisible = false;
+      this.updateLoading = false;
+      this.$refs["dialogForm"].resetFields();
       this.dialogFormData = {
-        groupName: '',
-        remark: ''
-      }
+        groupName: "",
+        remark: ""
+      };
     },
 
     // 批量删除
     batchDelete() {
-      this.$confirm('此操作将永久删除, 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
+      this.$confirm("此操作将永久删除, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
       })
         .then(async(res) => {
-          this.loading = true
-          const groupIds = []
+          this.loading = true;
+          const groupIds = [];
           this.multipleSelection.forEach((x) => {
-            groupIds.push(x.ID)
-          })
+            groupIds.push(x.ID);
+          });
           try {
-            await relationDel({ fieldRelationIds: groupIds })
+            await relationDel({ fieldRelationIds: groupIds });
           } finally {
-            this.loading = false
+            this.loading = false;
           }
-          this.getTableData()
+          this.getTableData();
           Message({
             showClose: true,
             message: "删除成功",
-            type: 'success'
-          })
+            type: "success"
+          });
         })
         .catch(() => {
           Message({
             showClose: true,
-            type: 'info',
-            message: '已取消删除'
-          })
-        })
+            type: "info",
+            message: "已取消删除"
+          });
+        });
     },
     // 单个删除
     async singleDelete(Id) {
-      this.loading = true
+      this.loading = true;
       try {
-        await relationDel({ fieldRelationIds: [Id] })
+        await relationDel({ fieldRelationIds: [Id] });
       } finally {
-        this.loading = false
+        this.loading = false;
       }
-      this.getTableData()
+      this.getTableData();
     },
 
     // 表格多选
     handleSelectionChange(val) {
-      this.multipleSelection = val
+      this.multipleSelection = val;
     },
 
     // 分页
     handleSizeChange(val) {
-      this.params.pageSize = val
-      this.getTableData()
+      this.params.pageSize = val;
+      this.getTableData();
     },
     handleCurrentChange(val) {
-      this.params.pageNum = val
-      this.getTableData()
+      this.params.pageNum = val;
+      this.getTableData();
     }
   }
-}
+};
 </script>
 
 <style scoped>

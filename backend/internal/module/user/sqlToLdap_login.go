@@ -23,17 +23,19 @@ func (d *SqlLogic) SyncSqlUsers(c *gin.Context, req interface{}) (data interface
 	// 1.获取所有用户
 	for _, id := range r.UserIds {
 		filter := tools.H{"id": int(id)}
-		if !userModel.UserSrvIns.Exist(filter) {
+		var u userModel.User
+		if !u.Exist(filter) {
 			return nil, tools.NewMySqlError(fmt.Errorf("有用户不存在"))
 		}
 	}
-	users, err := userModel.UserSrvIns.GetUserByIds(r.UserIds)
+	var users = userModel.NewUsers()
+	err := users.GetUserByIds(r.UserIds)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取用户信息失败: " + err.Error()))
 	}
 	// 2.再将用户添加到ldap
 	for _, user := range users {
-		err = ldapmgr.LdapUserAdd(&user)
+		err = ldapmgr.LdapUserAdd(user)
 		if err != nil {
 			return nil, tools.NewLdapError(fmt.Errorf("SyncUser向LDAP同步用户失败：" + err.Error()))
 		}
@@ -50,7 +52,7 @@ func (d *SqlLogic) SyncSqlUsers(c *gin.Context, req interface{}) (data interface
 				return nil, tools.NewMySqlError(fmt.Errorf("向Ldap添加用户到分组关系失败：" + err.Error()))
 			}
 		}
-		err = userModel.UserSrvIns.ChangeSyncState(int(user.ID), 1)
+		err = user.ChangeSyncState(1)
 		if err != nil {
 			return nil, tools.NewLdapError(fmt.Errorf("用户同步完毕之后更新状态失败：" + err.Error()))
 		}
@@ -69,7 +71,7 @@ func (d *SqlLogic) SyncSqlGroups(c *gin.Context, req interface{}) (data interfac
 	// 1.获取所有分组
 	for _, id := range r.GroupIds {
 		filter := tools.H{"id": int(id)}
-		var g = new(userModel.Group)
+		var g userModel.Group
 		if !g.Exist(filter) {
 			return nil, tools.NewMySqlError(fmt.Errorf("有分组不存在"))
 		}
@@ -133,8 +135,8 @@ func SearchGroupDiff() (err error) {
 // SearchUserDiff 检索未同步到ldap中的用户
 func SearchUserDiff() (err error) {
 	// 获取sql中的数据
-	var sqlUserList []*userModel.User
-	sqlUserList, err = userModel.UserSrvIns.ListAll()
+	var sqlUserList = userModel.NewUsers()
+	err = sqlUserList.ListAll()
 	if err != nil {
 		return err
 	}
@@ -150,7 +152,7 @@ func SearchUserDiff() (err error) {
 		if user.UserDN == config.Conf.Ldap.AdminDN {
 			continue
 		}
-		err = userModel.UserSrvIns.ChangeSyncState(int(user.ID), 2)
+		err = user.ChangeSyncState(2)
 	}
 	return
 }

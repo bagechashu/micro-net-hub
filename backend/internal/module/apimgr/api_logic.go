@@ -4,8 +4,7 @@ import (
 	"fmt"
 
 	apiMgrModel "micro-net-hub/internal/module/apimgr/model"
-	userModel "micro-net-hub/internal/module/user/model"
-
+	userLogic "micro-net-hub/internal/module/user"
 	"micro-net-hub/internal/tools"
 
 	"github.com/gin-gonic/gin"
@@ -21,7 +20,7 @@ func Add(c *gin.Context, req interface{}) (data interface{}, rspError interface{
 	_ = c
 
 	// 获取当前用户
-	ctxUser, err := userModel.UserSrvIns.GetCurrentLoginUser(c)
+	ctxUser, err := userLogic.GetCurrentLoginUser(c)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取当前登陆用户信息失败"))
 	}
@@ -127,7 +126,7 @@ func Update(c *gin.Context, req interface{}) (data interface{}, rspError interfa
 	}
 
 	// 获取当前登陆用户
-	ctxUser, err := userModel.UserSrvIns.GetCurrentLoginUser(c)
+	ctxUser, err := userLogic.GetCurrentLoginUser(c)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取当前登陆用户失败"))
 	}

@@ -23,7 +23,7 @@ func (l RoleLogic) Add(c *gin.Context, req interface{}) (data interface{}, rspEr
 	_ = c
 
 	// 获取当前用户最高角色等级
-	minSort, ctxUser, err := userModel.UserSrvIns.GetCurrentUserMinRoleSort(c)
+	minSort, ctxUser, err := GetCurrentUserMinRoleSort(c)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取当前用户最高角色等级失败: %s", err.Error()))
 	}
@@ -95,7 +95,7 @@ func (l RoleLogic) Update(c *gin.Context, req interface{}) (data interface{}, rs
 	_ = c
 
 	// 当前用户角色排序最小值（最高等级角色）以及当前用户
-	minSort, ctxUser, err := userModel.UserSrvIns.GetCurrentUserMinRoleSort(c)
+	minSort, ctxUser, err := GetCurrentUserMinRoleSort(c)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取当前用户最高角色等级失败: %s", err.Error()))
 	}
@@ -188,7 +188,7 @@ func (l RoleLogic) Update(c *gin.Context, req interface{}) (data interface{}, rs
 	// 1.可以帮助用户更新拥有该角色的用户信息缓存,使用下面方法
 	// err = ur.UpdateUserInfoCacheByRoleId(uint(roleId))
 	// 2.直接清理缓存，让活跃的用户自己重新缓存最新用户信息
-	userModel.UserSrvIns.ClearUserInfoCache()
+	userModel.ClearUserInfoCache()
 
 	return nil, nil
 }
@@ -202,7 +202,7 @@ func (l RoleLogic) Delete(c *gin.Context, req interface{}) (data interface{}, rs
 	_ = c
 
 	// 获取当前登陆用户最高等级角色
-	minSort, _, err := userModel.UserSrvIns.GetCurrentUserMinRoleSort(c)
+	minSort, _, err := GetCurrentUserMinRoleSort(c)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取当前用户最高角色等级失败: %s", err.Error()))
 	}
@@ -231,7 +231,7 @@ func (l RoleLogic) Delete(c *gin.Context, req interface{}) (data interface{}, rs
 	}
 
 	// 删除角色成功直接清理缓存，让活跃的用户自己重新缓存最新用户信息
-	userModel.UserSrvIns.ClearUserInfoCache()
+	userModel.ClearUserInfoCache()
 	return nil, nil
 }
 
@@ -304,7 +304,7 @@ func (l RoleLogic) UpdateMenus(c *gin.Context, req interface{}) (data interface{
 	}
 
 	// 当前用户角色排序最小值（最高等级角色）以及当前用户
-	minSort, ctxUser, err := userModel.UserSrvIns.GetCurrentUserMinRoleSort(c)
+	minSort, ctxUser, err := GetCurrentUserMinRoleSort(c)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取当前用户最高角色等级失败: %s", err.Error()))
 	}
@@ -392,7 +392,7 @@ func (l RoleLogic) UpdateApis(c *gin.Context, req interface{}) (data interface{}
 	}
 
 	// 当前用户角色排序最小值（最高等级角色）以及当前用户
-	minSort, ctxUser, err := userModel.UserSrvIns.GetCurrentUserMinRoleSort(c)
+	minSort, ctxUser, err := GetCurrentUserMinRoleSort(c)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取当前用户最高角色等级失败: %s", err.Error()))
 	}

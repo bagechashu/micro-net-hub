@@ -33,19 +33,29 @@ type LdapUser struct {
 func LdapUserAdd(user *userModel.User) error {
 	add := ldap.NewAddRequest(user.UserDN, nil)
 	add.Attribute("objectClass", []string{"inetOrgPerson"})
+	add.Attribute("uid", []string{user.Username})
 	add.Attribute("cn", []string{user.Username})
 	add.Attribute("sn", []string{user.Nickname})
-	add.Attribute("businessCategory", []string{user.Departments})
-	add.Attribute("departmentNumber", []string{user.Position})
+	add.Attribute("givenName", []string{user.GivenName})
 	add.Attribute("description", []string{user.Introduction})
 	add.Attribute("displayName", []string{user.Nickname})
 	add.Attribute("mail", []string{user.Mail})
-	add.Attribute("employeeNumber", []string{user.JobNumber})
-	add.Attribute("givenName", []string{user.GivenName})
-	add.Attribute("postalAddress", []string{user.PostalAddress})
-	add.Attribute("mobile", []string{user.Mobile})
-	add.Attribute("uid", []string{user.Username})
 	add.Attribute("userPassword", []string{tools.EncodePass([]byte(tools.NewParPasswd(user.Password)))})
+	if user.JobNumber != "" {
+		add.Attribute("employeeNumber", []string{user.JobNumber})
+	}
+	if user.Departments != "" {
+		add.Attribute("businessCategory", []string{user.Departments})
+	}
+	if user.Position != "" {
+		add.Attribute("departmentNumber", []string{user.Position})
+	}
+	if user.PostalAddress != "" {
+		add.Attribute("postalAddress", []string{user.PostalAddress})
+	}
+	if user.Mobile != "" {
+		add.Attribute("mobile", []string{user.Mobile})
+	}
 
 	// 获取 LDAP 连接
 	conn, err := global.LdapPool.GetConn()
@@ -57,9 +67,10 @@ func LdapUserAdd(user *userModel.User) error {
 	return conn.Add(add)
 }
 
+// 未使用
 func LdapUsersAdd(user *userModel.User) error {
 	// 根据 user_dn 查询用户,不存在则创建
-	if !userModel.UserSrvIns.Exist(tools.H{"user_dn": user.UserDN}) {
+	if !user.Exist(tools.H{"user_dn": user.UserDN}) {
 		if user.Departments == "" {
 			user.Departments = "默认:研发中心"
 		}
@@ -79,7 +90,7 @@ func LdapUsersAdd(user *userModel.User) error {
 			user.JobNumber = "未启用"
 		}
 		// 先将用户添加到MySQL
-		err := userModel.UserSrvIns.Add(user)
+		err := user.Add()
 		if err != nil {
 			return tools.NewMySqlError(fmt.Errorf("向MySQL创建用户失败：" + err.Error()))
 		}
@@ -96,7 +107,7 @@ func LdapUsersAdd(user *userModel.User) error {
 				continue
 			}
 			// 先将用户和部门信息维护到MySQL
-			err := group.AddUserToGroup([]userModel.User{*user})
+			err := group.AddUserToGroup(user)
 			if err != nil {
 				return tools.NewMySqlError(fmt.Errorf("向MySQL添加用户到分组关系失败：" + err.Error()))
 			}

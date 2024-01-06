@@ -1,6 +1,7 @@
 package user
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -10,6 +11,7 @@ import (
 	"micro-net-hub/internal/tools"
 
 	"github.com/gin-gonic/gin"
+	"github.com/patrickmn/go-cache"
 	"github.com/thoas/go-funk"
 )
 
@@ -23,16 +25,17 @@ func (l UserLogic) Add(c *gin.Context, req interface{}) (data interface{}, rspEr
 	}
 	_ = c
 
-	if userModel.UserSrvIns.Exist(tools.H{"username": r.Username}) {
+	var u userModel.User
+	if u.Exist(tools.H{"username": r.Username}) {
 		return nil, tools.NewValidatorError(fmt.Errorf("用户名已存在,请勿重复添加"))
 	}
-	if userModel.UserSrvIns.Exist(tools.H{"mobile": r.Mobile}) {
-		return nil, tools.NewValidatorError(fmt.Errorf("手机号已存在,请勿重复添加"))
-	}
-	if userModel.UserSrvIns.Exist(tools.H{"job_number": r.JobNumber}) {
-		return nil, tools.NewValidatorError(fmt.Errorf("工号已存在,请勿重复添加"))
-	}
-	if userModel.UserSrvIns.Exist(tools.H{"mail": r.Mail}) {
+	// if u.Exist(tools.H{"mobile": r.Mobile}) {
+	// 	return nil, tools.NewValidatorError(fmt.Errorf("手机号已存在,请勿重复添加"))
+	// }
+	// if u.Exist(tools.H{"job_number": r.JobNumber}) {
+	// 	return nil, tools.NewValidatorError(fmt.Errorf("工号已存在,请勿重复添加"))
+	// }
+	if u.Exist(tools.H{"mail": r.Mail}) {
 		return nil, tools.NewValidatorError(fmt.Errorf("邮箱已存在,请勿重复添加"))
 	}
 
@@ -52,7 +55,7 @@ func (l UserLogic) Add(c *gin.Context, req interface{}) (data interface{}, rspEr
 	}
 
 	// 当前登陆用户角色排序最小值（最高等级角色）以及当前登陆的用户
-	currentRoleSortMin, ctxUser, err := userModel.UserSrvIns.GetCurrentUserMinRoleSort(c)
+	currentRoleSortMin, ctxUser, err := GetCurrentUserMinRoleSort(c)
 	if err != nil {
 		return nil, tools.NewValidatorError(fmt.Errorf("获取当前登陆用户角色排序最小值失败"))
 	}
@@ -130,7 +133,8 @@ func (l UserLogic) List(c *gin.Context, req interface{}) (data interface{}, rspE
 	}
 	_ = c
 
-	users, err := userModel.UserSrvIns.List(r)
+	var users = userModel.NewUsers()
+	err := users.List(r)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取用户列表失败：" + err.Error()))
 	}
@@ -139,7 +143,7 @@ func (l UserLogic) List(c *gin.Context, req interface{}) (data interface{}, rspE
 	for _, user := range users {
 		rets = append(rets, *user)
 	}
-	count, err := userModel.UserSrvIns.ListCount(r)
+	count, err := userModel.UserListCount(r)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取用户总数失败：" + err.Error()))
 	}
@@ -158,12 +162,13 @@ func (l UserLogic) Update(c *gin.Context, req interface{}) (data interface{}, rs
 	}
 	_ = c
 
-	if !userModel.UserSrvIns.Exist(tools.H{"id": r.ID}) {
+	var u userModel.User
+	if !u.Exist(tools.H{"id": r.ID}) {
 		return nil, tools.NewMySqlError(fmt.Errorf("该记录不存在"))
 	}
 
 	// 获取当前登陆用户
-	ctxUser, err := userModel.UserSrvIns.GetCurrentLoginUser(c)
+	ctxUser, err := GetCurrentLoginUser(c)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取当前登陆用户失败"))
 	}
@@ -206,7 +211,7 @@ func (l UserLogic) Update(c *gin.Context, req interface{}) (data interface{}, rs
 		}
 
 		// 如果是更新别人，操作者不能更新比自己角色等级高的或者相同等级的用户
-		minRoleSorts, err := userModel.UserSrvIns.GetUserMinRoleSortsByIds([]uint{uint(r.ID)}) // 根据userIdID获取用户角色排序最小值
+		minRoleSorts, err := userModel.GetUserMinRoleSortsByIds([]uint{uint(r.ID)}) // 根据userIdID获取用户角色排序最小值
 		if err != nil || len(minRoleSorts) == 0 {
 			return nil, tools.NewValidatorError(fmt.Errorf("根据用户ID获取用户角色排序最小值失败"))
 		}
@@ -217,7 +222,7 @@ func (l UserLogic) Update(c *gin.Context, req interface{}) (data interface{}, rs
 
 	// 先获取用户信息
 	oldData := new(userModel.User)
-	err = userModel.UserSrvIns.Find(tools.H{"id": r.ID}, oldData)
+	err = oldData.Find(tools.H{"id": r.ID})
 	if err != nil {
 		return nil, tools.NewMySqlError(err)
 	}
@@ -276,19 +281,20 @@ func (l UserLogic) Delete(c *gin.Context, req interface{}) (data interface{}, rs
 
 	for _, id := range r.UserIds {
 		filter := tools.H{"id": int(id)}
-		if !userModel.UserSrvIns.Exist(filter) {
+		var u userModel.User
+		if !u.Exist(filter) {
 			return nil, tools.NewMySqlError(fmt.Errorf("有用户不存在"))
 		}
 	}
 
 	// 根据用户ID获取用户角色排序最小值
-	roleMinSortList, err := userModel.UserSrvIns.GetUserMinRoleSortsByIds(r.UserIds)
+	roleMinSortList, err := userModel.GetUserMinRoleSortsByIds(r.UserIds)
 	if err != nil || len(roleMinSortList) == 0 {
 		return nil, tools.NewValidatorError(fmt.Errorf("根据用户ID获取用户角色排序最小值失败"))
 	}
 
 	// 获取当前登陆用户角色排序最小值（最高等级角色）以及当前用户
-	minSort, ctxUser, err := userModel.UserSrvIns.GetCurrentUserMinRoleSort(c)
+	minSort, ctxUser, err := GetCurrentUserMinRoleSort(c)
 	if err != nil {
 		return nil, tools.NewValidatorError(fmt.Errorf("获取当前登陆用户角色排序最小值失败"))
 	}
@@ -305,7 +311,8 @@ func (l UserLogic) Delete(c *gin.Context, req interface{}) (data interface{}, rs
 		}
 	}
 
-	users, err := userModel.UserSrvIns.GetUserByIds(r.UserIds)
+	var users = userModel.NewUsers()
+	err = users.GetUserByIds(r.UserIds)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取用户信息失败: " + err.Error()))
 	}
@@ -319,7 +326,7 @@ func (l UserLogic) Delete(c *gin.Context, req interface{}) (data interface{}, rs
 	}
 
 	// 再将用户从MySQL中删除
-	err = userModel.UserSrvIns.Delete(r.UserIds)
+	err = userModel.DeleteUsersById(r.UserIds)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("在MySQL删除用户失败: " + err.Error()))
 	}
@@ -347,7 +354,7 @@ func (l UserLogic) ChangePwd(c *gin.Context, req interface{}) (data interface{},
 	r.OldPassword = string(decodeOldPassword)
 	r.NewPassword = string(decodeNewPassword)
 	// 获取当前用户
-	user, err := userModel.UserSrvIns.GetCurrentLoginUser(c)
+	user, err := GetCurrentLoginUser(c)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取当前登陆用户失败"))
 	}
@@ -368,7 +375,7 @@ func (l UserLogic) ChangePwd(c *gin.Context, req interface{}) (data interface{},
 	}
 
 	// 更新密码
-	err = userModel.UserSrvIns.ChangePwd(user.Username, tools.NewGenPasswd(r.NewPassword))
+	err = user.ChangePwd(tools.NewGenPasswd(r.NewPassword))
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("在MySQL更新密码失败: " + err.Error()))
 	}
@@ -385,11 +392,12 @@ func (l UserLogic) ChangeUserStatus(c *gin.Context, req interface{}) (data inter
 	_ = c
 	// 校验工作
 	filter := tools.H{"id": r.ID}
-	if !userModel.UserSrvIns.Exist(filter) {
+	var u userModel.User
+	if !u.Exist(filter) {
 		return nil, tools.NewValidatorError(fmt.Errorf("该用户不存在"))
 	}
 	user := new(userModel.User)
-	err := userModel.UserSrvIns.Find(filter, user)
+	err := user.Find(filter)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("在MySQL查询用户失败: " + err.Error()))
 	}
@@ -403,7 +411,7 @@ func (l UserLogic) ChangeUserStatus(c *gin.Context, req interface{}) (data inter
 
 	// 获取当前登录用户，只有管理员才能够将用户状态改变
 	// 获取当前登陆用户角色排序最小值（最高等级角色）以及当前用户
-	minSort, _, err := userModel.UserSrvIns.GetCurrentUserMinRoleSort(c)
+	minSort, _, err := GetCurrentUserMinRoleSort(c)
 	if err != nil {
 		return nil, tools.NewValidatorError(fmt.Errorf("获取当前登陆用户角色排序最小值失败"))
 	}
@@ -423,7 +431,7 @@ func (l UserLogic) ChangeUserStatus(c *gin.Context, req interface{}) (data inter
 			return nil, tools.NewLdapError(fmt.Errorf("在LDAP添加用户失败" + err.Error()))
 		}
 	}
-	err = userModel.UserSrvIns.ChangeStatus(int(r.ID), int(r.Status))
+	err = user.ChangeStatus(int(r.Status))
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("在MySQL更新用户状态失败: " + err.Error()))
 	}
@@ -440,9 +448,59 @@ func (l UserLogic) GetUserInfo(c *gin.Context, req interface{}) (data interface{
 	_ = c
 	_ = r
 
-	user, err := userModel.UserSrvIns.GetCurrentLoginUser(c)
+	user, err := GetCurrentLoginUser(c)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取当前用户信息失败: " + err.Error()))
 	}
 	return user, nil
+}
+
+// GetCurrentUserMinRoleSort  获取当前用户角色排序最小值（最高等级角色）以及当前用户信息
+func GetCurrentUserMinRoleSort(c *gin.Context) (uint, userModel.User, error) {
+	// 获取当前用户
+	ctxUser, err := GetCurrentLoginUser(c)
+	if err != nil {
+		return 999, ctxUser, err
+	}
+	// 获取当前用户的所有角色
+	currentRoles := ctxUser.Roles
+	// 获取当前用户角色的排序，和前端传来的角色排序做比较
+	var currentRoleSorts []int
+	for _, role := range currentRoles {
+		currentRoleSorts = append(currentRoleSorts, int(role.Sort))
+	}
+	// 当前用户角色排序最小值（最高等级角色）
+	currentRoleSortMin := uint(funk.MinInt(currentRoleSorts).(int))
+
+	return currentRoleSortMin, ctxUser, nil
+}
+
+// GetCurrentLoginUser 获取当前登录用户信息
+// 需要缓存，减少数据库访问
+func GetCurrentLoginUser(c *gin.Context) (userModel.User, error) {
+	var newUser userModel.User
+	ctxUser, exist := c.Get("user")
+	if !exist {
+		return newUser, errors.New("用户未登录")
+	}
+	u, _ := ctxUser.(userModel.User)
+
+	// 先获取缓存
+	cacheUser, found := userModel.UserInfoCache.Get(u.Username)
+	var user userModel.User
+	var err error
+	if found {
+		user = cacheUser.(userModel.User)
+		err = nil
+	} else {
+		// 缓存中没有就获取数据库
+		err = user.GetUserById(u.ID)
+		// 获取成功就缓存
+		if err != nil {
+			userModel.UserInfoCache.Delete(u.Username)
+		} else {
+			userModel.UserInfoCache.Set(u.Username, user, cache.DefaultExpiration)
+		}
+	}
+	return user, err
 }
