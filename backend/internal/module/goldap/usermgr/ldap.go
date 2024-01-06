@@ -58,7 +58,8 @@ func (mgr OpenLdap) SyncUsers(c *gin.Context, req interface{}) (data interface{}
 			return nil, tools.NewMySqlError(fmt.Errorf("将部门ids转换为内部部门id失败：%s", err.Error()))
 		}
 		// 根据角色id获取角色
-		roles, err := userModel.RoleSrvIns.GetRolesByIds([]uint{2})
+		roles := userModel.NewRoles()
+		err = roles.GetRolesByIds([]uint{2})
 		if err != nil {
 			return nil, tools.NewValidatorError(fmt.Errorf("根据角色ID获取角色信息失败:%s", err.Error()))
 		}

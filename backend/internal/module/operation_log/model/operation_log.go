@@ -93,7 +93,7 @@ func Exist(filter map[string]interface{}) bool {
 
 // Delete 删除资源
 func Delete(operationLogIds []uint) error {
-	return global.DB.Where("id IN (?)", operationLogIds).Unscoped().Delete(&OperationLog{}).Error
+	return global.DB.Debug().Where("id IN (?)", operationLogIds).Unscoped().Delete(&OperationLog{}).Error
 }
 
 // var Logs []OperationLog //全局变量多个线程需要加锁，所以每个线程自己维护一个

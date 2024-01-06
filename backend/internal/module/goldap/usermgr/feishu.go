@@ -374,7 +374,8 @@ func (mgr FeiShu) AddDepts(group *userModel.Group) error {
 // AddUser 添加用户数据
 func (mgr FeiShu) AddUsers(user *userModel.User) error {
 	// 根据角色id获取角色
-	roles, err := userModel.RoleSrvIns.GetRolesByIds([]uint{2})
+	roles := userModel.NewRoles()
+	err := roles.GetRolesByIds([]uint{2})
 	if err != nil {
 		return tools.NewValidatorError(fmt.Errorf("根据角色ID获取角色信息失败:%s", err.Error()))
 	}

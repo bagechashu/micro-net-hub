@@ -62,7 +62,8 @@ func (l UserLogic) Add(c *gin.Context, req interface{}) (data interface{}, rspEr
 		r.RoleIds = []uint{2} // 默认添加为普通用户角色
 	}
 
-	roles, err := userModel.RoleSrvIns.GetRolesByIds(r.RoleIds)
+	roles := userModel.NewRoles()
+	err = roles.GetRolesByIds(r.RoleIds)
 	if err != nil {
 		return nil, tools.NewValidatorError(fmt.Errorf("根据角色ID获取角色信息失败"))
 	}
@@ -175,7 +176,12 @@ func (l UserLogic) Update(c *gin.Context, req interface{}) (data interface{}, rs
 
 	// 获取将要操作的用户角色ID集合
 	var reqRoleSorts []int
-	roles, _ := userModel.RoleSrvIns.GetRolesByIds(r.RoleIds)
+
+	roles := userModel.NewRoles()
+	err = roles.GetRolesByIds(r.RoleIds)
+	if err != nil {
+		return nil, tools.NewValidatorError(fmt.Errorf("根据角色ID获取角色信息失败"))
+	}
 	if len(roles) == 0 {
 		return nil, tools.NewValidatorError(fmt.Errorf("根据角色ID获取角色信息失败"))
 	}

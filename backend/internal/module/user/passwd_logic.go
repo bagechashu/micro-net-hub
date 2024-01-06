@@ -102,7 +102,7 @@ func (l PasswdLogic) Dashboard(c *gin.Context, req interface{}) (data interface{
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取分组总数失败"))
 	}
-	roleCount, err := userModel.RoleSrvIns.Count()
+	roleCount, err := userModel.RoleCount()
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取角色总数失败"))
 	}

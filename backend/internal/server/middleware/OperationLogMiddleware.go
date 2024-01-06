@@ -30,6 +30,18 @@ func OperationLogMiddleware() gin.HandlerFunc {
 
 		// 执行耗时
 		timeCost := endTime.Sub(startTime).Milliseconds()
+		// 获取访问路径
+		path := strings.TrimPrefix(c.FullPath(), "/"+config.Conf.System.UrlPathPrefix)
+		// 请求方式
+		method := c.Request.Method
+
+		// TODO: 通过参数配置是否记录 GET 和 嵌入UI 日志
+		// 过滤写入数据库的日志
+		if method == "GET" {
+			return
+		} else if strings.HasPrefix(c.FullPath(), "/ui") {
+			return
+		}
 
 		// 获取当前登录用户
 		var username string
@@ -41,16 +53,9 @@ func OperationLogMiddleware() gin.HandlerFunc {
 			username = user.Username
 		}
 
-		// 获取访问路径
-		path := strings.TrimPrefix(c.FullPath(), "/"+config.Conf.System.UrlPathPrefix)
-		// 请求方式
-		method := c.Request.Method
-		// 获取接口描述
+		// 检查接口并获取其描述
 		api := new(apiMgrModel.Api)
-
-		if !strings.HasPrefix(c.FullPath(), "/ui") {
-			_ = apiMgrModel.Find(tools.H{"path": path, "method": method}, api)
-		}
+		_ = apiMgrModel.Find(tools.H{"path": path, "method": method}, api)
 
 		operationLog := operationLogModel.OperationLog{
 			Username:   username,

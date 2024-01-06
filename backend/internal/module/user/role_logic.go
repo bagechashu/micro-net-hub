@@ -22,10 +22,6 @@ func (l RoleLogic) Add(c *gin.Context, req interface{}) (data interface{}, rspEr
 	}
 	_ = c
 
-	if userModel.RoleSrvIns.Exist(tools.H{"name": r.Name}) {
-		return nil, tools.NewValidatorError(fmt.Errorf("该角色名已存在"))
-	}
-
 	// 获取当前用户最高角色等级
 	minSort, ctxUser, err := userModel.UserSrvIns.GetCurrentUserMinRoleSort(c)
 	if err != nil {
@@ -47,9 +43,12 @@ func (l RoleLogic) Add(c *gin.Context, req interface{}) (data interface{}, rspEr
 		Sort:    r.Sort,
 		Creator: ctxUser.Username,
 	}
+	if role.Exist(tools.H{"name": r.Name}) {
+		return nil, tools.NewValidatorError(fmt.Errorf("该角色名已存在"))
+	}
 
 	// 创建角色
-	err = userModel.RoleSrvIns.Add(&role)
+	err = role.Add()
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("创建角色失败: %s", err.Error()))
 	}
@@ -65,12 +64,13 @@ func (l RoleLogic) List(c *gin.Context, req interface{}) (data interface{}, rspE
 	_ = c
 
 	// 获取数据列表
-	roles, err := userModel.RoleSrvIns.List(r)
+	var roles = userModel.NewRoles()
+	err := roles.List(r)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取菜单列表失败: %s", err.Error()))
 	}
 
-	count, err := userModel.RoleSrvIns.Count()
+	count, err := userModel.RoleCount()
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取接口总数失败"))
 	}
@@ -94,11 +94,6 @@ func (l RoleLogic) Update(c *gin.Context, req interface{}) (data interface{}, rs
 	}
 	_ = c
 
-	filter := tools.H{"id": r.ID}
-	if !userModel.RoleSrvIns.Exist(filter) {
-		return nil, tools.NewValidatorError(fmt.Errorf("该角色名不已存在"))
-	}
-
 	// 当前用户角色排序最小值（最高等级角色）以及当前用户
 	minSort, ctxUser, err := userModel.UserSrvIns.GetCurrentUserMinRoleSort(c)
 	if err != nil {
@@ -111,7 +106,11 @@ func (l RoleLogic) Update(c *gin.Context, req interface{}) (data interface{}, rs
 
 	// 不能更新比自己角色等级高或相等的角色
 	// 根据path中的角色ID获取该角色信息
-	roles, _ := userModel.RoleSrvIns.GetRolesByIds([]uint{r.ID})
+	roles := userModel.NewRoles()
+	err = roles.GetRolesByIds([]uint{r.ID})
+	if err != nil {
+		return nil, tools.NewMySqlError(fmt.Errorf("获取角色信息失败: %s", err.Error()))
+	}
 	if len(roles) == 0 {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取角色信息失败: %s", err.Error()))
 	}
@@ -124,10 +123,11 @@ func (l RoleLogic) Update(c *gin.Context, req interface{}) (data interface{}, rs
 	if minSort >= r.Sort {
 		return nil, tools.NewValidatorError(fmt.Errorf("不能把角色等级更新得比当前用户的等级高或相同"))
 	}
+	filter := tools.H{"id": r.ID}
 	oldData := new(userModel.Role)
-	err = userModel.RoleSrvIns.Find(filter, oldData)
-	if err != nil {
-		return nil, tools.NewMySqlError(err)
+	if !oldData.Exist(filter) {
+		return nil, tools.NewValidatorError(fmt.Errorf("该角色名不存在"))
+		// return nil, tools.NewMySqlError(err)
 	}
 	role := userModel.Role{
 		Model:   oldData.Model,
@@ -140,7 +140,7 @@ func (l RoleLogic) Update(c *gin.Context, req interface{}) (data interface{}, rs
 	}
 
 	// 更新角色
-	err = userModel.RoleSrvIns.Update(&role)
+	err = role.Update()
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("更新角色失败: %s", err.Error()))
 	}
@@ -208,7 +208,11 @@ func (l RoleLogic) Delete(c *gin.Context, req interface{}) (data interface{}, rs
 	}
 
 	// 获取角色信息
-	roles, _ := userModel.RoleSrvIns.GetRolesByIds(r.RoleIds)
+	roles := userModel.NewRoles()
+	err = roles.GetRolesByIds(r.RoleIds)
+	if err != nil {
+		return nil, tools.NewMySqlError(fmt.Errorf("获取角色信息失败: %s", err.Error()))
+	}
 	if len(roles) == 0 {
 		return nil, tools.NewMySqlError(fmt.Errorf("未能获取到角色信息"))
 	}
@@ -221,7 +225,7 @@ func (l RoleLogic) Delete(c *gin.Context, req interface{}) (data interface{}, rs
 	}
 
 	// 删除角色
-	err = userModel.RoleSrvIns.Delete(r.RoleIds)
+	err = roles.Delete()
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("删除角色失败: %s", err.Error()))
 	}
@@ -239,7 +243,7 @@ func (l RoleLogic) GetMenuList(c *gin.Context, req interface{}) (data interface{
 	}
 	_ = c
 
-	menus, err := userModel.RoleSrvIns.GetRoleMenusById(r.RoleID)
+	menus, err := userModel.GetRoleMenusById(r.RoleID)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取角色的权限菜单失败: " + err.Error()))
 	}
@@ -255,7 +259,7 @@ func (l RoleLogic) GetApiList(c *gin.Context, req interface{}) (data interface{}
 	_ = c
 
 	role := new(userModel.Role)
-	err := userModel.RoleSrvIns.Find(tools.H{"id": r.RoleID}, role)
+	err := role.Find(tools.H{"id": r.RoleID})
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("获取资源失败: " + err.Error()))
 	}
@@ -290,7 +294,11 @@ func (l RoleLogic) UpdateMenus(c *gin.Context, req interface{}) (data interface{
 	}
 	_ = c
 
-	roles, _ := userModel.RoleSrvIns.GetRolesByIds([]uint{r.RoleID})
+	roles := userModel.NewRoles()
+	err := roles.GetRolesByIds([]uint{r.RoleID})
+	if err != nil {
+		return nil, tools.NewMySqlError(fmt.Errorf("获取角色信息失败: %s", err.Error()))
+	}
 	if len(roles) == 0 {
 		return nil, tools.NewMySqlError(fmt.Errorf("未获取到角色信息"))
 	}
@@ -301,6 +309,8 @@ func (l RoleLogic) UpdateMenus(c *gin.Context, req interface{}) (data interface{
 		return nil, tools.NewMySqlError(fmt.Errorf("获取当前用户最高角色等级失败: %s", err.Error()))
 	}
 
+	// TODO: roles[0] ?????
+	global.Log.Infof("所有角色列表: %+v", roles)
 	// (非管理员)不能更新比自己角色等级高或相等角色的权限菜单
 	if minSort != 1 {
 		if minSort >= roles[0].Sort {
@@ -358,7 +368,7 @@ func (l RoleLogic) UpdateMenus(c *gin.Context, req interface{}) (data interface{
 
 	roles[0].Menus = reqMenus
 
-	err = userModel.RoleSrvIns.UpdateRoleMenus(roles[0])
+	err = roles[0].UpdateRoleMenus()
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("更新角色的权限菜单失败: " + err.Error()))
 	}
@@ -375,7 +385,8 @@ func (l RoleLogic) UpdateApis(c *gin.Context, req interface{}) (data interface{}
 	_ = c
 
 	// 根据path中的角色ID获取该角色信息
-	roles, _ := userModel.RoleSrvIns.GetRolesByIds([]uint{r.RoleID})
+	roles := userModel.NewRoles()
+	err := roles.GetRolesByIds([]uint{r.RoleID})
 	if len(roles) == 0 {
 		return nil, tools.NewMySqlError(fmt.Errorf("未获取到角色信息"))
 	}
@@ -428,7 +439,7 @@ func (l RoleLogic) UpdateApis(c *gin.Context, req interface{}) (data interface{}
 	}
 
 	// 更新角色的权限接口
-	err = userModel.RoleSrvIns.UpdateRoleApis(roles[0].Keyword, reqRolePolicies)
+	err = userModel.UpdateRoleApis(roles[0].Keyword, reqRolePolicies)
 	if err != nil {
 		return nil, tools.NewMySqlError(fmt.Errorf("更新角色的权限接口失败"))
 	}

@@ -29,10 +29,13 @@ fe:
 	@echo "===== compile webui... ====="
 	cd $(WEB_SRC_DIR) && npm run build:prod
 
+run:
+	@echo "===== use Air to start backend... ====="
+	cd $(SERVICE_SRC_DIR) && air
 clean:
 	$(GO_CLEAN)
 	rm -f $(SERVICE_SRC_DIR)/$(BIN_DIR)/$(APP_NAME)
 
 .DEFAULT_GOAL := all
 
-.PHONY: all be fe clean 
+.PHONY: all be fe clean run
