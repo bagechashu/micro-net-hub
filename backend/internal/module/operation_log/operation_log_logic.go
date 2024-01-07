@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"micro-net-hub/internal/module/operation_log/model"
+	"micro-net-hub/internal/server/helper"
 	"micro-net-hub/internal/tools"
 
 	"github.com/gin-gonic/gin"
@@ -13,14 +14,14 @@ import (
 func List(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*model.OperationLogListReq)
 	if !ok {
-		return nil, tools.ReqAssertErr
+		return nil, helper.ReqAssertErr
 	}
 	_ = c
 
 	// 获取数据列表
 	logs, err := model.List(r)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取接口列表失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取接口列表失败: %s", err.Error()))
 	}
 
 	rets := make([]model.OperationLog, 0)
@@ -29,7 +30,7 @@ func List(c *gin.Context, req interface{}) (data interface{}, rspError interface
 	}
 	count, err := model.Count()
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取接口总数失败"))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取接口总数失败"))
 	}
 
 	return model.LogListRsp{
@@ -50,20 +51,20 @@ func List(c *gin.Context, req interface{}) (data interface{}, rspError interface
 func Delete(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*model.OperationLogDeleteReq)
 	if !ok {
-		return nil, tools.ReqAssertErr
+		return nil, helper.ReqAssertErr
 	}
 	_ = c
 
 	for _, id := range r.OperationLogIds {
 		filter := tools.H{"id": int(id)}
 		if !model.Exist(filter) {
-			return nil, tools.NewMySqlError(fmt.Errorf("该条记录不存在"))
+			return nil, helper.NewMySqlError(fmt.Errorf("该条记录不存在"))
 		}
 	}
 	// 删除接口
 	err := model.Delete(r.OperationLogIds)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("删除该改条记录失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("删除该改条记录失败: %s", err.Error()))
 	}
 	return nil, nil
 }

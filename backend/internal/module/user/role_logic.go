@@ -6,6 +6,7 @@ import (
 	"micro-net-hub/internal/global"
 	apiMgrModel "micro-net-hub/internal/module/apimgr/model"
 	userModel "micro-net-hub/internal/module/user/model"
+	"micro-net-hub/internal/server/helper"
 	"micro-net-hub/internal/tools"
 
 	"github.com/gin-gonic/gin"
@@ -18,21 +19,21 @@ type RoleLogic struct{}
 func (l RoleLogic) Add(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*userModel.RoleAddReq)
 	if !ok {
-		return nil, tools.ReqAssertErr
+		return nil, helper.ReqAssertErr
 	}
 	_ = c
 
 	// 获取当前用户最高角色等级
 	minSort, ctxUser, err := GetCurrentUserMinRoleSort(c)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取当前用户最高角色等级失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取当前用户最高角色等级失败: %s", err.Error()))
 	}
 	if minSort != 1 {
-		return nil, tools.NewValidatorError(fmt.Errorf("当前用户没有权限更新角色"))
+		return nil, helper.NewValidatorError(fmt.Errorf("当前用户没有权限更新角色"))
 	}
 	// 用户不能创建比自己等级高或相同等级的角色
 	if minSort >= r.Sort {
-		return nil, tools.NewValidatorError(fmt.Errorf("不能创建比自己等级高或相同等级的角色"))
+		return nil, helper.NewValidatorError(fmt.Errorf("不能创建比自己等级高或相同等级的角色"))
 	}
 
 	role := userModel.Role{
@@ -44,13 +45,13 @@ func (l RoleLogic) Add(c *gin.Context, req interface{}) (data interface{}, rspEr
 		Creator: ctxUser.Username,
 	}
 	if role.Exist(tools.H{"name": r.Name}) {
-		return nil, tools.NewValidatorError(fmt.Errorf("该角色名已存在"))
+		return nil, helper.NewValidatorError(fmt.Errorf("该角色名已存在"))
 	}
 
 	// 创建角色
 	err = role.Add()
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("创建角色失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("创建角色失败: %s", err.Error()))
 	}
 	return nil, nil
 }
@@ -59,7 +60,7 @@ func (l RoleLogic) Add(c *gin.Context, req interface{}) (data interface{}, rspEr
 func (l RoleLogic) List(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*userModel.RoleListReq)
 	if !ok {
-		return nil, tools.ReqAssertErr
+		return nil, helper.ReqAssertErr
 	}
 	_ = c
 
@@ -67,12 +68,12 @@ func (l RoleLogic) List(c *gin.Context, req interface{}) (data interface{}, rspE
 	var roles = userModel.NewRoles()
 	err := roles.List(r)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取菜单列表失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取菜单列表失败: %s", err.Error()))
 	}
 
 	count, err := userModel.RoleCount()
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取接口总数失败"))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取接口总数失败"))
 	}
 
 	rets := make([]userModel.Role, 0)
@@ -90,18 +91,18 @@ func (l RoleLogic) List(c *gin.Context, req interface{}) (data interface{}, rspE
 func (l RoleLogic) Update(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*userModel.RoleUpdateReq)
 	if !ok {
-		return nil, tools.ReqAssertErr
+		return nil, helper.ReqAssertErr
 	}
 	_ = c
 
 	// 当前用户角色排序最小值（最高等级角色）以及当前用户
 	minSort, ctxUser, err := GetCurrentUserMinRoleSort(c)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取当前用户最高角色等级失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取当前用户最高角色等级失败: %s", err.Error()))
 	}
 
 	if minSort != 1 {
-		return nil, tools.NewValidatorError(fmt.Errorf("当前用户没有权限更新角色"))
+		return nil, helper.NewValidatorError(fmt.Errorf("当前用户没有权限更新角色"))
 	}
 
 	// 不能更新比自己角色等级高或相等的角色
@@ -109,25 +110,25 @@ func (l RoleLogic) Update(c *gin.Context, req interface{}) (data interface{}, rs
 	roles := userModel.NewRoles()
 	err = roles.GetRolesByIds([]uint{r.ID})
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取角色信息失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取角色信息失败: %s", err.Error()))
 	}
 	if len(roles) == 0 {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取角色信息失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取角色信息失败: %s", err.Error()))
 	}
 
 	if minSort >= roles[0].Sort {
-		return nil, tools.NewValidatorError(fmt.Errorf("不能更新比自己角色等级高或相等的角色"))
+		return nil, helper.NewValidatorError(fmt.Errorf("不能更新比自己角色等级高或相等的角色"))
 	}
 
 	// 不能把角色等级更新得比当前用户的等级高
 	if minSort >= r.Sort {
-		return nil, tools.NewValidatorError(fmt.Errorf("不能把角色等级更新得比当前用户的等级高或相同"))
+		return nil, helper.NewValidatorError(fmt.Errorf("不能把角色等级更新得比当前用户的等级高或相同"))
 	}
 	filter := tools.H{"id": r.ID}
 	oldData := new(userModel.Role)
 	if !oldData.Exist(filter) {
-		return nil, tools.NewValidatorError(fmt.Errorf("该角色名不存在"))
-		// return nil, tools.NewMySqlError(err)
+		return nil, helper.NewValidatorError(fmt.Errorf("该角色名不存在"))
+		// return nil, helper.NewMySqlError(err)
 	}
 	role := userModel.Role{
 		Model:   oldData.Model,
@@ -142,7 +143,7 @@ func (l RoleLogic) Update(c *gin.Context, req interface{}) (data interface{}, rs
 	// 更新角色
 	err = role.Update()
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("更新角色失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("更新角色失败: %s", err.Error()))
 	}
 
 	// 如果更新成功，且更新了角色的keyword, 则更新casbin中policy
@@ -171,15 +172,15 @@ func (l RoleLogic) Update(c *gin.Context, req interface{}) (data interface{}, rs
 		// 这里需要先新增再删除（先删除再增加会出错）
 		isAdded, _ := global.CasbinEnforcer.AddPolicies(rolePolicies)
 		if !isAdded {
-			return nil, tools.NewOperationError(fmt.Errorf("更新角色成功，但角色关键字关联的权限接口更新失败"))
+			return nil, helper.NewOperationError(fmt.Errorf("更新角色成功，但角色关键字关联的权限接口更新失败"))
 		}
 		isRemoved, _ := global.CasbinEnforcer.RemovePolicies(rolePoliciesCopy)
 		if !isRemoved {
-			return nil, tools.NewOperationError(fmt.Errorf("更新角色成功，但角色关键字关联的权限接口更新失败"))
+			return nil, helper.NewOperationError(fmt.Errorf("更新角色成功，但角色关键字关联的权限接口更新失败"))
 		}
 		err := global.CasbinEnforcer.LoadPolicy()
 		if err != nil {
-			return nil, tools.NewOperationError(fmt.Errorf("更新角色成功，但角色关键字关联角色的权限接口策略加载失败"))
+			return nil, helper.NewOperationError(fmt.Errorf("更新角色成功，但角色关键字关联角色的权限接口策略加载失败"))
 		}
 
 	}
@@ -197,37 +198,37 @@ func (l RoleLogic) Update(c *gin.Context, req interface{}) (data interface{}, rs
 func (l RoleLogic) Delete(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*userModel.RoleDeleteReq)
 	if !ok {
-		return nil, tools.ReqAssertErr
+		return nil, helper.ReqAssertErr
 	}
 	_ = c
 
 	// 获取当前登陆用户最高等级角色
 	minSort, _, err := GetCurrentUserMinRoleSort(c)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取当前用户最高角色等级失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取当前用户最高角色等级失败: %s", err.Error()))
 	}
 
 	// 获取角色信息
 	roles := userModel.NewRoles()
 	err = roles.GetRolesByIds(r.RoleIds)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取角色信息失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取角色信息失败: %s", err.Error()))
 	}
 	if len(roles) == 0 {
-		return nil, tools.NewMySqlError(fmt.Errorf("未能获取到角色信息"))
+		return nil, helper.NewMySqlError(fmt.Errorf("未能获取到角色信息"))
 	}
 
 	// 不能删除比自己角色等级高或相等的角色
 	for _, role := range roles {
 		if minSort >= role.Sort {
-			return nil, tools.NewValidatorError(fmt.Errorf("不能删除比自己角色等级高或相等的角色"))
+			return nil, helper.NewValidatorError(fmt.Errorf("不能删除比自己角色等级高或相等的角色"))
 		}
 	}
 
 	// 删除角色
 	err = roles.Delete()
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("删除角色失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("删除角色失败: %s", err.Error()))
 	}
 
 	// 删除角色成功直接清理缓存，让活跃的用户自己重新缓存最新用户信息
@@ -239,13 +240,13 @@ func (l RoleLogic) Delete(c *gin.Context, req interface{}) (data interface{}, rs
 func (l RoleLogic) GetMenuList(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*userModel.RoleGetMenuListReq)
 	if !ok {
-		return nil, tools.ReqAssertErr
+		return nil, helper.ReqAssertErr
 	}
 	_ = c
 
 	menus, err := userModel.GetRoleMenusById(r.RoleID)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取角色的权限菜单失败: " + err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取角色的权限菜单失败: " + err.Error()))
 	}
 	return menus, nil
 }
@@ -254,21 +255,21 @@ func (l RoleLogic) GetMenuList(c *gin.Context, req interface{}) (data interface{
 func (l RoleLogic) GetApiList(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*userModel.RoleGetApiListReq)
 	if !ok {
-		return nil, tools.ReqAssertErr
+		return nil, helper.ReqAssertErr
 	}
 	_ = c
 
 	role := new(userModel.Role)
 	err := role.Find(tools.H{"id": r.RoleID})
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取资源失败: " + err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取资源失败: " + err.Error()))
 	}
 
 	policies := global.CasbinEnforcer.GetFilteredPolicy(0, role.Keyword)
 
 	apis, err := apiMgrModel.ListAll()
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取资源列表失败: " + err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取资源列表失败: " + err.Error()))
 	}
 	accessApis := make([]*apiMgrModel.Api, 0)
 
@@ -290,23 +291,23 @@ func (l RoleLogic) GetApiList(c *gin.Context, req interface{}) (data interface{}
 func (l RoleLogic) UpdateMenus(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*userModel.RoleUpdateMenusReq)
 	if !ok {
-		return nil, tools.ReqAssertErr
+		return nil, helper.ReqAssertErr
 	}
 	_ = c
 
 	roles := userModel.NewRoles()
 	err := roles.GetRolesByIds([]uint{r.RoleID})
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取角色信息失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取角色信息失败: %s", err.Error()))
 	}
 	if len(roles) == 0 {
-		return nil, tools.NewMySqlError(fmt.Errorf("未获取到角色信息"))
+		return nil, helper.NewMySqlError(fmt.Errorf("未获取到角色信息"))
 	}
 
 	// 当前用户角色排序最小值（最高等级角色）以及当前用户
 	minSort, ctxUser, err := GetCurrentUserMinRoleSort(c)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取当前用户最高角色等级失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取当前用户最高角色等级失败: %s", err.Error()))
 	}
 
 	// TODO: roles[0] ?????
@@ -314,14 +315,14 @@ func (l RoleLogic) UpdateMenus(c *gin.Context, req interface{}) (data interface{
 	// (非管理员)不能更新比自己角色等级高或相等角色的权限菜单
 	if minSort != 1 {
 		if minSort >= roles[0].Sort {
-			return nil, tools.NewValidatorError(fmt.Errorf("不能更新比自己角色等级高或相等角色的权限菜单"))
+			return nil, helper.NewValidatorError(fmt.Errorf("不能更新比自己角色等级高或相等角色的权限菜单"))
 		}
 	}
 
 	// 获取当前用户所拥有的权限菜单
 	ctxUserMenus, err := userModel.GetUserMenusByUserId(ctxUser.ID)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取当前用户的可访问菜单列表失败: " + err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取当前用户的可访问菜单列表失败: " + err.Error()))
 	}
 
 	// 获取当前用户所拥有的权限菜单ID
@@ -337,7 +338,7 @@ func (l RoleLogic) UpdateMenus(c *gin.Context, req interface{}) (data interface{
 	if minSort != 1 {
 		for _, id := range r.MenuIds {
 			if !funk.Contains(ctxUserMenusIds, id) {
-				return nil, tools.NewValidatorError(fmt.Errorf("无权设置ID为%d的菜单", id))
+				return nil, helper.NewValidatorError(fmt.Errorf("无权设置ID为%d的菜单", id))
 			}
 		}
 
@@ -355,7 +356,7 @@ func (l RoleLogic) UpdateMenus(c *gin.Context, req interface{}) (data interface{
 		var menus = userModel.NewMenus()
 		err := menus.List()
 		if err != nil {
-			return nil, tools.NewValidatorError(fmt.Errorf("获取菜单列表失败: " + err.Error()))
+			return nil, helper.NewValidatorError(fmt.Errorf("获取菜单列表失败: " + err.Error()))
 		}
 		for _, menuId := range r.MenuIds {
 			for _, menu := range menus {
@@ -370,7 +371,7 @@ func (l RoleLogic) UpdateMenus(c *gin.Context, req interface{}) (data interface{
 
 	err = roles[0].UpdateRoleMenus()
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("更新角色的权限菜单失败: " + err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("更新角色的权限菜单失败: " + err.Error()))
 	}
 
 	return nil, nil
@@ -380,7 +381,7 @@ func (l RoleLogic) UpdateMenus(c *gin.Context, req interface{}) (data interface{
 func (l RoleLogic) UpdateApis(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*userModel.RoleUpdateApisReq)
 	if !ok {
-		return nil, tools.ReqAssertErr
+		return nil, helper.ReqAssertErr
 	}
 	_ = c
 
@@ -388,19 +389,19 @@ func (l RoleLogic) UpdateApis(c *gin.Context, req interface{}) (data interface{}
 	roles := userModel.NewRoles()
 	err := roles.GetRolesByIds([]uint{r.RoleID})
 	if len(roles) == 0 {
-		return nil, tools.NewMySqlError(fmt.Errorf("未获取到角色信息"))
+		return nil, helper.NewMySqlError(fmt.Errorf("未获取到角色信息"))
 	}
 
 	// 当前用户角色排序最小值（最高等级角色）以及当前用户
 	minSort, ctxUser, err := GetCurrentUserMinRoleSort(c)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取当前用户最高角色等级失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取当前用户最高角色等级失败: %s", err.Error()))
 	}
 
 	// (非管理员)不能更新比自己角色等级高或相等角色的权限菜单
 	if minSort != 1 {
 		if minSort >= roles[0].Sort {
-			return nil, tools.NewValidatorError(fmt.Errorf("不能更新比自己角色等级高或相等角色的权限菜单"))
+			return nil, helper.NewValidatorError(fmt.Errorf("不能更新比自己角色等级高或相等角色的权限菜单"))
 		}
 	}
 
@@ -419,7 +420,7 @@ func (l RoleLogic) UpdateApis(c *gin.Context, req interface{}) (data interface{}
 	// 根据apiID获取接口详情
 	apis, err := apiMgrModel.GetApisById(r.ApiIds)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("根据接口ID获取接口信息失败"))
+		return nil, helper.NewMySqlError(fmt.Errorf("根据接口ID获取接口信息失败"))
 	}
 	// 生成前端想要设置的角色policies
 	reqRolePolicies := make([][]string, 0)
@@ -433,7 +434,7 @@ func (l RoleLogic) UpdateApis(c *gin.Context, req interface{}) (data interface{}
 	if minSort != 1 {
 		for _, reqPolicy := range reqRolePolicies {
 			if !funk.Contains(ctxRolesPolicies, reqPolicy) {
-				return nil, tools.NewValidatorError(fmt.Errorf("无权设置路径为%s,请求方式为%s的接口", reqPolicy[1], reqPolicy[2]))
+				return nil, helper.NewValidatorError(fmt.Errorf("无权设置路径为%s,请求方式为%s的接口", reqPolicy[1], reqPolicy[2]))
 			}
 		}
 	}
@@ -441,7 +442,7 @@ func (l RoleLogic) UpdateApis(c *gin.Context, req interface{}) (data interface{}
 	// 更新角色的权限接口
 	err = userModel.UpdateRoleApis(roles[0].Keyword, reqRolePolicies)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("更新角色的权限接口失败"))
+		return nil, helper.NewMySqlError(fmt.Errorf("更新角色的权限接口失败"))
 	}
 	return nil, nil
 }

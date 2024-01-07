@@ -6,6 +6,7 @@ import (
 	"micro-net-hub/internal/global"
 	userModel "micro-net-hub/internal/module/user/model"
 	"micro-net-hub/internal/server/config"
+	"micro-net-hub/internal/server/helper"
 	"micro-net-hub/internal/tools"
 
 	"time"
@@ -107,12 +108,12 @@ func authorizator(data interface{}, c *gin.Context) bool {
 // 用户登录校验失败处理
 func unauthorized(c *gin.Context, code int, message string) {
 	global.Log.Debugf("JWT认证失败, 错误码: %d, 错误信息: %s", code, message)
-	tools.Response(c, code, code, nil, fmt.Sprintf("JWT认证失败, 错误码: %d, 错误信息: %s", code, message))
+	helper.Response(c, code, code, nil, fmt.Sprintf("JWT认证失败, 错误码: %d, 错误信息: %s", code, message))
 }
 
 // 登录成功后的响应
 func loginResponse(c *gin.Context, code int, token string, expires time.Time) {
-	tools.Response(c, code, code,
+	helper.Response(c, code, code,
 		gin.H{
 			"token":   token,
 			"expires": expires.Format("2006-01-02 15:04:05"),
@@ -122,12 +123,12 @@ func loginResponse(c *gin.Context, code int, token string, expires time.Time) {
 
 // 登出后的响应
 func logoutResponse(c *gin.Context, code int) {
-	tools.SuccessWithMessage(c, nil, "退出成功")
+	helper.SuccessWithMessage(c, nil, "退出成功")
 }
 
 // 刷新token后的响应
 func refreshResponse(c *gin.Context, code int, token string, expires time.Time) {
-	tools.Response(c, code, code,
+	helper.Response(c, code, code,
 		gin.H{
 			"token":   token,
 			"expires": expires,

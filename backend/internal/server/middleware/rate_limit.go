@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"micro-net-hub/internal/tools"
+	"micro-net-hub/internal/server/helper"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -12,7 +12,7 @@ func RateLimitMiddleware(fillInterval time.Duration, capacity int64) gin.Handler
 	bucket := ratelimit.NewBucket(fillInterval, capacity)
 	return func(c *gin.Context) {
 		if bucket.TakeAvailable(1) < 1 {
-			tools.FailWithMessage(c, nil, "访问限流")
+			helper.FailWithMessage(c, nil, "访问限流")
 			c.Abort()
 			return
 		}

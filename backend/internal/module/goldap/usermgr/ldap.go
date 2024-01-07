@@ -6,6 +6,7 @@ import (
 	"micro-net-hub/internal/module/goldap/ldapmgr"
 	userLogic "micro-net-hub/internal/module/user"
 	userModel "micro-net-hub/internal/module/user/model"
+	"micro-net-hub/internal/server/helper"
 
 	"micro-net-hub/internal/tools"
 
@@ -23,7 +24,7 @@ func (mgr OpenLdap) SyncDepts(c *gin.Context, req interface{}) (data interface{}
 	// 1.获取所有部门
 	depts, err := ldapmgr.LdapDeptGetAll()
 	if err != nil {
-		return nil, tools.NewOperationError(fmt.Errorf("获取ldap部门列表失败：%s", err.Error()))
+		return nil, helper.NewOperationError(fmt.Errorf("获取ldap部门列表失败：%s", err.Error()))
 	}
 	groups := make([]*userModel.Group, 0)
 	for _, dept := range depts {
@@ -49,19 +50,19 @@ func (mgr OpenLdap) SyncUsers(c *gin.Context, req interface{}) (data interface{}
 	// 1.获取ldap用户列表
 	staffs, err := ldapmgr.LDAPUserGetAll()
 	if err != nil {
-		return nil, tools.NewOperationError(fmt.Errorf("获取ldap用户列表失败：%s", err.Error()))
+		return nil, helper.NewOperationError(fmt.Errorf("获取ldap用户列表失败：%s", err.Error()))
 	}
 	// 2.遍历用户，开始写入
 	for _, staff := range staffs {
 		groupIds, err := userModel.DeptIdsToGroupIds(staff.DepartmentIds)
 		if err != nil {
-			return nil, tools.NewMySqlError(fmt.Errorf("将部门ids转换为内部部门id失败：%s", err.Error()))
+			return nil, helper.NewMySqlError(fmt.Errorf("将部门ids转换为内部部门id失败：%s", err.Error()))
 		}
 		// 根据角色id获取角色
 		roles := userModel.NewRoles()
 		err = roles.GetRolesByIds([]uint{2})
 		if err != nil {
-			return nil, tools.NewValidatorError(fmt.Errorf("根据角色ID获取角色信息失败:%s", err.Error()))
+			return nil, helper.NewValidatorError(fmt.Errorf("根据角色ID获取角色信息失败:%s", err.Error()))
 		}
 		// 入库
 		err = ldapmgr.LdapUserAdd(&userModel.User{
@@ -84,7 +85,7 @@ func (mgr OpenLdap) SyncUsers(c *gin.Context, req interface{}) (data interface{}
 			UserDN:        staff.DN,
 		})
 		if err != nil {
-			return nil, tools.NewOperationError(fmt.Errorf("SyncOpenLdapUsers写入用户失败：%s", err.Error()))
+			return nil, helper.NewOperationError(fmt.Errorf("SyncOpenLdapUsers写入用户失败：%s", err.Error()))
 		}
 	}
 	return nil, nil

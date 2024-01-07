@@ -6,10 +6,11 @@ import (
 	"strings"
 
 	"micro-net-hub/internal/server/config"
+	"micro-net-hub/internal/tools"
 
 	"micro-net-hub/internal/module/goldap/ldapmgr"
 	userModel "micro-net-hub/internal/module/user/model"
-	"micro-net-hub/internal/tools"
+	"micro-net-hub/internal/server/helper"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,14 +21,14 @@ type GroupLogic struct{}
 func (l GroupLogic) Add(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*userModel.GroupAddReq)
 	if !ok {
-		return nil, tools.ReqAssertErr
+		return nil, helper.ReqAssertErr
 	}
 	_ = c
 
 	// 获取当前用户
 	ctxUser, err := GetCurrentLoginUser(c)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取当前登陆用户信息失败"))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取当前登陆用户信息失败"))
 	}
 
 	group := userModel.Group{
@@ -47,7 +48,7 @@ func (l GroupLogic) Add(c *gin.Context, req interface{}) (data interface{}, rspE
 		parentGroup := new(userModel.Group)
 		err := parentGroup.Find(tools.H{"id": r.ParentId})
 		if err != nil {
-			return nil, tools.NewMySqlError(fmt.Errorf("获取父级组信息失败"))
+			return nil, helper.NewMySqlError(fmt.Errorf("获取父级组信息失败"))
 		}
 		group.SourceDeptId = "platform_0"
 		group.SourceDeptParentId = fmt.Sprintf("%s_%d", parentGroup.Source, r.ParentId)
@@ -57,31 +58,31 @@ func (l GroupLogic) Add(c *gin.Context, req interface{}) (data interface{}, rspE
 	// 根据 group_dn 判断分组是否已存在
 	var g userModel.Group
 	if g.Exist(tools.H{"group_dn": group.GroupDN}) {
-		return nil, tools.NewValidatorError(fmt.Errorf("该分组对应DN已存在"))
+		return nil, helper.NewValidatorError(fmt.Errorf("该分组对应DN已存在"))
 	}
 
 	// 先在ldap中创建组
 	err = ldapmgr.LdapDeptAdd(&group)
 	if err != nil {
-		return nil, tools.NewLdapError(fmt.Errorf("向LDAP创建分组失败" + err.Error()))
+		return nil, helper.NewLdapError(fmt.Errorf("向LDAP创建分组失败" + err.Error()))
 	}
 
 	// 然后在数据库中创建组
 	err = group.Add()
 	if err != nil {
-		return nil, tools.NewLdapError(fmt.Errorf("向MySQL创建分组失败"))
+		return nil, helper.NewLdapError(fmt.Errorf("向MySQL创建分组失败"))
 	}
 
 	// 默认创建分组之后，需要将admin添加到分组中
 	adminInfo := new(userModel.User)
 	err = adminInfo.Find(tools.H{"id": 1})
 	if err != nil {
-		return nil, tools.NewMySqlError(err)
+		return nil, helper.NewMySqlError(err)
 	}
 
 	err = group.AddUserToGroup(adminInfo)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("添加用户到分组失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("添加用户到分组失败: %s", err.Error()))
 	}
 
 	return nil, nil
@@ -91,14 +92,14 @@ func (l GroupLogic) Add(c *gin.Context, req interface{}) (data interface{}, rspE
 func (l GroupLogic) List(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*userModel.GroupListReq)
 	if !ok {
-		return nil, tools.ReqAssertErr
+		return nil, helper.ReqAssertErr
 	}
 	_ = c
 
 	// 获取数据列表
 	groups, err := r.List()
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取分组列表失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取分组列表失败: %s", err.Error()))
 	}
 
 	rets := make([]userModel.Group, 0)
@@ -107,7 +108,7 @@ func (l GroupLogic) List(c *gin.Context, req interface{}) (data interface{}, rsp
 	}
 	count, err := userModel.GroupCount()
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取分组总数失败"))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取分组总数失败"))
 	}
 
 	return userModel.GroupListRsp{
@@ -120,7 +121,7 @@ func (l GroupLogic) List(c *gin.Context, req interface{}) (data interface{}, rsp
 func (l GroupLogic) GetTree(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*userModel.GroupListReq)
 	if !ok {
-		return nil, tools.ReqAssertErr
+		return nil, helper.ReqAssertErr
 	}
 	_ = c
 
@@ -128,7 +129,7 @@ func (l GroupLogic) GetTree(c *gin.Context, req interface{}) (data interface{}, 
 	var err error
 	gs, err = r.ListTree()
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取资源列表失败: " + err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取资源列表失败: " + err.Error()))
 	}
 
 	tree := gs.GenGroupTree(0)
@@ -140,26 +141,26 @@ func (l GroupLogic) GetTree(c *gin.Context, req interface{}) (data interface{}, 
 func (l GroupLogic) Update(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*userModel.GroupUpdateReq)
 	if !ok {
-		return nil, tools.ReqAssertErr
+		return nil, helper.ReqAssertErr
 	}
 	_ = c
 
 	filter := tools.H{"id": int(r.ID)}
 	var g userModel.Group
 	if !g.Exist(filter) {
-		return nil, tools.NewMySqlError(fmt.Errorf("分组不存在"))
+		return nil, helper.NewMySqlError(fmt.Errorf("分组不存在"))
 	}
 
 	// 获取当前登陆用户
 	ctxUser, err := GetCurrentLoginUser(c)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取当前登陆用户失败"))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取当前登陆用户失败"))
 	}
 
 	oldGroup := new(userModel.Group)
 	err = oldGroup.Find(filter)
 	if err != nil {
-		return nil, tools.NewMySqlError(err)
+		return nil, helper.NewMySqlError(err)
 	}
 
 	newGroup := userModel.Group{
@@ -177,11 +178,11 @@ func (l GroupLogic) Update(c *gin.Context, req interface{}) (data interface{}, r
 
 	err = ldapmgr.LdapDeptUpdate(oldGroup, &newGroup)
 	if err != nil {
-		return nil, tools.NewLdapError(fmt.Errorf("向LDAP更新分组失败：" + err.Error()))
+		return nil, helper.NewLdapError(fmt.Errorf("向LDAP更新分组失败：" + err.Error()))
 	}
 	err = newGroup.Update()
 	if err != nil {
-		return nil, tools.NewLdapError(fmt.Errorf("向MySQL更新分组失败"))
+		return nil, helper.NewLdapError(fmt.Errorf("向MySQL更新分组失败"))
 	}
 	return nil, nil
 }
@@ -190,7 +191,7 @@ func (l GroupLogic) Update(c *gin.Context, req interface{}) (data interface{}, r
 func (l GroupLogic) Delete(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*userModel.GroupDeleteReq)
 	if !ok {
-		return nil, tools.ReqAssertErr
+		return nil, helper.ReqAssertErr
 	}
 	_ = c
 
@@ -198,35 +199,35 @@ func (l GroupLogic) Delete(c *gin.Context, req interface{}) (data interface{}, r
 		filter := tools.H{"id": int(id)}
 		var g userModel.Group
 		if !g.Exist(filter) {
-			return nil, tools.NewMySqlError(fmt.Errorf("有分组不存在"))
+			return nil, helper.NewMySqlError(fmt.Errorf("有分组不存在"))
 		}
 	}
 
 	var gs = userModel.NewGroups()
 	err := gs.GetGroupsByIds(r.GroupIds)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取分组列表失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取分组列表失败: %s", err.Error()))
 	}
 
 	for _, g := range gs {
 		// 判断存在子分组，不允许删除
 		filter := tools.H{"parent_id": int(g.ID)}
 		if g.Exist(filter) {
-			return nil, tools.NewMySqlError(fmt.Errorf("存在子分组，请先删除子分组，再执行该分组的删除操作！"))
+			return nil, helper.NewMySqlError(fmt.Errorf("存在子分组，请先删除子分组，再执行该分组的删除操作！"))
 		}
 
 		// 删除的时候先从ldap进行删除
 		// global.Log.Infof("print groups before delete: %v", g)
 		err = ldapmgr.LdapDeptDelete(g.GroupDN)
 		if err != nil {
-			return nil, tools.NewLdapError(fmt.Errorf("向LDAP删除分组失败：" + err.Error()))
+			return nil, helper.NewLdapError(fmt.Errorf("向LDAP删除分组失败：" + err.Error()))
 		}
 	}
 
 	// 从MySQL中删除
 	err = gs.Delete()
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("删除接口失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("删除接口失败: %s", err.Error()))
 	}
 
 	return nil, nil
@@ -236,7 +237,7 @@ func (l GroupLogic) Delete(c *gin.Context, req interface{}) (data interface{}, r
 func (l GroupLogic) AddUser(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*userModel.GroupAddUserReq)
 	if !ok {
-		return nil, tools.ReqAssertErr
+		return nil, helper.ReqAssertErr
 	}
 	_ = c
 
@@ -244,36 +245,36 @@ func (l GroupLogic) AddUser(c *gin.Context, req interface{}) (data interface{}, 
 
 	var g userModel.Group
 	if !g.Exist(filter) {
-		return nil, tools.NewMySqlError(fmt.Errorf("分组不存在"))
+		return nil, helper.NewMySqlError(fmt.Errorf("分组不存在"))
 	}
 
 	var users = userModel.NewUsers()
 	err := users.GetUserByIds(r.UserIds)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取用户列表失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取用户列表失败: %s", err.Error()))
 	}
 
 	group := new(userModel.Group)
 	err = group.Find(filter)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取分组失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取分组失败: %s", err.Error()))
 	}
 
 	if group.GroupDN[:3] == "ou=" {
-		return nil, tools.NewMySqlError(fmt.Errorf("ou类型的分组不能添加用户"))
+		return nil, helper.NewMySqlError(fmt.Errorf("ou类型的分组不能添加用户"))
 	}
 
 	// 先添加到MySQL
 	err = group.AddUsersToGroup(&users)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("添加用户到分组失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("添加用户到分组失败: %s", err.Error()))
 	}
 
 	// 再往ldap添加
 	for _, user := range users {
 		err = ldapmgr.LdapDeptAddUserToGroup(group.GroupDN, user.UserDN)
 		if err != nil {
-			return nil, tools.NewLdapError(fmt.Errorf("向LDAP添加用户到分组失败" + err.Error()))
+			return nil, helper.NewLdapError(fmt.Errorf("向LDAP添加用户到分组失败" + err.Error()))
 		}
 	}
 
@@ -281,7 +282,7 @@ func (l GroupLogic) AddUser(c *gin.Context, req interface{}) (data interface{}, 
 		oldData := new(userModel.User)
 		err = oldData.Find(tools.H{"id": user.ID})
 		if err != nil {
-			return nil, tools.NewMySqlError(err)
+			return nil, helper.NewMySqlError(err)
 		}
 		newData := oldData
 		// 添加新增的分组ID与部门
@@ -289,7 +290,7 @@ func (l GroupLogic) AddUser(c *gin.Context, req interface{}) (data interface{}, 
 		newData.Departments = oldData.Departments + "," + group.GroupName
 		err = l.updataUser(newData)
 		if err != nil {
-			return nil, tools.NewOperationError(fmt.Errorf("处理用户的部门数据失败:" + err.Error()))
+			return nil, helper.NewOperationError(fmt.Errorf("处理用户的部门数据失败:" + err.Error()))
 		}
 	}
 
@@ -299,7 +300,7 @@ func (l GroupLogic) AddUser(c *gin.Context, req interface{}) (data interface{}, 
 func (l GroupLogic) updataUser(newUser *userModel.User) error {
 	err := newUser.Update()
 	if err != nil {
-		return tools.NewMySqlError(fmt.Errorf("在MySQL更新用户失败：" + err.Error()))
+		return helper.NewMySqlError(fmt.Errorf("在MySQL更新用户失败：" + err.Error()))
 	}
 	return nil
 }
@@ -308,51 +309,51 @@ func (l GroupLogic) updataUser(newUser *userModel.User) error {
 func (l GroupLogic) RemoveUser(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*userModel.GroupRemoveUserReq)
 	if !ok {
-		return nil, tools.ReqAssertErr
+		return nil, helper.ReqAssertErr
 	}
 	_ = c
 
 	filter := tools.H{"id": r.GroupID}
 	var g userModel.Group
 	if !g.Exist(filter) {
-		return nil, tools.NewMySqlError(fmt.Errorf("分组不存在"))
+		return nil, helper.NewMySqlError(fmt.Errorf("分组不存在"))
 	}
 
 	var users = userModel.NewUsers()
 	err := users.GetUserByIds(r.UserIds)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取用户列表失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取用户列表失败: %s", err.Error()))
 	}
 
 	group := new(userModel.Group)
 	err = group.Find(filter)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取分组失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取分组失败: %s", err.Error()))
 	}
 
 	if group.GroupDN[:3] == "ou=" {
-		return nil, tools.NewMySqlError(fmt.Errorf("ou类型的分组内没有用户"))
+		return nil, helper.NewMySqlError(fmt.Errorf("ou类型的分组内没有用户"))
 	}
 
 	// 先操作ldap
 	for _, user := range users {
 		err := ldapmgr.LdapDeptRemoveUserFromGroup(group.GroupDN, user.UserDN)
 		if err != nil {
-			return nil, tools.NewLdapError(fmt.Errorf("将用户从ldap移除失败" + err.Error()))
+			return nil, helper.NewLdapError(fmt.Errorf("将用户从ldap移除失败" + err.Error()))
 		}
 	}
 
 	// 再操作MySQL
 	err = group.RemoveUsersFromGroup(&users)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("将用户从MySQL移除失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("将用户从MySQL移除失败: %s", err.Error()))
 	}
 
 	for _, user := range users {
 		oldData := new(userModel.User)
 		err = oldData.Find(tools.H{"id": user.ID})
 		if err != nil {
-			return nil, tools.NewMySqlError(err)
+			return nil, helper.NewMySqlError(err)
 		}
 		newData := oldData
 
@@ -375,7 +376,7 @@ func (l GroupLogic) RemoveUser(c *gin.Context, req interface{}) (data interface{
 		newData.DepartmentId = strings.Join(newDeptIds, ",")
 		err = l.updataUser(newData)
 		if err != nil {
-			return nil, tools.NewOperationError(fmt.Errorf("处理用户的部门数据失败:" + err.Error()))
+			return nil, helper.NewOperationError(fmt.Errorf("处理用户的部门数据失败:" + err.Error()))
 		}
 	}
 
@@ -386,20 +387,20 @@ func (l GroupLogic) RemoveUser(c *gin.Context, req interface{}) (data interface{
 func (l GroupLogic) UserInGroup(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*userModel.UserInGroupReq)
 	if !ok {
-		return nil, tools.ReqAssertErr
+		return nil, helper.ReqAssertErr
 	}
 	_ = c
 
 	filter := tools.H{"id": r.GroupID}
 	var g userModel.Group
 	if !g.Exist(filter) {
-		return nil, tools.NewMySqlError(fmt.Errorf("分组不存在"))
+		return nil, helper.NewMySqlError(fmt.Errorf("分组不存在"))
 	}
 
 	group := new(userModel.Group)
 	err := group.Find(filter)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取分组失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取分组失败: %s", err.Error()))
 	}
 
 	rets := make([]userModel.GuserRsp, 0)
@@ -431,7 +432,7 @@ func (l GroupLogic) UserInGroup(c *gin.Context, req interface{}) (data interface
 func (l GroupLogic) UserNoInGroup(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*userModel.UserNoInGroupReq)
 	if !ok {
-		return nil, tools.ReqAssertErr
+		return nil, helper.ReqAssertErr
 	}
 	_ = c
 
@@ -439,19 +440,19 @@ func (l GroupLogic) UserNoInGroup(c *gin.Context, req interface{}) (data interfa
 
 	var g userModel.Group
 	if !g.Exist(filter) {
-		return nil, tools.NewMySqlError(fmt.Errorf("分组不存在"))
+		return nil, helper.NewMySqlError(fmt.Errorf("分组不存在"))
 	}
 
 	group := new(userModel.Group)
 	err := group.Find(filter)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取分组失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取分组失败: %s", err.Error()))
 	}
 
 	var userList = userModel.NewUsers()
 	err = userList.ListAll()
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取资源列表失败: " + err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取资源列表失败: " + err.Error()))
 	}
 
 	rets := make([]userModel.GuserRsp, 0)

@@ -5,6 +5,7 @@ import (
 
 	apiMgrModel "micro-net-hub/internal/module/apimgr/model"
 	userLogic "micro-net-hub/internal/module/user"
+	"micro-net-hub/internal/server/helper"
 	"micro-net-hub/internal/tools"
 
 	"github.com/gin-gonic/gin"
@@ -15,14 +16,14 @@ import (
 func Add(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*apiMgrModel.ApiAddReq)
 	if !ok {
-		return nil, tools.ReqAssertErr
+		return nil, helper.ReqAssertErr
 	}
 	_ = c
 
 	// 获取当前用户
 	ctxUser, err := userLogic.GetCurrentLoginUser(c)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取当前登陆用户信息失败"))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取当前登陆用户信息失败"))
 	}
 
 	api := apiMgrModel.Api{
@@ -36,7 +37,7 @@ func Add(c *gin.Context, req interface{}) (data interface{}, rspError interface{
 	// 创建接口
 	err = apiMgrModel.Add(&api)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("创建接口失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("创建接口失败: %s", err.Error()))
 	}
 
 	return nil, nil
@@ -46,14 +47,14 @@ func Add(c *gin.Context, req interface{}) (data interface{}, rspError interface{
 func List(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*apiMgrModel.ApiListReq)
 	if !ok {
-		return nil, tools.ReqAssertErr
+		return nil, helper.ReqAssertErr
 	}
 	_ = c
 
 	// 获取数据列表
 	apis, err := apiMgrModel.List(r)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取接口列表失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取接口列表失败: %s", err.Error()))
 	}
 
 	rets := make([]apiMgrModel.Api, 0)
@@ -62,7 +63,7 @@ func List(c *gin.Context, req interface{}) (data interface{}, rspError interface
 	}
 	count, err := apiMgrModel.Count()
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取接口总数失败"))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取接口总数失败"))
 	}
 
 	return apiMgrModel.ApiListRsp{
@@ -75,14 +76,14 @@ func List(c *gin.Context, req interface{}) (data interface{}, rspError interface
 func GetTree(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*apiMgrModel.ApiGetTreeReq)
 	if !ok {
-		return nil, tools.ReqAssertErr
+		return nil, helper.ReqAssertErr
 	}
 	_ = c
 	_ = r
 
 	apis, err := apiMgrModel.ListAll()
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取资源列表失败: " + err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取资源列表失败: " + err.Error()))
 	}
 
 	// 获取所有的分类
@@ -116,25 +117,25 @@ func GetTree(c *gin.Context, req interface{}) (data interface{}, rspError interf
 func Update(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*apiMgrModel.ApiUpdateReq)
 	if !ok {
-		return nil, tools.ReqAssertErr
+		return nil, helper.ReqAssertErr
 	}
 	_ = c
 
 	filter := tools.H{"id": int(r.ID)}
 	if !apiMgrModel.Exist(filter) {
-		return nil, tools.NewMySqlError(fmt.Errorf("接口不存在"))
+		return nil, helper.NewMySqlError(fmt.Errorf("接口不存在"))
 	}
 
 	// 获取当前登陆用户
 	ctxUser, err := userLogic.GetCurrentLoginUser(c)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取当前登陆用户失败"))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取当前登陆用户失败"))
 	}
 
 	oldData := new(apiMgrModel.Api)
 	err = apiMgrModel.Find(filter, oldData)
 	if err != nil {
-		return nil, tools.NewMySqlError(err)
+		return nil, helper.NewMySqlError(err)
 	}
 
 	api := apiMgrModel.Api{
@@ -147,7 +148,7 @@ func Update(c *gin.Context, req interface{}) (data interface{}, rspError interfa
 	}
 	err = apiMgrModel.Update(&api)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("更新接口失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("更新接口失败: %s", err.Error()))
 	}
 	return nil, nil
 }
@@ -156,20 +157,20 @@ func Update(c *gin.Context, req interface{}) (data interface{}, rspError interfa
 func Delete(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*apiMgrModel.ApiDeleteReq)
 	if !ok {
-		return nil, tools.ReqAssertErr
+		return nil, helper.ReqAssertErr
 	}
 	_ = c
 
 	for _, id := range r.ApiIds {
 		filter := tools.H{"id": int(id)}
 		if !apiMgrModel.Exist(filter) {
-			return nil, tools.NewMySqlError(fmt.Errorf("接口不存在"))
+			return nil, helper.NewMySqlError(fmt.Errorf("接口不存在"))
 		}
 	}
 	// 删除接口
 	err := apiMgrModel.Delete(r.ApiIds)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("删除接口失败: %s", err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("删除接口失败: %s", err.Error()))
 	}
 	return nil, nil
 }

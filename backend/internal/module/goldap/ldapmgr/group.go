@@ -8,6 +8,7 @@ import (
 	"micro-net-hub/internal/global"
 	userModel "micro-net-hub/internal/module/user/model"
 	"micro-net-hub/internal/server/config"
+	"micro-net-hub/internal/server/helper"
 	"micro-net-hub/internal/tools"
 
 	ldap "github.com/go-ldap/ldap/v3"
@@ -73,12 +74,12 @@ func LdapDeptAddRec(depts []*userModel.Group) error {
 	for _, dept := range depts {
 		err := LdapDeptsAdd(dept)
 		if err != nil {
-			return tools.NewOperationError(fmt.Errorf("DsyncOpenLdapDepts添加部门失败: %s", err.Error()))
+			return helper.NewOperationError(fmt.Errorf("DsyncOpenLdapDepts添加部门失败: %s", err.Error()))
 		}
 		if len(dept.Children) != 0 {
 			err = LdapDeptAddRec(dept.Children)
 			if err != nil {
-				return tools.NewOperationError(fmt.Errorf("DsyncOpenLdapDepts添加部门失败: %s", err.Error()))
+				return helper.NewOperationError(fmt.Errorf("DsyncOpenLdapDepts添加部门失败: %s", err.Error()))
 			}
 		}
 	}
@@ -252,7 +253,7 @@ func LdapDeptGetParentGroupID(group *userModel.Group) (id uint, err error) {
 	parentGroup := new(userModel.Group)
 	err = parentGroup.Find(tools.H{"source_dept_id": group.SourceDeptParentId})
 	if err != nil {
-		return id, tools.NewMySqlError(fmt.Errorf("查询父级部门失败：%s,%s", err.Error(), group.GroupName))
+		return id, helper.NewMySqlError(fmt.Errorf("查询父级部门失败：%s,%s", err.Error(), group.GroupName))
 	}
 	return parentGroup.ID, nil
 }

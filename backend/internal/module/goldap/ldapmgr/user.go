@@ -7,6 +7,7 @@ import (
 	"micro-net-hub/internal/global"
 	userModel "micro-net-hub/internal/module/user/model"
 	"micro-net-hub/internal/server/config"
+	"micro-net-hub/internal/server/helper"
 	"micro-net-hub/internal/tools"
 
 	ldap "github.com/go-ldap/ldap/v3"
@@ -92,7 +93,7 @@ func LdapUsersAdd(user *userModel.User) error {
 		// 先将用户添加到MySQL
 		err := user.Add()
 		if err != nil {
-			return tools.NewMySqlError(fmt.Errorf("向MySQL创建用户失败：" + err.Error()))
+			return helper.NewMySqlError(fmt.Errorf("向MySQL创建用户失败：" + err.Error()))
 		}
 
 		// 获取用户将要添加的分组
@@ -100,7 +101,7 @@ func LdapUsersAdd(user *userModel.User) error {
 		var gs = userModel.NewGroups()
 		err = gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentId, ","))
 		if err != nil {
-			return tools.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
+			return helper.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
 		}
 		for _, group := range gs {
 			if group.GroupDN[:3] == "ou=" {
@@ -109,7 +110,7 @@ func LdapUsersAdd(user *userModel.User) error {
 			// 先将用户和部门信息维护到MySQL
 			err := group.AddUserToGroup(user)
 			if err != nil {
-				return tools.NewMySqlError(fmt.Errorf("向MySQL添加用户到分组关系失败：" + err.Error()))
+				return helper.NewMySqlError(fmt.Errorf("向MySQL添加用户到分组关系失败：" + err.Error()))
 			}
 		}
 		return nil

@@ -6,6 +6,7 @@ import (
 	"micro-net-hub/internal/module/goldap/ldapmgr"
 	userModel "micro-net-hub/internal/module/user/model"
 	"micro-net-hub/internal/server/config"
+	"micro-net-hub/internal/server/helper"
 	"micro-net-hub/internal/tools"
 
 	"github.com/gin-gonic/gin"
@@ -17,7 +18,7 @@ type SqlLogic struct{}
 func (d *SqlLogic) SyncSqlUsers(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*userModel.SyncSqlUserReq)
 	if !ok {
-		return nil, tools.ReqAssertErr
+		return nil, helper.ReqAssertErr
 	}
 	_ = c
 	// 1.获取所有用户
@@ -25,36 +26,36 @@ func (d *SqlLogic) SyncSqlUsers(c *gin.Context, req interface{}) (data interface
 		filter := tools.H{"id": int(id)}
 		var u userModel.User
 		if !u.Exist(filter) {
-			return nil, tools.NewMySqlError(fmt.Errorf("有用户不存在"))
+			return nil, helper.NewMySqlError(fmt.Errorf("有用户不存在"))
 		}
 	}
 	var users = userModel.NewUsers()
 	err := users.GetUserByIds(r.UserIds)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取用户信息失败: " + err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取用户信息失败: " + err.Error()))
 	}
 	// 2.再将用户添加到ldap
 	for _, user := range users {
 		err = ldapmgr.LdapUserAdd(user)
 		if err != nil {
-			return nil, tools.NewLdapError(fmt.Errorf("SyncUser向LDAP同步用户失败：" + err.Error()))
+			return nil, helper.NewLdapError(fmt.Errorf("SyncUser向LDAP同步用户失败：" + err.Error()))
 		}
 		// 获取用户将要添加的分组
 		var gs = userModel.NewGroups()
 		err := gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentId, ","))
 		if err != nil {
-			return nil, tools.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
+			return nil, helper.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
 		}
 		for _, group := range gs {
 			//根据选择的部门，添加到部门内
 			err = ldapmgr.LdapDeptAddUserToGroup(group.GroupDN, user.UserDN)
 			if err != nil {
-				return nil, tools.NewMySqlError(fmt.Errorf("向Ldap添加用户到分组关系失败：" + err.Error()))
+				return nil, helper.NewMySqlError(fmt.Errorf("向Ldap添加用户到分组关系失败：" + err.Error()))
 			}
 		}
 		err = user.ChangeSyncState(1)
 		if err != nil {
-			return nil, tools.NewLdapError(fmt.Errorf("用户同步完毕之后更新状态失败：" + err.Error()))
+			return nil, helper.NewLdapError(fmt.Errorf("用户同步完毕之后更新状态失败：" + err.Error()))
 		}
 	}
 
@@ -65,7 +66,7 @@ func (d *SqlLogic) SyncSqlUsers(c *gin.Context, req interface{}) (data interface
 func (d *SqlLogic) SyncSqlGroups(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*userModel.SyncSqlGrooupsReq)
 	if !ok {
-		return nil, tools.ReqAssertErr
+		return nil, helper.ReqAssertErr
 	}
 	_ = c
 	// 1.获取所有分组
@@ -73,19 +74,19 @@ func (d *SqlLogic) SyncSqlGroups(c *gin.Context, req interface{}) (data interfac
 		filter := tools.H{"id": int(id)}
 		var g userModel.Group
 		if !g.Exist(filter) {
-			return nil, tools.NewMySqlError(fmt.Errorf("有分组不存在"))
+			return nil, helper.NewMySqlError(fmt.Errorf("有分组不存在"))
 		}
 	}
 	var gs = userModel.NewGroups()
 	err := gs.GetGroupsByIds(r.GroupIds)
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取分组信息失败: " + err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取分组信息失败: " + err.Error()))
 	}
 	// 2.再将分组添加到ldap
 	for _, group := range gs {
 		err = ldapmgr.LdapDeptAdd(group)
 		if err != nil {
-			return nil, tools.NewLdapError(fmt.Errorf("SyncUser向LDAP同步分组失败：" + err.Error()))
+			return nil, helper.NewLdapError(fmt.Errorf("SyncUser向LDAP同步分组失败：" + err.Error()))
 		}
 		if len(group.Users) > 0 {
 			for _, user := range group.Users {
@@ -94,13 +95,13 @@ func (d *SqlLogic) SyncSqlGroups(c *gin.Context, req interface{}) (data interfac
 				}
 				err = ldapmgr.LdapDeptAddUserToGroup(group.GroupDN, user.UserDN)
 				if err != nil {
-					return nil, tools.NewLdapError(fmt.Errorf("同步分组之后处理分组内的用户失败：" + err.Error()))
+					return nil, helper.NewLdapError(fmt.Errorf("同步分组之后处理分组内的用户失败：" + err.Error()))
 				}
 			}
 		}
 		err = group.ChangeSyncState(1)
 		if err != nil {
-			return nil, tools.NewLdapError(fmt.Errorf("分组同步完毕之后更新状态失败：" + err.Error()))
+			return nil, helper.NewLdapError(fmt.Errorf("分组同步完毕之后更新状态失败：" + err.Error()))
 		}
 	}
 

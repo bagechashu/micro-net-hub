@@ -7,7 +7,7 @@ import (
 	"micro-net-hub/internal/global"
 	userLogic "micro-net-hub/internal/module/user"
 	"micro-net-hub/internal/server/config"
-	"micro-net-hub/internal/tools"
+	"micro-net-hub/internal/server/helper"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,12 +19,12 @@ func CasbinMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user, err := userLogic.GetCurrentLoginUser(c)
 		if err != nil {
-			tools.Response(c, 401, 401, nil, "用户未登录")
+			helper.Response(c, 401, 401, nil, "用户未登录")
 			c.Abort()
 			return
 		}
 		if user.Status != 1 {
-			tools.Response(c, 401, 401, nil, "当前用户已被禁用")
+			helper.Response(c, 401, 401, nil, "当前用户已被禁用")
 			c.Abort()
 			return
 		}
@@ -43,7 +43,7 @@ func CasbinMiddleware() gin.HandlerFunc {
 		act := c.Request.Method
 		isPass := check(subs, obj, act)
 		if !isPass {
-			tools.Response(c, 401, 401, nil, "没有权限")
+			helper.Response(c, 401, 401, nil, "没有权限")
 			c.Abort()
 			return
 		}

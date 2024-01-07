@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"micro-net-hub/internal/server/controller"
+	"micro-net-hub/internal/server/handler"
 	"micro-net-hub/internal/server/middleware"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
@@ -15,11 +15,11 @@ func InitMenuRoutes(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) gi
 	// 开启casbin鉴权中间件
 	menu.Use(middleware.CasbinMiddleware())
 	{
-		menu.GET("/tree", controller.Menu.GetTree)
-		menu.GET("/access/tree", controller.Menu.GetAccessTree)
-		menu.POST("/add", controller.Menu.Add)
-		menu.POST("/update", controller.Menu.Update)
-		menu.POST("/delete", controller.Menu.Delete)
+		menu.GET("/tree", handler.Menu.GetTree)
+		menu.GET("/access/tree", handler.Menu.GetAccessTree)
+		menu.POST("/add", handler.Menu.Add)
+		menu.POST("/update", handler.Menu.Update)
+		menu.POST("/delete", handler.Menu.Delete)
 	}
 
 	return r

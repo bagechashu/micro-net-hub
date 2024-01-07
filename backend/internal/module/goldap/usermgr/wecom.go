@@ -8,6 +8,7 @@ import (
 	userLogic "micro-net-hub/internal/module/user"
 	userModel "micro-net-hub/internal/module/user/model"
 	"micro-net-hub/internal/server/config"
+	"micro-net-hub/internal/server/helper"
 	"micro-net-hub/internal/tools"
 
 	"github.com/gin-gonic/gin"
@@ -37,11 +38,11 @@ func (mgr WeChat) SyncDepts(c *gin.Context, req interface{}) (data interface{}, 
 	// 1.获取所有部门
 	deptSource, err := mgr.GetAllDepts()
 	if err != nil {
-		return nil, tools.NewOperationError(fmt.Errorf("获取企业微信部门列表失败：%s", err.Error()))
+		return nil, helper.NewOperationError(fmt.Errorf("获取企业微信部门列表失败：%s", err.Error()))
 	}
 	depts, err := userLogic.ConvertDeptData(config.Conf.WeCom.Flag, deptSource)
 	if err != nil {
-		return nil, tools.NewOperationError(fmt.Errorf("转换企业微信部门数据失败：%s", err.Error()))
+		return nil, helper.NewOperationError(fmt.Errorf("转换企业微信部门数据失败：%s", err.Error()))
 	}
 
 	// 2.将远程数据转换成树
@@ -58,18 +59,18 @@ func (mgr WeChat) SyncUsers(c *gin.Context, req interface{}) (data interface{}, 
 	// 1.获取企业微信用户列表
 	staffSource, err := mgr.GetAllUsers()
 	if err != nil {
-		return nil, tools.NewOperationError(fmt.Errorf("获取企业微信用户列表失败：%s", err.Error()))
+		return nil, helper.NewOperationError(fmt.Errorf("获取企业微信用户列表失败：%s", err.Error()))
 	}
 	staffs, err := userLogic.ConvertUserData(config.Conf.WeCom.Flag, staffSource)
 	if err != nil {
-		return nil, tools.NewOperationError(fmt.Errorf("转换企业微信用户数据失败：%s", err.Error()))
+		return nil, helper.NewOperationError(fmt.Errorf("转换企业微信用户数据失败：%s", err.Error()))
 	}
 	// 2.遍历用户，开始写入
 	for _, staff := range staffs {
 		// 入库
 		err = mgr.AddUsers(staff)
 		if err != nil {
-			return nil, tools.NewOperationError(fmt.Errorf("SyncWeComUsers写入用户失败：%s", err.Error()))
+			return nil, helper.NewOperationError(fmt.Errorf("SyncWeComUsers写入用户失败：%s", err.Error()))
 		}
 	}
 
@@ -80,7 +81,7 @@ func (mgr WeChat) SyncUsers(c *gin.Context, req interface{}) (data interface{}, 
 	var users = userModel.NewUsers()
 	err = users.ListAll()
 	if err != nil {
-		return nil, tools.NewMySqlError(fmt.Errorf("获取用户列表失败：" + err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取用户列表失败：" + err.Error()))
 	}
 	for _, user := range users {
 		if user.Source != config.Conf.WeCom.Flag {
@@ -102,17 +103,17 @@ func (mgr WeChat) SyncUsers(c *gin.Context, req interface{}) (data interface{}, 
 		user := new(userModel.User)
 		err = user.Find(tools.H{"source_user_id": userTmp.SourceUserId, "status": 1})
 		if err != nil {
-			return nil, tools.NewMySqlError(fmt.Errorf("在MySQL查询用户失败: " + err.Error()))
+			return nil, helper.NewMySqlError(fmt.Errorf("在MySQL查询用户失败: " + err.Error()))
 		}
 		// 先从ldap删除用户
 		err = ldapmgr.LdapUserDelete(user.UserDN)
 		if err != nil {
-			return nil, tools.NewLdapError(fmt.Errorf("在LDAP删除用户失败" + err.Error()))
+			return nil, helper.NewLdapError(fmt.Errorf("在LDAP删除用户失败" + err.Error()))
 		}
 		// 然后更新MySQL中用户状态
 		err = user.ChangeStatus(2)
 		if err != nil {
-			return nil, tools.NewMySqlError(fmt.Errorf("在MySQL更新用户状态失败: " + err.Error()))
+			return nil, helper.NewMySqlError(fmt.Errorf("在MySQL更新用户状态失败: " + err.Error()))
 		}
 	}
 	return nil, nil
@@ -199,12 +200,12 @@ func (mgr WeChat) addDeptsRec(depts []*userModel.Group) error {
 	for _, dept := range depts {
 		err := mgr.AddDepts(dept)
 		if err != nil {
-			return tools.NewOperationError(fmt.Errorf("DsyncWeComDepts添加部门失败: %s", err.Error()))
+			return helper.NewOperationError(fmt.Errorf("DsyncWeComDepts添加部门失败: %s", err.Error()))
 		}
 		if len(dept.Children) != 0 {
 			err = mgr.addDeptsRec(dept.Children)
 			if err != nil {
-				return tools.NewOperationError(fmt.Errorf("DsyncWeComDepts添加部门失败: %s", err.Error()))
+				return helper.NewOperationError(fmt.Errorf("DsyncWeComDepts添加部门失败: %s", err.Error()))
 			}
 		}
 	}
@@ -217,7 +218,7 @@ func (mgr WeChat) AddDepts(group *userModel.Group) error {
 	parentGroup := new(userModel.Group)
 	err := parentGroup.Find(tools.H{"source_dept_id": group.SourceDeptParentId})
 	if err != nil {
-		return tools.NewMySqlError(fmt.Errorf("查询父级部门失败：%s", err.Error()))
+		return helper.NewMySqlError(fmt.Errorf("查询父级部门失败：%s", err.Error()))
 	}
 
 	// 此时的 group 已经附带了Build后动态关联好的字段，接下来将一些确定性的其他字段值添加上，就可以创建这个分组了
@@ -230,7 +231,7 @@ func (mgr WeChat) AddDepts(group *userModel.Group) error {
 	if !group.Exist(tools.H{"group_dn": group.GroupDN}) {
 		err = userLogic.CommonAddGroup(group)
 		if err != nil {
-			return tools.NewOperationError(fmt.Errorf("添加部门: %s, 失败: %s", group.GroupName, err.Error()))
+			return helper.NewOperationError(fmt.Errorf("添加部门: %s, 失败: %s", group.GroupName, err.Error()))
 		}
 	}
 	return nil
@@ -242,7 +243,7 @@ func (mgr WeChat) AddUsers(user *userModel.User) error {
 	roles := userModel.NewRoles()
 	err := roles.GetRolesByIds([]uint{2})
 	if err != nil {
-		return tools.NewValidatorError(fmt.Errorf("根据角色ID获取角色信息失败:%s", err.Error()))
+		return helper.NewValidatorError(fmt.Errorf("根据角色ID获取角色信息失败:%s", err.Error()))
 	}
 	user.Creator = "system"
 	user.Roles = roles
@@ -256,7 +257,7 @@ func (mgr WeChat) AddUsers(user *userModel.User) error {
 		// 获取用户将要添加的分组
 		err := gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentId, ","))
 		if err != nil {
-			return tools.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
+			return helper.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
 		}
 		var deptTmp string
 		for _, group := range gs {
@@ -267,7 +268,7 @@ func (mgr WeChat) AddUsers(user *userModel.User) error {
 		// 创建用户
 		err = userLogic.CommonAddUser(user, gs)
 		if err != nil {
-			return tools.NewOperationError(fmt.Errorf("添加用户: %s, 失败: %s", user.Username, err.Error()))
+			return helper.NewOperationError(fmt.Errorf("添加用户: %s, 失败: %s", user.Username, err.Error()))
 		}
 	} else {
 		// 此处逻辑未经实际验证，如在使用中有问题，请反馈
@@ -281,7 +282,7 @@ func (mgr WeChat) AddUsers(user *userModel.User) error {
 			// 获取用户将要添加的分组
 			err := gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentId, ","))
 			if err != nil {
-				return tools.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
+				return helper.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
 			}
 			var deptTmp string
 			for _, group := range gs {

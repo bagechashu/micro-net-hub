@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"micro-net-hub/internal/server/controller"
+	"micro-net-hub/internal/server/handler"
 	"micro-net-hub/internal/server/middleware"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
@@ -15,8 +15,8 @@ func InitOperationLogRoutes(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddle
 	// 开启casbin鉴权中间件
 	operation_log.Use(middleware.CasbinMiddleware())
 	{
-		operation_log.GET("/operation/list", controller.OperationLog.List)
-		operation_log.POST("/operation/delete", controller.OperationLog.Delete)
+		operation_log.GET("/operation/list", handler.OperationLog.List)
+		operation_log.POST("/operation/delete", handler.OperationLog.Delete)
 	}
 	return r
 }

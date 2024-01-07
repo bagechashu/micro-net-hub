@@ -8,6 +8,7 @@ import (
 
 	"micro-net-hub/internal/global"
 	"micro-net-hub/internal/server/config"
+	"micro-net-hub/internal/server/helper"
 	"micro-net-hub/internal/tools"
 
 	"github.com/zhaoyunxing92/dingtalk/v2"
@@ -43,11 +44,11 @@ func (mgr DingTalk) SyncDepts(c *gin.Context, req interface{}) (data interface{}
 	// 1.获取所有部门
 	deptSource, err := mgr.GetAllDepts()
 	if err != nil {
-		return nil, tools.NewOperationError(fmt.Errorf("获取钉钉部门列表失败：%s", err.Error()))
+		return nil, helper.NewOperationError(fmt.Errorf("获取钉钉部门列表失败：%s", err.Error()))
 	}
 	depts, err := userLogic.ConvertDeptData(config.Conf.DingTalk.Flag, deptSource)
 	if err != nil {
-		return nil, tools.NewOperationError(fmt.Errorf("转换钉钉部门数据失败：%s", err.Error()))
+		return nil, helper.NewOperationError(fmt.Errorf("转换钉钉部门数据失败：%s", err.Error()))
 	}
 
 	// 2.将远程数据转换成树
@@ -64,18 +65,18 @@ func (mgr DingTalk) SyncUsers(c *gin.Context, req interface{}) (data interface{}
 	// 1.获取钉钉用户列表
 	staffSource, err := mgr.GetAllUsers()
 	if err != nil {
-		return nil, tools.NewOperationError(fmt.Errorf("SyncDingTalkUsers获取钉钉用户列表失败：%s", err.Error()))
+		return nil, helper.NewOperationError(fmt.Errorf("SyncDingTalkUsers获取钉钉用户列表失败：%s", err.Error()))
 	}
 	staffs, err := userLogic.ConvertUserData(config.Conf.DingTalk.Flag, staffSource)
 	if err != nil {
-		return nil, tools.NewOperationError(fmt.Errorf("转换钉钉用户数据失败：%s", err.Error()))
+		return nil, helper.NewOperationError(fmt.Errorf("转换钉钉用户数据失败：%s", err.Error()))
 	}
 	// 2.遍历用户，开始写入
 	for _, staff := range staffs {
 		// 入库
 		err = mgr.AddUsers(staff)
 		if err != nil {
-			return nil, tools.NewOperationError(fmt.Errorf("SyncDingTalkUsers写入用户失败：%s", err.Error()))
+			return nil, helper.NewOperationError(fmt.Errorf("SyncDingTalkUsers写入用户失败：%s", err.Error()))
 		}
 	}
 
@@ -88,7 +89,7 @@ func (mgr DingTalk) SyncUsers(c *gin.Context, req interface{}) (data interface{}
 		userIds, err = mgr.GetLeaveUserIdsDateRange(config.Conf.DingTalk.ULeaveRange)
 	}
 	if err != nil {
-		return nil, tools.NewOperationError(fmt.Errorf("SyncDingTalkUsers获取钉钉离职用户列表失败：%s", err.Error()))
+		return nil, helper.NewOperationError(fmt.Errorf("SyncDingTalkUsers获取钉钉离职用户列表失败：%s", err.Error()))
 	}
 	// 4.遍历id，开始处理
 	for _, uid := range userIds {
@@ -101,17 +102,17 @@ func (mgr DingTalk) SyncUsers(c *gin.Context, req interface{}) (data interface{}
 			user := new(userModel.User)
 			err = user.Find(tools.H{"source_user_id": fmt.Sprintf("%s_%s", config.Conf.DingTalk.Flag, uid)})
 			if err != nil {
-				return nil, tools.NewMySqlError(fmt.Errorf("在MySQL查询用户失败: " + err.Error()))
+				return nil, helper.NewMySqlError(fmt.Errorf("在MySQL查询用户失败: " + err.Error()))
 			}
 			// 先从ldap删除用户
 			err = ldapmgr.LdapUserDelete(user.UserDN)
 			if err != nil {
-				return nil, tools.NewLdapError(fmt.Errorf("在LDAP删除用户失败" + err.Error()))
+				return nil, helper.NewLdapError(fmt.Errorf("在LDAP删除用户失败" + err.Error()))
 			}
 			// 然后更新MySQL中用户状态
 			err = user.ChangeStatus(2)
 			if err != nil {
-				return nil, tools.NewMySqlError(fmt.Errorf("在MySQL更新用户状态失败: " + err.Error()))
+				return nil, helper.NewMySqlError(fmt.Errorf("在MySQL更新用户状态失败: " + err.Error()))
 			}
 		}
 	}
@@ -322,12 +323,12 @@ func (mgr DingTalk) addDeptsRec(depts []*userModel.Group) error {
 	for _, dept := range depts {
 		err := mgr.AddDepts(dept)
 		if err != nil {
-			return tools.NewOperationError(fmt.Errorf("DsyncDingTalkDepts添加部门失败: %s", err.Error()))
+			return helper.NewOperationError(fmt.Errorf("DsyncDingTalkDepts添加部门失败: %s", err.Error()))
 		}
 		if len(dept.Children) != 0 {
 			err = mgr.addDeptsRec(dept.Children)
 			if err != nil {
-				return tools.NewOperationError(fmt.Errorf("DsyncDingTalkDepts添加部门失败: %s", err.Error()))
+				return helper.NewOperationError(fmt.Errorf("DsyncDingTalkDepts添加部门失败: %s", err.Error()))
 			}
 		}
 	}
@@ -339,7 +340,7 @@ func (mgr DingTalk) AddDepts(group *userModel.Group) error {
 	parentGroup := new(userModel.Group)
 	err := parentGroup.Find(tools.H{"source_dept_id": group.SourceDeptParentId}) // 查询当前分组父ID在MySQL中的数据信息
 	if err != nil {
-		return tools.NewMySqlError(fmt.Errorf("查询父级部门失败：%s", err.Error()))
+		return helper.NewMySqlError(fmt.Errorf("查询父级部门失败：%s", err.Error()))
 	}
 
 	// 此时的 group 已经附带了Build后动态关联好的字段，接下来将一些确定性的其他字段值添加上，就可以创建这个分组了
@@ -352,7 +353,7 @@ func (mgr DingTalk) AddDepts(group *userModel.Group) error {
 	if !group.Exist(tools.H{"group_dn": group.GroupDN}) { // 判断当前部门是否已落库
 		err = userLogic.CommonAddGroup(group)
 		if err != nil {
-			return tools.NewOperationError(fmt.Errorf("添加部门: %s, 失败: %s", group.GroupName, err.Error()))
+			return helper.NewOperationError(fmt.Errorf("添加部门: %s, 失败: %s", group.GroupName, err.Error()))
 		}
 	}
 	return nil
@@ -364,7 +365,7 @@ func (mgr DingTalk) AddUsers(user *userModel.User) error {
 	roles := userModel.NewRoles()
 	err := roles.GetRolesByIds([]uint{2}) // 默认添加为普通用户角色
 	if err != nil {
-		return tools.NewValidatorError(fmt.Errorf("根据角色ID获取角色信息失败:%s", err.Error()))
+		return helper.NewValidatorError(fmt.Errorf("根据角色ID获取角色信息失败:%s", err.Error()))
 	}
 	user.Roles = roles
 	user.Creator = "system"
@@ -378,7 +379,7 @@ func (mgr DingTalk) AddUsers(user *userModel.User) error {
 		// 获取用户将要添加的分组
 		err := gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentId, ","))
 		if err != nil {
-			return tools.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
+			return helper.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
 		}
 		var deptTmp string
 		for _, group := range gs {
@@ -389,7 +390,7 @@ func (mgr DingTalk) AddUsers(user *userModel.User) error {
 		// 新增用户
 		err = userLogic.CommonAddUser(user, gs)
 		if err != nil {
-			return tools.NewOperationError(fmt.Errorf("添加用户: %s, 失败: %s", user.Username, err.Error()))
+			return helper.NewOperationError(fmt.Errorf("添加用户: %s, 失败: %s", user.Username, err.Error()))
 		}
 	} else {
 		if config.Conf.DingTalk.IsUpdateSyncd {
@@ -402,7 +403,7 @@ func (mgr DingTalk) AddUsers(user *userModel.User) error {
 			// 获取用户将要添加的分组
 			err := gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentId, ","))
 			if err != nil {
-				return tools.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
+				return helper.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
 			}
 			var deptTmp string
 			for _, group := range gs {

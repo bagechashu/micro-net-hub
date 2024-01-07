@@ -1,10 +1,12 @@
-package tools
+package helper
 
 import (
 	"fmt"
+	"micro-net-hub/internal/global"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 var ReqAssertErr = NewRspError(SystemErr, fmt.Errorf("请求异常"))
@@ -75,6 +77,34 @@ func ReloadErr(err interface{}) *RspError {
 		}
 	}
 	return rspErr
+}
+
+func BindAndValidateRequest(c *gin.Context, reqStruct interface{}) {
+	var err error
+	// bind struct
+	err = c.Bind(reqStruct)
+	if err != nil {
+		Err(c, NewValidatorError(err), nil)
+		return
+	}
+	//
+	err = global.Validate.Struct(reqStruct)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			global.Log.Errorf("bind reqStruct err: \n\treqStruct: %+v\n\terr: %s", reqStruct, err)
+			Err(c, NewValidatorError(fmt.Errorf(err.Translate(global.Trans))), nil)
+			return
+		}
+	}
+
+}
+
+func HandleResponse(c *gin.Context, data interface{}, rspError interface{}) {
+	if rspError != nil {
+		Err(c, ReloadErr(rspError), data)
+		return
+	}
+	Success(c, data)
 }
 
 // Success http 成功

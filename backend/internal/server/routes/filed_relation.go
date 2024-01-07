@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"micro-net-hub/internal/server/controller"
+	"micro-net-hub/internal/server/handler"
 	"micro-net-hub/internal/server/middleware"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
@@ -15,10 +15,10 @@ func InitFieldRelationRoutes(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddl
 	// 开启casbin鉴权中间件
 	filed_relation.Use(middleware.CasbinMiddleware())
 	{
-		filed_relation.POST("/add", controller.FieldRelation.Add)
-		filed_relation.GET("/list", controller.FieldRelation.List)
-		filed_relation.POST("/update", controller.FieldRelation.Update)
-		filed_relation.POST("/delete", controller.FieldRelation.Delete)
+		filed_relation.POST("/add", handler.FieldRelation.Add)
+		filed_relation.GET("/list", handler.FieldRelation.List)
+		filed_relation.POST("/update", handler.FieldRelation.Update)
+		filed_relation.POST("/delete", handler.FieldRelation.Delete)
 	}
 
 	return r

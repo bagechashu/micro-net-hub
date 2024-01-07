@@ -8,10 +8,11 @@ import (
 	"micro-net-hub/internal/global"
 	fieldRelationModel "micro-net-hub/internal/module/goldap/field_relation/model"
 	"micro-net-hub/internal/module/goldap/ldapmgr"
+	"micro-net-hub/internal/tools"
 
 	userModel "micro-net-hub/internal/module/user/model"
 	"micro-net-hub/internal/server/config"
-	"micro-net-hub/internal/tools"
+	"micro-net-hub/internal/server/helper"
 
 	"github.com/tidwall/gjson"
 )
@@ -102,12 +103,12 @@ func CommonAddUser(user *userModel.User, groups []*userModel.Group) error {
 	// 先将用户添加到MySQL
 	err := user.Add()
 	if err != nil {
-		return tools.NewMySqlError(fmt.Errorf("向MySQL创建用户失败：" + err.Error()))
+		return helper.NewMySqlError(fmt.Errorf("向MySQL创建用户失败：" + err.Error()))
 	}
 	// 再将用户添加到ldap
 	err = ldapmgr.LdapUserAdd(user)
 	if err != nil {
-		return tools.NewLdapError(fmt.Errorf("AddUser向LDAP创建用户失败：" + err.Error()))
+		return helper.NewLdapError(fmt.Errorf("AddUser向LDAP创建用户失败：" + err.Error()))
 	}
 
 	// 处理用户归属的组
@@ -118,12 +119,12 @@ func CommonAddUser(user *userModel.User, groups []*userModel.Group) error {
 		// 先将用户和部门信息维护到MySQL
 		err := group.AddUserToGroup(user)
 		if err != nil {
-			return tools.NewMySqlError(fmt.Errorf("向MySQL添加用户到分组关系失败：" + err.Error()))
+			return helper.NewMySqlError(fmt.Errorf("向MySQL添加用户到分组关系失败：" + err.Error()))
 		}
 		//根据选择的部门，添加到部门内
 		err = ldapmgr.LdapDeptAddUserToGroup(group.GroupDN, user.UserDN)
 		if err != nil {
-			return tools.NewMySqlError(fmt.Errorf("向Ldap添加用户到分组关系失败：" + err.Error()))
+			return helper.NewMySqlError(fmt.Errorf("向Ldap添加用户到分组关系失败：" + err.Error()))
 		}
 	}
 	return nil
@@ -138,12 +139,12 @@ func CommonUpdateUser(oldUser, newUser *userModel.User, groupId []uint) error {
 
 	err := ldapmgr.LdapUserUpdate(oldUser.Username, newUser)
 	if err != nil {
-		return tools.NewLdapError(fmt.Errorf("在LDAP更新用户失败：" + err.Error()))
+		return helper.NewLdapError(fmt.Errorf("在LDAP更新用户失败：" + err.Error()))
 	}
 
 	err = newUser.Update()
 	if err != nil {
-		return tools.NewMySqlError(fmt.Errorf("在MySQL更新用户失败：" + err.Error()))
+		return helper.NewMySqlError(fmt.Errorf("在MySQL更新用户失败：" + err.Error()))
 	}
 
 	//判断部门信息是否有变化有变化则更新相应的数据库
@@ -154,7 +155,7 @@ func CommonUpdateUser(oldUser, newUser *userModel.User, groupId []uint) error {
 	var addGroups = userModel.NewGroups()
 	err = addGroups.GetGroupsByIds(addDeptIds)
 	if err != nil {
-		return tools.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
+		return helper.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
 	}
 	for _, group := range addGroups {
 		if group.GroupDN[:3] == "ou=" {
@@ -163,12 +164,12 @@ func CommonUpdateUser(oldUser, newUser *userModel.User, groupId []uint) error {
 		// 先将用户和部门信息维护到MySQL
 		err := group.AddUserToGroup(newUser)
 		if err != nil {
-			return tools.NewMySqlError(fmt.Errorf("向MySQL添加用户到分组关系失败：" + err.Error()))
+			return helper.NewMySqlError(fmt.Errorf("向MySQL添加用户到分组关系失败：" + err.Error()))
 		}
 		//根据选择的部门，添加到部门内
 		err = ldapmgr.LdapDeptAddUserToGroup(group.GroupDN, newUser.UserDN)
 		if err != nil {
-			return tools.NewLdapError(fmt.Errorf("向Ldap添加用户到分组关系失败：" + err.Error()))
+			return helper.NewLdapError(fmt.Errorf("向Ldap添加用户到分组关系失败：" + err.Error()))
 		}
 	}
 
@@ -176,7 +177,7 @@ func CommonUpdateUser(oldUser, newUser *userModel.User, groupId []uint) error {
 	var removeGroups = userModel.NewGroups()
 	err = removeGroups.GetGroupsByIds(removeDeptIds)
 	if err != nil {
-		return tools.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
+		return helper.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
 	}
 	for _, group := range removeGroups {
 		if group.GroupDN[:3] == "ou=" {
@@ -184,11 +185,11 @@ func CommonUpdateUser(oldUser, newUser *userModel.User, groupId []uint) error {
 		}
 		err := group.RemoveUserFromGroup(newUser)
 		if err != nil {
-			return tools.NewMySqlError(fmt.Errorf("在MySQL将用户从分组移除失败：" + err.Error()))
+			return helper.NewMySqlError(fmt.Errorf("在MySQL将用户从分组移除失败：" + err.Error()))
 		}
 		err = ldapmgr.LdapDeptRemoveUserFromGroup(group.GroupDN, newUser.UserDN)
 		if err != nil {
-			return tools.NewMySqlError(fmt.Errorf("在ldap将用户从分组移除失败：" + err.Error()))
+			return helper.NewMySqlError(fmt.Errorf("在ldap将用户从分组移除失败：" + err.Error()))
 		}
 	}
 	return nil
@@ -204,11 +205,11 @@ func BuildGroupData(flag string, remoteData map[string]interface{}) (*userModel.
 	oldData := new(fieldRelationModel.FieldRelation)
 	err = fieldRelationModel.Find(tools.H{"flag": flag + "_group"}, oldData)
 	if err != nil {
-		return nil, tools.NewMySqlError(err)
+		return nil, helper.NewMySqlError(err)
 	}
 	frs, err := tools.JsonToMap(string(oldData.Attributes))
 	if err != nil {
-		return nil, tools.NewOperationError(err)
+		return nil, helper.NewOperationError(err)
 	}
 
 	g := &userModel.Group{}
@@ -237,11 +238,11 @@ func BuildUserData(flag string, remoteData map[string]interface{}) (*userModel.U
 	fieldRelationSource := new(fieldRelationModel.FieldRelation)
 	err = fieldRelationModel.Find(tools.H{"flag": flag + "_user"}, fieldRelationSource)
 	if err != nil {
-		return nil, tools.NewMySqlError(err)
+		return nil, helper.NewMySqlError(err)
 	}
 	fieldRelation, err := tools.JsonToMap(string(fieldRelationSource.Attributes))
 	if err != nil {
-		return nil, tools.NewOperationError(err)
+		return nil, helper.NewOperationError(err)
 	}
 
 	// 校验username是否为空，username为必填项
@@ -300,7 +301,7 @@ func ConvertUserData(flag string, remoteData []map[string]interface{}) (users []
 	for _, staff := range remoteData {
 		groupIds, err := userModel.DeptIdsToGroupIds(staff["department_ids"].([]string))
 		if err != nil {
-			return nil, tools.NewMySqlError(fmt.Errorf("将部门ids转换为内部部门id失败：%s", err.Error()))
+			return nil, helper.NewMySqlError(fmt.Errorf("将部门ids转换为内部部门id失败：%s", err.Error()))
 		}
 		user, err := BuildUserData(flag, staff)
 		if err != nil {
