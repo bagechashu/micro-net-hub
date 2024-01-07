@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"time"
 
-	"micro-net-hub/internal/server/config"
+	"micro-net-hub/internal/config"
 
 	"github.com/patrickmn/go-cache"
 

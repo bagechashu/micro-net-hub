@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"micro-net-hub/internal/server/config"
+	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/server/helper"
 	"micro-net-hub/internal/tools"
 

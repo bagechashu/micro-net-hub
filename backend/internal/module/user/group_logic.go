@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"micro-net-hub/internal/server/config"
+	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/tools"
 
 	"micro-net-hub/internal/module/goldap/ldapmgr"

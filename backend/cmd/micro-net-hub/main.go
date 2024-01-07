@@ -12,7 +12,7 @@ import (
 	"micro-net-hub/internal/global/setup"
 	operationLogModel "micro-net-hub/internal/module/operation_log/model"
 
-	"micro-net-hub/internal/server/config"
+	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/server/middleware"
 	"micro-net-hub/internal/server/routes"
 )

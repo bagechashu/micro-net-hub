@@ -4,9 +4,9 @@ import (
 	"strings"
 	"sync"
 
+	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
 	userLogic "micro-net-hub/internal/module/user"
-	"micro-net-hub/internal/server/config"
 	"micro-net-hub/internal/server/helper"
 
 	"github.com/gin-gonic/gin"

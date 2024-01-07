@@ -3,12 +3,12 @@ package setup
 import (
 	"fmt"
 
+	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
 	apiMgrModel "micro-net-hub/internal/module/apimgr/model"
 	fieldRelationModel "micro-net-hub/internal/module/goldap/field_relation/model"
 	opLogModel "micro-net-hub/internal/module/operation_log/model"
 	userModel "micro-net-hub/internal/module/user/model"
-	"micro-net-hub/internal/server/config"
 
 	"github.com/glebarez/sqlite"
 	"gorm.io/driver/mysql"

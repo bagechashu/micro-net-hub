@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
-	"micro-net-hub/internal/server/config"
 	"micro-net-hub/internal/server/middleware"
 
 	"github.com/gin-gonic/gin"

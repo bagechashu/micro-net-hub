@@ -4,10 +4,10 @@ import (
 	"errors"
 	"fmt"
 
+	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
 	apiMgrModel "micro-net-hub/internal/module/apimgr/model"
 	userModel "micro-net-hub/internal/module/user/model"
-	"micro-net-hub/internal/server/config"
 	"micro-net-hub/internal/tools"
 
 	"github.com/thoas/go-funk"

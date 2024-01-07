@@ -5,8 +5,8 @@ import (
 	"os"
 	"time"
 
+	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
-	"micro-net-hub/internal/server/config"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"

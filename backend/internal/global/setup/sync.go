@@ -1,10 +1,10 @@
 package setup
 
 import (
+	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
 	"micro-net-hub/internal/module/goldap/usermgr"
 	"micro-net-hub/internal/module/user"
-	"micro-net-hub/internal/server/config"
 
 	"github.com/robfig/cron/v3"
 )

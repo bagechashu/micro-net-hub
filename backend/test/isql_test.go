@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
+	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global/setup"
 	userModel "micro-net-hub/internal/module/user/model"
-	"micro-net-hub/internal/server/config"
 	"micro-net-hub/internal/tools"
 )
 

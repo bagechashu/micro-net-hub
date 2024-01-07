@@ -1,8 +1,8 @@
 package routes
 
 import (
+	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
-	"micro-net-hub/internal/server/config"
 	"micro-net-hub/ui"
 	"net/http"
 

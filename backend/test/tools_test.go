@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"micro-net-hub/internal/server/config"
+	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/tools"
 )
 

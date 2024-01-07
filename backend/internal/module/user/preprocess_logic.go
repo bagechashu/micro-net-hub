@@ -10,8 +10,8 @@ import (
 	"micro-net-hub/internal/module/goldap/ldapmgr"
 	"micro-net-hub/internal/tools"
 
+	"micro-net-hub/internal/config"
 	userModel "micro-net-hub/internal/module/user/model"
-	"micro-net-hub/internal/server/config"
 	"micro-net-hub/internal/server/helper"
 
 	"github.com/tidwall/gjson"

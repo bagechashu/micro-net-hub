@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
+	"micro-net-hub/internal/config"
 	apiMgrModel "micro-net-hub/internal/module/apimgr/model"
 	operationLogModel "micro-net-hub/internal/module/operation_log/model"
 	userModel "micro-net-hub/internal/module/user/model"
-	"micro-net-hub/internal/server/config"
 	"micro-net-hub/internal/tools"
 
 	"github.com/gin-gonic/gin"

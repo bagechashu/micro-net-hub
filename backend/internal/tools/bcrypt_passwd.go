@@ -1,7 +1,7 @@
 package tools
 
 import (
-	"micro-net-hub/internal/server/config"
+	"micro-net-hub/internal/config"
 )
 
 // 密码加密 使用自适应hash算法, 不可逆

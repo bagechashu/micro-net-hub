@@ -1,9 +1,9 @@
 package setup
 
 import (
+	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
 	"micro-net-hub/internal/pkg/ldappool"
-	"micro-net-hub/internal/server/config"
 )
 
 func InitLdapPool() {
