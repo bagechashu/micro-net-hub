@@ -1,8 +1,13 @@
-# https://micro-net-hub (d00d6df)
+<!-- @format -->
+
+# Micro-Net-Hub Backend
+
+Base on [go-ldap-admin](https://github.com/eryajf/go-ldap-admin), but <span style="color:red; font-weight:bold">change too much</span> according to my personal habits.
 
 # Notes
 
 ##### RSA key pairs
+
 > http://ldapdoc.eryajf.net/pages/119ea3/
 
 Empty database after use new RSA key pairs.
@@ -23,7 +28,7 @@ $ openssl rsa -in auth-priv.pem -pubout -out auth-pub.pem
 ##### Gen encrypted password string
 
 ```shell
-go run cmd/gen_pass/main.go  
+go run cmd/gen_pass/main.go
 # JrHB7jOVjZOKLa46/bv96rg80aYPRzdsxl5kQJhAVdnMH/nwsqAq696suIwE5+CbgW+W6Shec0mO4tZeojcCPRyAwdNNG9+OAMuH2R5+edfaE2OBe57S07ZBg8uJfmSjgFYxOx1FOSUtCr9bdKgjWFWTtMR714AB23TZ8unSvHY=   # admin_pass
 ```
 
