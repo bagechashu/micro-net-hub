@@ -2,7 +2,7 @@
 
 # Micro-Net-Hub Backend
 
-Base on [go-ldap-admin](https://github.com/eryajf/go-ldap-admin), but <span style="color:red; font-weight:bold">change too much</span> according to my personal habits.
+Base on [go-ldap-admin](https://github.com/eryajf/go-ldap-admin), but **change too much** according to my personal habits.
 
 # Notes
 

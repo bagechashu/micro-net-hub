@@ -5,19 +5,19 @@
         <router-view :key="key" />
       </keep-alive>
     </transition>
-    <el-footer  class="footer-copyright">
+    <el-footer class="footer-copyright">
       <div>
-        <span>Since 2022 </span>
+        <span>Since 2024 </span>
         <el-divider direction="vertical" />
         <span>Powered by </span>
-          <span>
-            <a href="https://github.com/eryajf/go-ldap-admin" target="_blank">Go-Ldap-Admin</a>
-          </span>
+        <span>
+          Golang/OpenLdap/Ocserv
+        </span>
         <el-divider direction="vertical" />
-        <span>Copyright </span>
-          <span>
-            <a href="https://github.com/eryajf" target="_blank">Eryajf</a>
-          </span>
+        <span>LICENSE </span>
+        <span>
+          <a href="https://github.com/bagechashu/micro-net-hub/blob/main/LICENSE" target="_blank">GPLv3</a>
+        </span>
       </div>
     </el-footer>
   </section>
@@ -25,16 +25,16 @@
 
 <script>
 export default {
-  name: 'AppMain',
+  name: "AppMain",
   computed: {
     cachedViews() {
-      return this.$store.state.tagsView.cachedViews
+      return this.$store.state.tagsView.cachedViews;
     },
     key() {
-      return this.$route.path
+      return this.$route.path;
     }
   }
-}
+};
 </script>
 
 <style lang="scss" scoped>

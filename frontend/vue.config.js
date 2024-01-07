@@ -6,7 +6,7 @@ function resolve(dir) {
   return path.join(__dirname, dir)
 }
 
-const name = defaultSettings.title || 'Go Ldap Admin' // page title
+const name = defaultSettings.title || 'Micro Net Hub' // page title
 
 // If your port is set to 80,
 // use administrator privileges to execute the command line.

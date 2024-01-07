@@ -6,26 +6,26 @@
 
     <div class="right-menu">
       <template v-if="device!=='mobile'">
-        <el-tooltip content="搜索" effect="dark" placement="bottom">
+        <el-tooltip content="Search" effect="dark" placement="bottom">
           <search id="header-search" class="right-menu-item" />
         </el-tooltip>
 
         <error-log class="errLog-container right-menu-item hover-effect" />
 
-        <el-tooltip content="全屏" effect="dark" placement="bottom">
+        <el-tooltip content="FullScreen" effect="dark" placement="bottom">
           <screenfull id="screenfull" class="right-menu-item hover-effect" />
         </el-tooltip>
 
-        <el-tooltip content="布局大小" effect="dark" placement="bottom">
+        <el-tooltip content="Size" effect="dark" placement="bottom">
           <size-select id="size-select" class="right-menu-item hover-effect" />
         </el-tooltip>
 
-        <el-tooltip content="官方文档" effect="dark" placement="bottom">
-          <el-link  style="font-size: 23px;" icon="el-icon-document" class="right-menu-item" href="http://ldapdoc.eryajf.net" :underline="false" target="_blank" />
+        <el-tooltip content="Doc Refs [eryajf]" effect="dark" placement="bottom">
+          <el-link style="font-size: 23px;" icon="el-icon-document" class="right-menu-item" href="http://ldapdoc.eryajf.net" :underline="false" target="_blank" />
         </el-tooltip>
-        <el-tooltip content="GitHub地址" effect="dark" placement="bottom">
-          <el-link style="font-size: 23px;" class="iconfont icon-github right-menu-item" href="https://github.com/eryajf/go-ldap-admin" :underline="false" target="_blank" />
-      </el-tooltip>
+        <el-tooltip content="GitHub" effect="dark" placement="bottom">
+          <el-link style="font-size: 23px;" class="iconfont icon-github right-menu-item" href="https://github.com/bagechashu/micro-net-hub" :underline="false" target="_blank" />
+        </el-tooltip>
 
       </template>
 
@@ -48,14 +48,14 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
-import Breadcrumb from '@/components/Breadcrumb'
-import Hamburger from '@/components/Hamburger'
-import ErrorLog from '@/components/ErrorLog'
-import Screenfull from '@/components/Screenfull'
-import SizeSelect from '@/components/SizeSelect'
-import Search from '@/components/HeaderSearch'
-import '@/assets/iconfont/font/iconfont.css'
+import { mapGetters } from "vuex";
+import Breadcrumb from "@/components/Breadcrumb";
+import Hamburger from "@/components/Hamburger";
+import ErrorLog from "@/components/ErrorLog";
+import Screenfull from "@/components/Screenfull";
+import SizeSelect from "@/components/SizeSelect";
+import Search from "@/components/HeaderSearch";
+import "@/assets/iconfont/font/iconfont.css";
 
 export default {
   components: {
@@ -68,22 +68,22 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'sidebar',
-      'avatar',
-      'device'
+      "sidebar",
+      "avatar",
+      "device"
     ])
 
   },
   methods: {
     toggleSideBar() {
-      this.$store.dispatch('app/toggleSideBar')
+      this.$store.dispatch("app/toggleSideBar");
     },
     async logout() {
-      await this.$store.dispatch('user/logout')
-      this.$router.push(`/login?redirect=${this.$route.fullPath}`)
+      await this.$store.dispatch("user/logout");
+      this.$router.push(`/login?redirect=${this.$route.fullPath}`);
     }
   }
-}
+};
 </script>
 
 <style lang="scss" scoped>

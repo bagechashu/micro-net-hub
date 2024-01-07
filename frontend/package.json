@@ -1,8 +1,7 @@
 {
-  "name": "go-ldap-admin-ui",
+  "name": "micro-net-hub",
   "version": "1.0.0",
-  "description": "go-ldap-admin前端项目",
-  "author": "eryajf <Linuxlql@163.com>",
+  "description": "micro-net-hub",
   "scripts": {
     "dev": "vue-cli-service serve",
     "lint": "eslint --ext .js,.vue src",
@@ -93,9 +92,5 @@
     "hooks": {
       "pre-commit": "lint-staged"
     }
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/eryajf-world/go-ldap-admin-ui.git"
   }
 }

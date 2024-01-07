@@ -15,7 +15,7 @@
 
 <script>
 export default {
-  name: 'SidebarLogo',
+  name: "SidebarLogo",
   props: {
     collapse: {
       type: Boolean,
@@ -24,11 +24,11 @@ export default {
   },
   data() {
     return {
-      title: 'Go Ldap Admin',
-      logo: require('@/assets/sidebar-logo/goldapadmin.png')
-    }
+      title: "Micro Net Hub",
+      logo: ""
+    };
   }
-}
+};
 </script>
 
 <style lang="scss" scoped>
@@ -64,10 +64,10 @@ export default {
     & .sidebar-title {
       display: inline-block;
       margin: 0;
-      color: #fff;
-      font-weight: 600;
+      color: #eee;
+      font-weight: bold;
       line-height: 50px;
-      font-size: 14px;
+      font-size: 1.2rem;
       font-family: Avenir, Helvetica Neue, Arial, Helvetica, sans-serif;
       vertical-align: middle;
     }

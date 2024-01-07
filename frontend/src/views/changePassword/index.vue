@@ -3,12 +3,12 @@
     <el-form ref="form" :model="form" size="medium" class="form-container">
       <el-form-item label="邮箱">
         <div class="input-container">
-          <el-input v-model="form.mail" placeholder="请输入个人邮箱"></el-input>
+          <el-input v-model="form.mail" placeholder="请输入个人邮箱" />
           <el-button type="primary" @click="sendEmailCode">发送验证码</el-button>
         </div>
       </el-form-item>
       <el-form-item label="验证码" class="code-item">
-        <el-input v-model="form.code" placeholder="请输入验证码"></el-input>
+        <el-input v-model="form.code" placeholder="请输入验证码" />
       </el-form-item>
       <el-form-item class="reset-item">
         <el-button type="primary" @click="resetPass">重置密码</el-button>
@@ -18,11 +18,11 @@
 </template>
 
 <script>
-import { emailPass,sendCode } from '@/api/system/user'
-import { Message } from 'element-ui'
+import { emailPass, sendCode } from "@/api/system/user";
+import { Message } from "element-ui";
 
 export default {
-  name: 'ChangePass',
+  name: "ChangePass",
   data() {
     return {
       // 查询参数
@@ -30,44 +30,45 @@ export default {
         mail: "",
         code: ""
       }
-    }
+    };
   },
   methods: {
     // 判断结果
-    judgeResult(res){
-      if (res.code==0){
-          Message({
-            showClose: true,
-            message: "操作成功",
-            type: 'success'
-          })
-        }
+    judgeResult(res) {
+      if (res.code === 0) {
+        Message({
+          showClose: true,
+          message: "操作成功",
+          type: "success"
+        });
+      }
     },
 
     // 发送邮箱验证码
     async sendEmailCode() {
-      console.log('aaaaaaaa',this.form.mail);
+      console.log("aaaaaaaa", this.form.mail);
 
-      await sendCode({ mail: this.form.mail }).then(res =>{
-        this.judgeResult(res)
-      })
+      await sendCode({ mail: this.form.mail }).then(res => {
+        this.judgeResult(res);
+      });
     },
     // 重置密码
     async resetPass() {
-      await emailPass(this.form).then(res =>{
-        this.judgeResult(res)
-      })
+      await emailPass(this.form).then(res => {
+        this.judgeResult(res);
+      });
       // 重新登录
       setTimeout(() => {
-        this.$router.replace({ path: '/login' })
-      }, 1500)
-    },
+        this.$router.replace({ path: "/login" });
+      }, 1500);
+    }
   }
-}
+};
 </script>
 
 <style scoped lang="scss">
 .reset-pass {
+  background-color: #eee;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -75,6 +76,9 @@ export default {
 }
 
 .form-container {
+  background-color: #ddd;
+  padding: 20px 30px;
+  border-radius: 8px;
   width: 400px;
 }
 

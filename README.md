@@ -5,6 +5,7 @@
 Basic tool for private network.
 
 # References
+
 - https://github.com/eryajf/go-ldap-admin
 - https://github.com/gnimli/go-web-mini
 - https://github.com/m-vinc/go-ldap-pool
@@ -15,7 +16,6 @@ Basic tool for private network.
 # TODO
 
 - UserManager
-  - Delete Default Value of departmentNumber: 打工人; postalAddress: 地球.
   - Add comment for group entity of ou/cn.
 - TOTPManager
 - VPNManager
@@ -28,21 +28,23 @@ Basic tool for private network.
 title: Micro Net Hub Architecture
 ---
 flowchart LR
-  %% Main
+  %% Service provide by Micro-Net-Hub
   subgraph Micro-Net-Hub
-    %% Service provide by Micro-Net-Hub
     main[[Micro-Net-Hub:9000]]
     radius[[Micro-Net-Hub<br>RadiusService:1812/udp]]
+    ui([Embedded-UI])
 
     %% Architecture
-    main --> CoreDnsController & LDAPController & VPNController & TOTPController
-    radius --> VPNController & TOTPController
-    ui([Embedded-UI])
+    main --> ui
+    main --> CoreDnsHandler & UserHandler & VPNHandler
+    UserHandler --> LDAPHandler
+    TOTPHandler --> radius
+    VPNHandler --> TOTPHandler
   end
-  Micro-Net-Hub ---> selfbuilt
-  Micro-Net-Hub --> mysql-main 
-  CoreDnsController --> mysql-coredns
-  coredns --> mysql-coredns
+  Micro-Net-Hub --> MySQL
+  coredns --> MySQL
+  LDAPHandler --> openldap
+  ocserv --> radius
 
   %% Service provide by third-party, need deployed by yourself.
   subgraph selfbuilt
@@ -53,12 +55,12 @@ flowchart LR
 
   %% Database
   subgraph MySQL
-    mysql-coredns[(MySQL coredns)]
     mysql-main[(MySQL main)]
+    mysql-coredns[(MySQL coredns)]
   end
 
-```
 
+```
 
 ```mermaid
 ---
