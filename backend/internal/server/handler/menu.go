@@ -8,10 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type MenuController struct{}
+type MenuHandler struct{}
 
 // GetTree 菜单树
-func (m *MenuController) GetTree(c *gin.Context) {
+func (MenuHandler) GetTree(c *gin.Context) {
 	req := new(userModel.MenuGetTreeReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -20,7 +20,7 @@ func (m *MenuController) GetTree(c *gin.Context) {
 }
 
 // GetUserMenuTreeByUserId 获取用户菜单树
-func (m *MenuController) GetAccessTree(c *gin.Context) {
+func (MenuHandler) GetAccessTree(c *gin.Context) {
 	req := new(userModel.MenuGetAccessTreeReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -29,7 +29,7 @@ func (m *MenuController) GetAccessTree(c *gin.Context) {
 }
 
 // Add 新建
-func (m *MenuController) Add(c *gin.Context) {
+func (MenuHandler) Add(c *gin.Context) {
 	req := new(userModel.MenuAddReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -38,7 +38,7 @@ func (m *MenuController) Add(c *gin.Context) {
 }
 
 // Update 更新记录
-func (m *MenuController) Update(c *gin.Context) {
+func (MenuHandler) Update(c *gin.Context) {
 	req := new(userModel.MenuUpdateReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -47,7 +47,7 @@ func (m *MenuController) Update(c *gin.Context) {
 }
 
 // Delete 删除记录
-func (m *MenuController) Delete(c *gin.Context) {
+func (MenuHandler) Delete(c *gin.Context) {
 	req := new(userModel.MenuDeleteReq)
 	helper.BindAndValidateRequest(c, req)
 

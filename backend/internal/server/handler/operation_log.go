@@ -8,10 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type OperationLogController struct{}
+type OperationLogHandler struct{}
 
 // List 记录列表
-func (m *OperationLogController) List(c *gin.Context) {
+func (OperationLogHandler) List(c *gin.Context) {
 	req := new(operationLogModel.OperationLogListReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -20,7 +20,7 @@ func (m *OperationLogController) List(c *gin.Context) {
 }
 
 // Delete 删除记录
-func (m *OperationLogController) Delete(c *gin.Context) {
+func (OperationLogHandler) Delete(c *gin.Context) {
 	req := new(operationLogModel.OperationLogDeleteReq)
 	helper.BindAndValidateRequest(c, req)
 

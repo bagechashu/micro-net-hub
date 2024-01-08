@@ -15,8 +15,9 @@ func InitOperationLogRoutes(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddle
 	// 开启casbin鉴权中间件
 	operation_log.Use(middleware.CasbinMiddleware())
 	{
-		operation_log.GET("/operation/list", handler.OperationLog.List)
-		operation_log.POST("/operation/delete", handler.OperationLog.Delete)
+		var h handler.OperationLogHandler
+		operation_log.GET("/operation/list", h.List)
+		operation_log.POST("/operation/delete", h.Delete)
 	}
 	return r
 }

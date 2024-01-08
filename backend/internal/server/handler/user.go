@@ -9,10 +9,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type UserController struct{}
+type UserHandler struct{}
 
 // Add 添加记录
-func (m *UserController) Add(c *gin.Context) {
+func (UserHandler) Add(c *gin.Context) {
 	req := new(userModel.UserAddReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -21,7 +21,7 @@ func (m *UserController) Add(c *gin.Context) {
 }
 
 // Update 更新记录
-func (m *UserController) Update(c *gin.Context) {
+func (UserHandler) Update(c *gin.Context) {
 	req := new(userModel.UserUpdateReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -30,7 +30,7 @@ func (m *UserController) Update(c *gin.Context) {
 }
 
 // List 记录列表
-func (m *UserController) List(c *gin.Context) {
+func (UserHandler) List(c *gin.Context) {
 	req := new(userModel.UserListReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -39,7 +39,7 @@ func (m *UserController) List(c *gin.Context) {
 }
 
 // Delete 删除记录
-func (m UserController) Delete(c *gin.Context) {
+func (m UserHandler) Delete(c *gin.Context) {
 	req := new(userModel.UserDeleteReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -48,7 +48,7 @@ func (m UserController) Delete(c *gin.Context) {
 }
 
 // ChangePwd 更新密码
-func (m UserController) ChangePwd(c *gin.Context) {
+func (m UserHandler) ChangePwd(c *gin.Context) {
 	req := new(userModel.UserChangePwdReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -57,7 +57,7 @@ func (m UserController) ChangePwd(c *gin.Context) {
 }
 
 // ChangeUserStatus 更改用户状态
-func (m UserController) ChangeUserStatus(c *gin.Context) {
+func (m UserHandler) ChangeUserStatus(c *gin.Context) {
 	req := new(userModel.UserChangeUserStatusReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -66,7 +66,7 @@ func (m UserController) ChangeUserStatus(c *gin.Context) {
 }
 
 // GetUserInfo 获取当前登录用户信息
-func (uc UserController) GetUserInfo(c *gin.Context) {
+func (uc UserHandler) GetUserInfo(c *gin.Context) {
 	req := new(userModel.UserGetUserInfoReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -75,7 +75,7 @@ func (uc UserController) GetUserInfo(c *gin.Context) {
 }
 
 // 同步钉钉用户信息
-func (uc UserController) SyncDingTalkUsers(c *gin.Context) {
+func (uc UserHandler) SyncDingTalkUsers(c *gin.Context) {
 	req := new(userModel.SyncDingUserReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -85,7 +85,7 @@ func (uc UserController) SyncDingTalkUsers(c *gin.Context) {
 }
 
 // 同步企业微信用户信息
-func (uc UserController) SyncWeComUsers(c *gin.Context) {
+func (uc UserHandler) SyncWeComUsers(c *gin.Context) {
 	req := new(userModel.SyncWeComUserReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -95,7 +95,7 @@ func (uc UserController) SyncWeComUsers(c *gin.Context) {
 }
 
 // 同步飞书用户信息
-func (uc UserController) SyncFeiShuUsers(c *gin.Context) {
+func (uc UserHandler) SyncFeiShuUsers(c *gin.Context) {
 	req := new(userModel.SyncFeiShuUserReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -105,7 +105,7 @@ func (uc UserController) SyncFeiShuUsers(c *gin.Context) {
 }
 
 // 同步ldap用户信息
-func (uc UserController) SyncOpenLdapUsers(c *gin.Context) {
+func (uc UserHandler) SyncOpenLdapUsers(c *gin.Context) {
 	req := new(userModel.SyncOpenLdapUserReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -115,7 +115,7 @@ func (uc UserController) SyncOpenLdapUsers(c *gin.Context) {
 }
 
 // 同步sql用户信息到ldap
-func (uc UserController) SyncSqlUsers(c *gin.Context) {
+func (uc UserHandler) SyncSqlUsers(c *gin.Context) {
 	req := new(userModel.SyncSqlUserReq)
 	helper.BindAndValidateRequest(c, req)
 

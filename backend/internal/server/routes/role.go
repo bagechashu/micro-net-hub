@@ -15,15 +15,16 @@ func InitRoleRoutes(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) gi
 	// 开启casbin鉴权中间件
 	role.Use(middleware.CasbinMiddleware())
 	{
-		role.GET("/list", handler.Role.List)
-		role.POST("/add", handler.Role.Add)
-		role.POST("/update", handler.Role.Update)
-		role.POST("/delete", handler.Role.Delete)
+		var h handler.RoleHandler
+		role.GET("/list", h.List)
+		role.POST("/add", h.Add)
+		role.POST("/update", h.Update)
+		role.POST("/delete", h.Delete)
 
-		role.GET("/getmenulist", handler.Role.GetMenuList)
-		role.GET("/getapilist", handler.Role.GetApiList)
-		role.POST("/updatemenus", handler.Role.UpdateMenus)
-		role.POST("/updateapis", handler.Role.UpdateApis)
+		role.GET("/getmenulist", h.GetMenuList)
+		role.GET("/getapilist", h.GetApiList)
+		role.POST("/updatemenus", h.UpdateMenus)
+		role.POST("/updateapis", h.UpdateApis)
 	}
 	return r
 }

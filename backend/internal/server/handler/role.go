@@ -8,10 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type RoleController struct{}
+type RoleHandler struct{}
 
 // List 记录列表
-func (m *RoleController) List(c *gin.Context) {
+func (RoleHandler) List(c *gin.Context) {
 	req := new(userModel.RoleListReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -20,7 +20,7 @@ func (m *RoleController) List(c *gin.Context) {
 }
 
 // Add 新建
-func (m *RoleController) Add(c *gin.Context) {
+func (RoleHandler) Add(c *gin.Context) {
 	req := new(userModel.RoleAddReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -29,7 +29,7 @@ func (m *RoleController) Add(c *gin.Context) {
 }
 
 // Update 更新记录
-func (m *RoleController) Update(c *gin.Context) {
+func (RoleHandler) Update(c *gin.Context) {
 	req := new(userModel.RoleUpdateReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -38,7 +38,7 @@ func (m *RoleController) Update(c *gin.Context) {
 }
 
 // Delete 删除记录
-func (m *RoleController) Delete(c *gin.Context) {
+func (RoleHandler) Delete(c *gin.Context) {
 	req := new(userModel.RoleDeleteReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -47,7 +47,7 @@ func (m *RoleController) Delete(c *gin.Context) {
 }
 
 // GetMenuList 获取菜单列表
-func (m *RoleController) GetMenuList(c *gin.Context) {
+func (RoleHandler) GetMenuList(c *gin.Context) {
 	req := new(userModel.RoleGetMenuListReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -56,7 +56,7 @@ func (m *RoleController) GetMenuList(c *gin.Context) {
 }
 
 // GetApiList 获取接口列表
-func (m *RoleController) GetApiList(c *gin.Context) {
+func (RoleHandler) GetApiList(c *gin.Context) {
 	req := new(userModel.RoleGetApiListReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -65,7 +65,7 @@ func (m *RoleController) GetApiList(c *gin.Context) {
 }
 
 // UpdateMenus 更新菜单
-func (m *RoleController) UpdateMenus(c *gin.Context) {
+func (RoleHandler) UpdateMenus(c *gin.Context) {
 	req := new(userModel.RoleUpdateMenusReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -74,7 +74,7 @@ func (m *RoleController) UpdateMenus(c *gin.Context) {
 }
 
 // UpdateApis 更新接口
-func (m *RoleController) UpdateApis(c *gin.Context) {
+func (RoleHandler) UpdateApis(c *gin.Context) {
 	req := new(userModel.RoleUpdateApisReq)
 	helper.BindAndValidateRequest(c, req)
 

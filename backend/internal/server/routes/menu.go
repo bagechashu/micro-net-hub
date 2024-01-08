@@ -15,11 +15,12 @@ func InitMenuRoutes(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) gi
 	// 开启casbin鉴权中间件
 	menu.Use(middleware.CasbinMiddleware())
 	{
-		menu.GET("/tree", handler.Menu.GetTree)
-		menu.GET("/access/tree", handler.Menu.GetAccessTree)
-		menu.POST("/add", handler.Menu.Add)
-		menu.POST("/update", handler.Menu.Update)
-		menu.POST("/delete", handler.Menu.Delete)
+		var h handler.MenuHandler
+		menu.GET("/tree", h.GetTree)
+		menu.GET("/access/tree", h.GetAccessTree)
+		menu.POST("/add", h.Add)
+		menu.POST("/update", h.Update)
+		menu.POST("/delete", h.Delete)
 	}
 
 	return r

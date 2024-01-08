@@ -15,11 +15,12 @@ func InitApiRoutes(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) gin
 	// 开启casbin鉴权中间件
 	api.Use(middleware.CasbinMiddleware())
 	{
-		api.GET("/tree", handler.Api.GetTree)
-		api.GET("/list", handler.Api.List)
-		api.POST("/add", handler.Api.Add)
-		api.POST("/update", handler.Api.Update)
-		api.POST("/delete", handler.Api.Delete)
+		var h handler.ApiHandler
+		api.GET("/tree", h.GetTree)
+		api.GET("/list", h.List)
+		api.POST("/add", h.Add)
+		api.POST("/update", h.Update)
+		api.POST("/delete", h.Delete)
 	}
 
 	return r

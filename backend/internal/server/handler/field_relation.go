@@ -8,10 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type FieldRelationController struct{}
+type FieldRelationHandler struct{}
 
 // List 记录列表
-func (m *FieldRelationController) List(c *gin.Context) {
+func (FieldRelationHandler) List(c *gin.Context) {
 	req := new(fieldRelationModel.FieldRelationListReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -20,7 +20,7 @@ func (m *FieldRelationController) List(c *gin.Context) {
 }
 
 // Add 新建记录
-func (m *FieldRelationController) Add(c *gin.Context) {
+func (FieldRelationHandler) Add(c *gin.Context) {
 	req := new(fieldRelationModel.FieldRelationAddReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -29,7 +29,7 @@ func (m *FieldRelationController) Add(c *gin.Context) {
 }
 
 // Update 更新记录
-func (m *FieldRelationController) Update(c *gin.Context) {
+func (FieldRelationHandler) Update(c *gin.Context) {
 	req := new(fieldRelationModel.FieldRelationUpdateReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -38,7 +38,7 @@ func (m *FieldRelationController) Update(c *gin.Context) {
 }
 
 // Delete 删除记录
-func (m *FieldRelationController) Delete(c *gin.Context) {
+func (FieldRelationHandler) Delete(c *gin.Context) {
 	req := new(fieldRelationModel.FieldRelationDeleteReq)
 	helper.BindAndValidateRequest(c, req)
 

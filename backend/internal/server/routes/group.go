@@ -15,22 +15,23 @@ func InitGroupRoutes(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) g
 	// 开启casbin鉴权中间件
 	group.Use(middleware.CasbinMiddleware())
 	{
-		group.GET("/list", handler.Group.List)
-		group.GET("/tree", handler.Group.GetTree)
-		group.POST("/add", handler.Group.Add)
-		group.POST("/update", handler.Group.Update)
-		group.POST("/delete", handler.Group.Delete)
-		group.POST("/adduser", handler.Group.AddUser)
-		group.POST("/removeuser", handler.Group.RemoveUser)
+		var h handler.GroupHandler
+		group.GET("/list", h.List)
+		group.GET("/tree", h.GetTree)
+		group.POST("/add", h.Add)
+		group.POST("/update", h.Update)
+		group.POST("/delete", h.Delete)
+		group.POST("/adduser", h.AddUser)
+		group.POST("/removeuser", h.RemoveUser)
 
-		group.GET("/useringroup", handler.Group.UserInGroup)
-		group.GET("/usernoingroup", handler.Group.UserNoInGroup)
+		group.GET("/useringroup", h.UserInGroup)
+		group.GET("/usernoingroup", h.UserNoInGroup)
 
-		group.POST("/syncDingTalkDepts", handler.Group.SyncDingTalkDepts) // 同步钉钉部门到平台
-		group.POST("/syncWeComDepts", handler.Group.SyncWeComDepts)       // 同步企业微信部门到平台
-		group.POST("/syncFeiShuDepts", handler.Group.SyncFeiShuDepts)     // 同步飞书部门到平台
-		group.POST("/syncOpenLdapDepts", handler.Group.SyncOpenLdapDepts) // 同步ldap的分组到平台InitGroupRoutes
-		group.POST("/syncSqlGroups", handler.Group.SyncSqlGroups)         // 同步Sql分组到Ldap
+		group.POST("/syncDingTalkDepts", h.SyncDingTalkDepts) // 同步钉钉部门到平台
+		group.POST("/syncWeComDepts", h.SyncWeComDepts)       // 同步企业微信部门到平台
+		group.POST("/syncFeiShuDepts", h.SyncFeiShuDepts)     // 同步飞书部门到平台
+		group.POST("/syncOpenLdapDepts", h.SyncOpenLdapDepts) // 同步ldap的分组到平台InitGroupRoutes
+		group.POST("/syncSqlGroups", h.SyncSqlGroups)         // 同步Sql分组到Ldap
 	}
 
 	return r

@@ -16,19 +16,20 @@ func InitUserRoutes(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) gi
 	// 开启casbin鉴权中间件
 	user.Use(middleware.CasbinMiddleware())
 	{
-		user.GET("/info", handler.User.GetUserInfo)                   // 暂时未完成
-		user.GET("/list", handler.User.List)                          // 用户列表
-		user.POST("/add", handler.User.Add)                           // 添加用户
-		user.POST("/update", handler.User.Update)                     // 更新用户
-		user.POST("/delete", handler.User.Delete)                     // 删除用户
-		user.POST("/changePwd", handler.User.ChangePwd)               // 修改用户密码
-		user.POST("/changeUserStatus", handler.User.ChangeUserStatus) // 修改用户状态
+		var h handler.UserHandler
+		user.GET("/info", h.GetUserInfo)                   // 暂时未完成
+		user.GET("/list", h.List)                          // 用户列表
+		user.POST("/add", h.Add)                           // 添加用户
+		user.POST("/update", h.Update)                     // 更新用户
+		user.POST("/delete", h.Delete)                     // 删除用户
+		user.POST("/changePwd", h.ChangePwd)               // 修改用户密码
+		user.POST("/changeUserStatus", h.ChangeUserStatus) // 修改用户状态
 
-		user.POST("/syncDingTalkUsers", handler.User.SyncDingTalkUsers) // 同步钉钉用户到平台
-		user.POST("/syncWeComUsers", handler.User.SyncWeComUsers)       // 同步企业微信用户到平台
-		user.POST("/syncFeiShuUsers", handler.User.SyncFeiShuUsers)     // 同步飞书用户到平台
-		user.POST("/syncOpenLdapUsers", handler.User.SyncOpenLdapUsers) // 同步Ldap用户到平台
-		user.POST("/syncSqlUsers", handler.User.SyncSqlUsers)           // 同步Sql用户到Ldap
+		user.POST("/syncDingTalkUsers", h.SyncDingTalkUsers) // 同步钉钉用户到平台
+		user.POST("/syncWeComUsers", h.SyncWeComUsers)       // 同步企业微信用户到平台
+		user.POST("/syncFeiShuUsers", h.SyncFeiShuUsers)     // 同步飞书用户到平台
+		user.POST("/syncOpenLdapUsers", h.SyncOpenLdapUsers) // 同步Ldap用户到平台
+		user.POST("/syncSqlUsers", h.SyncSqlUsers)           // 同步Sql用户到Ldap
 	}
 	return r
 }

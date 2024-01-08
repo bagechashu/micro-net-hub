@@ -8,10 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type ApiController struct{}
+type ApiHandler struct{}
 
 // List 记录列表
-func (m *ApiController) List(c *gin.Context) {
+func (ApiHandler) List(c *gin.Context) {
 	req := new(apiMgrModel.ApiListReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -20,7 +20,7 @@ func (m *ApiController) List(c *gin.Context) {
 }
 
 // GetTree 接口树
-func (m *ApiController) GetTree(c *gin.Context) {
+func (ApiHandler) GetTree(c *gin.Context) {
 	req := new(apiMgrModel.ApiGetTreeReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -29,7 +29,7 @@ func (m *ApiController) GetTree(c *gin.Context) {
 }
 
 // Add 新建记录
-func (m *ApiController) Add(c *gin.Context) {
+func (ApiHandler) Add(c *gin.Context) {
 	req := new(apiMgrModel.ApiAddReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -38,7 +38,7 @@ func (m *ApiController) Add(c *gin.Context) {
 }
 
 // Update 更新记录
-func (m *ApiController) Update(c *gin.Context) {
+func (ApiHandler) Update(c *gin.Context) {
 	req := new(apiMgrModel.ApiUpdateReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -47,7 +47,7 @@ func (m *ApiController) Update(c *gin.Context) {
 }
 
 // Delete 删除记录
-func (m *ApiController) Delete(c *gin.Context) {
+func (ApiHandler) Delete(c *gin.Context) {
 	req := new(apiMgrModel.ApiDeleteReq)
 	helper.BindAndValidateRequest(c, req)
 

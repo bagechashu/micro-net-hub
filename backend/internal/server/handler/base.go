@@ -9,10 +9,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type BaseController struct{}
+type BaseHandler struct{}
 
 // SendCode 给用户邮箱发送验证码
-func (m *BaseController) SendCode(c *gin.Context) {
+func (BaseHandler) SendCode(c *gin.Context) {
 	req := new(userModel.BaseSendCodeReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -21,7 +21,7 @@ func (m *BaseController) SendCode(c *gin.Context) {
 }
 
 // ChangePwd 用户通过邮箱修改密码
-func (m *BaseController) ChangePwd(c *gin.Context) {
+func (BaseHandler) ChangePwd(c *gin.Context) {
 	req := new(userModel.BaseChangePwdReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -30,7 +30,7 @@ func (m *BaseController) ChangePwd(c *gin.Context) {
 }
 
 // Dashboard 系统首页展示数据
-func (m *BaseController) Dashboard(c *gin.Context) {
+func (BaseHandler) Dashboard(c *gin.Context) {
 	req := new(dashboardModel.BaseDashboardReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -39,7 +39,7 @@ func (m *BaseController) Dashboard(c *gin.Context) {
 }
 
 // EncryptPasswd 生成加密密码
-func (m *BaseController) EncryptPasswd(c *gin.Context) {
+func (BaseHandler) EncryptPasswd(c *gin.Context) {
 	req := new(userModel.EncryptPasswdReq)
 	helper.BindAndValidateRequest(c, req)
 
@@ -48,7 +48,7 @@ func (m *BaseController) EncryptPasswd(c *gin.Context) {
 }
 
 // DecryptPasswd 密码解密为明文
-func (m *BaseController) DecryptPasswd(c *gin.Context) {
+func (BaseHandler) DecryptPasswd(c *gin.Context) {
 	req := new(userModel.DecryptPasswdReq)
 	helper.BindAndValidateRequest(c, req)
 
