@@ -1,3 +1,6 @@
+package config
+
+const RBAC_MODEL = `
 [request_definition]
 r = sub, obj, act
 
@@ -12,3 +15,4 @@ e = some(where (p.eft == allow))
 
 [matchers]
 m = r.sub == p.sub && (keyMatch2(r.obj, p.obj) || keyMatch(r.obj, p.obj)) && (r.act == p.act || p.act == "*")
+`

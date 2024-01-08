@@ -17,7 +17,7 @@ func InitUiRoutes(r *gin.Engine) gin.IRoutes {
 	// TODO: Configure the static file path using configuration
 	if config.Conf.System.Mode == "release" {
 		r.StaticFS("/ui", http.FS(ui.Static))
-		global.Log.Info("release Mode, and Webui wse embedd static file")
+		global.Log.Info("release Mode, and Webui was embedd static file")
 	} else {
 		r.StaticFS("/ui", http.Dir("./ui/"))
 	}

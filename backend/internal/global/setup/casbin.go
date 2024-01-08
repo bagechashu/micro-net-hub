@@ -7,6 +7,7 @@ import (
 	"micro-net-hub/internal/global"
 
 	"github.com/casbin/casbin/v2"
+	"github.com/casbin/casbin/v2/model"
 	gormadapter "github.com/casbin/gorm-adapter/v3"
 )
 
@@ -27,7 +28,13 @@ func mysqlCasbin() (*casbin.Enforcer, error) {
 	if err != nil {
 		return nil, err
 	}
-	e, err := casbin.NewEnforcer(config.Conf.Casbin.ModelPath, a)
+
+	casbinModel, err := model.NewModelFromString(config.RBAC_MODEL)
+	if err != nil {
+		fmt.Printf("model err: %v", err)
+	}
+
+	e, err := casbin.NewEnforcer(casbinModel, a)
 	if err != nil {
 		return nil, err
 	}

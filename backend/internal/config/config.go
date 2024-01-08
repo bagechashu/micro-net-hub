@@ -20,7 +20,6 @@ type config struct {
 	Logs      *LogsConfig      `mapstructure:"logs" json:"logs"`
 	Database  *Database        `mapstructure:"database" json:"database"`
 	Mysql     *MysqlConfig     `mapstructure:"mysql" json:"mysql"`
-	Casbin    *CasbinConfig    `mapstructure:"casbin" json:"casbin"`
 	Jwt       *JwtConfig       `mapstructure:"jwt" json:"jwt"`
 	RateLimit *RateLimitConfig `mapstructure:"rate-limit" json:"rateLimit"`
 	Ldap      *LdapConfig      `mapstructure:"ldap" json:"ldap"`
@@ -121,10 +120,6 @@ type MysqlConfig struct {
 	TablePrefix string `mapstructure:"table-prefix" json:"tablePrefix"`
 	Charset     string `mapstructure:"charset" json:"charset"`
 	Collation   string `mapstructure:"collation" json:"collation"`
-}
-
-type CasbinConfig struct {
-	ModelPath string `mapstructure:"model-path" json:"modelPath"`
 }
 
 type JwtConfig struct {

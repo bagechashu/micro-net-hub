@@ -55,11 +55,6 @@ mysql:
   # 字符集(utf8mb4_general_ci速度比utf8mb4_unicode_ci快些)
   collation: utf8mb4_general_ci
 
-# casbin配置
-casbin:
-  # 模型配置文件, config.yml相对路径
-  model-path: 'rbac_model.conf'
-
 # jwt配置
 jwt:
   # jwt标识
