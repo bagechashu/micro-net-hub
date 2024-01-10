@@ -73,4 +73,5 @@ func InitCron() {
 		global.Log.Errorf("启动同步任务状态检查任务失败: %v", err)
 	}
 	c.Start()
+	global.Log.Info("初始化定时任务完成")
 }

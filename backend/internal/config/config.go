@@ -23,6 +23,7 @@ type config struct {
 	Jwt       *JwtConfig       `mapstructure:"jwt" json:"jwt"`
 	RateLimit *RateLimitConfig `mapstructure:"rate-limit" json:"rateLimit"`
 	Ldap      *LdapConfig      `mapstructure:"ldap" json:"ldap"`
+	Radius    *RadiusConfig    `mapstructure:"radius" json:"radius"`
 	Email     *EmailConfig     `mapstructure:"email" json:"email"`
 	DingTalk  *DingTalkConfig  `mapstructure:"dingtalk" json:"dingTalk"`
 	WeCom     *WeComConfig     `mapstructure:"wecom" json:"weCom"`
@@ -87,6 +88,7 @@ func RSAReadKeyFromFile(filename string) []byte {
 type SystemConfig struct {
 	Mode            string `mapstructure:"mode" json:"mode"`
 	UrlPathPrefix   string `mapstructure:"url-path-prefix" json:"urlPathPrefix"`
+	Host            string `mapstructure:"host" json:"host"`
 	Port            int    `mapstructure:"port" json:"port"`
 	InitData        bool   `mapstructure:"init-data" json:"initData"`
 	RSAPublicKey    string `mapstructure:"rsa-public-key" json:"rsaPublicKey"`
@@ -146,6 +148,13 @@ type LdapConfig struct {
 	UserNameModify     bool   `mapstructure:"user-name-modify" json:"userNameModify"`
 	DefaultEmailSuffix string `mapstructure:"default-email-suffix" json:"defaultEmailSuffix"`
 }
+
+type RadiusConfig struct {
+	ListenAddr  string `mapstructure:"listen-addr" json:"listenAddr"`
+	Secret      string `mapstructure:"secret" json:"secret"`
+	GroupFilter string `mapstructure:"group-filter" json:"groupFilter"`
+}
+
 type EmailConfig struct {
 	Host string `mapstructure:"host" json:"host"`
 	Port string `mapstructure:"port" json:"port"`

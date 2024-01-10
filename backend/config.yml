@@ -4,7 +4,8 @@ system:
   mode: release
   # url前缀
   url-path-prefix: api
-  # 程序监听端口
+  # 程序监听IP和端口
+  host: "0.0.0.0"
   port: 9000
   # 是否初始化数据(没有初始数据时使用, 已发布正式版改为false)
   init-data: true
@@ -104,6 +105,12 @@ ldap:
   user-name-modify: false
   # 默认邮箱后缀
   default-email-suffix: "example.com"
+
+radius:
+  listen-addr: "0.0.0.0:1812"
+  secret: "default-radius-secret"
+  group-filter: ""
+
 # 📢 即便用不到如下三段配置信息，也不要删除，否则会有一些奇怪的错误出现
 dingtalk:
   # 配置获取详细文档参考： http://ldapdoc.eryajf.net/pages/94f43a/

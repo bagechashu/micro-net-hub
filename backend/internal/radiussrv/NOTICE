@@ -1,0 +1,6 @@
+LDAP Based Radius Server With MFA Support
+Copyright 2020 Andrey Devyatkin
+
+This product links and uses the folling modules
+* https://github.com/layeh/radius distributed under Mozilla Public License 2.0
+Authors. All rights reserved.

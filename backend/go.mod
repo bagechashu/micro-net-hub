@@ -30,7 +30,10 @@ require (
 	github.com/chyroc/lark v0.0.96
 	github.com/tidwall/gjson v1.13.0
 	github.com/wenerme/go-wecom v0.0.0-20220617125121-2ee950da3e63
+	github.com/xlzd/gotp v0.1.0
+	golang.org/x/sync v0.1.0
 	gorm.io/datatypes v1.1.0
+	layeh.com/radius v0.0.0-20231213012653-1006025d24f8
 )
 
 require (
@@ -94,9 +97,9 @@ require (
 	github.com/ugorji/go/codec v1.2.3 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
-	golang.org/x/crypto v0.0.0-20221005025214-4161e89ecf1b // indirect
-	golang.org/x/sys v0.5.0 // indirect
-	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/crypto v0.13.0 // indirect
+	golang.org/x/sys v0.12.0 // indirect
+	golang.org/x/text v0.13.0 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/ini.v1 v1.66.4 // indirect

@@ -23,6 +23,7 @@ import (
 
 // 密码加密
 func NewGenPasswd(passwd string) string {
+	// global.Log.Debugf("password of new user: %s", passwd)
 	pass, _ := RSAEncrypt([]byte(passwd), config.Conf.System.RSAPublicBytes)
 	return string(pass)
 }

@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	totpModel "micro-net-hub/internal/module/totp/model"
+
 	"github.com/patrickmn/go-cache"
 	"github.com/thoas/go-funk"
 	"gorm.io/gorm"
@@ -15,27 +17,28 @@ import (
 
 type User struct {
 	gorm.Model
-	Username      string  `gorm:"type:varchar(50);not null;unique;comment:'用户名'" json:"username"`                    // 用户名
-	Password      string  `gorm:"size:255;not null;comment:'用户密码'" json:"password"`                                  // 用户密码
-	Nickname      string  `gorm:"type:varchar(50);comment:'中文名'" json:"nickname"`                                    // 昵称
-	GivenName     string  `gorm:"type:varchar(50);comment:'花名'" json:"givenName"`                                    // 花名，如果有的话，没有的话用昵称占位
-	Mail          string  `gorm:"type:varchar(100);comment:'邮箱'" json:"mail"`                                        // 邮箱
-	JobNumber     string  `gorm:"type:varchar(20);comment:'工号'" json:"jobNumber"`                                    // 工号
-	Mobile        string  `gorm:"type:varchar(15);comment:'手机号'" json:"mobile"`                                      // 手机号
-	Avatar        string  `gorm:"type:varchar(255);comment:'头像'" json:"avatar"`                                      // 头像
-	PostalAddress string  `gorm:"type:varchar(255);comment:'地址'" json:"postalAddress"`                               // 地址
-	Departments   string  `gorm:"type:varchar(512);comment:'部门'" json:"departments"`                                 // 部门
-	Position      string  `gorm:"type:varchar(128);comment:'职位'" json:"position"`                                    //  职位
-	Introduction  string  `gorm:"type:varchar(255);comment:'个人简介'" json:"introduction"`                              // 个人简介
-	Status        uint    `gorm:"type:tinyint(1);default:1;comment:'状态:1在职, 2离职'" json:"status"`                     // 状态
-	Creator       string  `gorm:"type:varchar(20);;comment:'创建者'" json:"creator"`                                    // 创建者
-	Source        string  `gorm:"type:varchar(50);comment:'用户来源：dingTalk、wecom、feishu、ldap、platform'" json:"source"` // 来源
-	DepartmentId  string  `gorm:"type:varchar(100);not null;comment:'部门id'" json:"departmentId"`                     // 部门id
-	Roles         []*Role `gorm:"many2many:user_roles" json:"roles"`                                                 // 角色
-	SourceUserId  string  `gorm:"type:varchar(100);not null;comment:'第三方用户id'" json:"sourceUserId"`                  // 第三方用户id
-	SourceUnionId string  `gorm:"type:varchar(100);not null;comment:'第三方唯一unionId'" json:"sourceUnionId"`            // 第三方唯一unionId
-	UserDN        string  `gorm:"type:varchar(255);not null;comment:'用户dn'" json:"userDn"`                           // 用户在ldap的dn
-	SyncState     uint    `gorm:"type:tinyint(1);default:1;comment:'同步状态:1已同步, 2未同步'" json:"syncState"`              // 数据到ldap的同步状态
+	Username      string         `gorm:"type:varchar(50);not null;unique;comment:'用户名'" json:"username"`                    // 用户名
+	Password      string         `gorm:"size:255;not null;comment:'用户密码'" json:"password"`                                  // 用户密码
+	Nickname      string         `gorm:"type:varchar(50);comment:'中文名'" json:"nickname"`                                    // 昵称
+	GivenName     string         `gorm:"type:varchar(50);comment:'花名'" json:"givenName"`                                    // 花名，如果有的话，没有的话用昵称占位
+	Mail          string         `gorm:"type:varchar(100);comment:'邮箱'" json:"mail"`                                        // 邮箱
+	JobNumber     string         `gorm:"type:varchar(20);comment:'工号'" json:"jobNumber"`                                    // 工号
+	Mobile        string         `gorm:"type:varchar(15);comment:'手机号'" json:"mobile"`                                      // 手机号
+	Avatar        string         `gorm:"type:varchar(255);comment:'头像'" json:"avatar"`                                      // 头像
+	PostalAddress string         `gorm:"type:varchar(255);comment:'地址'" json:"postalAddress"`                               // 地址
+	Departments   string         `gorm:"type:varchar(512);comment:'部门'" json:"departments"`                                 // 部门
+	Position      string         `gorm:"type:varchar(128);comment:'职位'" json:"position"`                                    //  职位
+	Introduction  string         `gorm:"type:varchar(255);comment:'个人简介'" json:"introduction"`                              // 个人简介
+	Status        uint           `gorm:"type:tinyint(1);default:1;comment:'状态:1在职, 2离职'" json:"status"`                     // 状态
+	Creator       string         `gorm:"type:varchar(20);;comment:'创建者'" json:"creator"`                                    // 创建者
+	Source        string         `gorm:"type:varchar(50);comment:'用户来源：dingTalk、wecom、feishu、ldap、platform'" json:"source"` // 来源
+	DepartmentId  string         `gorm:"type:varchar(100);not null;comment:'部门id'" json:"departmentId"`                     // 部门id
+	Roles         []*Role        `gorm:"many2many:user_roles" json:"roles"`                                                 // 角色
+	SourceUserId  string         `gorm:"type:varchar(100);not null;comment:'第三方用户id'" json:"sourceUserId"`                  // 第三方用户id
+	SourceUnionId string         `gorm:"type:varchar(100);not null;comment:'第三方唯一unionId'" json:"sourceUnionId"`            // 第三方唯一unionId
+	UserDN        string         `gorm:"type:varchar(255);not null;comment:'用户dn'" json:"userDn"`                           // 用户在ldap的dn
+	SyncState     uint           `gorm:"type:tinyint(1);default:1;comment:'同步状态:1已同步, 2未同步'" json:"syncState"`              // 数据到ldap的同步状态
+	Totp          totpModel.Totp `json:"totp"`
 }
 
 func (u *User) SetUserName(userName string) {
@@ -177,49 +180,36 @@ func (u *User) ChangeSyncState(status int) error {
 // Login 登录
 func (u *User) Login() (*User, error) {
 	// 根据用户名获取用户(正常状态:用户状态正常)
-	var userInDB User
-	// err := common.DB.
-	// 	Where("username = ?", user.Username).
-	// 	Preload("Roles").
-	// 	First(&firstUser).Error
-	// if err != nil {
-	// 	return nil, errors.New("用户不存在")
-	// }
-	err := userInDB.Find(tools.H{"username": u.Username})
+	var userRight User
+	err := userRight.Find(tools.H{"username": u.Username})
 	if err != nil {
 		return nil, errors.New("用户不存在")
 	}
 	// 判断用户的状态
-	userStatus := userInDB.Status
+	userStatus := userRight.Status
 	if userStatus != 1 {
 		return nil, errors.New("用户被禁用")
 	}
 
 	// 判断用户拥有的所有角色的状态,全部角色都被禁用则不能登录
-	// roles := firstUser.Roles
-	// isValidate := false
-	// for _, role := range roles {
-	// 	// 有一个正常状态的角色就可以登录
-	// 	if role.Status == 1 {
-	// 		isValidate = true
-	// 		break
-	// 	}
-	// }
-
-	// if !isValidate {
-	// 	return nil, errors.New("用户角色被禁用")
-	// }
-
-	if tools.NewParPasswd(userInDB.Password) != u.Password {
-		return nil, errors.New("密码错误")
+	roles := userRight.Roles
+	roleValid := false
+	for _, role := range roles {
+		// 有一个正常状态的角色就可以登录
+		if role.Status == 1 {
+			roleValid = true
+			break
+		}
 	}
 
-	// 校验密码
-	// err = tools.ComparePasswd(firstUser.Password, user.Password)
-	// if err != nil {
-	// 	return &firstUser, errors.New("密码错误")
-	// }
-	return &userInDB, nil
+	if !roleValid {
+		return nil, errors.New("用户角色被禁用")
+	}
+
+	if tools.NewParPasswd(userRight.Password) != u.Password {
+		return nil, errors.New("密码错误")
+	}
+	return &userRight, nil
 }
 
 type Users []*User
