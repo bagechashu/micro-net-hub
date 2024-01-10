@@ -1,38 +1,37 @@
 <template>
   <el-card style="margin-bottom:20px;">
     <div slot="header" class="clearfix">
-      <span>关于我</span>
+      <span>Totp QRcode</span>
     </div>
 
     <div class="user-profile">
       <div class="box-center">
-        <img :src="user.avatar" :height="'100px'" :width="'100px'" :hoverable="false">
-      </div>
-      <div class="box-center">
-        <div class="user-name text-center">{{ user.name }}</div>
-        <div class="user-name text-center">{{ user.mail }}</div>
-        <div class="user-role text-center text-muted">{{ user.role | uppercaseFirst }}</div>
+        <!-- <div class="user-name text-center">{{ user.totp.secret }}</div> -->
+        <QrCode :id="'QrCode'" :text="secret" />
       </div>
     </div>
   </el-card>
 </template>
 
 <script>
-
+import QrCode from "@/components/Qrcode/Qrcode.vue";
 export default {
-  components: {},
+  components: { QrCode },
   props: {
     user: {
       type: Object,
       default: () => {
         return {
-          name: "",
-          mail: "",
-          avatar: "",
-          role: ""
+          totp: {}
         };
       }
     }
+  },
+  data() {
+    return {
+      totp: this.user.totp,
+      secret: this.user.totp.secret
+    };
   }
 };
 </script>
