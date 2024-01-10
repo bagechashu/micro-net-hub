@@ -67,7 +67,7 @@ func (m UserHandler) ChangeUserStatus(c *gin.Context) {
 
 // GetUserInfo 获取当前登录用户信息
 func (uc UserHandler) GetUserInfo(c *gin.Context) {
-	req := new(userModel.UserGetUserInfoReq)
+	req := new(userModel.UserInfoReq)
 	helper.BindAndValidateRequest(c, req)
 
 	data, respErr := userLogic.UserLogicIns.GetUserInfo(c, req)

@@ -18,7 +18,7 @@ import (
 type User struct {
 	gorm.Model
 	Username      string         `gorm:"type:varchar(50);not null;unique;comment:'用户名'" json:"username"`                    // 用户名
-	Password      string         `gorm:"size:255;not null;comment:'用户密码'" json:"password"`                                  // 用户密码
+	Password      string         `gorm:"size:255;not null;comment:'用户密码'" json:"-"`                                         // 用户密码
 	Nickname      string         `gorm:"type:varchar(50);comment:'中文名'" json:"nickname"`                                    // 昵称
 	GivenName     string         `gorm:"type:varchar(50);comment:'花名'" json:"givenName"`                                    // 花名，如果有的话，没有的话用昵称占位
 	Mail          string         `gorm:"type:varchar(100);comment:'邮箱'" json:"mail"`                                        // 邮箱
@@ -158,12 +158,13 @@ func (u *User) Add() error {
 	u.Password = tools.NewGenPasswd(u.Password)
 	//result := global.DB.Create(user)
 	//return user.ID, result.Error
+	u.Totp.SetTotp()
 	return global.DB.Create(u).Error
 }
 
 // GetUserById 获取单个用户
 func (u *User) GetUserById(id uint) error {
-	err := global.DB.Where("id = ?", id).Preload("Roles").First(&u).Error
+	err := global.DB.Where("id = ?", id).Preload("Roles").Preload("Totp").First(&u).Error
 	return err
 }
 
@@ -475,7 +476,7 @@ type UserChangeUserStatusReq struct {
 }
 
 // UserGetUserInfoReq 获取用户信息结构体
-type UserGetUserInfoReq struct {
+type UserInfoReq struct {
 }
 
 // SyncDingUserReq 同步钉钉用户信息

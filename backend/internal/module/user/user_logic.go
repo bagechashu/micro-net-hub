@@ -441,7 +441,7 @@ func (l UserLogic) ChangeUserStatus(c *gin.Context, req interface{}) (data inter
 
 // GetUserInfo 获取用户信息
 func (l UserLogic) GetUserInfo(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
-	r, ok := req.(*userModel.UserGetUserInfoReq)
+	r, ok := req.(*userModel.UserInfoReq)
 	if !ok {
 		return nil, helper.ReqAssertErr
 	}

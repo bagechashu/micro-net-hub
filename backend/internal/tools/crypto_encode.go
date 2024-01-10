@@ -1,10 +1,14 @@
 package tools
 
 import (
+	"crypto/hmac"
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/sha1"
 	"crypto/x509"
+	"encoding/base32"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/pem"
 	"fmt"
 )
@@ -32,14 +36,14 @@ func RSAEncrypt(data, publicBytes []byte) ([]byte, error) {
 		return res, fmt.Errorf("无法加密, 公钥可能不正确, %v", err)
 	}
 	// 将数据加密为base64格式
-	return []byte(EncodeStr2Base64(string(res))), nil
+	return []byte(Base64Encode(res)), nil
 }
 
 // 对数据进行解密操作
 func RSADecrypt(base64Data, privateBytes []byte) ([]byte, error) {
 	var res []byte
 	// 将base64数据解析
-	data := []byte(DecodeStrFromBase64(string(base64Data)))
+	data, _ := Base64Decode(string(base64Data))
 	// 解析私钥
 	block, _ := pem.Decode(privateBytes)
 	if block == nil {
@@ -58,12 +62,58 @@ func RSADecrypt(base64Data, privateBytes []byte) ([]byte, error) {
 }
 
 // 加密base64字符串
-func EncodeStr2Base64(str string) string {
-	return base64.StdEncoding.EncodeToString([]byte(str))
+func Base64Encode(src []byte) string {
+	return base64.StdEncoding.EncodeToString(src)
 }
 
 // 解密base64字符串
-func DecodeStrFromBase64(str string) string {
-	decodeBytes, _ := base64.StdEncoding.DecodeString(str)
-	return string(decodeBytes)
+func Base64Decode(str string) ([]byte, error) {
+	return base64.StdEncoding.DecodeString(str)
+}
+
+func Base32Encode(src []byte) string {
+	return base32.StdEncoding.EncodeToString(src)
+}
+
+func Base32Decode(str string) ([]byte, error) {
+	return base32.StdEncoding.DecodeString(str)
+}
+
+func Int64ToBytes(value int64) []byte {
+	var result []byte
+	mask := int64(0xFF)
+	shifts := [8]uint16{56, 48, 40, 32, 24, 16, 8, 0}
+	for _, shift := range shifts {
+		result = append(result, byte((value>>shift)&mask))
+	}
+	return result
+}
+func BytesToUint32(bts []byte) uint32 {
+	return (uint32(bts[0]) << 24) + (uint32(bts[1]) << 16) +
+		(uint32(bts[2]) << 8) + uint32(bts[3])
+}
+
+func HexEncode(random []byte) string {
+	return fmt.Sprintf("%x", random)
+}
+
+func HexDecode(hexString string) ([]byte, error) {
+	return hex.DecodeString(hexString)
+}
+
+func HmacSha1Hash(key, data []byte) []byte {
+	h := hmac.New(sha1.New, key)
+	if total := len(data); total > 0 {
+		h.Write(data)
+	}
+	return h.Sum(nil)
+}
+func GenerateRandom(length int) []byte {
+	str := make([]byte, length)
+	_, err := rand.Read(str)
+	if err != nil {
+		fmt.Println("Error generating random bytes:", err)
+		return str
+	}
+	return str
 }

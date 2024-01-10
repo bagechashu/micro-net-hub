@@ -8,6 +8,7 @@ import (
 	apiMgrModel "micro-net-hub/internal/module/apimgr/model"
 	fieldRelationModel "micro-net-hub/internal/module/goldap/field_relation/model"
 	opLogModel "micro-net-hub/internal/module/operation_log/model"
+	totpModel "micro-net-hub/internal/module/totp/model"
 	userModel "micro-net-hub/internal/module/user/model"
 
 	"github.com/glebarez/sqlite"
@@ -33,6 +34,7 @@ func dbAutoMigrate() {
 		&userModel.Role{},
 		&userModel.Group{},
 		&userModel.Menu{},
+		&totpModel.Totp{},
 		&apiMgrModel.Api{},
 		&opLogModel.OperationLog{},
 		&fieldRelationModel.FieldRelation{},
