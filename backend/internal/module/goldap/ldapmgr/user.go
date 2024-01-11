@@ -58,7 +58,7 @@ func LdapUserAdd(user *userModel.User) error {
 	return conn.Add(add)
 }
 
-// 未使用
+// x 未使用
 func LdapUsersAdd(user *userModel.User) error {
 	// 根据 user_dn 查询用户,不存在则创建
 	if !user.Exist(tools.H{"user_dn": user.UserDN}) {

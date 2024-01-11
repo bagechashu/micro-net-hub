@@ -38,6 +38,7 @@ export default {
       "name",
       "mail",
       "avatar",
+      "introduction",
       "roles",
       "totp"
     ])
@@ -52,6 +53,7 @@ export default {
         role: this.roles.join(" | "),
         mail: this.mail,
         avatar: this.avatar ? this.avatar : "https://q1.qlogo.cn/g?b=qq&nk=10002&s=100",
+        introduction: this.introduction,
         totp: this.totp
       };
     }

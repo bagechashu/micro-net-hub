@@ -22,7 +22,8 @@ export default {
       type: Object,
       default: () => {
         return {
-          totp: {}
+          totp: {},
+          introduction: ""
         };
       }
     }
@@ -30,8 +31,8 @@ export default {
   data() {
     return {
       totp: this.user.totp,
-      // FIXME: totp 格式 otp://
-      secret: this.user.totp.secret
+      // eg: otpauth://totp/presightdefault_pvpnuser001?secret=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+      secret: `otpauth://totp/${this.user.introduction}_${this.user.name}?secret=${this.user.totp.secret}`
     };
   }
 };

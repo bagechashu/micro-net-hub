@@ -74,7 +74,7 @@ func CommonAddUser(user *userModel.User, groups []*userModel.Group) error {
 		user.GivenName = user.Username
 	}
 	if user.Introduction == "" {
-		user.Introduction = user.Username
+		user.Introduction = tools.ConvertBaseDNToDomain(config.Conf.Ldap.BaseDN)
 	}
 	// 兼容
 	if user.Mail == "" || !tools.CheckEmail(user.Mail) {
@@ -88,7 +88,7 @@ func CommonAddUser(user *userModel.User, groups []*userModel.Group) error {
 		user.JobNumber = "0000"
 	}
 	if user.Departments == "" {
-		user.Departments = "Default departments"
+		user.Departments = "all"
 	}
 	if user.Position == "" {
 		user.Position = "Default Position"

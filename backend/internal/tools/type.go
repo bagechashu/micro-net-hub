@@ -1,6 +1,10 @@
 package tools
 
-import "github.com/mozillazg/go-pinyin"
+import (
+	"strings"
+
+	"github.com/mozillazg/go-pinyin"
+)
 
 // H is a shortcut for map[string]interface{}
 type H map[string]interface{}
@@ -17,4 +21,20 @@ func ConvertToPinYin(src string) (dst string) {
 		}
 	}
 	return
+}
+
+func ConvertBaseDNToDomain(baseDN string) string {
+	// Split the baseDN string by the commas
+	parts := strings.Split(baseDN, ",")
+	// Get the last two parts of the string
+	parts = parts[len(parts)-2:]
+	// Remove the "dc=", "cn=" and "ou="prefixes from the parts
+	for i := 0; i < len(parts); i++ {
+		parts[i] = strings.TrimPrefix(parts[i], "dc=")
+		// parts[i] = strings.TrimPrefix(parts[i], "cn=")
+		// parts[i] = strings.TrimPrefix(parts[i], "ou=")
+	}
+	// Join the parts with a dot
+	result := strings.Join(parts, ".")
+	return result
 }
