@@ -99,6 +99,9 @@ func CommonAddUser(user *userModel.User, groups []*userModel.Group) error {
 	if user.Mobile == "" {
 		user.Mobile = generateMobile()
 	}
+	if tools.CheckQQNo(user.Avatar) {
+		user.Avatar = fmt.Sprintf("https://q1.qlogo.cn/g?b=qq&nk=%s&s=100", user.Avatar)
+	}
 
 	// 先将用户添加到MySQL
 	err := user.Add()

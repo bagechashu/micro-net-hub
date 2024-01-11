@@ -3,7 +3,6 @@ package tools
 import (
 	"fmt"
 	"math/rand"
-	"regexp"
 	"time"
 
 	"micro-net-hub/internal/config"
@@ -65,15 +64,4 @@ func SendCode(sendto []string) error {
         </div>
     </div>`, vcode)
 	return email(sendto, subject, body)
-}
-
-// 校验邮箱格式
-func CheckEmail(email string) bool {
-	// 邮箱格式的正则表达式
-	regex := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
-
-	// 使用正则表达式匹配邮箱格式
-	matched, _ := regexp.MatchString(regex, email)
-
-	return matched
 }

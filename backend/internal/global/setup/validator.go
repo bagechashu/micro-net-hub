@@ -2,7 +2,7 @@ package setup
 
 import (
 	"micro-net-hub/internal/global"
-	"regexp"
+	"micro-net-hub/internal/tools"
 
 	"github.com/go-playground/locales/zh"
 	ut "github.com/go-playground/universal-translator"
@@ -22,9 +22,6 @@ func InitValidate() {
 	global.Log.Infof("初始化validator.v10数据校验器完成")
 }
 
-// Match Chinese and international phone numbers
 func checkMobile(fl validator.FieldLevel) bool {
-	reg := `^(\+|00)??(\d{1,3})??((1|0)\d{8,10})??$`
-	rgx := regexp.MustCompile(reg)
-	return rgx.MatchString(fl.Field().String())
+	return tools.CheckMobile(fl.Field().String())
 }
