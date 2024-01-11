@@ -14,10 +14,6 @@ Basic tool for private network.
 - https://github.com/lework/lenav
 
 # TODO
-
-- UserManager
-  - Add comment for group entity of ou/cn.
-- TOTPManager
 - VPNManager
 - CoreDnsManager
 
@@ -38,8 +34,8 @@ flowchart LR
     main --> ui
     main --> CoreDnsHandler & UserHandler & VPNHandler
     UserHandler --> LDAPHandler
-    TOTPHandler --> radius
-    VPNHandler --> TOTPHandler
+    UserHandler --> TOTPModule
+    TOTPModule --> radius
   end
   Micro-Net-Hub --> MySQL
   coredns --> MySQL
@@ -75,8 +71,8 @@ flowchart LR
 
     ui-user-mgr --> ui-user([User])
     ui-user-mgr --> ui-group([Group])
+    ui-user-mgr --> ui-totp([TOTP])
 
-    ui-vpn-mgr --> ui-totp([TOTPManager])
     ui-vpn-mgr --> ui-vpn-config([VPN-Config])
     ui-vpn-mgr --> ui-vpn-status([VPN-Status])
 
