@@ -5,7 +5,7 @@
         <router-view :key="key" />
       </keep-alive>
     </transition>
-    <el-footer class="footer-copyright">
+    <el-footer class="footer-copyright" style="height: 20px;">
       <div>
         <span>Since 2024 </span>
         <el-divider direction="vertical" />
@@ -55,9 +55,10 @@ export default {
   bottom: 0;
   left: 0;
   right: 0;
-  line-height: 58px;
+  font-size: xx-small;
+  line-height: 10px;
   text-align: center;
-  border-top: 1px dashed #dcdfe6;
+  // border-top: 1px dashed #dcdfe6;
 }
 
 .hasTagsView {
