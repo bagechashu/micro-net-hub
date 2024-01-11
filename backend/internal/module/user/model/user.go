@@ -145,7 +145,7 @@ func (u *User) Exist(filter map[string]interface{}) bool {
 
 // Find 获取单个资源
 func (u *User) Find(filter map[string]interface{}) error {
-	return global.DB.Where(filter).Preload("Roles").First(&u).Error
+	return global.DB.Where(filter).Preload("Roles").Preload("Totp").First(&u).Error
 }
 
 // Find 获取同名用户已入库的序号最大的用户信息

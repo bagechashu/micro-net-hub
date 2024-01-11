@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"micro-net-hub/internal/global"
 	"micro-net-hub/internal/tools"
 	"strings"
 	"time"
@@ -37,6 +38,7 @@ func CheckTotp(secret string, totp string) (valid bool) {
 	if totp == code {
 		valid = true
 	}
+	global.Log.Debugf("code: %v, totp: %v", secret, secretKey, code, totp)
 	return
 }
 

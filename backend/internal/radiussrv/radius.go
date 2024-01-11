@@ -21,6 +21,7 @@ package radiussrv
 import (
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
+	totpModel "micro-net-hub/internal/module/totp/model"
 	userModel "micro-net-hub/internal/module/user/model"
 
 	"layeh.com/radius"
@@ -30,14 +31,22 @@ import (
 // AuthRequest - encapsulates approval logic
 func AuthRequest(username string, password string) (valid bool, err error) {
 	valid = false
-	// TODO: 用后六位校验 TOTP, 其余的校验数据库
+	// password 后六位校验 TOTP, 其余的数据库校验密码
+	pl := len(password)
+	pinCode := password[:pl-6]
+	otp := password[pl-6:]
+
 	// 用数据库校验密码
 	u := &userModel.User{
 		Username: username,
-		Password: password,
+		Password: pinCode,
 	}
 	userRight, err := u.Login()
-	if err == nil && userRight != nil {
+	if err != nil && userRight == nil {
+		return
+	}
+	// 校验 totp
+	if totpModel.CheckTotp(userRight.Totp.Secret, otp) {
 		valid = true
 		return
 	}
