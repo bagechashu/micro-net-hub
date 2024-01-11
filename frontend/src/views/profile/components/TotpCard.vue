@@ -7,7 +7,7 @@
     <div class="user-profile">
       <div class="box-center">
         <!-- <div class="user-name text-center">{{ user.totp.secret }}</div> -->
-        <QrCode :id="'QrCode'" :text="secret" />
+        <QrCode :id="'QrCode'" :text="formattedSecret" />
       </div>
     </div>
   </el-card>
@@ -30,10 +30,23 @@ export default {
   },
   data() {
     return {
-      totp: this.user.totp,
-      // eg: otpauth://totp/presightdefault_pvpnuser001?secret=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-      secret: `otpauth://totp/${this.user.introduction}_${this.user.name}?secret=${this.user.totp.secret}`
+      totp: this.user.totp
     };
+  },
+  computed: {
+    // 使用计算属性来生成最终的secret字符串
+    formattedSecret() {
+      const trimmedIntro = this.formatIntroduction();
+      // eg: otpauth://totp/presightdefault_pvpnuser001?secret=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+      return `otpauth://totp/${trimmedIntro}_${this.user.name}?secret=${this.user.totp.secret}`;
+    }
+  },
+  methods: {
+    formatIntroduction() {
+      let intro = this.user.introduction.replace(/\s/g, ""); // 移除所有空格和制表符
+      intro = intro.substring(0, 20); // 只获取前20个字符
+      return intro;
+    }
   }
 };
 </script>

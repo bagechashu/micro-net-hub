@@ -134,9 +134,18 @@
         <el-table-column
           show-overflow-tooltip
           sortable
-          prop="username"
           label="用户名"
-        />
+        >
+          <template slot-scope="scope">
+            <el-popover trigger="hover" placement="top">
+              {{ scope.row.username }} TOTP QRcode
+              <QrCode :id="'QrCode'" :text="scope.row.qrcodestr" />
+              <div slot="reference" class="name-wrapper">
+                <el-tag size="medium">{{ scope.row.username }}</el-tag>
+              </div>
+            </el-popover>
+          </template>
+        </el-table-column>
         <el-table-column
           show-overflow-tooltip
           sortable
@@ -446,7 +455,7 @@
                 <el-input
                   v-model.trim="dialogFormData.introduction"
                   type="textarea"
-                  placeholder="说明"
+                  placeholder="说明: 如不填, 则默认为 LDAP domain"
                   :autosize="{ minRows: 3, maxRows: 6 }"
                   show-word-limit
                   maxlength="100"
@@ -488,11 +497,13 @@ import {
 import { getRoles } from "@/api/system/role";
 import { getGroupTree } from "@/api/personnel/group";
 import { Message } from "element-ui";
+import QrCode from "@/components/Qrcode/Qrcode.vue";
 
 export default {
   name: "User",
   components: {
-    Treeselect
+    Treeselect,
+    QrCode
   },
   props: {
     disabled: {
@@ -661,6 +672,8 @@ export default {
             dataIntArr.push(+item);
           });
           item.departmentId = dataIntArr;
+          const trimmedIntro = this.formatIntroduction(item.introduction);
+          item.qrcodestr = `otpauth://totp/${trimmedIntro}_${item.username}?secret=${item.totp.secret}`;
         });
         this.tableData = data.users;
         this.total = data.total;
@@ -1058,6 +1071,11 @@ export default {
         this.loading = false;
         this.getTableData();
       });
+    },
+    formatIntroduction(introraw) {
+      let intro = introraw.replace(/\s/g, ""); // 移除所有空格和制表符
+      intro = intro.substring(0, 20); // 只获取前20个字符
+      return intro;
     }
   }
 };

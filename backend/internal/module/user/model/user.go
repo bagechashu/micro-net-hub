@@ -253,7 +253,7 @@ func (us *Users) List(req *UserListReq) error {
 	}
 
 	pageReq := tools.NewPageOption(req.PageNum, req.PageSize)
-	err := db.Offset(pageReq.PageNum).Limit(pageReq.PageSize).Preload("Roles").Find(&us).Debug().Error
+	err := db.Offset(pageReq.PageNum).Limit(pageReq.PageSize).Preload("Roles").Preload("Totp").Find(&us).Debug().Error
 	return err
 }
 
