@@ -42,21 +42,11 @@ func LdapUserAdd(user *userModel.User) error {
 	add.Attribute("displayName", []string{user.Nickname})
 	add.Attribute("mail", []string{user.Mail})
 	add.Attribute("userPassword", []string{tools.EncodePass([]byte(tools.NewParPasswd(user.Password)))})
-	if user.JobNumber != "" {
-		add.Attribute("employeeNumber", []string{user.JobNumber})
-	}
-	if user.Departments != "" {
-		add.Attribute("businessCategory", []string{user.Departments})
-	}
-	if user.Position != "" {
-		add.Attribute("departmentNumber", []string{user.Position})
-	}
-	if user.PostalAddress != "" {
-		add.Attribute("postalAddress", []string{user.PostalAddress})
-	}
-	if user.Mobile != "" {
-		add.Attribute("mobile", []string{user.Mobile})
-	}
+	add.Attribute("employeeNumber", []string{user.JobNumber})
+	add.Attribute("businessCategory", []string{user.Departments})
+	add.Attribute("departmentNumber", []string{user.Position})
+	add.Attribute("postalAddress", []string{user.PostalAddress})
+	add.Attribute("mobile", []string{user.Mobile})
 
 	// 获取 LDAP 连接
 	conn, err := global.LdapPool.GetConn()
@@ -120,6 +110,8 @@ func LdapUsersAdd(user *userModel.User) error {
 
 // Update 更新资源
 func LdapUserUpdate(oldusername string, user *userModel.User) error {
+
+	global.Log.Debugf("更新用户：%+v", user.Position)
 	modify := ldap.NewModifyRequest(user.UserDN, nil)
 	modify.Replace("cn", []string{user.Username})
 	modify.Replace("sn", []string{oldusername})

@@ -31,7 +31,7 @@
 
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
         <div class="avatar-wrapper">
-          <img :src="avatar+'?imageView2/1/w/80/h/80'" class="user-avatar">
+          <img :src="navavatar" class="user-avatar">
           <i class="el-icon-caret-bottom" />
         </div>
         <el-dropdown-menu slot="dropdown">
@@ -72,7 +72,9 @@ export default {
       "avatar",
       "device"
     ])
-
+  },
+  created() {
+    this.getAvator();
   },
   methods: {
     toggleSideBar() {
@@ -81,7 +83,15 @@ export default {
     async logout() {
       await this.$store.dispatch("user/logout");
       this.$router.push(`/login?redirect=${this.$route.fullPath}`);
+    },
+    getAvator() {
+      this.navavatar = this.avatar ? this.avatar : "https://q1.qlogo.cn/g?b=qq&nk=10002&s=100";
     }
+  },
+  data() {
+    return {
+      navavatar: ""
+    };
   }
 };
 </script>
@@ -157,9 +167,9 @@ export default {
 
         .user-avatar {
           cursor: pointer;
-          width: 40px;
-          height: 40px;
-          border-radius: 10px;
+          width: 30px;
+          height: 30px;
+          border-radius: 5px;
         }
 
         .el-icon-caret-bottom {

@@ -30,6 +30,7 @@ export default {
   data() {
     return {
       totp: this.user.totp,
+      // FIXME: totp 格式 otp://
       secret: this.user.totp.secret
     };
   }

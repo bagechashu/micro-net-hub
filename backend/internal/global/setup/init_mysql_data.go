@@ -15,6 +15,7 @@ import (
 )
 
 // 初始化mysql数据
+// TODO: 默认数据修改适配
 func InitData() {
 	// 是否初始化数据
 	if !config.Conf.System.InitData {
@@ -237,7 +238,7 @@ func InitData() {
 			Mail:          "admin@" + config.Conf.Ldap.DefaultEmailSuffix,
 			JobNumber:     "0000",
 			Mobile:        "18888888888",
-			Avatar:        "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif",
+			Avatar:        "https://q1.qlogo.cn/g?b=qq&nk=10000&s=100",
 			PostalAddress: "地球",
 			Departments:   "研发中心",
 			Position:      "打工人",

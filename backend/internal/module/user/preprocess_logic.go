@@ -68,37 +68,37 @@ func CommonUpdateGroup(oldGroup, newGroup *userModel.Group) error {
 func CommonAddUser(user *userModel.User, groups []*userModel.Group) error {
 	// 用户信息的预置处理
 	if user.Nickname == "" {
-		user.Nickname = "佚名"
+		user.Nickname = user.Username
 	}
 	if user.GivenName == "" {
-		user.GivenName = user.Nickname
+		user.GivenName = user.Username
 	}
 	if user.Introduction == "" {
-		user.Introduction = user.Nickname
+		user.Introduction = user.Username
 	}
-	if user.Mail == "" {
-		// 兼容
+	// 兼容
+	if user.Mail == "" || !tools.CheckEmail(user.Mail) {
 		if len(config.Conf.Ldap.DefaultEmailSuffix) > 0 {
 			user.Mail = user.Username + "@" + config.Conf.Ldap.DefaultEmailSuffix
 		} else {
 			user.Mail = user.Username + "@example.com"
 		}
 	}
-	// if user.JobNumber == "" {
-	// 	user.JobNumber = "0000"
-	// }
-	// if user.Departments == "" {
-	// 	user.Departments = "默认:研发中心"
-	// }
-	// if user.Position == "" {
-	// 	user.Position = "默认:打工人"
-	// }
-	// if user.PostalAddress == "" {
-	// 	user.PostalAddress = "默认:地球"
-	// }
-	// if user.Mobile == "" {
-	// 	user.Mobile = generateMobile()
-	// }
+	if user.JobNumber == "" {
+		user.JobNumber = "0000"
+	}
+	if user.Departments == "" {
+		user.Departments = "Default departments"
+	}
+	if user.Position == "" {
+		user.Position = "Default Position"
+	}
+	if user.PostalAddress == "" {
+		user.PostalAddress = "Default PostalAddr"
+	}
+	if user.Mobile == "" {
+		user.Mobile = generateMobile()
+	}
 
 	// 先将用户添加到MySQL
 	err := user.Add()

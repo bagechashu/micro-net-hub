@@ -116,12 +116,12 @@ func (l UserLogic) Add(c *gin.Context, req interface{}) (data interface{}, rspEr
 	var gs = userModel.NewGroups()
 	err = gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentId, ","))
 	if err != nil {
-		return nil, helper.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败: " + err.Error()))
 	}
 
 	err = CommonAddUser(&user, gs)
 	if err != nil {
-		return nil, helper.NewOperationError(fmt.Errorf("添加用户失败" + err.Error()))
+		return nil, helper.NewOperationError(fmt.Errorf("添加用户失败: " + err.Error()))
 	}
 	return nil, nil
 }
@@ -137,7 +137,7 @@ func (l UserLogic) List(c *gin.Context, req interface{}) (data interface{}, rspE
 	var users = userModel.NewUsers()
 	err := users.List(r)
 	if err != nil {
-		return nil, helper.NewMySqlError(fmt.Errorf("获取用户列表失败：" + err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取用户列表失败: " + err.Error()))
 	}
 
 	rets := make([]userModel.User, 0)
@@ -146,7 +146,7 @@ func (l UserLogic) List(c *gin.Context, req interface{}) (data interface{}, rspE
 	}
 	count, err := userModel.UserListCount(r)
 	if err != nil {
-		return nil, helper.NewMySqlError(fmt.Errorf("获取用户总数失败：" + err.Error()))
+		return nil, helper.NewMySqlError(fmt.Errorf("获取用户总数失败: " + err.Error()))
 	}
 
 	return userModel.UserListRsp{
@@ -266,9 +266,11 @@ func (l UserLogic) Update(c *gin.Context, req interface{}) (data interface{}, rs
 	}
 
 	if err = CommonUpdateUser(oldData, &user, r.DepartmentId); err != nil {
-		return nil, helper.NewOperationError(fmt.Errorf("更新用户失败" + err.Error()))
+		return nil, helper.NewOperationError(fmt.Errorf("更新用户失败: " + err.Error()))
 	}
 
+	// flush user info cache
+	userModel.ClearUserInfoCache()
 	return nil, nil
 }
 

@@ -6,7 +6,7 @@
 
     <div class="user-profile">
       <div class="box-center">
-        <img :src="user.avatar" :height="'100px'" :width="'100px'" :hoverable="false">
+        <img :src="user.avatar" :height="'80px'" :width="'80px'" style="border-radius: 10px;" :hoverable="false">
       </div>
       <div class="box-center">
         <div class="user-name text-center">{{ user.name }}</div>

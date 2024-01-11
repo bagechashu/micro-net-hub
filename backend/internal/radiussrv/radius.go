@@ -30,8 +30,7 @@ import (
 // AuthRequest - encapsulates approval logic
 func AuthRequest(username string, password string) (valid bool, err error) {
 	valid = false
-	// TODO: 用 ldap 校验密码
-
+	// TODO: 用后六位校验 TOTP, 其余的校验数据库
 	// 用数据库校验密码
 	u := &userModel.User{
 		Username: username,
