@@ -138,7 +138,7 @@
         >
           <template slot-scope="scope">
             <el-popover trigger="hover" placement="top">
-              {{ scope.row.username }} TOTP QRcode
+              [ {{ scope.row.username }} ] TOTP QRcode
               <QrCode :id="'QrCode'" :text="scope.row.qrcodestr" />
               <div slot="reference" class="name-wrapper">
                 <el-tag size="medium">{{ scope.row.username }}</el-tag>
@@ -505,13 +505,6 @@ export default {
     Treeselect,
     QrCode
   },
-  props: {
-    disabled: {
-      // username 默认不可编辑，若需要至为可编辑，请（在新增和编辑处）去掉这个值的控制，且配合后端的ldap-user-name-modify配置使用
-      type: Boolean,
-      default: false
-    }
-  },
   data() {
     var checkPhone = (rule, value, callback) => {
       if (value) {
@@ -527,6 +520,11 @@ export default {
       }
     };
     return {
+      disabled: {
+        // username 默认不可编辑，若需要至为可编辑，请（在新增和编辑处）去掉这个值的控制，且配合后端的ldap-user-name-modify配置使用
+        type: Boolean,
+        default: false
+      },
       // 查询参数
       params: {
         username: "",

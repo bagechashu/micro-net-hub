@@ -64,9 +64,8 @@ func CommonUpdateGroup(oldGroup, newGroup *userModel.Group) error {
 	return nil
 }
 
-// CommonAddUser 标准创建用户
-func CommonAddUser(user *userModel.User, groups []*userModel.Group) error {
-	// 用户信息的预置处理
+// 用户信息的预置处理
+func CommonHandleUserAttributeVacancies(user *userModel.User) {
 	if user.Nickname == "" {
 		user.Nickname = user.Username
 	}
@@ -97,12 +96,17 @@ func CommonAddUser(user *userModel.User, groups []*userModel.Group) error {
 		user.PostalAddress = "Default PostalAddr"
 	}
 	if user.Mobile == "" {
-		user.Mobile = generateMobile()
+		// user.Mobile = generateMobile()
+		user.Mobile = "10000000000"
 	}
 	if tools.CheckQQNo(user.Avatar) {
 		user.Avatar = fmt.Sprintf("https://q1.qlogo.cn/g?b=qq&nk=%s&s=100", user.Avatar)
 	}
+}
 
+// CommonAddUser 标准创建用户
+func CommonAddUser(user *userModel.User, groups []*userModel.Group) error {
+	CommonHandleUserAttributeVacancies(user)
 	// 先将用户添加到MySQL
 	err := user.Add()
 	if err != nil {
@@ -139,6 +143,8 @@ func CommonUpdateUser(oldUser, newUser *userModel.User, groupId []uint) error {
 	if !config.Conf.Ldap.UserNameModify {
 		newUser.Username = oldUser.Username
 	}
+
+	CommonHandleUserAttributeVacancies(newUser)
 
 	err := ldapmgr.LdapUserUpdate(oldUser.Username, newUser)
 	if err != nil {
