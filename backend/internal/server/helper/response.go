@@ -81,6 +81,11 @@ func ReloadErr(err interface{}) *RspError {
 
 func BindAndValidateRequest(c *gin.Context, reqStruct interface{}) {
 	var err error
+
+	if reqStruct == nil {
+		return
+	}
+
 	// bind struct
 	err = c.Bind(reqStruct)
 	if err != nil {
