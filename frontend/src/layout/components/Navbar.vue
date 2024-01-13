@@ -7,7 +7,7 @@
     <div class="right-menu">
       <template v-if="device!=='mobile'">
         <el-tooltip content="Search" effect="dark" placement="bottom">
-          <search id="header-search" class="right-menu-item" />
+          <HeaderSearch id="header-search" class="right-menu-item" />
         </el-tooltip>
 
         <error-log class="errLog-container right-menu-item hover-effect" />
@@ -54,7 +54,7 @@ import Hamburger from "@/components/Hamburger";
 import ErrorLog from "@/components/ErrorLog";
 import Screenfull from "@/components/Screenfull";
 import SizeSelect from "@/components/SizeSelect";
-import Search from "@/components/HeaderSearch";
+import HeaderSearch from "@/components/HeaderSearch";
 import "@/assets/iconfont/font/iconfont.css";
 
 export default {
@@ -64,7 +64,12 @@ export default {
     ErrorLog,
     Screenfull,
     SizeSelect,
-    Search
+    HeaderSearch
+  },
+  data() {
+    return {
+      navavatar: ""
+    };
   },
   computed: {
     ...mapGetters([
@@ -87,11 +92,6 @@ export default {
     getAvator() {
       this.navavatar = this.avatar ? this.avatar : "https://q1.qlogo.cn/g?b=qq&nk=10002&s=100";
     }
-  },
-  data() {
-    return {
-      navavatar: ""
-    };
   }
 };
 </script>

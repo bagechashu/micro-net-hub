@@ -1,12 +1,12 @@
-import { constantRoutes } from '@/router'
-import { getUserMenuTreeByUserId } from '@/api/system/menu'
-import Layout from '@/layout'
+import { constantRoutes } from "@/router";
+import { getUserMenuTreeByUserId } from "@/api/system/menu";
+import Layout from "@/layout";
 
 export const getRoutesFromMenuTree = (menuTree) => {
-  const routes = []
+  const routes = [];
   menuTree.forEach(menu => {
     if (menu.children && menu.children.length > 0) {
-      menu.children = getRoutesFromMenuTree(menu.children)
+      menu.children = getRoutesFromMenuTree(menu.children);
     }
     // else {
     //   // 这里需要清理children, 否则右侧会显示下拉图标
@@ -28,56 +28,59 @@ export const getRoutesFromMenuTree = (menuTree) => {
         breadcrumb: menu.breadcrumb === 1,
         activeMenu: menu.activeMenu
       }
-    })
-  })
-
-  return routes
-}
+    });
+  });
+  return routes;
+};
 
 export const loadComponent = (component) => {
-  if (component === '' || component === 'Layout') {
+  if (component === "" || component === "Layout") {
     // 组件不存在使用默认布局
-    return Layout
+    return Layout;
   }
   // 动态获取组件
-  return (resolve) => require([`@/views${component}`], resolve)
-}
+  return (resolve) => require([`@/views${component}`], resolve);
+};
 
 const state = {
   routes: [],
   addRoutes: []
-}
+};
 
 const mutations = {
   SET_ROUTES: (state, routes) => {
-    state.addRoutes = routes
-    state.routes = constantRoutes.concat(routes)
+    state.addRoutes = routes;
+    state.routes = constantRoutes.concat(routes);
   }
-}
+};
 
 const actions = {
   generateRoutes({ commit }, userinfo) {
     return new Promise((resolve, reject) => {
-      let accessedRoutes = []
-      const {id, roles}=userinfo
+      let accessedRoutes = [];
+      const { id } = userinfo;
       // 获取菜单树
-      getUserMenuTreeByUserId({id: id}).then(res => {
-
-        const { data } = res
-        const menuTree = data
-        accessedRoutes = getRoutesFromMenuTree(menuTree)
-        commit('SET_ROUTES', accessedRoutes)
-        resolve(accessedRoutes)
+      getUserMenuTreeByUserId({ id: id }).then(res => {
+        const { data } = res;
+        const menuTree = data;
+        // console.log(menuTree)
+        accessedRoutes = getRoutesFromMenuTree(menuTree);
+        commit("SET_ROUTES", accessedRoutes);
+        resolve(accessedRoutes);
       }).catch(err => {
-        reject(err)
-      })
-    })
+        reject(err);
+      });
+    });
+  },
+  generateRoutesAnonymous({ commit }) {
+    commit("SET_ROUTES", []);
+    return;
   }
-}
+};
 
 export default {
   namespaced: true,
   state,
   mutations,
   actions
-}
+};
