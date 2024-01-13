@@ -1,0 +1,32 @@
+{
+  "logos": [
+    "assets/logo/cat.ico",
+    "assets/logo/email.png",
+    "assets/logo/logio.png",
+    "assets/logo/showdoc.png",
+    "assets/logo/taobao.ico",
+    "assets/logo/aliyun.png",
+    "assets/logo/openstack.png",
+    "assets/logo/confluence.png",
+    "assets/logo/vcenter.ico",
+    "assets/logo/redmine.ico",
+    "assets/logo/easymock.png",
+    "assets/logo/gitlab.png",
+    "assets/logo/aws.png",
+    "assets/logo/nexus.png",
+    "assets/logo/spring.png",
+    "assets/logo/code.ico",
+    "assets/logo/gogs.png",
+    "assets/logo/tomcat.png",
+    "assets/logo/jumpserver.png",
+    "assets/logo/wangsu.ico",
+    "assets/logo/freenas.png",
+    "assets/logo/aws.ico",
+    "assets/logo/zabbix.ico",
+    "assets/logo/jenkins.png",
+    "assets/logo/php.png",
+    "assets/logo/default.png",
+    "assets/logo/mysql.svg",
+    "assets/logo/nginx.svg"
+  ]
+}
