@@ -2,11 +2,9 @@
   <div class="sidebar-logo-container" :class="{'collapse':collapse}">
     <transition name="sidebarLogoFade">
       <router-link v-if="collapse" key="collapse" class="sidebar-logo-link" to="/">
-        <!-- <img v-if="logo" :src="logo" class="sidebar-logo">
-        <div v-else class="sidebar-title">{{ title }} </div> -->
+        <img :src="logo" class="sidebar-logo">
       </router-link>
       <router-link v-else key="expand" class="sidebar-logo-link" to="/">
-        <img v-if="logo" :src="logo" class="sidebar-logo">
         <div class="sidebar-title">{{ title }} </div>
       </router-link>
     </transition>
@@ -14,6 +12,7 @@
 </template>
 
 <script>
+import icon_hub_square from "@/assets/sidebar-logo/hub-square.png";
 export default {
   name: "SidebarLogo",
   props: {
@@ -25,7 +24,7 @@ export default {
   data() {
     return {
       title: "Micro Net Hub",
-      logo: ""
+      logo: icon_hub_square
     };
   }
 };
@@ -67,7 +66,7 @@ export default {
       color: #333333;
       font-weight: bold;
       line-height: 50px;
-      font-size: 1.3rem;
+      font-size: large;
       font-family: Avenir, Helvetica Neue, Arial, Helvetica, sans-serif;
       vertical-align: middle;
     }
