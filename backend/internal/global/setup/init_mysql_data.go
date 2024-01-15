@@ -15,7 +15,7 @@ import (
 )
 
 // 初始化mysql数据
-// TODO: 默认数据修改适配
+// FIXME: 默认数据修改适配
 func InitData() {
 	// 是否初始化数据
 	if !config.Conf.System.InitData {

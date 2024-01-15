@@ -2,7 +2,7 @@
   <div class="app-container">
     <div v-if="user">
       <el-row :gutter="20">
-        <!-- TODO: 样式修改,用按钮控制是否暂时二维码和修改密码 -->
+        <!-- FIXME: 样式修改,用按钮控制是否暂时二维码和修改密码 -->
         <el-col :span="6" :xs="24">
           <user-card :user="user" />
         </el-col>
