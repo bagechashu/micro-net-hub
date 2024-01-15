@@ -40,13 +40,15 @@ const mutations = {
 const actions = {
 
   // user login
-  login({ commit }, userInfo) {
+  login({ commit, dispatch }, userInfo) {
     const { username, password } = userInfo;
     return new Promise((resolve, reject) => {
       login({ username: username.trim(), password: password }).then(response => {
         const { data } = response;
         commit("SET_TOKEN", data.token);
         setToken(data.token);
+        // FIXME: 登录前后更新导航列表
+        dispatch("permission/generateRoutes");
         resolve();
       }).catch(error => {
         //  this.$router.push({ path: '/dashboard'})

@@ -432,8 +432,6 @@ github.com/wenerme/go-req v0.0.0-20210907160348-d822e81276bb h1:4/6Qqg+E8z98SCi2
 github.com/wenerme/go-req v0.0.0-20210907160348-d822e81276bb/go.mod h1:aQUkMiMp1qZkuSsdu2Vy2ZQK33cPNVmyWFzXatfP+Y4=
 github.com/wenerme/go-wecom v0.0.0-20220617125121-2ee950da3e63 h1:wRIOQxBR5XbUZVMKziAjCnlnDhdAjVjBmLsUSn/j/+M=
 github.com/wenerme/go-wecom v0.0.0-20220617125121-2ee950da3e63/go.mod h1:Jz7prkOPdCbWbT5bOQOFkZUQp7pqEc8yiWaCgOVWPH0=
-github.com/xlzd/gotp v0.1.0 h1:37blvlKCh38s+fkem+fFh7sMnceltoIEBYTVXyoa5Po=
-github.com/xlzd/gotp v0.1.0/go.mod h1:ndLJ3JKzi3xLmUProq4LLxCuECL93dG9WASNLpHz8qg=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=

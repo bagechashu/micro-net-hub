@@ -30,7 +30,6 @@ require (
 	github.com/chyroc/lark v0.0.96
 	github.com/tidwall/gjson v1.13.0
 	github.com/wenerme/go-wecom v0.0.0-20220617125121-2ee950da3e63
-	github.com/xlzd/gotp v0.1.0
 	golang.org/x/sync v0.1.0
 	gorm.io/datatypes v1.1.0
 	layeh.com/radius v0.0.0-20231213012653-1006025d24f8

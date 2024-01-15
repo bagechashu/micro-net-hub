@@ -8,6 +8,8 @@ Basic tool for private network.
 
 - https://github.com/eryajf/go-ldap-admin
 - https://github.com/gnimli/go-web-mini
+- https://github.com/LyricTian/gin-admin
+- https://github.com/go-admin-team/go-admin
 - https://github.com/m-vinc/go-ldap-pool
 - https://github.com/bjdgyc/anylink
 - https://github.com/fivexl/golang-radius-server-ldap-with-mfa
