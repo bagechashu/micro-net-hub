@@ -112,12 +112,10 @@ export default {
   computed: {
     childVisible: {
       get() {
-        // console.log(`child loginform visible: ${this.loginFormVisible}`);
         return this.loginFormVisible;
       },
       set(v) {
         this.$emit("emitUpdateLoginFormVisible", v);
-        // console.log(`child loginform visible update to: ${this.loginFormVisible}`);
       }
     }
   },
@@ -133,18 +131,12 @@ export default {
       immediate: true
     }
   },
-  created() {
-    // window.addEventListener('storage', this.afterQRScan)
-  },
   mounted() {
     if (this.loginForm.username === "" && this.$refs.username) {
       this.$refs.username.focus();
     } else if (this.loginForm.password === "" && this.$refs.password) {
       this.$refs.password.focus();
     }
-  },
-  destroyed() {
-    // window.removeEventListener('storage', this.afterQRScan)
   },
   methods: {
     checkCapslock(e) {

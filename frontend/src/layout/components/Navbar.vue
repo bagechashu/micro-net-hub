@@ -49,16 +49,18 @@
           />
         </el-tooltip>
       </template>
-
+      <!-- https://blog.csdn.net/m0_67265919/article/details/123124673 -->
+      <!-- element-ui.common.js:2353 Uncaught TypeError: Cannot read properties of null (reading 'disabled') -->
       <el-dropdown
+        v-if="token"
         class="avatar-container right-menu-item hover-effect"
         trigger="click"
       >
-        <div v-if="token" class="avatar-wrapper">
+        <div class="avatar-wrapper">
           <img :src="navavatar" class="user-avatar">
           <i class="el-icon-caret-bottom" />
         </div>
-        <el-dropdown-menu v-if="token" slot="dropdown">
+        <el-dropdown-menu slot="dropdown">
           <router-link to="/profile/index">
             <el-dropdown-item>个人中心</el-dropdown-item>
           </router-link>
@@ -66,12 +68,20 @@
             <span style="display: block">退出登陆</span>
           </el-dropdown-item>
         </el-dropdown-menu>
-        <div v-else>
-          <el-button type="primary" size="mini" plain @click="updateLoginFormVisible(true)">登录</el-button>
-        </div>
       </el-dropdown>
+      <div v-else class="avatar-container right-menu-item hover-effect">
+        <el-button
+          type="primary"
+          size="mini"
+          plain
+          @click="updateLoginFormVisible(true)"
+        >登录</el-button>
+      </div>
     </div>
-    <Login :login-form-visible.sync="loginFormVisible" @emitUpdateLoginFormVisible="updateLoginFormVisible" />
+    <Login
+      :login-form-visible.sync="loginFormVisible"
+      @emitUpdateLoginFormVisible="updateLoginFormVisible"
+    />
   </div>
 </template>
 
