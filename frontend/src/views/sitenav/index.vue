@@ -5,7 +5,7 @@
         v-model="search"
         placeholder="内网地址搜索"
         class="search"
-        @on-enter="searchData"
+        @keyup.enter.native="searchData"
       />
       <span
         class="search-text"
@@ -40,7 +40,6 @@ export default {
       search: "",
       searchStatus: false,
       data: null,
-      childrenList: [],
       sourceData: "",
       serarchNum: 0
     };
@@ -53,13 +52,6 @@ export default {
       try {
         const { data } = await getSiteNav();
         this.data = data;
-        for (const key in this.data) {
-          if (Object.prototype.hasOwnProperty.call(this.data[key], "children")) {
-            this.childrenList = this.childrenList.concat(
-              this.data[key].children
-            );
-          }
-        }
       } catch (e) {
         console.log(e);
       }

@@ -10,25 +10,9 @@ import (
 type SiteNavHandler struct{}
 
 // List 记录列表
-func (SiteNavHandler) GetAllNavConfig(c *gin.Context) {
+func (SiteNavHandler) GetNavSites(c *gin.Context) {
 	helper.BindAndValidateRequest(c, nil)
 
-	data, respErr := siteNavLogic.GetAllNavConfig(c, nil)
-	helper.HandleResponse(c, data, respErr)
-}
-
-// List 记录列表
-func (SiteNavHandler) GetSideNavGroups(c *gin.Context) {
-	helper.BindAndValidateRequest(c, nil)
-
-	data, respErr := siteNavLogic.GetSideNavGroups(c, nil)
-	helper.HandleResponse(c, data, respErr)
-}
-
-// List 记录列表
-func (SiteNavHandler) GetNavGroups(c *gin.Context) {
-	helper.BindAndValidateRequest(c, nil)
-
-	data, respErr := siteNavLogic.GetNavGroups(c, nil)
+	data, respErr := siteNavLogic.GetNavSites(c, nil)
 	helper.HandleResponse(c, data, respErr)
 }

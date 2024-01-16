@@ -10,9 +10,7 @@ func InitSiteNavRoutes(r *gin.RouterGroup) gin.IRoutes {
 	api := r.Group("/sitenav")
 	{
 		var h handler.SiteNavHandler
-		api.GET("/getall", h.GetAllNavConfig)
-		api.GET("/getsidegroups", h.GetSideNavGroups)
-		api.GET("/getgroups", h.GetNavGroups)
+		api.GET("/getall", h.GetNavSites)
 	}
 
 	return r

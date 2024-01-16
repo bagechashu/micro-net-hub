@@ -39,7 +39,6 @@ func dbAutoMigrate() {
 		&apiMgrModel.Api{},
 		&opLogModel.OperationLog{},
 		&fieldRelationModel.FieldRelation{},
-		&siteNavModel.NavSideGroup{},
 		&siteNavModel.NavGroup{},
 		&siteNavModel.NavItem{},
 	)

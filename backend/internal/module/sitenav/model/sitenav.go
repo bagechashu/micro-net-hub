@@ -8,50 +8,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// 侧边分组
-type NavSideGroup struct {
-	gorm.Model
-	Title    string   `gorm:"type:varchar(20);comment:'侧边分组标题'" json:"title"`
-	Name     string   `gorm:"type:varchar(20);unique;comment:'侧边分组名'" json:"name"`
-	Children []string `gorm:"serializer:json;type:json;comment:'侧边分组子组'" json:"children"`
-}
-
-func (g *NavSideGroup) FindByName(name string) error { // 侧边分租查询
-	if err := global.DB.Where("name = ?", name).First(&g).Error; err != nil {
-		return helper.NewMySqlError(fmt.Errorf("获取 sideNavGroup 失败: " + err.Error()))
-	}
-	return nil
-}
-
-func (g *NavSideGroup) Add() error {
-	if err := global.DB.Create(&g).Error; err != nil {
-		return helper.NewMySqlError(fmt.Errorf("添加 sideNavGroup 失败: " + err.Error()))
-	}
-	return nil
-}
-
-func (g *NavSideGroup) Update() error {
-	if err := global.DB.Save(&g).Error; err != nil {
-		return helper.NewMySqlError(fmt.Errorf("更新 sideNavGroup 失败: " + err.Error()))
-	}
-	return nil
-}
-func (g *NavSideGroup) Delete() error {
-	if err := global.DB.Delete(&g).Error; err != nil {
-		return helper.NewMySqlError(fmt.Errorf("删除 sideNavGroup 失败: " + err.Error()))
-	}
-	return nil
-}
-
-type NavSideGroups []NavSideGroup
-
-func (gs *NavSideGroups) Find() error {
-	if err := global.DB.Find(&gs).Error; err != nil {
-		return helper.NewMySqlError(fmt.Errorf("获取 sideNavGroups 失败: " + err.Error()))
-	}
-	return nil
-}
-
 // 导航分组
 type NavGroup struct {
 	gorm.Model
