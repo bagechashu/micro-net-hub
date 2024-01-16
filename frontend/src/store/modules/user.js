@@ -40,15 +40,13 @@ const mutations = {
 const actions = {
 
   // user login
-  login({ commit, dispatch }, userInfo) {
+  login({ commit }, userInfo) {
     const { username, password } = userInfo;
     return new Promise((resolve, reject) => {
       login({ username: username.trim(), password: password }).then(response => {
         const { data } = response;
         commit("SET_TOKEN", data.token);
         setToken(data.token);
-        // FIXME: 登录前后更新导航列表
-        dispatch("permission/generateRoutes");
         resolve();
       }).catch(error => {
         //  this.$router.push({ path: '/dashboard'})
@@ -100,6 +98,7 @@ const actions = {
         // reset visited views and cached views
         // to fixed https://github.com/PanJiaChen/vue-element-admin/issues/2485
         dispatch("tagsView/delAllViews", null, { root: true });
+        dispatch("permission/generateRoutesAnonymous", undefined, { root: true });
 
         resolve();
       }).catch(error => {

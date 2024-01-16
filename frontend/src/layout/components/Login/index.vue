@@ -181,7 +181,8 @@ export default {
             .dispatch("user/login", encLoginForm)
             .then(() => {
               this.$router.push({
-                path: this.redirect || "/",
+                // 登录成功后, 切换到个人页
+                path: this.redirect || "/profile/index",
                 query: this.otherQuery
               });
               this.loading = false;

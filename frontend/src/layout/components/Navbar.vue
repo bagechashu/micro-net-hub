@@ -15,7 +15,7 @@
           <HeaderSearch id="header-search" class="right-menu-item" />
         </el-tooltip>
 
-        <error-log class="errLog-container right-menu-item hover-effect" />
+        <error-log class="errlog-container right-menu-item hover-effect" />
 
         <el-tooltip content="FullScreen" effect="dark" placement="bottom">
           <screenfull id="screenfull" class="right-menu-item hover-effect" />
@@ -83,7 +83,7 @@ import ErrorLog from "@/components/ErrorLog";
 import Screenfull from "@/components/Screenfull";
 import SizeSelect from "@/components/SizeSelect";
 import HeaderSearch from "@/components/HeaderSearch";
-import Login from "@/components/Login";
+import Login from "./Login";
 import "@/assets/iconfont/font/iconfont.css";
 
 export default {
@@ -159,7 +159,7 @@ export default {
     float: left;
   }
 
-  .errLog-container {
+  .errlog-container {
     display: inline-block;
     vertical-align: top;
   }
