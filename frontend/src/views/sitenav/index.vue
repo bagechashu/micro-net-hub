@@ -21,11 +21,12 @@
         @click="resetSearch"
       >重置</el-button>
     </div>
-    <NavSub :data="data" :spin-show="spinShow" />
+    <NavSub :data="data" />
   </div>
 </template>
 
 <script>
+import { Message } from "element-ui";
 import NavSub from "@/views/sitenav/components/sub";
 import { getSiteNav } from "@/api/sitenav/sitenav";
 export default {
@@ -41,8 +42,7 @@ export default {
       data: null,
       childrenList: [],
       sourceData: "",
-      serarchNum: 0,
-      spinShow: false
+      serarchNum: 0
     };
   },
   created: function() {
@@ -50,7 +50,6 @@ export default {
   },
   methods: {
     async getSiteNavJson() {
-      this.spinShow = true;
       try {
         const { data } = await getSiteNav();
         this.data = data;
@@ -61,9 +60,7 @@ export default {
             );
           }
         }
-        this.spinShow = false;
       } catch (e) {
-        this.spinShow = false;
         console.log(e);
       }
     },
@@ -86,7 +83,10 @@ export default {
         this.search === null ||
         this.search === ""
       ) {
-        this.$Message.error("输入内容呀！");
+        Message({
+          message: "请输入内容",
+          type: "error"
+        });
         return true;
       }
       if (!this.searchStatus) {
@@ -121,20 +121,22 @@ export default {
         }
       }
       if (this.serarchNum === 0) {
-        this.$Message.error("没找到哦，请重试!");
+        Message({
+          message: "没找到，请重试!",
+          type: "error"
+        });
       } else {
-        this.$Message.success("查找到了" + this.serarchNum + "个相近的.");
+        Message({
+          message: `查找到了 ${this.serarchNum}个相近的.`,
+          type: "success"
+        });
       }
     },
     resetSearch() {
-      this.spinShow = true;
       this.searchStatus = false;
       this.search = "";
       this.serarchNum = 0;
       this.data = JSON.parse(JSON.stringify(this.sourceData));
-      setTimeout(() => {
-        this.spinShow = false;
-      }, 1000);
     }
   }
 };

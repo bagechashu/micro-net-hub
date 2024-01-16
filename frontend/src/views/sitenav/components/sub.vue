@@ -12,7 +12,6 @@
         <Nav
           :nav-data="item.nav"
           :sub-title="item.title"
-          :spin-show="spinShow"
         />
       </el-card>
     </div>
@@ -29,10 +28,6 @@ export default {
     data: {
       type: Object,
       default: () => {}
-    },
-    spinShow: {
-      type: Boolean,
-      default: false
     }
   }
 };

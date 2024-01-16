@@ -7,6 +7,7 @@ import "./styles/element-variables.scss";
 import "@/styles/index.scss"; // global css
 
 import VueLazyload from "vue-lazyload";
+import VueClipboard from "vue-clipboard2";
 
 import App from "./App";
 import store from "./store";
@@ -25,6 +26,8 @@ Vue.use(Element, {
 Vue.use(VueLazyload, {
   loading: require("@/assets/icon/loading.gif")
 });
+VueClipboard.config.autoSetContainer = true;
+Vue.use(VueClipboard);
 
 // register global utility filters
 Object.keys(filters).forEach(key => {
