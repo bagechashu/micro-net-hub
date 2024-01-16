@@ -1,5 +1,5 @@
 <template>
-  <el-card style="margin-bottom:20px;">
+  <el-card class="profile-card">
     <div slot="header" class="clearfix">
       <span>Totp QRcode</span>
     </div>
@@ -52,6 +52,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.profile-card {
+  min-height: 18rem;
+  height: 18rem;
+};
 .box-center {
   margin: 0 auto;
   display: table;
