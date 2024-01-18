@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"fmt"
+	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/module/goldap/usermgr"
 	userLogic "micro-net-hub/internal/module/user"
 	userModel "micro-net-hub/internal/module/user/model"
@@ -97,6 +99,10 @@ func (GroupHandler) SyncDingTalkDepts(c *gin.Context) {
 	req := new(userModel.SyncDingTalkDeptsReq)
 	helper.BindAndValidateRequest(c, req)
 
+	if config.Conf.DingTalk == nil {
+		helper.HandleResponse(c, nil, helper.NewConfigError(fmt.Errorf("没有 钉钉-Dingtalk 相关配置")))
+		return
+	}
 	um := usermgr.NewDingTalk()
 	data, respErr := um.SyncDepts(c, req)
 	helper.HandleResponse(c, data, respErr)
@@ -107,6 +113,10 @@ func (GroupHandler) SyncWeComDepts(c *gin.Context) {
 	req := new(userModel.SyncWeComDeptsReq)
 	helper.BindAndValidateRequest(c, req)
 
+	if config.Conf.WeCom == nil {
+		helper.HandleResponse(c, nil, helper.NewConfigError(fmt.Errorf("没有 企业微信-Wechat 相关配置")))
+		return
+	}
 	um := usermgr.NewWeChat()
 	data, respErr := um.SyncDepts(c, req)
 	helper.HandleResponse(c, data, respErr)
@@ -117,6 +127,10 @@ func (GroupHandler) SyncFeiShuDepts(c *gin.Context) {
 	req := new(userModel.SyncFeiShuDeptsReq)
 	helper.BindAndValidateRequest(c, req)
 
+	if config.Conf.FeiShu == nil {
+		helper.HandleResponse(c, nil, helper.NewConfigError(fmt.Errorf("没有 飞书-Feishu 相关配置")))
+		return
+	}
 	um := usermgr.NewFeiShu()
 	data, respErr := um.SyncDepts(c, req)
 	helper.HandleResponse(c, data, respErr)

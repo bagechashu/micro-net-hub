@@ -16,6 +16,7 @@ const (
 	MySqlErr     = 501
 	LdapErr      = 505
 	OperationErr = 506
+	ConfigErr    = 507
 	ValidatorErr = 412
 )
 
@@ -58,6 +59,11 @@ func NewLdapError(err error) *RspError {
 // NewOperationError 操作错误
 func NewOperationError(err error) *RspError {
 	return NewRspError(OperationErr, err)
+}
+
+// NewConfigError 操作错误
+func NewConfigError(err error) *RspError {
+	return NewRspError(ConfigErr, err)
 }
 
 // ReloadErr 重新加载错误
