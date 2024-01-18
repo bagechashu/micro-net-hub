@@ -48,44 +48,6 @@ func LdapDeptAdd(g *userModel.Group) error { //organizationalUnit
 	return conn.Add(add)
 }
 
-// AddGroup 添加部门数据
-func LdapDeptsAdd(group *userModel.Group) error {
-	// 判断部门名称是否存在,此处使用ldap中的唯一值dn,以免出现数据同步不全的问题
-	if !group.Exist(tools.H{"group_dn": group.GroupDN}) {
-		// 此时的 group 已经附带了Build后动态关联好的字段，接下来将一些确定性的其他字段值添加上，就可以创建这个分组了
-		group.Creator = "system"
-		group.GroupType = strings.Split(strings.Split(group.GroupDN, ",")[0], "=")[0]
-		parentid, err := LdapDeptGetParentGroupID(group)
-		if err != nil {
-			return err
-		}
-		group.ParentId = parentid
-		group.Source = "openldap"
-		err = group.Add()
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// 添加部门
-func LdapDeptAddRec(depts []*userModel.Group) error {
-	for _, dept := range depts {
-		err := LdapDeptsAdd(dept)
-		if err != nil {
-			return helper.NewOperationError(fmt.Errorf("DsyncOpenLdapDepts添加部门失败: %s", err.Error()))
-		}
-		if len(dept.Children) != 0 {
-			err = LdapDeptAddRec(dept.Children)
-			if err != nil {
-				return helper.NewOperationError(fmt.Errorf("DsyncOpenLdapDepts添加部门失败: %s", err.Error()))
-			}
-		}
-	}
-	return nil
-}
-
 // UpdateGroup 更新一个分组
 func LdapDeptUpdate(oldGroup, newGroup *userModel.Group) error {
 	modify1 := ldap.NewModifyRequest(oldGroup.GroupDN, nil)
@@ -256,4 +218,42 @@ func LdapDeptGetParentGroupID(group *userModel.Group) (id uint, err error) {
 		return id, helper.NewMySqlError(fmt.Errorf("查询父级部门失败：%s,%s", err.Error(), group.GroupName))
 	}
 	return parentGroup.ID, nil
+}
+
+// 添加 Ldap 部门数据 到数据库
+func LdapDeptSyncToDB(group *userModel.Group) error {
+	// 判断部门名称是否存在,此处使用ldap中的唯一值dn,以免出现数据同步不全的问题
+	if !group.Exist(tools.H{"group_dn": group.GroupDN}) {
+		// 此时的 group 已经附带了Build后动态关联好的字段，接下来将一些确定性的其他字段值添加上，就可以创建这个分组了
+		group.Creator = "system"
+		group.GroupType = strings.Split(strings.Split(group.GroupDN, ",")[0], "=")[0]
+		parentid, err := LdapDeptGetParentGroupID(group)
+		if err != nil {
+			return err
+		}
+		group.ParentId = parentid
+		group.Source = "openldap"
+		err = group.Add()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// 添加 Ldap 部门数据 到数据库
+func LdapDeptsSyncToDBRec(depts []*userModel.Group) error {
+	for _, dept := range depts {
+		err := LdapDeptSyncToDB(dept)
+		if err != nil {
+			return helper.NewOperationError(fmt.Errorf("DsyncOpenLdapDepts添加部门失败: %s", err.Error()))
+		}
+		if len(dept.Children) != 0 {
+			err = LdapDeptsSyncToDBRec(dept.Children)
+			if err != nil {
+				return helper.NewOperationError(fmt.Errorf("DsyncOpenLdapDepts添加部门失败: %s", err.Error()))
+			}
+		}
+	}
+	return nil
 }

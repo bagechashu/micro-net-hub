@@ -58,56 +58,6 @@ func LdapUserAdd(user *userModel.User) error {
 	return conn.Add(add)
 }
 
-// x 未使用
-func LdapUsersAdd(user *userModel.User) error {
-	// 根据 user_dn 查询用户,不存在则创建
-	if !user.Exist(tools.H{"user_dn": user.UserDN}) {
-		if user.Departments == "" {
-			user.Departments = "默认:研发中心"
-		}
-		if user.GivenName == "" {
-			user.GivenName = user.Nickname
-		}
-		if user.PostalAddress == "" {
-			user.PostalAddress = "默认:地球"
-		}
-		if user.Position == "" {
-			user.Position = "默认:技术"
-		}
-		if user.Introduction == "" {
-			user.Introduction = user.Nickname
-		}
-		if user.JobNumber == "" {
-			user.JobNumber = "未启用"
-		}
-		// 先将用户添加到MySQL
-		err := user.Add()
-		if err != nil {
-			return helper.NewMySqlError(fmt.Errorf("向MySQL创建用户失败：" + err.Error()))
-		}
-
-		// 获取用户将要添加的分组
-
-		var gs = userModel.NewGroups()
-		err = gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentId, ","))
-		if err != nil {
-			return helper.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
-		}
-		for _, group := range gs {
-			if group.GroupDN[:3] == "ou=" {
-				continue
-			}
-			// 先将用户和部门信息维护到MySQL
-			err := group.AddUserToGroup(user)
-			if err != nil {
-				return helper.NewMySqlError(fmt.Errorf("向MySQL添加用户到分组关系失败：" + err.Error()))
-			}
-		}
-		return nil
-	}
-	return nil
-}
-
 // Update 更新资源
 func LdapUserUpdate(oldusername string, user *userModel.User) error {
 	global.Log.Debugf("更新用户：%+v", user.Position)
@@ -259,7 +209,7 @@ func LdapUserListUserDN() (users []*userModel.User, err error) {
 }
 
 // GetAllUsers 获取所有员工信息
-func LDAPUserGetAll() (ret []*LdapUser, err error) {
+func LdapUserGetAll() (ret []*LdapUser, err error) {
 	// Construct query request
 	searchRequest := ldap.NewSearchRequest(
 		config.Conf.Ldap.BaseDN,                                     // This is basedn, we will start searching from this node.
@@ -343,4 +293,54 @@ func LdapUserGetDeptIds(udn string) (ret []string, err error) {
 		}
 	}
 	return ret, nil
+}
+
+// / 添加 Ldap 用户数据 到数据库
+func LdapUserSyncToDB(user *userModel.User) error {
+	// 根据 user_dn 查询用户,不存在则创建
+	if !user.Exist(tools.H{"user_dn": user.UserDN}) {
+		if user.Departments == "" {
+			user.Departments = "default"
+		}
+		if user.GivenName == "" {
+			user.GivenName = user.Nickname
+		}
+		if user.PostalAddress == "" {
+			user.PostalAddress = "default"
+		}
+		if user.Position == "" {
+			user.Position = "default"
+		}
+		if user.Introduction == "" {
+			user.Introduction = user.Nickname
+		}
+		if user.JobNumber == "" {
+			user.JobNumber = "0000"
+		}
+		// 先将用户添加到MySQL
+		err := user.Add()
+		if err != nil {
+			return helper.NewMySqlError(fmt.Errorf("向MySQL创建用户失败：" + err.Error()))
+		}
+
+		// 获取用户将要添加的分组
+
+		var gs = userModel.NewGroups()
+		err = gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentId, ","))
+		if err != nil {
+			return helper.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
+		}
+		for _, group := range gs {
+			if group.GroupDN[:3] == "ou=" {
+				continue
+			}
+			// 先将用户和部门信息维护到MySQL
+			err := group.AddUserToGroup(user)
+			if err != nil {
+				return helper.NewMySqlError(fmt.Errorf("向MySQL添加用户到分组关系失败：" + err.Error()))
+			}
+		}
+		return nil
+	}
+	return nil
 }

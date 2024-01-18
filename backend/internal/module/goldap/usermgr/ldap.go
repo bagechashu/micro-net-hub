@@ -19,7 +19,7 @@ func NewOpenLdap() OpenLdap {
 	return OpenLdap{}
 }
 
-// 通过ldap获取部门信息
+// 同步 ldap部门信息 到 数据库
 func (mgr OpenLdap) SyncDepts(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	// 1.获取所有部门
 	depts, err := ldapmgr.LdapDeptGetAll()
@@ -40,15 +40,15 @@ func (mgr OpenLdap) SyncDepts(c *gin.Context, req interface{}) (data interface{}
 	deptTree := userLogic.GroupListToTree("0", groups)
 
 	// 3.根据树进行创建
-	err = ldapmgr.LdapDeptAddRec(deptTree.Children)
+	err = ldapmgr.LdapDeptsSyncToDBRec(deptTree.Children)
 
 	return nil, err
 }
 
-// 根据现有数据库同步到的部门信息，开启用户同步
+// 同步 ldap用户信息 到 数据库
 func (mgr OpenLdap) SyncUsers(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	// 1.获取ldap用户列表
-	staffs, err := ldapmgr.LDAPUserGetAll()
+	staffs, err := ldapmgr.LdapUserGetAll()
 	if err != nil {
 		return nil, helper.NewOperationError(fmt.Errorf("获取ldap用户列表失败：%s", err.Error()))
 	}
@@ -65,7 +65,7 @@ func (mgr OpenLdap) SyncUsers(c *gin.Context, req interface{}) (data interface{}
 			return nil, helper.NewValidatorError(fmt.Errorf("根据角色ID获取角色信息失败:%s", err.Error()))
 		}
 		// 入库
-		err = ldapmgr.LdapUserAdd(&userModel.User{
+		err = ldapmgr.LdapUserSyncToDB(&userModel.User{
 			Username:      staff.Name,
 			Nickname:      staff.DisplayName,
 			GivenName:     staff.GivenName,

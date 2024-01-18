@@ -321,7 +321,7 @@ func (mgr DingTalk) GetLeaveUserIdsDateRange(pushDays uint) ([]string, error) {
 // 添加部门
 func (mgr DingTalk) addDeptsRec(depts []*userModel.Group) error {
 	for _, dept := range depts {
-		err := mgr.AddDepts(dept)
+		err := mgr.AddDept(dept)
 		if err != nil {
 			return helper.NewOperationError(fmt.Errorf("DsyncDingTalkDepts添加部门失败: %s", err.Error()))
 		}
@@ -336,7 +336,7 @@ func (mgr DingTalk) addDeptsRec(depts []*userModel.Group) error {
 }
 
 // AddGroup 添加部门数据
-func (mgr DingTalk) AddDepts(group *userModel.Group) error {
+func (mgr DingTalk) AddDept(group *userModel.Group) error {
 	parentGroup := new(userModel.Group)
 	err := parentGroup.Find(tools.H{"source_dept_id": group.SourceDeptParentId}) // 查询当前分组父ID在MySQL中的数据信息
 	if err != nil {

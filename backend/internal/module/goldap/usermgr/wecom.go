@@ -198,7 +198,7 @@ func (mgr WeChat) GetAllUsers() (ret []map[string]interface{}, err error) {
 // 添加部门
 func (mgr WeChat) addDeptsRec(depts []*userModel.Group) error {
 	for _, dept := range depts {
-		err := mgr.AddDepts(dept)
+		err := mgr.AddDept(dept)
 		if err != nil {
 			return helper.NewOperationError(fmt.Errorf("DsyncWeComDepts添加部门失败: %s", err.Error()))
 		}
@@ -213,7 +213,7 @@ func (mgr WeChat) addDeptsRec(depts []*userModel.Group) error {
 }
 
 // AddGroup 添加部门数据
-func (mgr WeChat) AddDepts(group *userModel.Group) error {
+func (mgr WeChat) AddDept(group *userModel.Group) error {
 	// 判断部门名称是否存在
 	parentGroup := new(userModel.Group)
 	err := parentGroup.Find(tools.H{"source_dept_id": group.SourceDeptParentId})

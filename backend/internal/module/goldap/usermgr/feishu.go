@@ -334,7 +334,7 @@ func (mgr FeiShu) GetLeaveUserIds() ([]string, error) {
 // 添加部门
 func (mgr FeiShu) addDeptsRec(depts []*userModel.Group) error {
 	for _, dept := range depts {
-		err := mgr.AddDepts(dept)
+		err := mgr.AddDept(dept)
 		if err != nil {
 			return helper.NewOperationError(fmt.Errorf("DsyncFeiShuDepts添加部门失败: %s", err.Error()))
 		}
@@ -349,7 +349,7 @@ func (mgr FeiShu) addDeptsRec(depts []*userModel.Group) error {
 }
 
 // AddGroup 添加部门数据
-func (mgr FeiShu) AddDepts(group *userModel.Group) error {
+func (mgr FeiShu) AddDept(group *userModel.Group) error {
 	// 查询当前分组父ID在MySQL中的数据信息
 	parentGroup := new(userModel.Group)
 	err := parentGroup.Find(tools.H{"source_dept_id": group.SourceDeptParentId})
