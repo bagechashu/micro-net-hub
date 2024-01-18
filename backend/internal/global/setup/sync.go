@@ -12,10 +12,9 @@ import (
 func InitCron() {
 	c := cron.New(cron.WithSeconds())
 
-	ding := usermgr.NewDingTalk()
-	wechat := usermgr.NewWeChat()
-	feishu := usermgr.NewFeiShu()
-	if config.Conf.DingTalk.EnableSync {
+	if config.Conf.DingTalk != nil && config.Conf.DingTalk.Flag != "" && config.Conf.DingTalk.EnableSync {
+		ding := usermgr.NewDingTalk()
+
 		//启动定时任务
 		_, err := c.AddFunc(config.Conf.DingTalk.DeptSyncTime, func() {
 			ding.SyncDepts(nil, nil)
@@ -31,7 +30,10 @@ func InitCron() {
 			global.Log.Errorf("启动同步用户的定时任务失败: %v", err)
 		}
 	}
-	if config.Conf.WeCom.EnableSync {
+
+	if config.Conf.WeCom != nil && config.Conf.WeCom.Flag != "" && config.Conf.WeCom.EnableSync {
+		wechat := usermgr.NewWeChat()
+
 		_, err := c.AddFunc(config.Conf.WeCom.DeptSyncTime, func() {
 			wechat.SyncDepts(nil, nil)
 		})
@@ -46,7 +48,10 @@ func InitCron() {
 			global.Log.Errorf("启动同步用户的定时任务失败: %v", err)
 		}
 	}
-	if config.Conf.FeiShu.EnableSync {
+
+	if config.Conf.FeiShu != nil && config.Conf.FeiShu.Flag != "" && config.Conf.FeiShu.EnableSync {
+		feishu := usermgr.NewFeiShu()
+
 		_, err := c.AddFunc(config.Conf.FeiShu.DeptSyncTime, func() {
 			feishu.SyncDepts(nil, nil)
 		})

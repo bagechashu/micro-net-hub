@@ -64,7 +64,6 @@ func InitConfig() {
 	// 读取rsa key
 	Conf.System.RSAPublicBytes = RSAReadKeyFromFile(Conf.System.RSAPublicKey)
 	Conf.System.RSAPrivateBytes = RSAReadKeyFromFile(Conf.System.RSAPrivateKey)
-
 }
 
 // 从文件中读取RSA key
