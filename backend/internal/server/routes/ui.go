@@ -14,7 +14,7 @@ func InitUiRoutes(r *gin.Engine) gin.IRoutes {
 		c.Redirect(http.StatusMovedPermanently, "ui/")
 	})
 
-	// TODO: Configure the static file path using configuration
+	// cause I use embedded file system, so use hardcode path
 	if config.Conf.System.Mode == "release" {
 		r.StaticFS("/ui", http.FS(ui.Static))
 		global.Log.Info("release Mode, and Webui was embedd static file")
