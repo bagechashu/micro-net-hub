@@ -6,6 +6,10 @@ Base on [go-ldap-admin](https://github.com/eryajf/go-ldap-admin), but **change t
 
 # Notes
 
+##### Init SQL for site-nav
+
+[Click to see SQL](internal/module/sitenav/model/README.md)
+
 ##### RSA key pairs
 
 > http://ldapdoc.eryajf.net/pages/119ea3/

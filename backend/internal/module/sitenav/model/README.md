@@ -18,9 +18,6 @@ INSERT INTO nav_items (nav_group_id, icon_url, name, description, link, doc_url)
 (@company_id, '/ui/assets/logo/confluence.png', 'Confluence', 'Confluence, 技术文档', 'http://127.0.0.1:8090/', 'https://www.atlassian.com/software/confluence');
 -- Add more rows for other NavItems in the 'company' group
 
--- Insert data for 'test' NavSideGroup
-INSERT INTO nav_side_groups (title, name, children) VALUES ('测试环境', 'test', '["test1", "test2", "test3"]');
-
 -- Insert data for 'test1' NavGroup
 INSERT INTO nav_groups (title, name) VALUES ('Test1环境地址', 'test1');
 SET @test1_id := LAST_INSERT_ID();
