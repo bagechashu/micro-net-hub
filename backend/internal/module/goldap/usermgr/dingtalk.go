@@ -393,7 +393,7 @@ func (mgr DingTalk) AddUsers(user *userModel.User) error {
 			return helper.NewOperationError(fmt.Errorf("添加用户: %s, 失败: %s", user.Username, err.Error()))
 		}
 	} else {
-		if config.Conf.DingTalk.IsUpdateSyncd {
+		if config.Conf.Sync.IsUpdateSyncd {
 			// 先获取用户信息
 			oldData := new(userModel.User)
 			err = oldData.Find(tools.H{"user_dn": user.UserDN})

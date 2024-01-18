@@ -12,18 +12,18 @@ import (
 func InitCron() {
 	c := cron.New(cron.WithSeconds())
 
-	if config.Conf.DingTalk != nil && config.Conf.DingTalk.Flag != "" && config.Conf.DingTalk.EnableSync {
+	if config.Conf.DingTalk != nil && config.Conf.DingTalk.Flag != "" && config.Conf.Sync.EnableSync {
 		ding := usermgr.NewDingTalk()
 
 		//启动定时任务
-		_, err := c.AddFunc(config.Conf.DingTalk.DeptSyncTime, func() {
+		_, err := c.AddFunc(config.Conf.Sync.DeptSyncTime, func() {
 			ding.SyncDepts(nil, nil)
 		})
 		if err != nil {
 			global.Log.Errorf("启动同步部门的定时任务失败: %v", err)
 		}
 		//每天凌晨1点执行一次
-		_, err = c.AddFunc(config.Conf.DingTalk.UserSyncTime, func() {
+		_, err = c.AddFunc(config.Conf.Sync.UserSyncTime, func() {
 			ding.SyncUsers(nil, nil)
 		})
 		if err != nil {
@@ -31,17 +31,17 @@ func InitCron() {
 		}
 	}
 
-	if config.Conf.WeCom != nil && config.Conf.WeCom.Flag != "" && config.Conf.WeCom.EnableSync {
+	if config.Conf.WeCom != nil && config.Conf.WeCom.Flag != "" && config.Conf.Sync.EnableSync {
 		wechat := usermgr.NewWeChat()
 
-		_, err := c.AddFunc(config.Conf.WeCom.DeptSyncTime, func() {
+		_, err := c.AddFunc(config.Conf.Sync.DeptSyncTime, func() {
 			wechat.SyncDepts(nil, nil)
 		})
 		if err != nil {
 			global.Log.Errorf("启动同步部门的定时任务失败: %v", err)
 		}
 		//每天凌晨1点执行一次
-		_, err = c.AddFunc(config.Conf.WeCom.UserSyncTime, func() {
+		_, err = c.AddFunc(config.Conf.Sync.UserSyncTime, func() {
 			wechat.SyncUsers(nil, nil)
 		})
 		if err != nil {
@@ -49,17 +49,17 @@ func InitCron() {
 		}
 	}
 
-	if config.Conf.FeiShu != nil && config.Conf.FeiShu.Flag != "" && config.Conf.FeiShu.EnableSync {
+	if config.Conf.FeiShu != nil && config.Conf.FeiShu.Flag != "" && config.Conf.Sync.EnableSync {
 		feishu := usermgr.NewFeiShu()
 
-		_, err := c.AddFunc(config.Conf.FeiShu.DeptSyncTime, func() {
+		_, err := c.AddFunc(config.Conf.Sync.DeptSyncTime, func() {
 			feishu.SyncDepts(nil, nil)
 		})
 		if err != nil {
 			global.Log.Errorf("启动同步部门的定时任务失败: %v", err)
 		}
 		//每天凌晨1点执行一次
-		_, err = c.AddFunc(config.Conf.FeiShu.UserSyncTime, func() {
+		_, err = c.AddFunc(config.Conf.Sync.UserSyncTime, func() {
 			feishu.SyncUsers(nil, nil)
 		})
 		if err != nil {
@@ -68,9 +68,8 @@ func InitCron() {
 	}
 
 	// 自动检索未同步数据
-	_, err := c.AddFunc("0 */2 * * * *", func() {
-		// 开发调试时调整为10秒执行一次
-		// _, err := c.AddFunc("*/10 * * * * *", func() {
+	global.Log.Infof("启动同步ldap数据的定时任务: %s", config.Conf.Sync.LdapSyncTime)
+	_, err := c.AddFunc(config.Conf.Sync.LdapSyncTime, func() {
 		_ = user.SearchGroupDiff()
 		_ = user.SearchUserDiff()
 	})

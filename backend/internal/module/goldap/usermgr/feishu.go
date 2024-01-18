@@ -408,7 +408,7 @@ func (mgr FeiShu) AddUsers(user *userModel.User) error {
 		}
 	} else {
 		// 此处逻辑未经实际验证，如在使用中有问题，请反馈
-		if config.Conf.FeiShu.IsUpdateSyncd {
+		if config.Conf.Sync.IsUpdateSyncd {
 			// 先获取用户信息
 			oldData := new(userModel.User)
 			err = oldData.Find(tools.H{"user_dn": user.UserDN})

@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"micro-net-hub/internal/global"
 	"os"
 
 	"github.com/fsnotify/fsnotify"
@@ -25,6 +26,7 @@ type config struct {
 	Ldap      *LdapConfig      `mapstructure:"ldap" json:"ldap"`
 	Radius    *RadiusConfig    `mapstructure:"radius" json:"radius"`
 	Email     *EmailConfig     `mapstructure:"email" json:"email"`
+	Sync      *SyncConfig      `mapstructure:"sync" json:"sync"`
 	DingTalk  *DingTalkConfig  `mapstructure:"dingtalk" json:"dingTalk"`
 	WeCom     *WeComConfig     `mapstructure:"wecom" json:"weCom"`
 	FeiShu    *FeiShuConfig    `mapstructure:"feishu" json:"feiShu"`
@@ -39,24 +41,16 @@ func InitConfig() {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yml")
 	viper.AddConfigPath(workDir + "/")
+
+	// 在读取配置文件前设置默认值
+	viper.SetDefault("sync.ldap-sync-time", "0 */2 * * * *")
+
 	// 读取配置信息
 	err = viper.ReadInConfig()
-
-	// 热更新配置
-	viper.WatchConfig()
-	viper.OnConfigChange(func(e fsnotify.Event) {
-		// 将读取的配置信息保存至全局变量Conf
-		if err := viper.Unmarshal(Conf); err != nil {
-			panic(fmt.Errorf("初始化配置文件失败:%s", err))
-		}
-		// 读取rsa key
-		Conf.System.RSAPublicBytes = RSAReadKeyFromFile(Conf.System.RSAPublicKey)
-		Conf.System.RSAPrivateBytes = RSAReadKeyFromFile(Conf.System.RSAPrivateKey)
-	})
-
 	if err != nil {
 		panic(fmt.Errorf("读取配置文件失败:%s", err))
 	}
+
 	// 将读取的配置信息保存至全局变量Conf
 	if err := viper.Unmarshal(Conf); err != nil {
 		panic(fmt.Errorf("初始化配置文件失败:%s", err))
@@ -64,6 +58,19 @@ func InitConfig() {
 	// 读取rsa key
 	Conf.System.RSAPublicBytes = RSAReadKeyFromFile(Conf.System.RSAPublicKey)
 	Conf.System.RSAPrivateBytes = RSAReadKeyFromFile(Conf.System.RSAPrivateKey)
+
+	// 热更新配置
+	viper.WatchConfig()
+	viper.OnConfigChange(func(e fsnotify.Event) {
+		// 将读取的配置信息保存至全局变量Conf
+		if err := viper.Unmarshal(Conf); err != nil {
+			panic(fmt.Errorf("热加载配置文件失败:%s", err))
+		}
+		// 读取rsa key
+		Conf.System.RSAPublicBytes = RSAReadKeyFromFile(Conf.System.RSAPublicKey)
+		Conf.System.RSAPrivateBytes = RSAReadKeyFromFile(Conf.System.RSAPrivateKey)
+		global.Log.Info("热加载配置文件完成!")
+	})
 }
 
 // 从文件中读取RSA key
@@ -162,38 +169,34 @@ type EmailConfig struct {
 	From string `mapstructure:"from" json:"from"`
 }
 
+type SyncConfig struct {
+	EnableSync    bool   `mapstructure:"enable-sync" json:"enableSync"`
+	IsUpdateSyncd bool   `mapstructure:"is-update-syncd" json:"isUpdateSyncd"`
+	UserSyncTime  string `mapstructure:"user-sync-time" json:"userSyncTime"`
+	DeptSyncTime  string `mapstructure:"dept-sync-time" json:"deptSyncTime"`
+	LdapSyncTime  string `mapstructure:"ldap-sync-time" json:"ldapSyncTime"`
+}
+
 type DingTalkConfig struct {
-	AppKey        string   `mapstructure:"app-key" json:"appKey"`
-	AppSecret     string   `mapstructure:"app-secret" json:"appSecret"`
-	AgentId       string   `mapstructure:"agent-id" json:"agentId"`
-	RootOuName    string   `mapstructure:"root-ou-name" json:"rootOuName"`
-	Flag          string   `mapstructure:"flag" json:"flag"`
-	EnableSync    bool     `mapstructure:"enable-sync" json:"enableSync"`
-	DeptSyncTime  string   `mapstructure:"dept-sync-time" json:"deptSyncTime"`
-	UserSyncTime  string   `mapstructure:"user-sync-time" json:"userSyncTime"`
-	DeptList      []string `mapstructure:"dept-list" json:"deptList"`
-	IsUpdateSyncd bool     `mapstructure:"is-update-syncd" json:"isUpdateSyncd"`
-	ULeaveRange   uint     `mapstructure:"user-leave-range" json:"userLevelRange"`
+	AppKey      string   `mapstructure:"app-key" json:"appKey"`
+	AppSecret   string   `mapstructure:"app-secret" json:"appSecret"`
+	AgentId     string   `mapstructure:"agent-id" json:"agentId"`
+	RootOuName  string   `mapstructure:"root-ou-name" json:"rootOuName"`
+	Flag        string   `mapstructure:"flag" json:"flag"`
+	DeptList    []string `mapstructure:"dept-list" json:"deptList"`
+	ULeaveRange uint     `mapstructure:"user-leave-range" json:"userLevelRange"`
 }
 
 type WeComConfig struct {
-	Flag          string `mapstructure:"flag" json:"flag"`
-	CorpID        string `mapstructure:"corp-id" json:"corpId"`
-	AgentID       int    `mapstructure:"agent-id" json:"agentId"`
-	CorpSecret    string `mapstructure:"corp-secret" json:"corpSecret"`
-	EnableSync    bool   `mapstructure:"enable-sync" json:"enableSync"`
-	DeptSyncTime  string `mapstructure:"dept-sync-time" json:"deptSyncTime"`
-	UserSyncTime  string `mapstructure:"user-sync-time" json:"userSyncTime"`
-	IsUpdateSyncd bool   `mapstructure:"is-update-syncd" json:"isUpdateSyncd"`
+	Flag       string `mapstructure:"flag" json:"flag"`
+	CorpID     string `mapstructure:"corp-id" json:"corpId"`
+	AgentID    int    `mapstructure:"agent-id" json:"agentId"`
+	CorpSecret string `mapstructure:"corp-secret" json:"corpSecret"`
 }
 
 type FeiShuConfig struct {
-	Flag          string   `mapstructure:"flag" json:"flag"`
-	AppID         string   `mapstructure:"app-id" json:"appId"`
-	AppSecret     string   `mapstructure:"app-secret" json:"appSecret"`
-	EnableSync    bool     `mapstructure:"enable-sync" json:"enableSync"`
-	DeptSyncTime  string   `mapstructure:"dept-sync-time" json:"deptSyncTime"`
-	UserSyncTime  string   `mapstructure:"user-sync-time" json:"userSyncTime"`
-	DeptList      []string `mapstructure:"dept-list" json:"deptList"`
-	IsUpdateSyncd bool     `mapstructure:"is-update-syncd" json:"isUpdateSyncd"`
+	Flag      string   `mapstructure:"flag" json:"flag"`
+	AppID     string   `mapstructure:"app-id" json:"appId"`
+	AppSecret string   `mapstructure:"app-secret" json:"appSecret"`
+	DeptList  []string `mapstructure:"dept-list" json:"deptList"`
 }
