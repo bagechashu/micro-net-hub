@@ -32,6 +32,7 @@ type LdapUser struct {
 
 // 创建资源
 func LdapUserAdd(user *userModel.User) error {
+	user.CheckAttrVacancies()
 	add := ldap.NewAddRequest(user.UserDN, nil)
 	add.Attribute("objectClass", []string{"inetOrgPerson"})
 	add.Attribute("uid", []string{user.Username})
@@ -299,24 +300,7 @@ func LdapUserGetDeptIds(udn string) (ret []string, err error) {
 func LdapUserSyncToDB(user *userModel.User) error {
 	// 根据 user_dn 查询用户,不存在则创建
 	if !user.Exist(tools.H{"user_dn": user.UserDN}) {
-		if user.Departments == "" {
-			user.Departments = "default"
-		}
-		if user.GivenName == "" {
-			user.GivenName = user.Nickname
-		}
-		if user.PostalAddress == "" {
-			user.PostalAddress = "default"
-		}
-		if user.Position == "" {
-			user.Position = "default"
-		}
-		if user.Introduction == "" {
-			user.Introduction = user.Nickname
-		}
-		if user.JobNumber == "" {
-			user.JobNumber = "0000"
-		}
+		user.CheckAttrVacancies()
 		// 先将用户添加到MySQL
 		err := user.Add()
 		if err != nil {

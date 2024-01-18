@@ -64,49 +64,9 @@ func CommonUpdateGroup(oldGroup, newGroup *userModel.Group) error {
 	return nil
 }
 
-// 用户信息的预置处理
-func CommonHandleUserAttributeVacancies(user *userModel.User) {
-	if user.Nickname == "" {
-		user.Nickname = user.Username
-	}
-	if user.GivenName == "" {
-		user.GivenName = user.Username
-	}
-	if user.Introduction == "" {
-		user.Introduction = tools.ConvertBaseDNToDomain(config.Conf.Ldap.BaseDN)
-	}
-	// 兼容
-	if user.Mail == "" || !tools.CheckEmail(user.Mail) {
-		if len(config.Conf.Ldap.DefaultEmailSuffix) > 0 {
-			user.Mail = user.Username + "@" + config.Conf.Ldap.DefaultEmailSuffix
-		} else {
-			user.Mail = user.Username + "@example.com"
-		}
-	}
-	if user.JobNumber == "" {
-		user.JobNumber = "0000"
-	}
-	if user.Departments == "" {
-		user.Departments = "all"
-	}
-	if user.Position == "" {
-		user.Position = "Default Position"
-	}
-	if user.PostalAddress == "" {
-		user.PostalAddress = "Default PostalAddr"
-	}
-	if user.Mobile == "" {
-		// user.Mobile = generateMobile()
-		user.Mobile = "10000000000"
-	}
-	if tools.CheckQQNo(user.Avatar) {
-		user.Avatar = fmt.Sprintf("https://q1.qlogo.cn/g?b=qq&nk=%s&s=100", user.Avatar)
-	}
-}
-
 // CommonAddUser 标准创建用户
 func CommonAddUser(user *userModel.User, groups []*userModel.Group) error {
-	CommonHandleUserAttributeVacancies(user)
+	user.CheckAttrVacancies()
 	// 先将用户添加到MySQL
 	err := user.Add()
 	if err != nil {
@@ -144,7 +104,7 @@ func CommonUpdateUser(oldUser, newUser *userModel.User, groupId []uint) error {
 		newUser.Username = oldUser.Username
 	}
 
-	CommonHandleUserAttributeVacancies(newUser)
+	newUser.CheckAttrVacancies()
 
 	err := ldapmgr.LdapUserUpdate(oldUser.Username, newUser)
 	if err != nil {

@@ -3,6 +3,7 @@ package model
 import (
 	"errors"
 	"fmt"
+	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
 	"micro-net-hub/internal/tools"
 	"strings"
@@ -87,6 +88,46 @@ func (u *User) SetSourceUserId(sourceUserId string) {
 
 func (u *User) SetSourceUnionId(sourceUnionId string) {
 	u.SourceUnionId = sourceUnionId
+}
+
+// 用户信息的预置处理
+func (u *User) CheckAttrVacancies() {
+	if u.Nickname == "" {
+		u.Nickname = u.Username
+	}
+	if u.GivenName == "" {
+		u.GivenName = u.Username
+	}
+	if u.Introduction == "" {
+		u.Introduction = tools.ConvertBaseDNToDomain(config.Conf.Ldap.BaseDN)
+	}
+	// 兼容
+	if u.Mail == "" || !tools.CheckEmail(u.Mail) {
+		if len(config.Conf.Ldap.DefaultEmailSuffix) > 0 {
+			u.Mail = u.Username + "@" + config.Conf.Ldap.DefaultEmailSuffix
+		} else {
+			u.Mail = u.Username + "@example.com"
+		}
+	}
+	if u.JobNumber == "" {
+		u.JobNumber = "0000"
+	}
+	if u.Departments == "" {
+		u.Departments = "all"
+	}
+	if u.Position == "" {
+		u.Position = "Default Position"
+	}
+	if u.PostalAddress == "" {
+		u.PostalAddress = "Default PostalAddr"
+	}
+	if u.Mobile == "" {
+		// user.Mobile = generateMobile()
+		u.Mobile = "10000000000"
+	}
+	if tools.CheckQQNo(u.Avatar) {
+		u.Avatar = fmt.Sprintf("https://q1.qlogo.cn/g?b=qq&nk=%s&s=100", u.Avatar)
+	}
 }
 
 // 当前用户信息缓存，避免频繁获取数据库
