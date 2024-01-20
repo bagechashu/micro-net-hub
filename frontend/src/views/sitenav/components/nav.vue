@@ -2,7 +2,7 @@
   <div>
     <el-row :gutter="20">
       <el-col
-        v-for="(item, index) in navData"
+        v-for="(item, index) in sites"
         :key="index"
         :xs="12"
         :sm="8"
@@ -56,13 +56,9 @@ import { Message } from "element-ui";
 export default {
   components: {},
   props: {
-    navData: {
+    sites: {
       type: Array,
       default: () => []
-    },
-    subTitle: {
-      type: String,
-      default: ""
     }
   },
   methods: {

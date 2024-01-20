@@ -40,7 +40,7 @@ func dbAutoMigrate() {
 		&opLogModel.OperationLog{},
 		&fieldRelationModel.FieldRelation{},
 		&siteNavModel.NavGroup{},
-		&siteNavModel.NavItem{},
+		&siteNavModel.NavSite{},
 	)
 }
 

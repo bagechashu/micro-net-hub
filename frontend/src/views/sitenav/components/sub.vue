@@ -1,17 +1,16 @@
 <template>
   <div>
     <div v-for="(item, index) in data" :id="item.title" :key="index">
-      <el-card v-if="item.nav" class="node-card" shadow="hover">
+      <el-card v-if="item.sites" class="node-card" shadow="hover">
         <div slot="header" class="clearfix">
           <span>{{ item.title }}<a :href="'#' + item.title" /> </span>
           <span
             style="float: right; padding: 3px 0"
             type="text"
-          >共计：{{ item.nav.length }} 个项目</span>
+          >共计：{{ item.sites.length }} 个项目</span>
         </div>
         <Nav
-          :nav-data="item.nav"
-          :sub-title="item.title"
+          :sites="item.sites"
         />
       </el-card>
     </div>
@@ -26,8 +25,8 @@ export default {
   },
   props: {
     data: {
-      type: Object,
-      default: () => {}
+      type: Array,
+      default: () => []
     }
   }
 };

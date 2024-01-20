@@ -28,7 +28,7 @@
 <script>
 import { Message } from "element-ui";
 import NavSub from "@/views/sitenav/components/sub";
-import { getSiteNav } from "@/api/sitenav/sitenav";
+import { getNav } from "@/api/sitenav/sitenav";
 export default {
   name: "SiteNav",
   components: {
@@ -45,12 +45,12 @@ export default {
     };
   },
   created: function() {
-    this.getSiteNavJson();
+    this._getNavJson();
   },
   methods: {
-    async getSiteNavJson() {
+    async _getNavJson() {
       try {
-        const { data } = await getSiteNav();
+        const { data } = await getNav();
         this.data = data;
       } catch (e) {
         console.log(e);

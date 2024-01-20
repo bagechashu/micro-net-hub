@@ -1,46 +1,58 @@
 package sitenav
 
 import (
+	"fmt"
 	"micro-net-hub/internal/module/sitenav/model"
+	"micro-net-hub/internal/server/helper"
 
 	"github.com/gin-gonic/gin"
 )
 
 // GetGroups returns a list of groups.
-func GetNavSites(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
-	// 构建 JSON 数据
-	result := make(map[string]interface{})
-
-	// 网址分组及其网址项查询
-	var navGroups model.NavGroups
-	if err := navGroups.FindWithItems(); err != nil {
+func GetNav(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
+	var navGroups = model.NewNavGroups()
+	if err := navGroups.FindWithSites(); err != nil {
 		return nil, err
 	}
 
-	// 侧边分租解析
-	for _, group := range navGroups {
-		groupData := map[string]interface{}{
-			"title": group.Title,
-			"name":  group.Name,
-			"nav":   group.NavItems,
-		}
-		result[group.Name] = groupData
+	return navGroups, nil
+}
+
+func ListNav(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
+	r, ok := req.(*model.NavReq)
+	if !ok {
+		return nil, helper.ReqAssertErr
+	}
+	_ = c
+
+	var err error
+	var gs = model.NewNavGroups()
+	err = gs.Find(r)
+	if err != nil {
+		return nil, helper.NewMySqlError(fmt.Errorf("获取接口列表失败: %s", err.Error()))
 	}
 
-	// global.Log.Debugf("sitenav result: %+v", result)
-	return result, nil
-}
+	var sites = model.NewNavSites()
+	err = sites.Find(r)
+	if err != nil {
+		return nil, helper.NewMySqlError(fmt.Errorf("获取接口列表失败: %s", err.Error()))
+	}
 
-func AddSideNavGroup(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
-	return nil, nil
-}
+	gCount, err := model.GroupCount()
+	if err != nil {
+		return nil, helper.NewMySqlError(fmt.Errorf("获取接口列表失败: %s", err.Error()))
+	}
+	sCount, err := model.SiteCount()
+	if err != nil {
+		return nil, helper.NewMySqlError(fmt.Errorf("获取接口列表失败: %s", err.Error()))
+	}
 
-func UpdateSideNavGroup(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
-	return nil, nil
-}
-
-func DeleteSideNavGroup(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
-	return nil, nil
+	return model.NavRsp{
+		Groups:     *gs,
+		GroupTotal: gCount,
+		Sites:      *sites,
+		SiteTotal:  sCount,
+	}, nil
 }
 
 func AddNavGroup(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
@@ -55,14 +67,14 @@ func DeleteNavGroup(c *gin.Context, req interface{}) (data interface{}, rspError
 	return nil, nil
 }
 
-func AddNavItem(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
+func AddNavSite(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	return nil, nil
 }
 
-func UpdateNavItem(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
+func UpdateNavSite(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	return nil, nil
 }
 
-func DeleteNavItem(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
+func DeleteNavSite(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	return nil, nil
 }

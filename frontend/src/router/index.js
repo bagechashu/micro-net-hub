@@ -109,29 +109,13 @@ export const constantRoutes = [
     hidden: true,
     children: [
       {
-        path: "index",
+        path: "/profile/index",
         component: () => import("@/views/profile/index"),
         name: "Profile",
         meta: { title: "个人中心", icon: "user", noCache: true }
       }
-
-    ]
-  },
-  {
-    path: "/groupUser",
-    component: Layout,
-    redirect: "/groupUser/userList/index",
-    hidden: true,
-    children: [
-      {
-        path: "/userList",
-        component: () => import("@/views/groupUser/userList/index"),
-        name: "userList",
-        meta: { title: "分组成员", icon: "user", noCache: true }
-      }
     ]
   }
-
 ];
 
 /**
