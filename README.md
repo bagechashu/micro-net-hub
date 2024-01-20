@@ -4,6 +4,10 @@
 
 Basic tool for private network.
 
+# How to set Ocserv Authentication with Radius.
+
+> https://ocserv.openconnect-vpn.net/recipes-ocserv-authentication-radius-radcli.html
+
 # References
 
 - https://github.com/eryajf/go-ldap-admin
@@ -16,6 +20,7 @@ Basic tool for private network.
 - https://github.com/lework/lenav
 
 # TODO
+
 - VPNManager
 - CoreDnsManager
 
