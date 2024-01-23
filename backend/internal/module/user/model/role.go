@@ -24,7 +24,7 @@ type Role struct {
 
 // Exist 判断资源是否存在
 func (r *Role) Exist(filter map[string]interface{}) bool {
-	err := global.DB.Debug().Order("created_at DESC").Where(filter).First(&r).Error
+	err := global.DB.Order("created_at DESC").Where(filter).First(&r).Error
 	return !errors.Is(err, gorm.ErrRecordNotFound)
 }
 
@@ -119,7 +119,7 @@ func (rs *Roles) List(req *RoleListReq) error {
 // Delete 删除资源
 func (rs *Roles) Delete() error {
 	for _, r := range *rs {
-		if err := global.DB.Debug().Unscoped().Delete(&r).Error; err != nil {
+		if err := global.DB.Unscoped().Delete(&r).Error; err != nil {
 			return err
 		}
 

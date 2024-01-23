@@ -294,7 +294,7 @@ func (us *Users) List(req *UserListReq) error {
 	}
 
 	pageReq := tools.NewPageOption(req.PageNum, req.PageSize)
-	err := db.Offset(pageReq.PageNum).Limit(pageReq.PageSize).Preload("Roles").Preload("Totp").Find(&us).Debug().Error
+	err := db.Offset(pageReq.PageNum).Limit(pageReq.PageSize).Preload("Roles").Preload("Totp").Find(&us).Error
 	return err
 }
 
@@ -328,7 +328,7 @@ func DeleteUsersById(ids []uint) error {
 		us = append(us, user)
 	}
 
-	err := global.DB.Debug().Select("Roles").Unscoped().Delete(&us).Error
+	err := global.DB.Select("Roles").Unscoped().Delete(&us).Error
 	if err != nil {
 		return err
 	} else {
@@ -339,7 +339,7 @@ func DeleteUsersById(ids []uint) error {
 	}
 
 	// 删除用户在group的关联
-	err = global.DB.Debug().Exec("DELETE FROM group_users WHERE user_id IN (?)", ids).Error
+	err = global.DB.Exec("DELETE FROM group_users WHERE user_id IN (?)", ids).Error
 	if err != nil {
 		return err
 	}

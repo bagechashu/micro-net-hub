@@ -15,6 +15,7 @@ import (
 	"github.com/glebarez/sqlite"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"moul.io/zapgorm2"
 )
 
 // 初始化数据库
@@ -83,16 +84,25 @@ func ConnMysql() *gorm.DB {
 		config.Conf.Mysql.Collation,
 		config.Conf.Mysql.Query,
 	)
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+
+	logger := zapgorm2.New(global.BasicLog)
+	logger.SetAsDefault()
+
+	gormConf := &gorm.Config{
 		// 禁用外键(指定外键时不会在mysql创建真实的外键约束)
 		DisableForeignKeyConstraintWhenMigrating: true,
-	})
-	if err != nil {
-		global.Log.Panicf("初始化mysql数据库异常: %v", err)
 	}
+
 	// 开启mysql日志
 	if config.Conf.Mysql.LogMode {
-		db.Debug()
+		gormConf.Logger = logger.LogMode(3) // 4: info; 3: warn; 2: error; 1: silent
+	}
+
+	global.Log.Debugf("gorm Config: %+v", gormConf)
+
+	db, err := gorm.Open(mysql.Open(dsn), gormConf)
+	if err != nil {
+		global.Log.Panicf("初始化mysql数据库异常: %v", err)
 	}
 	global.Log.Infof("初始化mysql数据库完成! dsn: %s", showDsn)
 	return db

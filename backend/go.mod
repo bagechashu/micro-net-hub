@@ -19,7 +19,7 @@ require (
 	github.com/spf13/viper v1.11.0
 	github.com/thoas/go-funk v0.7.0
 	github.com/zhaoyunxing92/dingtalk/v2 v2.1.1-0.20231013102126-c1568b7fbac5
-	go.uber.org/zap v1.19.1
+	go.uber.org/zap v1.21.0
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gorm.io/driver/mysql v1.4.7
@@ -33,6 +33,7 @@ require (
 	golang.org/x/sync v0.1.0
 	gorm.io/datatypes v1.1.0
 	layeh.com/radius v0.0.0-20231213012653-1006025d24f8
+	moul.io/zapgorm2 v1.3.0
 )
 
 require (
@@ -95,7 +96,7 @@ require (
 	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/ugorji/go/codec v1.2.3 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
-	go.uber.org/multierr v1.6.0 // indirect
+	go.uber.org/multierr v1.7.0 // indirect
 	golang.org/x/crypto v0.13.0 // indirect
 	golang.org/x/sys v0.12.0 // indirect
 	golang.org/x/text v0.13.0 // indirect

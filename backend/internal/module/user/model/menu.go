@@ -31,7 +31,7 @@ type Menu struct {
 
 // Exist 判断资源是否存在
 func (m *Menu) Exist(filter map[string]interface{}) bool {
-	err := global.DB.Debug().Order("created_at DESC").Where(filter).First(&m).Error
+	err := global.DB.Order("created_at DESC").Where(filter).First(&m).Error
 	return !errors.Is(err, gorm.ErrRecordNotFound)
 }
 
@@ -46,7 +46,7 @@ func (m *Menu) Update() error {
 	// NOTE When updating with struct, GORM will only update non-zero fields. You might want to use map to update attributes or use Select to specify fields to update
 	// global.Log.Infof("menu check ParentId before Update: %v", m.ParentId)
 	if m.ParentId == 0 {
-		err := global.DB.Debug().Model(&Menu{}).Where("id = ?", m.ID).Updates(map[string]interface{}{"ParentId": 0}).Error
+		err := global.DB.Model(&Menu{}).Where("id = ?", m.ID).Updates(map[string]interface{}{"ParentId": 0}).Error
 		if err != nil {
 			return err
 		}

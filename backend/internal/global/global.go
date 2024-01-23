@@ -20,6 +20,7 @@ var DB *gorm.DB
 // 全局日志变量
 // var Log *zap.Logger
 var Log *zap.SugaredLogger
+var BasicLog *zap.Logger
 
 // 全局Validate数据校验实列
 var Validate *validator.Validate

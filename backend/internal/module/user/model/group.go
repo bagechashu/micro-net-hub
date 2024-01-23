@@ -65,7 +65,7 @@ func (g *Group) Find(filter map[string]interface{}, args ...interface{}) error {
 
 // Exist 判断资源是否存在
 func (g *Group) Exist(filter map[string]interface{}) bool {
-	err := global.DB.Debug().Order("created_at DESC").Where(filter).First(&g).Error
+	err := global.DB.Order("created_at DESC").Where(filter).First(&g).Error
 	return !errors.Is(err, gorm.ErrRecordNotFound)
 }
 
@@ -139,7 +139,7 @@ func (gs *Groups) GenGroupTree(parentId uint) []*Group {
 // Delete 批量删除
 func (gs *Groups) Delete() error {
 	for _, g := range *gs {
-		if err := global.DB.Debug().Unscoped().Delete(&g).Error; err != nil {
+		if err := global.DB.Unscoped().Delete(&g).Error; err != nil {
 			return err
 		}
 	}

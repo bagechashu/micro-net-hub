@@ -99,7 +99,7 @@ func (gs *NavGroups) Find() (err error) {
 }
 
 func (gs *NavGroups) FindWithSites() error {
-	if err := global.DB.Debug().Preload("NavSites").Find(&gs).Error; err != nil {
+	if err := global.DB.Preload("NavSites").Find(&gs).Error; err != nil {
 		return helper.NewMySqlError(fmt.Errorf("获取 NavGroups 失败: " + err.Error()))
 	}
 	return nil

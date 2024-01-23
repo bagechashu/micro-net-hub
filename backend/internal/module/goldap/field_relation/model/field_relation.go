@@ -39,7 +39,7 @@ type FieldRelationDeleteReq struct {
 // Exist 判断资源是否存在
 func Exist(filter map[string]interface{}) bool {
 	var dataObj FieldRelation
-	err := global.DB.Debug().Order("created_at DESC").Where(filter).First(&dataObj).Error
+	err := global.DB.Order("created_at DESC").Where(filter).First(&dataObj).Error
 	return !errors.Is(err, gorm.ErrRecordNotFound)
 }
 

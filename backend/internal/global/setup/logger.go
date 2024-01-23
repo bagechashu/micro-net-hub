@@ -103,6 +103,7 @@ func InitLogger() {
 	coreArr = append(coreArr, errorFileCore)
 
 	logger := zap.New(zapcore.NewTee(coreArr...), zap.AddCaller())
+	global.BasicLog = logger
 	global.Log = logger.Sugar()
 	global.Log.Info("初始化zap日志完成!")
 }
