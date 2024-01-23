@@ -1,6 +1,7 @@
 <template>
   <div>
     <el-card class="container-card" shadow="always">
+      <!-- FIXME: required not in effect -->
       <el-form
         ref="navGroupForm"
         :inline="true"

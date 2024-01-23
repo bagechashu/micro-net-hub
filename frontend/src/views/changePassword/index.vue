@@ -59,7 +59,8 @@ export default {
       });
       // 重新登录
       setTimeout(() => {
-        this.$router.replace({ path: "/login" });
+        // FIXME: test it
+        this.$router.replace({ path: "/" });
       }, 1500);
     }
   }
