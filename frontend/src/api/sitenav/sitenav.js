@@ -6,13 +6,6 @@ export function getNav() {
     method: "get"
   });
 }
-export function getNavList(params) {
-  return request({
-    url: "/api/sitenav/list",
-    method: "get",
-    params
-  });
-}
 
 // 创建接口（已完成）
 export function createNavGroup(data) {

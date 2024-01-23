@@ -85,32 +85,30 @@ func ReloadErr(err interface{}) *RspError {
 	return rspErr
 }
 
-func BindAndValidateRequest(c *gin.Context, reqStruct interface{}) {
+type HandlerLogic func(c *gin.Context, reqStructInstance interface{}) (result interface{}, respError interface{})
+
+type EmptyStruct struct{}
+
+func HandleRequest(c *gin.Context, reqStructInstance interface{}, fn HandlerLogic) {
 	var err error
 
-	if reqStruct == nil {
-		return
-	}
-
 	// bind struct
-	err = c.Bind(reqStruct)
-	if err != nil {
+	if err = c.Bind(reqStructInstance); err != nil {
 		Err(c, NewValidatorError(err), nil)
 		return
 	}
-	//
-	err = global.Validate.Struct(reqStruct)
-	if err != nil {
+
+	// reqStruct validate check
+	if err = global.Validate.Struct(reqStructInstance); err != nil {
 		for _, err := range err.(validator.ValidationErrors) {
-			global.Log.Errorf("bind reqStruct err: \n\treqStruct: %+v\n\terr: %s", reqStruct, err)
+			global.Log.Errorf("bind reqStruct err: \n\treqStruct: %+v\n\terr: %s", reqStructInstance, err)
 			Err(c, NewValidatorError(fmt.Errorf(err.Translate(global.Trans))), nil)
 			return
 		}
 	}
 
-}
-
-func HandleResponse(c *gin.Context, data interface{}, rspError interface{}) {
+	// exec HandlerLogic
+	data, rspError := fn(c, reqStructInstance)
 	if rspError != nil {
 		Err(c, ReloadErr(rspError), data)
 		return

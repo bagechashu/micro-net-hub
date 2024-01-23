@@ -13,44 +13,29 @@ type ApiHandler struct{}
 // List 记录列表
 func (ApiHandler) List(c *gin.Context) {
 	req := new(apiMgrModel.ApiListReq)
-	helper.BindAndValidateRequest(c, req)
-
-	data, respErr := apimgrLogic.List(c, req)
-	helper.HandleResponse(c, data, respErr)
+	helper.HandleRequest(c, req, apimgrLogic.List)
 }
 
 // GetTree 接口树
 func (ApiHandler) GetTree(c *gin.Context) {
 	req := new(apiMgrModel.ApiGetTreeReq)
-	helper.BindAndValidateRequest(c, req)
-
-	data, respErr := apimgrLogic.GetTree(c, req)
-	helper.HandleResponse(c, data, respErr)
+	helper.HandleRequest(c, req, apimgrLogic.GetTree)
 }
 
 // Add 新建记录
 func (ApiHandler) Add(c *gin.Context) {
 	req := new(apiMgrModel.ApiAddReq)
-	helper.BindAndValidateRequest(c, req)
-
-	data, respErr := apimgrLogic.Add(c, req)
-	helper.HandleResponse(c, data, respErr)
+	helper.HandleRequest(c, req, apimgrLogic.Add)
 }
 
 // Update 更新记录
 func (ApiHandler) Update(c *gin.Context) {
 	req := new(apiMgrModel.ApiUpdateReq)
-	helper.BindAndValidateRequest(c, req)
-
-	data, respErr := apimgrLogic.Update(c, req)
-	helper.HandleResponse(c, data, respErr)
+	helper.HandleRequest(c, req, apimgrLogic.Update)
 }
 
 // Delete 删除记录
 func (ApiHandler) Delete(c *gin.Context) {
 	req := new(apiMgrModel.ApiDeleteReq)
-	helper.BindAndValidateRequest(c, req)
-
-	data, respErr := apimgrLogic.Delete(c, req)
-	helper.HandleResponse(c, data, respErr)
+	helper.HandleRequest(c, req, apimgrLogic.Delete)
 }

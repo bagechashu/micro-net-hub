@@ -1,349 +1,214 @@
 <template>
   <div>
-    <el-row>
-      <el-col :span="6" :lg="6" :md="24" :sm="24" :xs="24">
-        <el-card class="container-card" shadow="always">
-          <el-form
-            size="mini"
-            :inline="true"
-            :model="params"
-            class="demo-form-inline"
-          >
-            <el-form-item>
-              <el-button
-                :loading="loading"
-                icon="el-icon-plus"
-                type="warning"
-                @click="create"
-              >新增</el-button>
-            </el-form-item>
-            <el-form-item>
-              <el-button
-                :disabled="multipleSelection.length === 0"
-                :loading="loading"
-                icon="el-icon-delete"
-                type="danger"
-                @click="batchDelete"
-              >批量删除</el-button>
-            </el-form-item>
-          </el-form>
-
-          <el-table
-            v-loading="loading"
-            :data="groupTableData"
-            border
-            stripe
-            style="width: 100%"
-            @selection-change="handleSelectionChange"
-          >
-            <el-table-column type="selection" width="55" align="center" />
-            <el-table-column
-              show-overflow-tooltip
-              sortable
-              prop="name"
-              label="分组"
-            />
-            <el-table-column
-              show-overflow-tooltip
-              sortable
-              prop="title"
-              label="分组名"
-            />
-            <el-table-column
-              fixed="right"
-              label="操作"
-              align="center"
-              width="120"
-            >
-              <template slot-scope="scope">
-                <el-tooltip content="编辑" effect="dark" placement="top">
-                  <el-button
-                    size="mini"
-                    icon="el-icon-edit"
-                    circle
-                    type="primary"
-                    @click="update(scope.row)"
-                  />
-                </el-tooltip>
-                <el-tooltip
-                  class="delete-popover"
-                  content="删除"
-                  effect="dark"
-                  placement="top"
-                >
-                  <el-popconfirm
-                    title="确定删除吗？"
-                    @onConfirm="singleDelete(scope.row.ID)"
-                  >
-                    <el-button
-                      slot="reference"
-                      size="mini"
-                      icon="el-icon-delete"
-                      circle
-                      type="danger"
-                    />
-                  </el-popconfirm>
-                </el-tooltip>
-              </template>
-            </el-table-column>
-          </el-table>
-
-          <el-pagination
-            :current-page="params.pageNum"
-            :page-size="params.pageSize"
-            :total="total"
-            :page-sizes="[1, 5, 10, 30]"
-            layout="total, prev, pager, next, sizes"
-            background
-            style="margin-top: 10px; float: right; margin-bottom: 10px"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
+    <el-card class="container-card" shadow="always">
+      <el-form
+        ref="navGroupForm"
+        :inline="true"
+        size="small"
+        :model="navGroupForm"
+        :rules="navGroupFormRules"
+      >
+        <el-form-item label="标识名:">
+          <el-input
+            v-model.trim="navGroupForm.name"
+            placeholder="导航组的唯一标识"
           />
+        </el-form-item>
+        <el-form-item label="展示名:">
+          <el-input
+            v-model.trim="navGroupForm.title"
+            placeholder="导航组的实际展示名"
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-button
+            size="small"
+            :loading="loading"
+            type="primary"
+            @click="addGroup()"
+          >添加导航组</el-button>
+        </el-form-item>
+      </el-form>
 
-          <el-dialog :title="dialogFormTitle" :visible.sync="dialogFormVisible">
-            <el-form
-              ref="dialogForm"
-              size="small"
-              :model="dialogFormData"
-              :rules="dialogFormRules"
-              label-width="120px"
-            >
-              <el-form-item label="访问路径" prop="path">
-                <el-input
-                  v-model.trim="dialogFormData.path"
-                  placeholder="访问路径"
-                />
+      <el-tabs
+        v-model="navGroupActiveTag"
+        type="border-card"
+        closable
+        @tab-remove="removeGroup"
+      >
+        <el-tab-pane
+          v-for="(item) in navData"
+          :key="item.name"
+          :label="item.title"
+          :name="item.name"
+        >
+          <template>
+            <el-form size="mini" :inline="true" class="demo-form-inline">
+              <el-form-item>
+                <el-button
+                  :loading="loading"
+                  icon="el-icon-plus"
+                  type="warning"
+                  @click="addSite"
+                >新增</el-button>
               </el-form-item>
-              <el-form-item label="所属类别" prop="category">
-                <el-input
-                  v-model.trim="dialogFormData.category"
-                  placeholder="所属类别"
-                />
-              </el-form-item>
-              <el-form-item label="请求方式" prop="method">
-                <el-select
-                  v-model.trim="dialogFormData.method"
-                  placeholder="请选择请求方式"
-                >
-                  <el-option label="GET[获取资源]" value="GET" />
-                  <el-option label="POST[新增资源]" value="POST" />
-                  <el-option label="PUT[全部更新]" value="PUT" />
-                  <el-option label="PATCH[增量更新]" value="PATCH" />
-                  <el-option label="DELETE[删除资源]" value="DELETE" />
-                </el-select>
-              </el-form-item>
-              <el-form-item label="说明" prop="remark">
-                <el-input
-                  v-model.trim="dialogFormData.remark"
-                  type="textarea"
-                  placeholder="说明"
-                  show-word-limit
-                  maxlength="100"
-                />
+              <el-form-item>
+                <el-button
+                  :disabled="multipleSelection.length === 0"
+                  :loading="loading"
+                  icon="el-icon-delete"
+                  type="danger"
+                  @click="batchDeleteSites"
+                >批量删除</el-button>
               </el-form-item>
             </el-form>
-            <div slot="footer" class="dialog-footer">
-              <el-button size="mini" @click="cancelForm()">取 消</el-button>
-              <el-button
-                size="mini"
-                :loading="submitLoading"
-                type="primary"
-                @click="submitForm()"
-              >确 定</el-button>
-            </div>
-          </el-dialog>
-        </el-card>
-      </el-col>
-      <el-col :span="18" :lg="18" :md="24" :sm="24" :xs="24">
-        <el-card class="container-card" shadow="always">
-          <el-form
-            size="mini"
-            :inline="true"
-            :model="params"
-            class="demo-form-inline"
-          >
-            <el-form-item>
-              <el-button
-                :loading="loading"
-                icon="el-icon-plus"
-                type="warning"
-                @click="create"
-              >新增</el-button>
-            </el-form-item>
-            <el-form-item>
-              <el-button
-                :disabled="multipleSelection.length === 0"
-                :loading="loading"
-                icon="el-icon-delete"
-                type="danger"
-                @click="batchDelete"
-              >批量删除</el-button>
-            </el-form-item>
-          </el-form>
 
-          <el-table
-            v-loading="loading"
-            :data="siteTableData"
-            border
-            stripe
-            style="width: 100%"
-            @selection-change="handleSelectionChange"
-          >
-            <el-table-column type="selection" width="55" align="center" />
-            <el-table-column
-              show-overflow-tooltip
-              sortable
-              prop="groupid"
-              label="导航组"
-            />
-            <el-table-column
-              show-overflow-tooltip
-              sortable
-              prop="name"
-              label="站名"
-            />
-            <el-table-column
-              show-overflow-tooltip
-              sortable
-              prop="icon"
-              label="图标"
-            />
-            <el-table-column
-              show-overflow-tooltip
-              sortable
-              prop="desc"
-              label="描述"
-            />
-            <el-table-column
-              show-overflow-tooltip
-              sortable
-              prop="link"
-              label="链接"
-            />
-            <el-table-column
-              show-overflow-tooltip
-              sortable
-              prop="doc"
-              label="文档"
-            />
-            <el-table-column
-              fixed="right"
-              label="操作"
-              align="center"
-              width="120"
+            <el-table
+              v-loading="loading"
+              :data="item.sites"
+              border
+              stripe
+              style="width: 100%"
+              @selection-change="handleSelectionChange"
             >
-              <template slot-scope="scope">
-                <el-tooltip content="编辑" effect="dark" placement="top">
-                  <el-button
-                    size="mini"
-                    icon="el-icon-edit"
-                    circle
-                    type="primary"
-                    @click="update(scope.row)"
-                  />
-                </el-tooltip>
-                <el-tooltip
-                  class="delete-popover"
-                  content="删除"
-                  effect="dark"
-                  placement="top"
-                >
-                  <el-popconfirm
-                    title="确定删除吗？"
-                    @onConfirm="singleDelete(scope.row.ID)"
-                  >
+              <el-table-column type="selection" width="55" align="center" />
+              <el-table-column
+                show-overflow-tooltip
+                sortable
+                prop="name"
+                label="站名"
+              />
+              <el-table-column
+                show-overflow-tooltip
+                sortable
+                prop="icon"
+                label="图标"
+              />
+              <el-table-column
+                show-overflow-tooltip
+                sortable
+                prop="desc"
+                label="描述"
+              />
+              <el-table-column
+                show-overflow-tooltip
+                sortable
+                prop="link"
+                label="链接"
+              />
+              <el-table-column
+                show-overflow-tooltip
+                sortable
+                prop="doc"
+                label="文档"
+              />
+              <el-table-column
+                fixed="right"
+                label="操作"
+                align="center"
+                width="120"
+              >
+                <template slot-scope="scope">
+                  <el-tooltip content="编辑" effect="dark" placement="top">
                     <el-button
-                      slot="reference"
                       size="mini"
-                      icon="el-icon-delete"
+                      icon="el-icon-edit"
                       circle
-                      type="danger"
+                      type="primary"
+                      @click="updateSite(scope.row)"
                     />
-                  </el-popconfirm>
-                </el-tooltip>
-              </template>
-            </el-table-column>
-          </el-table>
+                  </el-tooltip>
+                  <el-tooltip
+                    class="delete-popover"
+                    content="删除"
+                    effect="dark"
+                    placement="top"
+                  >
+                    <el-popconfirm
+                      title="确定删除吗？"
+                      @onConfirm="deleteSite(scope.row.ID)"
+                    >
+                      <el-button
+                        slot="reference"
+                        size="mini"
+                        icon="el-icon-delete"
+                        circle
+                        type="danger"
+                      />
+                    </el-popconfirm>
+                  </el-tooltip>
+                </template>
+              </el-table-column>
+            </el-table>
+          </template>
+        </el-tab-pane>
+      </el-tabs>
 
-          <el-pagination
-            :current-page="params.pageNum"
-            :page-size="params.pageSize"
-            :total="total"
-            :page-sizes="[1, 5, 10, 30]"
-            layout="total, prev, pager, next, sizes"
-            background
-            style="margin-top: 10px; float: right; margin-bottom: 10px"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-          />
-
-          <el-dialog :title="dialogFormTitle" :visible.sync="dialogFormVisible">
-            <el-form
-              ref="dialogForm"
-              size="small"
-              :model="dialogFormData"
-              :rules="dialogFormRules"
-              label-width="120px"
-            >
-              <el-form-item label="访问路径" prop="path">
-                <el-input
-                  v-model.trim="dialogFormData.path"
-                  placeholder="访问路径"
-                />
-              </el-form-item>
-              <el-form-item label="所属类别" prop="category">
-                <el-input
-                  v-model.trim="dialogFormData.category"
-                  placeholder="所属类别"
-                />
-              </el-form-item>
-              <el-form-item label="请求方式" prop="method">
-                <el-select
-                  v-model.trim="dialogFormData.method"
-                  placeholder="请选择请求方式"
-                >
-                  <el-option label="GET[获取资源]" value="GET" />
-                  <el-option label="POST[新增资源]" value="POST" />
-                  <el-option label="PUT[全部更新]" value="PUT" />
-                  <el-option label="PATCH[增量更新]" value="PATCH" />
-                  <el-option label="DELETE[删除资源]" value="DELETE" />
-                </el-select>
-              </el-form-item>
-              <el-form-item label="说明" prop="remark">
-                <el-input
-                  v-model.trim="dialogFormData.remark"
-                  type="textarea"
-                  placeholder="说明"
-                  show-word-limit
-                  maxlength="100"
-                />
-              </el-form-item>
-            </el-form>
-            <div slot="footer" class="dialog-footer">
-              <el-button size="mini" @click="cancelForm()">取 消</el-button>
-              <el-button
-                size="mini"
-                :loading="submitLoading"
-                type="primary"
-                @click="submitForm()"
-              >确 定</el-button>
-            </div>
-          </el-dialog>
-        </el-card>
-      </el-col>
-    </el-row>
+      <el-dialog :title="navSiteFormTitle" :visible.sync="navSiteFormVisible">
+        <el-form
+          ref="navSiteForm"
+          size="small"
+          :model="navSiteForm"
+          :rules="navSiteFormRules"
+          label-width="auto"
+        >
+          <el-form-item label="组ID" prop="groupid">
+            <el-select v-model="navSiteForm.groupid" placeholder="请选择">
+              <el-option
+                v-for="item in groupOptions"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="站名" prop="name">
+            <el-input v-model.trim="navSiteForm.name" placeholder="站名" />
+          </el-form-item>
+          <el-form-item label="图标" prop="icon">
+            <el-input v-model.trim="navSiteForm.icon" placeholder="图标" />
+          </el-form-item>
+          <el-form-item label="链接" prop="link">
+            <el-input v-model.trim="navSiteForm.link" placeholder="链接" />
+          </el-form-item>
+          <el-form-item label="文档" prop="doc">
+            <el-input
+              v-model.trim="navSiteForm.doc"
+              placeholder="文档, 不填不展示"
+            />
+          </el-form-item>
+          <el-form-item label="描述" prop="desc">
+            <el-input
+              v-model.trim="navSiteForm.desc"
+              type="textarea"
+              placeholder="描述"
+              show-word-limit
+              maxlength="100"
+            />
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button size="mini" @click="navSiteFormCancel()">取 消</el-button>
+          <el-button
+            size="mini"
+            :loading="loading"
+            type="primary"
+            @click="navSiteFormSubmit()"
+          >确 定</el-button>
+        </div>
+      </el-dialog>
+    </el-card>
   </div>
 </template>
 
 <script>
 import {
-  getNavList,
+  getNav,
   createNavGroup,
-  updateNavGroup,
-  batchDeleteNavGroupByIds
-  // createNavSite,
-  // updateNavSite,
-  // batchDeleteNavSiteByIds
+  batchDeleteNavGroupByIds,
+  createNavSite,
+  updateNavSite,
+  batchDeleteNavSiteByIds
 } from "@/api/sitenav/sitenav";
 import { Message } from "element-ui";
 
@@ -351,41 +216,57 @@ export default {
   name: "SiteManager",
   data() {
     return {
-      // 查询参数
-      params: {
-        pageNum: 1,
-        pageSize: 10
-      },
-      // 表格数据
-      groupTableData: [],
-      siteTableData: [],
-      total: 0,
       loading: false,
 
-      // dialog对话框
-      submitLoading: false,
-      dialogFormTitle: "",
-      dialogType: "",
-      dialogFormVisible: false,
-      dialogFormData: {
-        ID: "",
-        path: "",
-        category: "",
-        method: "",
-        remark: ""
+      navData: [], // 导航页数据
+      navGroupForm: {
+        name: "",
+        title: ""
       },
-      dialogFormRules: {
-        path: [
-          { required: true, message: "请输入访问路径", trigger: "blur" },
+      navGroupFormRules: {
+        name: [
           {
-            min: 1,
-            max: 100,
-            message: "长度在 1 到 100 个字符",
+            required: true,
+            message: "请输入导航组的唯一标识",
+            trigger: "blur"
+          },
+          {
+            min: 6,
+            max: 20,
+            message: "长度在 6 到 20 个字符",
             trigger: "blur"
           }
         ],
-        category: [
-          { required: true, message: "请输入所属类别", trigger: "blur" },
+        title: [
+          {
+            required: true,
+            message: "请输入导航组的实际展示名",
+            trigger: "blur"
+          },
+          {
+            min: 6,
+            max: 100,
+            message: "长度在 6 到 100 个字符",
+            trigger: "blur"
+          }
+        ]
+      },
+      navGroupActiveTag: "",
+
+      navSiteFormTitle: "",
+      navSiteFormType: "",
+      navSiteFormVisible: false,
+      navSiteForm: {
+        name: "",
+        icon: "",
+        link: "",
+        doc: "",
+        desc: "",
+        groupid: 1
+      },
+      navSiteFormRules: {
+        name: [
+          { required: true, message: "请输入站名", trigger: "blur" },
           {
             min: 1,
             max: 50,
@@ -393,99 +274,220 @@ export default {
             trigger: "blur"
           }
         ],
-        method: [
-          { required: true, message: "请选择请求方式", trigger: "change" }
+        icon: [
+          { required: true, message: "请输入图标链接", trigger: "blur" },
+          {
+            min: 1,
+            max: 100,
+            message: "长度在 1 到 100 个字符",
+            trigger: "blur"
+          }
         ],
-        remark: [
-          { required: false, message: "说明", trigger: "blur" },
+        link: [
+          { required: true, message: "请输入链接地址", trigger: "change" },
           {
             min: 0,
             max: 100,
             message: "长度在 0 到 100 个字符",
             trigger: "blur"
           }
-        ]
+        ],
+        doc: [
+          { required: false, message: "请输入文档地址", trigger: "blur" },
+          {
+            min: 0,
+            max: 100,
+            message: "长度在 0 到 100 个字符",
+            trigger: "blur"
+          }
+        ],
+        desc: [
+          { required: true, message: "输入描述", trigger: "blur" },
+          {
+            min: 0,
+            max: 200,
+            message: "长度在 0 到 200 个字符",
+            trigger: "blur"
+          }
+        ],
+        groupid: [{ required: true, message: "必须选择分组", trigger: "blur" }]
       },
-
-      // 删除按钮弹出框
-      popoverVisible: false,
+      groupOptions: [],
       // 表格多选
       multipleSelection: []
     };
   },
   created() {
-    this.getTableData();
+    this.getData();
   },
   methods: {
-    // 查询
-    search() {
-      this.params.pageNum = 1;
-      this.getTableData();
-    },
-
     // 获取表格数据
-    async getTableData() {
+    async getData() {
       this.loading = true;
       try {
-        const { data } = await getNavList(this.params);
-        this.groupTableData = data.groups;
-        this.siteTableData = data.sites;
+        const { data } = await getNav();
+        this.navData = data;
+        this.navGroupActiveTag = this.navData[0].name;
       } finally {
         this.loading = false;
       }
     },
-
+    getGroupOptions() {
+      this.groupOptions = this.navData.map((item) => {
+        return {
+          id: item.ID,
+          name: item.title
+        };
+      });
+    },
+    addGroup() {
+      this.$refs["navGroupForm"].validate(async(valid) => {
+        if (valid) {
+          this.loading = true;
+          try {
+            await createNavGroup(this.navGroupForm).then((res) => {
+              this.judgeResult(res);
+            });
+          } finally {
+            this.loading = false;
+          }
+          this.getData();
+          // this.navGroupActiveTag = this.navGroupForm.name;
+        } else {
+          Message({
+            showClose: true,
+            message: "表单校验失败",
+            type: "warn"
+          });
+          return false;
+        }
+      });
+    },
+    // 根据 tabname 查找 navgroup的 ID
+    getGroupIDFromTabname(tabname) {
+      for (let i = 0; i < this.navData.length; i++) {
+        if (this.navData[i].name === tabname) {
+          // console.log(this.navData[i].ID);
+          return this.navData[i].ID;
+        }
+      }
+    },
+    async removeGroup(tabname) {
+      const navGroupId = this.getGroupIDFromTabname(tabname);
+      this.$confirm("此操作将永久删除该导航组及其包含的记录, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(async() => {
+          try {
+            await batchDeleteNavGroupByIds({
+              ids: [navGroupId]
+            }).then((res) => {
+              this.judgeResult(res);
+            });
+            this.getData();
+          } finally {
+            this.loading = false;
+          }
+        })
+        .catch(() => {
+          Message({
+            showClose: true,
+            type: "info",
+            message: "已取消删除"
+          });
+        });
+    },
     // 新增
-    create() {
-      this.dialogFormTitle = "新增接口";
-      this.dialogType = "create";
-      this.dialogFormVisible = true;
+    addSite() {
+      this.getGroupOptions();
+      const navGroupId = this.getGroupIDFromTabname(this.navGroupActiveTag);
+      this.navSiteForm.groupid = navGroupId;
+
+      this.navSiteFormTitle = "新增站点";
+      this.navSiteFormType = "add";
+      this.navSiteFormVisible = true;
     },
 
     // 修改
-    update(row) {
-      this.dialogFormData.ID = row.ID;
-      this.dialogFormData.path = row.path;
-      this.dialogFormData.category = row.category;
-      this.dialogFormData.method = row.method;
-      this.dialogFormData.remark = row.remark;
+    updateSite(row) {
+      this.getGroupOptions();
+      this.navSiteForm.name = row.name;
+      this.navSiteForm.icon = row.icon;
+      this.navSiteForm.desc = row.desc;
+      this.navSiteForm.link = row.link;
+      this.navSiteForm.doc = row.doc;
+      this.navSiteForm.groupid = row.groupid;
 
-      this.dialogFormTitle = "修改接口";
-      this.dialogType = "update";
-      this.dialogFormVisible = true;
+      this.navSiteFormTitle = "更新站点";
+      this.navSiteFormType = "update";
+      this.navSiteFormVisible = true;
     },
 
-    // 判断结果
-    judgeResult(res) {
-      if (res.code === 0) {
-        Message({
-          showClose: true,
-          message: "操作成功",
-          type: "success"
+    // 单个删除
+    async deleteSite(id) {
+      this.loading = true;
+      try {
+        await batchDeleteNavSiteByIds({ ids: [id] }).then((res) => {
+          this.judgeResult(res);
         });
+      } finally {
+        this.loading = false;
       }
+      this.getData();
     },
-
-    // 提交表单
-    submitForm() {
-      this.$refs["dialogForm"].validate(async(valid) => {
-        if (valid) {
-          this.submitLoading = true;
+    // 批量删除
+    batchDeleteSites() {
+      this.$confirm("此操作将永久删除, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(async() => {
+          this.loading = true;
+          const ids = [];
+          this.multipleSelection.forEach((x) => {
+            ids.push(x.ID);
+          });
           try {
-            if (this.dialogType === "create") {
-              await createNavGroup(this.dialogFormData).then((res) => {
+            await batchDeleteNavSiteByIds({ ids: ids }).then((res) => {
+              this.judgeResult(res);
+            });
+          } finally {
+            this.loading = false;
+          }
+          this.getData();
+        })
+        .catch(() => {
+          Message({
+            showClose: true,
+            type: "info",
+            message: "已取消删除"
+          });
+        });
+    },
+    // 提交表单
+    // https://stackoverflow.com/questions/73772552/typeerror-this-refs-is-not-a-function
+    navSiteFormSubmit() {
+      this.$refs["navSiteForm"].validate(async(valid) => {
+        if (valid) {
+          this.loading = true;
+          try {
+            if (this.navSiteFormType === "add") {
+              await createNavSite(this.navSiteForm).then((res) => {
                 this.judgeResult(res);
               });
-            } else {
-              await updateNavGroup(this.dialogFormData).then((res) => {
+            } else if (this.navSiteFormType === "update") {
+              await updateNavSite(this.navSiteForm).then((res) => {
                 this.judgeResult(res);
               });
             }
           } finally {
-            this.submitLoading = false;
+            this.loading = false;
           }
-          this.resetForm();
-          this.getTableData();
+          this.navSiteFormReset();
+          this.getData();
         } else {
           Message({
             showClose: true,
@@ -498,79 +500,35 @@ export default {
     },
 
     // 提交表单
-    cancelForm() {
-      this.resetForm();
+    navSiteFormCancel() {
+      this.navSiteFormReset();
     },
 
-    resetForm() {
-      this.dialogFormVisible = false;
-      this.$refs["dialogForm"].resetFields();
-      this.dialogFormData = {
-        ID: "",
-        path: "",
-        category: "",
-        method: "",
-        remark: ""
+    navSiteFormReset() {
+      this.navSiteFormVisible = false;
+      this.$refs["navSiteForm"].resetFields();
+      this.navSiteForm = {
+        name: "",
+        icon: "",
+        desc: "",
+        link: "",
+        doc: ""
       };
     },
 
-    // 批量删除
-    batchDelete() {
-      this.$confirm("此操作将永久删除, 是否继续?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning"
-      })
-        .then(async(res) => {
-          this.loading = true;
-          const apiIds = [];
-          this.multipleSelection.forEach((x) => {
-            apiIds.push(x.ID);
-          });
-          try {
-            await batchDeleteNavGroupByIds({ apiIds: apiIds }).then((res) => {
-              this.judgeResult(res);
-            });
-          } finally {
-            this.loading = false;
-          }
-          this.getTableData();
-        })
-        .catch(() => {
-          Message({
-            showClose: true,
-            type: "info",
-            message: "已取消删除"
-          });
+    // 判断结果
+    judgeResult(res) {
+      if (res.code === 0) {
+        Message({
+          showClose: true,
+          message: "操作成功",
+          type: "success"
         });
+      }
     },
-
     // 表格多选
     handleSelectionChange(val) {
       this.multipleSelection = val;
-    },
-
-    // 单个删除
-    async singleDelete(Id) {
-      this.loading = true;
-      try {
-        await batchDeleteNavGroupByIds({ apiIds: [Id] }).then((res) => {
-          this.judgeResult(res);
-        });
-      } finally {
-        this.loading = false;
-      }
-      this.getTableData();
-    },
-
-    // 分页
-    handleSizeChange(val) {
-      this.params.pageSize = val;
-      this.getTableData();
-    },
-    handleCurrentChange(val) {
-      this.params.pageNum = val;
-      this.getTableData();
     }
   }
 };

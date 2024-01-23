@@ -10,19 +10,37 @@ import (
 
 type SiteNavHandler struct{}
 
-// List 记录列表
 func (SiteNavHandler) GetNav(c *gin.Context) {
-	helper.BindAndValidateRequest(c, nil)
-
-	data, respErr := siteNavLogic.GetNav(c, nil)
-	helper.HandleResponse(c, data, respErr)
+	req := new(helper.EmptyStruct)
+	helper.HandleRequest(c, req, siteNavLogic.GetNav)
 }
 
-// List for manager
-func (SiteNavHandler) ListNav(c *gin.Context) {
-	req := new(siteNavModel.NavReq)
-	helper.BindAndValidateRequest(c, req)
+func (SiteNavHandler) AddNavGroup(c *gin.Context) {
+	req := new(siteNavModel.NavGroupAddReq)
+	helper.HandleRequest(c, req, siteNavLogic.AddNavGroup)
+}
 
-	data, respErr := siteNavLogic.ListNav(c, req)
-	helper.HandleResponse(c, data, respErr)
+func (SiteNavHandler) UpdateNavGroup(c *gin.Context) {
+	req := new(siteNavModel.NavGroupUpdateReq)
+	helper.HandleRequest(c, req, siteNavLogic.UpdateNavGroup)
+}
+
+func (SiteNavHandler) DeleteNavGroup(c *gin.Context) {
+	req := new(siteNavModel.NavGroupDeleteReq)
+	helper.HandleRequest(c, req, siteNavLogic.DeleteNavGroup)
+}
+
+func (SiteNavHandler) AddNavSite(c *gin.Context) {
+	req := new(siteNavModel.NavSiteAddReq)
+	helper.HandleRequest(c, req, siteNavLogic.AddNavSite)
+}
+
+func (SiteNavHandler) UpdateNavSite(c *gin.Context) {
+	req := new(siteNavModel.NavSiteUpdateReq)
+	helper.HandleRequest(c, req, siteNavLogic.UpdateNavSite)
+}
+
+func (SiteNavHandler) DeleteNavSite(c *gin.Context) {
+	req := new(siteNavModel.NavSiteDeleteReq)
+	helper.HandleRequest(c, req, siteNavLogic.DeleteNavSite)
 }

@@ -13,35 +13,23 @@ type FieldRelationHandler struct{}
 // List 记录列表
 func (FieldRelationHandler) List(c *gin.Context) {
 	req := new(fieldRelationModel.FieldRelationListReq)
-	helper.BindAndValidateRequest(c, req)
-
-	data, respErr := fieldRelationLogic.List(c, req)
-	helper.HandleResponse(c, data, respErr)
+	helper.HandleRequest(c, req, fieldRelationLogic.List)
 }
 
 // Add 新建记录
 func (FieldRelationHandler) Add(c *gin.Context) {
 	req := new(fieldRelationModel.FieldRelationAddReq)
-	helper.BindAndValidateRequest(c, req)
-
-	data, respErr := fieldRelationLogic.Add(c, req)
-	helper.HandleResponse(c, data, respErr)
+	helper.HandleRequest(c, req, fieldRelationLogic.Add)
 }
 
 // Update 更新记录
 func (FieldRelationHandler) Update(c *gin.Context) {
 	req := new(fieldRelationModel.FieldRelationUpdateReq)
-	helper.BindAndValidateRequest(c, req)
-
-	data, respErr := fieldRelationLogic.Update(c, req)
-	helper.HandleResponse(c, data, respErr)
+	helper.HandleRequest(c, req, fieldRelationLogic.Update)
 }
 
 // Delete 删除记录
 func (FieldRelationHandler) Delete(c *gin.Context) {
 	req := new(fieldRelationModel.FieldRelationDeleteReq)
-	helper.BindAndValidateRequest(c, req)
-
-	data, respErr := fieldRelationLogic.Delete(c, req)
-	helper.HandleResponse(c, data, respErr)
+	helper.HandleRequest(c, req, fieldRelationLogic.Delete)
 }

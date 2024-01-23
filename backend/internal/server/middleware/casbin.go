@@ -43,7 +43,7 @@ func CasbinMiddleware() gin.HandlerFunc {
 		act := c.Request.Method
 		isPass := check(subs, obj, act)
 		if !isPass {
-			helper.Response(c, 401, 401, nil, "没有权限")
+			helper.Response(c, 401, 401, nil, "您当前的角色没有权限")
 			c.Abort()
 			return
 		}
