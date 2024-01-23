@@ -1,7 +1,6 @@
 <template>
   <div>
     <el-card class="container-card" shadow="always">
-      <!-- FIXME: required not in effect -->
       <el-form
         ref="navGroupForm"
         :inline="true"
@@ -9,13 +8,13 @@
         :model="navGroupForm"
         :rules="navGroupFormRules"
       >
-        <el-form-item label="标识名:">
+        <el-form-item label="标识名:" prop="name">
           <el-input
             v-model.trim="navGroupForm.name"
             placeholder="导航组的唯一标识"
           />
         </el-form-item>
-        <el-form-item label="展示名:">
+        <el-form-item label="展示名:" prop="title">
           <el-input
             v-model.trim="navGroupForm.title"
             placeholder="导航组的实际展示名"
