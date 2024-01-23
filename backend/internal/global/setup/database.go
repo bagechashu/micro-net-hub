@@ -85,9 +85,6 @@ func ConnMysql() *gorm.DB {
 		config.Conf.Mysql.Query,
 	)
 
-	logger := zapgorm2.New(global.BasicLog)
-	logger.SetAsDefault()
-
 	gormConf := &gorm.Config{
 		// 禁用外键(指定外键时不会在mysql创建真实的外键约束)
 		DisableForeignKeyConstraintWhenMigrating: true,
@@ -95,6 +92,8 @@ func ConnMysql() *gorm.DB {
 
 	// 开启mysql日志
 	if config.Conf.Mysql.LogMode {
+		logger := zapgorm2.New(global.BasicLog)
+		logger.SetAsDefault()
 		gormConf.Logger = logger.LogMode(3) // 4: info; 3: warn; 2: error; 1: silent
 	}
 

@@ -328,7 +328,9 @@ export default {
       try {
         const { data } = await getNav();
         this.navData = data;
-        this.navGroupActiveTag = this.navData[0].name;
+        if (this.navGroupActiveTag !== "") {
+          this.navGroupActiveTag = this.navData[0].name;
+        }
       } finally {
         this.loading = false;
       }
@@ -353,7 +355,8 @@ export default {
             this.loading = false;
           }
           this.getData();
-          // this.navGroupActiveTag = this.navGroupForm.name;
+          // FIXME: active tag reset
+          this.navGroupActiveTag = this.navGroupForm.name;
         } else {
           Message({
             showClose: true,
