@@ -31,10 +31,10 @@
       </el-form>
 
       <el-tabs
-        v-model="navGroupActiveTag"
+        v-model="navGroupActiveTab"
         type="border-card"
         closable
-        @tab-remove="removeGroup"
+        @tab-remove="deleteGroup"
       >
         <el-tab-pane
           v-for="(item) in navData"
@@ -251,7 +251,7 @@ export default {
           }
         ]
       },
-      navGroupActiveTag: "",
+      navGroupActiveTab: "",
 
       navSiteFormTitle: "",
       navSiteFormType: "",
@@ -327,8 +327,11 @@ export default {
       try {
         const { data } = await getNav();
         this.navData = data;
-        if (this.navGroupActiveTag !== "") {
-          this.navGroupActiveTag = this.navData[0].name;
+
+        // console.log(`navGroupActiveTab type: ${typeof(this.navGroupActiveTab)}, value: ${this.navGroupActiveTab}`);
+        // default navGroupActiveTab type: string, value: 0
+        if (this.navGroupActiveTab === "0" || this.navGroupActiveTab === "") {
+          this.navGroupActiveTab = this.navData[0].name;
         }
       } finally {
         this.loading = false;
@@ -354,8 +357,6 @@ export default {
             this.loading = false;
           }
           this.getData();
-          // FIXME: active tag reset
-          this.navGroupActiveTag = this.navGroupForm.name;
         } else {
           Message({
             showClose: true,
@@ -375,7 +376,7 @@ export default {
         }
       }
     },
-    async removeGroup(tabname) {
+    async deleteGroup(tabname) {
       const navGroupId = this.getGroupIDFromTabname(tabname);
       this.$confirm("此操作将永久删除该导航组及其包含的记录, 是否继续?", "提示", {
         confirmButtonText: "确定",
@@ -389,6 +390,7 @@ export default {
             }).then((res) => {
               this.judgeResult(res);
             });
+            this.navGroupActiveTab = "0";
             this.getData();
           } finally {
             this.loading = false;
@@ -405,7 +407,7 @@ export default {
     // 新增
     addSite() {
       this.getGroupOptions();
-      const navGroupId = this.getGroupIDFromTabname(this.navGroupActiveTag);
+      const navGroupId = this.getGroupIDFromTabname(this.navGroupActiveTab);
       this.navSiteForm.groupid = navGroupId;
 
       this.navSiteFormTitle = "新增站点";
