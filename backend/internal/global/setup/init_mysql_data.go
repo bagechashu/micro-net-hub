@@ -858,7 +858,7 @@ func InitData() {
 		Name:        "jenkins",
 		NavGroupID:  1,
 		Description: "project01 Jenkins",
-		IconUrl:     "ui/assets/logo/jenkins.png",
+		IconUrl:     "/ui/assets/logo/jenkins.png",
 		Link:        "http://127.0.0.1:8080/",
 		DocUrl:      "https://www.jenkins.io/doc/",
 		Creator:     "System",
