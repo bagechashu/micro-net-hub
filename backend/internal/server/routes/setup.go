@@ -2,7 +2,6 @@ package routes
 
 import (
 	"fmt"
-	"time"
 
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
@@ -12,30 +11,7 @@ import (
 )
 
 // 初始化
-func InitRoutes() *gin.Engine {
-	//设置模式
-	gin.SetMode(config.Conf.System.Mode)
-
-	// TODO: 使用 global.Log 记录日志
-	// 创建带有默认中间件的路由:
-	// 日志与恢复中间件
-	r := gin.Default()
-	// 创建不带中间件的路由:
-	// r := gin.New()
-	// r.Use(gin.Recovery())
-
-	// 启用限流中间件
-	// 默认每50毫秒填充一个令牌，最多填充200个
-	fillInterval := time.Duration(config.Conf.RateLimit.FillInterval)
-	capacity := config.Conf.RateLimit.Capacity
-	r.Use(middleware.RateLimitMiddleware(time.Millisecond*fillInterval, capacity))
-
-	// 启用全局跨域中间件
-	r.Use(middleware.CORSMiddleware())
-
-	// 启用操作日志中间件
-	r.Use(middleware.OperationLogMiddleware())
-
+func InitRoutes(r *gin.Engine) {
 	// 初始化JWT认证中间件
 	authMiddleware, err := middleware.InitAuth()
 	if err != nil {
@@ -59,5 +35,4 @@ func InitRoutes() *gin.Engine {
 	InitSiteNavRoutes(apiGroup, authMiddleware)
 
 	global.Log.Info("初始化路由完成！")
-	return r
 }
