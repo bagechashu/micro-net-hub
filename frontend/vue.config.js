@@ -44,6 +44,13 @@ module.exports = {
         pathRewrite: {
           '^/api': 'api'
         }
+      },
+      '/ui/assets': {
+        target: process.env.API_BASE_PATH || "http://127.0.0.1:9000/",
+        changeOrigin: true,
+        pathRewrite: {
+          '^/ui/assets': 'ui/assets'
+        }
       }
     }
   },

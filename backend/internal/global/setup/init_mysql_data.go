@@ -7,6 +7,7 @@ import (
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
 	apiMgrModel "micro-net-hub/internal/module/apimgr/model"
+	sitenavModel "micro-net-hub/internal/module/sitenav/model"
 	userModel "micro-net-hub/internal/module/user/model"
 	"micro-net-hub/internal/tools"
 
@@ -844,5 +845,27 @@ func InitData() {
 			global.Log.Errorf("写入分组数据失败：%v", err)
 		}
 	}
+	sitenavGroup := sitenavModel.NavGroup{
+		Model:   gorm.Model{ID: 1},
+		Name:    "project01",
+		Title:   "项目01",
+		Creator: "System",
+	}
+	if err := global.DB.Create(&sitenavGroup); err != nil {
+		global.Log.Errorf("写入导航页分组数据失败：%v", err)
+	}
+	sitenavSite := sitenavModel.NavSite{
+		Name:        "jenkins",
+		NavGroupID:  1,
+		Description: "project01 Jenkins",
+		IconUrl:     "ui/assets/logo/jenkins.png",
+		Link:        "http://127.0.0.1:8080/",
+		DocUrl:      "https://www.jenkins.io/doc/",
+		Creator:     "System",
+	}
+	if err := global.DB.Create(&sitenavSite); err != nil {
+		global.Log.Errorf("写入导航页站点数据失败：%v", err)
+	}
+
 	global.Log.Info("初始化 [ 基础数据 ] 完成!")
 }

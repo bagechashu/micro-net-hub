@@ -7,6 +7,14 @@ export function getNav() {
   });
 }
 
+// 获取本身存储的图标列表
+export function getIcons() {
+  return request({
+    url: "/ui/assets/logo/list.json",
+    method: "get"
+  });
+}
+
 // 创建接口（已完成）
 export function createNavGroup(data) {
   return request({

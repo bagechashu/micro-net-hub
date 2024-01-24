@@ -37,7 +37,7 @@
         @tab-remove="deleteGroup"
       >
         <el-tab-pane
-          v-for="(item) in navData"
+          v-for="item in navData"
           :key="item.name"
           :label="item.title"
           :name="item.name"
@@ -68,6 +68,7 @@
               :data="item.sites"
               border
               stripe
+              size="mini"
               style="width: 100%"
               @selection-change="handleSelectionChange"
             >
@@ -166,7 +167,24 @@
             <el-input v-model.trim="navSiteForm.name" placeholder="站名" />
           </el-form-item>
           <el-form-item label="图标" prop="icon">
-            <el-input v-model.trim="navSiteForm.icon" placeholder="图标" />
+            <el-select
+              v-model.trim="navSiteForm.icon"
+              filterable
+              allow-create
+              default-first-option
+              placeholder="可以输入图片URL"
+            >
+              <el-option
+                v-for="item in iconOptions"
+                :key="item.url"
+                :label="item.url"
+                :value="item.url"
+              />
+            </el-select>
+            <!-- <el-input
+              v-model.trim="navSiteForm.icon"
+              placeholder="图标"
+            /> -->
           </el-form-item>
           <el-form-item label="链接" prop="link">
             <el-input v-model.trim="navSiteForm.link" placeholder="链接" />
@@ -204,6 +222,7 @@
 <script>
 import {
   getNav,
+  getIcons,
   createNavGroup,
   batchDeleteNavGroupByIds,
   createNavSite,
@@ -312,6 +331,7 @@ export default {
         ],
         groupid: [{ required: true, message: "必须选择分组", trigger: "blur" }]
       },
+      iconOptions: [],
       groupOptions: [],
       // 表格多选
       multipleSelection: []
@@ -319,6 +339,7 @@ export default {
   },
   created() {
     this.getData();
+    this.getIconOptions();
   },
   methods: {
     // 获取表格数据
@@ -336,6 +357,11 @@ export default {
       } finally {
         this.loading = false;
       }
+    },
+    getIconOptions() {
+      getIcons().then((res) => {
+        this.iconOptions = res.logos;
+      });
     },
     getGroupOptions() {
       this.groupOptions = this.navData.map((item) => {
@@ -378,11 +404,15 @@ export default {
     },
     async deleteGroup(tabname) {
       const navGroupId = this.getGroupIDFromTabname(tabname);
-      this.$confirm("此操作将永久删除该导航组及其包含的记录, 是否继续?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning"
-      })
+      this.$confirm(
+        "此操作将永久删除该导航组及其包含的记录, 是否继续?",
+        "提示",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning"
+        }
+      )
         .then(async() => {
           try {
             await batchDeleteNavGroupByIds({

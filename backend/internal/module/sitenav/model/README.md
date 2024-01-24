@@ -1,4 +1,4 @@
-# Init siteNav
+# Test Data of SiteNav
 
 ```sql
 -- Insert data for 'company' NavGroup
