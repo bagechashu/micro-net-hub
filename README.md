@@ -2,7 +2,7 @@
 
 # micro-net-hub
 
-Basic tool for private network.
+A tool for managing your OpenLDAP/Ocserv/Navigation at a private network.
 
 # How to set Ocserv Authentication with Radius.
 
@@ -31,60 +31,43 @@ Basic tool for private network.
 title: Micro Net Hub Architecture
 ---
 flowchart LR
-  %% Service provide by Micro-Net-Hub
-  subgraph Micro-Net-Hub
-    main[[Micro-Net-Hub:9000]]
-    radius[[Micro-Net-Hub<br>RadiusService:1812/udp]]
-    ui([Embedded-UI])
-
-    %% Architecture
-    main --> ui
-    main --> CoreDnsHandler & UserHandler & VPNHandler
-    UserHandler --> LDAPHandler
-    UserHandler --> TOTPModule
-    TOTPModule --> radius
-  end
-  Micro-Net-Hub --> MySQL
-  coredns --> MySQL
-  LDAPHandler --> openldap
-  ocserv --> radius
-
   %% Service provide by third-party, need deployed by yourself.
-  subgraph selfbuilt
+  subgraph selfbuilt OpenLDAP
    openldap[[OpenLDAP:389]]
-   ocserv[[Ocserv:443]]
-   coredns[[CoreDns:53/udp]]
   end
 
+  subgraph selfbuilt Ocserv
+   ocserv[[Ocserv:443]]
+  end
+
+  subgraph 3rd-Services
+   gitlab[[Gitlab]]
+   nexus[[Nexus]]
+   other[[...]]
+  end
   %% Database
   subgraph MySQL
     mysql-main[(MySQL main)]
-    mysql-coredns[(MySQL coredns)]
   end
 
+  subgraph Micro-Net-Hub
+    main --> ui
+    main --> SiteNavigationManager
+    main[[Micro-Net-Hub:9000]]
+    ui([Embedded-UI])
 
-```
+    main --> UserManager
+    UserManager --> TOTPModule
 
-```mermaid
----
-title: Micro Net Hub Architecture
----
-flowchart LR
-  %% UI
-  subgraph Embedded-UI
-    ui-user-mgr([UserManager])
-    ui-vpn-mgr([VPNManager])
-    ui-coredns-mgr([CoreDnsManager])
+    radius[[Micro-Net-Hub<br>RadiusService:1812/udp]]
+    radius --> TOTPModule
 
-    ui-user-mgr --> ui-user([User])
-    ui-user-mgr --> ui-group([Group])
-    ui-user-mgr --> ui-totp([TOTP])
-
-    ui-vpn-mgr --> ui-vpn-config([VPN-Config])
-    ui-vpn-mgr --> ui-vpn-status([VPN-Status])
-
-    ui-coredns-mgr --> ui-coredns-config([CoreDns-Config])
-    ui-coredns-mgr --> ui-coredns-status([CoreDns-Status])
+    UserManager ---> GoLDAPAdmin
   end
+
+  Micro-Net-Hub --> MySQL
+  GoLDAPAdmin --> openldap
+  3rd-Services --> openldap
+  ocserv --> radius
 
 ```
