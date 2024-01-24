@@ -16,6 +16,7 @@ func InitRoutes() *gin.Engine {
 	//设置模式
 	gin.SetMode(config.Conf.System.Mode)
 
+	// TODO: 使用 global.Log 记录日志
 	// 创建带有默认中间件的路由:
 	// 日志与恢复中间件
 	r := gin.Default()

@@ -7,7 +7,6 @@ import (
 	userLogic "micro-net-hub/internal/module/user"
 	userModel "micro-net-hub/internal/module/user/model"
 	"micro-net-hub/internal/server/helper"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -71,7 +70,7 @@ func (GroupHandler) RemoveUser(c *gin.Context) {
 // 同步钉钉部门信息
 func (GroupHandler) SyncDingTalkDepts(c *gin.Context) {
 	if config.Conf.DingTalk == nil {
-		c.JSON(http.StatusOK, helper.NewConfigError(fmt.Errorf("没有 钉钉-DingTalk 相关配置")))
+		helper.Err(c, helper.NewConfigError(fmt.Errorf("没有 钉钉-DingTalk 相关配置")), nil)
 		return
 	}
 	req := new(userModel.SyncDingTalkDeptsReq)
@@ -82,7 +81,7 @@ func (GroupHandler) SyncDingTalkDepts(c *gin.Context) {
 // 同步企业微信部门信息
 func (GroupHandler) SyncWeComDepts(c *gin.Context) {
 	if config.Conf.WeCom == nil {
-		c.JSON(http.StatusOK, helper.NewConfigError(fmt.Errorf("没有 企业微信-Wechat 相关配置")))
+		helper.Err(c, helper.NewConfigError(fmt.Errorf("没有 企业微信-Wechat 相关配置")), nil)
 		return
 	}
 	req := new(userModel.SyncWeComDeptsReq)
@@ -93,7 +92,7 @@ func (GroupHandler) SyncWeComDepts(c *gin.Context) {
 // 同步飞书部门信息
 func (GroupHandler) SyncFeiShuDepts(c *gin.Context) {
 	if config.Conf.FeiShu == nil {
-		c.JSON(http.StatusOK, helper.NewConfigError(fmt.Errorf("没有 飞书-Feishu 相关配置")))
+		helper.Err(c, helper.NewConfigError(fmt.Errorf("没有 飞书-Feishu 相关配置")), nil)
 		return
 	}
 	req := new(userModel.SyncFeiShuDeptsReq)
