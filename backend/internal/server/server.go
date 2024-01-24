@@ -22,13 +22,11 @@ func NewGinServer() *http.Server {
 	//设置模式
 	gin.SetMode(config.Conf.System.Mode)
 
-	// TODO: 使用 global.Log 记录日志
-	// 创建带有默认中间件的路由:
-	// 日志与恢复中间件
-	r := gin.Default()
-	// 创建不带中间件的路由:
-	// r := gin.New()
-	// r.Use(gin.Recovery())
+	r := gin.New()
+	r.Use(gin.Recovery())
+
+	// Ginlog Middleware
+	r.Use(middleware.GinzapMiddleware(global.BasicLog))
 
 	// 启用限流中间件
 	// 默认每50毫秒填充一个令牌，最多填充200个
