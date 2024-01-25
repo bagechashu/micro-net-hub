@@ -125,6 +125,7 @@ type MysqlConfig struct {
 	Port        int    `mapstructure:"port" json:"port"`
 	Query       string `mapstructure:"query" json:"query"`
 	LogMode     bool   `mapstructure:"log-mode" json:"logMode"`
+	LogLevel    int    `mapstructure:"log-level" json:"logLevel"`
 	TablePrefix string `mapstructure:"table-prefix" json:"tablePrefix"`
 	Charset     string `mapstructure:"charset" json:"charset"`
 	Collation   string `mapstructure:"collation" json:"collation"`

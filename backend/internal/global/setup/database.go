@@ -15,6 +15,7 @@ import (
 	"github.com/glebarez/sqlite"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	gormlogger "gorm.io/gorm/logger"
 	"moul.io/zapgorm2"
 )
 
@@ -94,7 +95,17 @@ func ConnMysql() *gorm.DB {
 	if config.Conf.Mysql.LogMode {
 		logger := zapgorm2.New(global.BasicLog)
 		logger.SetAsDefault()
-		gormConf.Logger = logger.LogMode(3) // 4: info; 3: warn; 2: error; 1: silent
+
+		var gormLogLevel gormlogger.LogLevel
+		if config.Conf.Mysql.LogLevel < 1 || config.Conf.Mysql.LogLevel > 4 {
+			gormLogLevel = gormlogger.LogLevel(3)
+		} else {
+			gormLogLevel = gormlogger.LogLevel(config.Conf.Mysql.LogLevel)
+		}
+
+		global.Log.Debugf("mysql log level config: %d, effect: %d", config.Conf.Mysql.LogLevel, gormLogLevel)
+
+		gormConf.Logger = logger.LogMode(gormLogLevel) // 4: info; 3: warn; 2: error; 1: silent
 	}
 
 	global.Log.Debugf("gorm Config: %+v", gormConf)
