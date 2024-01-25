@@ -336,6 +336,14 @@
               </el-form-item>
             </el-col>
             <el-col :span="12">
+              <el-form-item label="头像Url" prop="avatar">
+                <el-input
+                  v-model.trim="dialogFormData.avatar"
+                  placeholder="(创建时输入QQ号,会转换成QQ头像)"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
               <el-form-item label="邮箱" prop="mail">
                 <el-input
                   v-model.trim="dialogFormData.mail"
@@ -563,11 +571,11 @@ export default {
         mobile: "",
         avatar: "",
         introduction: "",
-        roleIds: [2],
+        roleIds: [],
         jobNumber: "",
+        position: "",
         postalAddress: "",
         departments: "",
-        position: "",
         departmentId: undefined
       },
 
@@ -739,6 +747,8 @@ export default {
       this.disabled = false;
       this.getAllGroups();
       this.dialogFormVisible = true;
+
+      this.dialogFormData.roleIds = [2];
     },
 
     // 修改
@@ -751,22 +761,23 @@ export default {
 
       this.getAllGroups();
       this.dialogFormData.ID = row.ID;
+      this.dialogFormData.mail = row.mail;
+      this.dialogFormData.givenName = row.givenName;
       this.dialogFormData.username = row.username;
       this.dialogFormData.password = "";
       this.dialogFormData.nickname = row.nickname;
       this.dialogFormData.status = row.status;
       this.dialogFormData.mobile = row.mobile;
+      this.dialogFormData.avatar = row.avatar;
       this.dialogFormData.introduction = row.introduction;
       // 遍历角色数组，获取角色ID
       this.dialogFormData.roleIds = row.roles.map((item) => item.ID);
 
-      this.dialogFormData.mail = row.mail;
-      this.dialogFormData.givenName = row.givenName;
       this.dialogFormData.jobNumber = row.jobNumber;
+      this.dialogFormData.position = row.position;
       this.dialogFormData.postalAddress = row.postalAddress;
       this.dialogFormData.departments = row.departments;
       this.dialogFormData.departmentId = row.departmentId;
-      this.dialogFormData.position = row.position;
     },
 
     // 将 部门id 转换为 部门name

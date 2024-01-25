@@ -39,7 +39,7 @@
             target="_blank"
           />
         </el-tooltip>
-        <el-tooltip content="GitHub" effect="dark" placement="bottom">
+        <!-- <el-tooltip content="GitHub" effect="dark" placement="bottom">
           <el-link
             style="font-size: 23px"
             class="iconfont icon-github right-menu-item"
@@ -47,7 +47,7 @@
             :underline="false"
             target="_blank"
           />
-        </el-tooltip>
+        </el-tooltip> -->
       </template>
       <!-- https://blog.csdn.net/m0_67265919/article/details/123124673 -->
       <!-- element-ui.common.js:2353 Uncaught TypeError: Cannot read properties of null (reading 'disabled') -->
