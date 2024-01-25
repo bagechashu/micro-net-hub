@@ -131,11 +131,7 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55" align="center" />
-        <el-table-column
-          show-overflow-tooltip
-          sortable
-          label="用户名"
-        >
+        <el-table-column show-overflow-tooltip sortable label="用户名">
           <template slot-scope="scope">
             <el-popover trigger="hover" placement="top">
               [ {{ scope.row.username }} ] TOTP QRcode
@@ -557,6 +553,9 @@ export default {
       dialogType: "",
       dialogFormVisible: false,
       dialogFormData: {
+        ID: "",
+        mail: "",
+        givenName: "",
         username: "",
         password: "",
         nickname: "",
@@ -565,18 +564,20 @@ export default {
         avatar: "",
         introduction: "",
         roleIds: [2],
-        ID: "",
-        mail: "",
-        givenName: "",
         jobNumber: "",
         postalAddress: "",
         departments: "",
         position: "",
         departmentId: undefined
       },
+
       dialogFormRules: {
         username: [
-          { required: true, message: "请输入用户名", trigger: "blur" },
+          {
+            required: true,
+            message: "请输入用户名",
+            trigger: "blur"
+          },
           {
             min: 2,
             max: 20,
@@ -585,7 +586,11 @@ export default {
           }
         ],
         password: [
-          { required: false, message: "请输入密码", trigger: "blur" },
+          {
+            required: false,
+            message: "请输入密码",
+            trigger: "blur"
+          },
           {
             min: 6,
             max: 30,
@@ -593,9 +598,19 @@ export default {
             trigger: "blur"
           }
         ],
-        mail: [{ required: true, message: "请输入邮箱", trigger: "blur" }],
+        mail: [
+          {
+            required: true,
+            message: "请输入邮箱",
+            trigger: "blur"
+          }
+        ],
         jobNumber: [
-          { required: false, message: "请输入工号", trigger: "blur" },
+          {
+            required: false,
+            message: "请输入工号",
+            trigger: "blur"
+          },
           {
             min: 0,
             max: 20,
@@ -604,7 +619,11 @@ export default {
           }
         ],
         nickname: [
-          { required: true, message: "请输入昵称", trigger: "blur" },
+          {
+            required: true,
+            message: "请输入昵称",
+            trigger: "blur"
+          },
           {
             min: 2,
             max: 20,
@@ -612,7 +631,13 @@ export default {
             trigger: "blur"
           }
         ],
-        mobile: [{ required: false, validator: checkPhone, trigger: "blur" }],
+        mobile: [
+          {
+            required: false,
+            validator: checkPhone,
+            trigger: "blur"
+          }
+        ],
         status: [{ required: true, message: "请选择状态", trigger: "change" }],
         departmentId: [
           { required: true, message: "请选择部门", trigger: "change" },
@@ -718,7 +743,12 @@ export default {
 
     // 修改
     update(row) {
+      this.dialogFormTitle = "修改用户";
+      this.dialogType = "update";
       this.disabled = true;
+      this.passwordType = "password";
+      this.dialogFormVisible = true;
+
       this.getAllGroups();
       this.dialogFormData.ID = row.ID;
       this.dialogFormData.username = row.username;
@@ -729,11 +759,6 @@ export default {
       this.dialogFormData.introduction = row.introduction;
       // 遍历角色数组，获取角色ID
       this.dialogFormData.roleIds = row.roles.map((item) => item.ID);
-
-      this.dialogFormTitle = "修改用户";
-      this.dialogType = "update";
-      this.passwordType = "password";
-      this.dialogFormVisible = true;
 
       this.dialogFormData.mail = row.mail;
       this.dialogFormData.givenName = row.givenName;
@@ -886,6 +911,9 @@ export default {
       this.dialogFormVisible = false;
       this.$refs["dialogForm"].resetFields();
       this.dialogFormData = {
+        ID: "",
+        mail: "",
+        givenName: "",
         username: "",
         password: "",
         nickname: "",
@@ -893,7 +921,9 @@ export default {
         mobile: "",
         avatar: "",
         introduction: "",
-        roleIds: "",
+        roleIds: [],
+        jobNumber: "",
+        postalAddress: "",
         departments: "",
         position: "",
         departmentId: undefined
