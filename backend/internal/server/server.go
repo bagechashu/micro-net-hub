@@ -47,10 +47,11 @@ func NewGinServer() *http.Server {
 	port := config.Conf.System.Port
 
 	srv := &http.Server{
-		Addr:         fmt.Sprintf("%s:%d", host, port),
-		Handler:      r,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		Addr:           fmt.Sprintf("%s:%d", host, port),
+		Handler:        r,
+		ReadTimeout:    config.Conf.System.ReadTimeout * time.Second,
+		WriteTimeout:   config.Conf.System.WriteTimeout * time.Second,
+		MaxHeaderBytes: config.Conf.System.MaxHeaderMBytes * 1024 * 1024, // 1024*1024 = MB
 	}
 
 	global.Log.Infof("New Gin server on: %s:%d", host, port)

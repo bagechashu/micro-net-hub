@@ -20,7 +20,6 @@ require (
 	github.com/thoas/go-funk v0.7.0
 	github.com/zhaoyunxing92/dingtalk/v2 v2.1.1-0.20231013102126-c1568b7fbac5
 	go.uber.org/zap v1.21.0
-	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gorm.io/driver/mysql v1.4.7
 	gorm.io/gorm v1.24.5
@@ -28,6 +27,7 @@ require (
 
 require (
 	github.com/chyroc/lark v0.0.96
+	github.com/go-mail/mail v2.3.1+incompatible
 	github.com/tidwall/gjson v1.13.0
 	github.com/wenerme/go-wecom v0.0.0-20220617125121-2ee950da3e63
 	golang.org/x/sync v0.1.0
@@ -54,6 +54,7 @@ require (
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/wenerme/go-req v0.0.0-20210907160348-d822e81276bb // indirect
+	gopkg.in/mail.v2 v2.3.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	modernc.org/libc v1.22.2 // indirect
 	modernc.org/mathutil v1.5.0 // indirect

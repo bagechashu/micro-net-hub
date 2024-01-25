@@ -1,19 +1,32 @@
 <template>
-  <div class="reset-pass">
-    <el-form ref="form" :model="form" size="medium" class="form-container">
-      <el-form-item label="邮箱">
-        <div class="input-container">
-          <el-input v-model="form.mail" placeholder="请输入个人邮箱" />
-          <el-button type="primary" @click="sendEmailCode">发送验证码</el-button>
-        </div>
-      </el-form-item>
-      <el-form-item label="验证码" class="code-item">
-        <el-input v-model="form.code" placeholder="请输入验证码" />
-      </el-form-item>
-      <el-form-item class="reset-item">
-        <el-button type="primary" @click="resetPass">重置密码</el-button>
-      </el-form-item>
-    </el-form>
+  <div class="changepass-container">
+    <el-card shadow="always" style="margin-top: 5rem">
+      <div slot="header">
+        <b>重置密码</b>
+      </div>
+      <el-form ref="form" :model="form" size="medium" label-width="auto">
+        <el-form-item required label="邮箱">
+          <div class="input-container">
+            <el-input v-model="form.mail" placeholder="请输入个人邮箱" />
+            <el-button
+              :loading="vCodeLoading"
+              type="primary"
+              @click="sendVerificationCode"
+            >发送验证码</el-button>
+          </div>
+        </el-form-item>
+        <el-form-item required label="验证码" class="code-item">
+          <el-input v-model="form.code" placeholder="请输入验证码" />
+        </el-form-item>
+        <el-form-item class="reset-item">
+          <el-button
+            :loading="resetPassLoading"
+            type="primary"
+            @click="resetPass"
+          >重置密码</el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
   </div>
 </template>
 
@@ -25,6 +38,8 @@ export default {
   name: "ChangePass",
   data() {
     return {
+      vCodeLoading: false,
+      resetPassLoading: false,
       // 查询参数
       form: {
         mail: "",
@@ -33,54 +48,75 @@ export default {
     };
   },
   methods: {
-    // 判断结果
-    judgeResult(res) {
-      if (res.code === 0) {
-        Message({
-          showClose: true,
-          message: "操作成功",
-          type: "success"
-        });
-      }
-    },
-
     // 发送邮箱验证码
-    async sendEmailCode() {
-      console.log("aaaaaaaa", this.form.mail);
-
-      await sendCode({ mail: this.form.mail }).then(res => {
-        this.judgeResult(res);
-      });
+    async sendVerificationCode() {
+      this.vCodeLoading = true;
+      try {
+        await sendCode({ mail: this.form.mail }).then((res) => {
+          if (res.code === 0) {
+            Message({
+              showClose: true,
+              message: "验证码已发送, 60s后再次发送",
+              type: "success"
+            });
+            // 重新登录
+            setTimeout(() => {
+              this.vCodeLoading = false;
+            }, 60000);
+          } else {
+            this.vCodeLoading = false;
+          }
+        });
+      } catch {
+        (err) => {
+          this.vCodeLoading = false;
+          Message({
+            showClose: true,
+            message: err,
+            type: "error"
+          });
+        };
+      }
     },
     // 重置密码
     async resetPass() {
-      await emailPass(this.form).then(res => {
-        this.judgeResult(res);
-      });
-      // 重新登录
-      setTimeout(() => {
-        // FIXME: test it
-        this.$router.replace({ path: "/" });
-      }, 1500);
+      this.resetPassLoading = true;
+      try {
+        await emailPass(this.form).then((res) => {
+          if (res.code === 0) {
+            Message({
+              showClose: true,
+              message: "操作成功, 3s后返回首页",
+              type: "success"
+            });
+            // 重新登录
+            setTimeout(() => {
+              this.$router.replace({ path: "/" });
+            }, 3000);
+            this.resetPassLoading = false;
+          } else {
+            this.resetPassLoading = false;
+          }
+        });
+      } catch {
+        (err) => {
+          this.resetPassLoading = false;
+          Message({
+            showClose: true,
+            message: err,
+            type: "error"
+          });
+        };
+      }
     }
   }
 };
 </script>
 
 <style scoped lang="scss">
-.reset-pass {
-  background-color: #eee;
+.changepass-container {
   display: flex;
   justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
-.form-container {
-  background-color: #ddd;
-  padding: 20px 30px;
-  border-radius: 8px;
-  width: 400px;
 }
 
 .input-container {
@@ -93,11 +129,8 @@ export default {
   margin-right: 10px;
 }
 
-.code-item .el-form-item__label {
-  width: 80px;
-}
 .code-item .el-input {
-  width: 345px;
+  width: 20rem;
 }
 
 .reset-item {

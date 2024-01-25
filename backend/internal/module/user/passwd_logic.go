@@ -32,7 +32,9 @@ func (l PasswdLogic) SendCode(c *gin.Context, req interface{}) (data interface{}
 	if user.Status != 1 || user.SyncState != 1 {
 		return nil, helper.NewMySqlError(fmt.Errorf("该用户已离职或者未同步在ldap，无法重置密码，如有疑问，请联系管理员"))
 	}
-	err = tools.SendCode([]string{r.Mail})
+
+	// global.Log.Debugf("SendCode Request User: %+v", user)
+	err = tools.SendVerificationCode([]string{r.Mail})
 	if err != nil {
 		return nil, helper.NewLdapError(fmt.Errorf("邮件发送失败" + err.Error()))
 	}
@@ -73,7 +75,7 @@ func (l PasswdLogic) ChangePwd(c *gin.Context, req interface{}) (data interface{
 		return nil, helper.NewLdapError(fmt.Errorf("LDAP生成新密码失败" + err.Error()))
 	}
 
-	err = tools.SendMail([]string{user.Mail}, newpass)
+	err = tools.SendNewPass([]string{user.Mail}, newpass)
 	if err != nil {
 		return nil, helper.NewLdapError(fmt.Errorf("邮件发送失败" + err.Error()))
 	}

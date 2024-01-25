@@ -4,9 +4,15 @@ system:
   mode: release
   # url前缀
   url-path-prefix: api
+  # 程序绑定的域名. (当前用于 email 发送本机地址用途)
+  domain: "example.com"
   # 程序监听IP和端口
   host: "0.0.0.0"
   port: 9000
+  read-timeout: 5
+  # write-timeout 除了被用于 gin 的写超时外, 还用于 email dial 的写超时.
+  write-timeout: 10
+  max-header-MBytes: 1
   # 是否初始化数据(没有初始数据时使用, 已发布正式版改为false)
   init-data: true
   # rsa公钥文件路径(config.yml相对路径, 也可以填绝对路径)
@@ -78,12 +84,10 @@ rate-limit:
 
 # email configuration
 email:
-  port: '465'
-  user: 'Linuxlql@163.com'
-  from: 'go-ldap-admin后台'
-  host: 'smtp.163.com'
-  # is-ssl: true
-  pass: 'your password'
+  host: 'smtp.office365.com'
+  port: 587
+  user: 'test@example.com'
+  pass: 'xxxxxxxxx'
 
 # # ldap 配置
 ldap:

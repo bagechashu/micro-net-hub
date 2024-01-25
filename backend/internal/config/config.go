@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"micro-net-hub/internal/global"
 	"os"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
@@ -92,15 +93,19 @@ func RSAReadKeyFromFile(filename string) []byte {
 }
 
 type SystemConfig struct {
-	Mode            string `mapstructure:"mode" json:"mode"`
-	UrlPathPrefix   string `mapstructure:"url-path-prefix" json:"urlPathPrefix"`
-	Host            string `mapstructure:"host" json:"host"`
-	Port            int    `mapstructure:"port" json:"port"`
-	InitData        bool   `mapstructure:"init-data" json:"initData"`
-	RSAPublicKey    string `mapstructure:"rsa-public-key" json:"rsaPublicKey"`
-	RSAPrivateKey   string `mapstructure:"rsa-private-key" json:"rsaPrivateKey"`
-	RSAPublicBytes  []byte `mapstructure:"-" json:"-"`
-	RSAPrivateBytes []byte `mapstructure:"-" json:"-"`
+	Mode            string        `mapstructure:"mode" json:"mode"`
+	UrlPathPrefix   string        `mapstructure:"url-path-prefix" json:"urlPathPrefix"`
+	Domain          string        `mapstructure:"domain" json:"domain"`
+	Host            string        `mapstructure:"host" json:"host"`
+	Port            int           `mapstructure:"port" json:"port"`
+	ReadTimeout     time.Duration `mapstructure:"read-timeout" json:"readTimeout"`
+	WriteTimeout    time.Duration `mapstructure:"write-timeout" json:"writeTimeout"`
+	MaxHeaderMBytes int           `mapstructure:"max-header-MBytes" json:"maxHeaderMBytes"`
+	InitData        bool          `mapstructure:"init-data" json:"initData"`
+	RSAPublicKey    string        `mapstructure:"rsa-public-key" json:"rsaPublicKey"`
+	RSAPrivateKey   string        `mapstructure:"rsa-private-key" json:"rsaPrivateKey"`
+	RSAPublicBytes  []byte        `mapstructure:"-" json:"-"`
+	RSAPrivateBytes []byte        `mapstructure:"-" json:"-"`
 }
 
 type LogsConfig struct {
@@ -164,10 +169,9 @@ type RadiusConfig struct {
 
 type EmailConfig struct {
 	Host string `mapstructure:"host" json:"host"`
-	Port string `mapstructure:"port" json:"port"`
+	Port int    `mapstructure:"port" json:"port"`
 	User string `mapstructure:"user" json:"user"`
 	Pass string `mapstructure:"pass" json:"pass"`
-	From string `mapstructure:"from" json:"from"`
 }
 
 type SyncConfig struct {
