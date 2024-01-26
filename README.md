@@ -4,9 +4,12 @@
 
 A tool for managing your OpenLDAP/Ocserv/Navigation at a private network.
 
-# How to set Ocserv Authentication with Radius.
+# How to set Ocserv Authentication with Radius which build in Micro-Net-Hub.
 
-> https://ocserv.openconnect-vpn.net/recipes-ocserv-authentication-radius-radcli.html
+[Click to see the doc](backend/internal/radiussrv/README.md)
+
+# How to set OpenLdap and IM manager
+[Go-LDAP-Admin - eryajf](http://ldapdoc.eryajf.net/pages/5683c6/#%E5%88%9D%E5%A7%8B%E6%95%B0%E6%8D%AE)
 
 # References
 
