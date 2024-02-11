@@ -23,7 +23,7 @@ A tool for managing your OpenLDAP/Ocserv/Navigation at a private network.
 - https://github.com/lework/lenav
 
 # TODO
-
+- Send Email after create new user.
 - VPNManager
 - CoreDnsManager
 
