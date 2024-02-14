@@ -4,6 +4,10 @@
 
 A tool for managing your OpenLDAP/Ocserv/Navigation at a private network.
 
+# How to install Micro-Net-Hub
+
+[Click to see the doc](docs/README.md)
+
 # How to set Ocserv Authentication with Radius which build in Micro-Net-Hub.
 
 [Click to see the doc](backend/internal/radiussrv/README.md)
