@@ -7,7 +7,7 @@
 
 ## 0. Environment preparation
 
-** only for centos7 **
+**only for centos7**
 
 ```shell
 # network
