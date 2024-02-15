@@ -27,6 +27,7 @@ type config struct {
 	Ldap      *LdapConfig      `mapstructure:"ldap" json:"ldap"`
 	Radius    *RadiusConfig    `mapstructure:"radius" json:"radius"`
 	Email     *EmailConfig     `mapstructure:"email" json:"email"`
+	Notice    *NoticeConfig    `mapstructure:"notice" json:"notice"`
 	Sync      *SyncConfig      `mapstructure:"sync" json:"sync"`
 	DingTalk  *DingTalkConfig  `mapstructure:"dingtalk" json:"dingTalk"`
 	WeCom     *WeComConfig     `mapstructure:"wecom" json:"weCom"`
@@ -95,7 +96,6 @@ func RSAReadKeyFromFile(filename string) []byte {
 type SystemConfig struct {
 	Mode            string        `mapstructure:"mode" json:"mode"`
 	UrlPathPrefix   string        `mapstructure:"url-path-prefix" json:"urlPathPrefix"`
-	Domain          string        `mapstructure:"domain" json:"domain"`
 	Host            string        `mapstructure:"host" json:"host"`
 	Port            int           `mapstructure:"port" json:"port"`
 	ReadTimeout     time.Duration `mapstructure:"read-timeout" json:"readTimeout"`
@@ -172,6 +172,14 @@ type EmailConfig struct {
 	Port int    `mapstructure:"port" json:"port"`
 	User string `mapstructure:"user" json:"user"`
 	Pass string `mapstructure:"pass" json:"pass"`
+}
+
+type NoticeConfig struct {
+	ProjectName   string `mapstructure:"project-name" json:"projectName"`
+	ServiceDomain string `mapstructure:"service-domain" json:"serviceDomain"`
+	VPNServer     string `mapstructure:"vpn-server" json:"vpnServer"`
+	HeaderHTML    string `mapstructure:"header-html" json:"headerHTML"`
+	FooterHTML    string `mapstructure:"footer-html" json:"footerHTML"`
 }
 
 type SyncConfig struct {

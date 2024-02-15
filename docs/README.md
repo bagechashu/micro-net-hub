@@ -86,6 +86,9 @@ chmod +x /data/micro-net-hub-linux-amd64
 /data/micro-net-hub-linux-amd64
 
 ```
+Administrator of Micro-Net-Hub Dashboard:
+- username: admin
+- password: admin_pass
 
 ## 3. Install Ocserv
 

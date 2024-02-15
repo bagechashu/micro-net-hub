@@ -1,8 +1,10 @@
 package tools
 
 import (
+	"encoding/base64"
 	"fmt"
 	"math/rand"
+	"strings"
 	"time"
 
 	"micro-net-hub/internal/config"
@@ -11,6 +13,7 @@ import (
 	"github.com/patrickmn/go-cache"
 
 	"github.com/go-mail/mail"
+	qrcode "github.com/skip2/go-qrcode"
 )
 
 // 验证码放到缓存当中
@@ -36,49 +39,28 @@ func email(mailTo []string, subject string, body string) error {
 }
 
 // SendNewPass 邮件发送新密码
-func SendNewPass(sendto []string, pass string) error {
-	subject := "重置LDAP密码成功"
+func SendNewPass(sendto []string, password string) error {
+	subject := fmt.Sprintf("[ %s ] LDAP Password reset successful.", config.Conf.Notice.ProjectName)
 
-	// 邮件正文
-	profileUrl := fmt.Sprintf("http://%s/#/profile/index", config.Conf.System.Domain)
-	body := fmt.Sprintf(newPassBodyHtml, pass, profileUrl)
+	header := config.Conf.Notice.HeaderHTML
+	footer := ""
+
+	profileUrl := fmt.Sprintf("http://%s/#/profile/index", config.Conf.Notice.ServiceDomain)
+
+	main := fmt.Sprintf(`
+    <p>
+      The password has been reset to: 
+      <div class="key">
+        <strong style="font-size: 22px;"> %s </strong>
+      </div>
+    </p>
+    <br>
+    <p>Please modify your default password in the <a href="%s" style="color: #3498db; text-decoration: none">[Profile Index]</a> </p>
+  `, password, profileUrl)
+
+	body := fmt.Sprintf(bodyHtml, header, main, footer)
 	return email(sendto, subject, body)
 }
-
-var newPassBodyHtml = `
-<!DOCTYPE html>
-<html>
-  <head>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-      }
-      .container {
-        font-size: 16px;
-        margin: 50px 50px;
-        padding: 30px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        text-align: left;
-      }
-      .message {
-        padding: 8px 32px 8px 32px;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <div>尊敬的用户，您好！</div>
-      <div class="message">
-        密码重置为：<strong style="font-size: 22px;">%s</strong>
-        <p/>
-        修改请在 <a href="%s" style="color: #3498db; text-decoration: none">[个人中心]</a> 修改默认密码
-      </div>
-      <div>谢谢!</div>
-    </div>
-  </body>
-</html>
-`
 
 // SendVerificationCode 邮件发送验证码
 func SendVerificationCode(sendto []string) error {
@@ -86,10 +68,86 @@ func SendVerificationCode(sendto []string) error {
 	vcode := fmt.Sprintf("%06v", rnd.Int31n(1000000))
 	// 把验证码信息放到cache，以便于验证时拿到
 	VerificationCodeCache.Set(sendto[0], vcode, time.Minute*5)
-	subject := fmt.Sprintf("验证码-%s-重置LDAP密码", vcode)
+	subject := fmt.Sprintf("[ %s ] %s -- Verification code for resetting LDAP password.", config.Conf.Notice.ProjectName, vcode)
 
-	//发送的内容
-	body := fmt.Sprintf(bodyHtml, vcode)
+	header := config.Conf.Notice.HeaderHTML
+	footer := ""
+
+	main := fmt.Sprintf(`
+    <p>
+      Your verification code for this session: 
+      <div class="key">
+        <strong style="font-size: 22px;"> %s </strong>
+      </div>
+    </p>
+    <br>
+    <p>To ensure the security of your account, the verification code is valid for 5 minutes. </p>
+    <br>
+    <p>Please confirm that you are the one operating and do not disclose it to others. Thank you for your understanding and use.</p>
+  `, vcode)
+
+	body := fmt.Sprintf(bodyHtml, header, main, footer)
+	return email(sendto, subject, body)
+}
+
+// SendUserInfo 邮件发送用户信息
+func SendUserInfo(sendto []string, username string, password string, otpsecret string) error {
+	subject := fmt.Sprintf("[ %s ] LDAP & VPN Account", config.Conf.Notice.ProjectName)
+
+	header := config.Conf.Notice.HeaderHTML
+	footer := config.Conf.Notice.FooterHTML
+
+	qrcodestr := fmt.Sprintf(`otpauth://totp/%s_%s?secret=%s`, strings.ReplaceAll(config.Conf.Notice.ProjectName, " ", "-"), username, otpsecret)
+	qrRawPng, err := qrcode.Encode(qrcodestr, qrcode.Medium, 224)
+	if err != nil {
+		global.Log.Errorf("generate qrcode error at SendUserInfo : %s", err)
+		return err
+	}
+	qrRawPngBase64 := base64.StdEncoding.EncodeToString(qrRawPng)
+
+	main := fmt.Sprintf(`
+    <h3> Intranet account and related information </h3>
+    <div class="note">
+      <p><b>LDAP account</b> is used to log into Intranet systems (like gitlab, nexus, etc). </p>
+      <p><b>TOTP QRcode</b> is used to log into VPN systems (Ocserv).</p>
+    </div>
+    <h5> Portal </h5>
+    <ul>
+      <li>
+        Intranet Portal: <span class="key"> %s </span> 
+        <div class="description"> (<b>Visit after login VPN.</b> It includes an Intranet website navigator and a personal account information manager.) </div>
+      </li>
+      <li> VPN Server address: <span class="key"> %s </span> </li>
+    </ul>
+    <h5> LDAP Account </h5>
+    <ul>
+      <li> Username: <span class="key"> %s </span> </li>
+      <li> Password: <span class="key"> %s </span> </li>
+    </ul>
+    <h5> TOTP QRcode </h5>
+      <img src="data:image/png;base64,%s" alt="QR Code">
+    <h5> VPN Password Notes </h5>
+      <div style="padding-left: 30px;"> 
+        <p>The <b>VPN password</b> is a combination of the <b>LDAP password</b> and the <b>TOTP dynamic code</b>. </p>
+        <p>eg: <br></p>
+        <div class="note">
+          <p>
+            if <br>
+            <b>LDAP Password</b> is "ldappasswd" <br>
+            <b>TOTP dynamic code</b> is "123456" 
+          </p>
+          <p>
+            then <br>
+            <b>VPN Password</b> is "ldappasswd123456" 
+          </p>
+        </div>
+      </div>
+  `, config.Conf.Notice.ServiceDomain, config.Conf.Notice.VPNServer, username, password, qrRawPngBase64)
+
+	body := fmt.Sprintf(bodyHtml, header, main, footer)
+
+	// global.Log.Debugf("%s\n%s", subject, body)
+	// return nil
 	return email(sendto, subject, body)
 }
 
@@ -99,34 +157,72 @@ var bodyHtml = `
 <head>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: "Lucida Console", Courier, monospace;
+      margin: 0;
+      padding: 0;
+    }
+    hr {
+      border: 0;
+      height: 1px;
+      background-image: linear-gradient(to right, rgba(0, 0, 0, 0), #333, rgba(0, 0, 0, 0));
+      margin: 20px 0;
+    }
+    p {
+      margin: 2px 0;
     }
     .container {
-      font-size: 16px;
-      margin: 50px 50px;
-      padding: 30px;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 2px 20px;
       border: 1px solid #ccc;
       border-radius: 8px;
+      background-color: #f9f9f9;
       text-align: left;
     }
     .message {
-      padding: 8px 32px 8px 32px;
+      margin-bottom: 20px;
+    }
+    .note {
+      padding: 5px;
+      background-color: #f0f8ff;
+      border-left: 5px solid #1897e1;
+    }
+    .key {
+      display: inline-flex;
+      padding: 3px 8px;
+      background-color: #d7f9d6;
+      border-radius: 3px;
+      margin-right: 5px;
+    }
+    .description {
+      color: #333;
+      font-style: italic;
+      font-size: xx-small;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div>
-      尊敬的用户，您好！
+    <h3> Dear user, </h3>
+    <div class="message">
+      <!-- header -->
+      %s
+    </div>
+    
+    <div class="message">
+      <hr>
+      <!-- main -->
+      %s
     </div>
     <div class="message">
-      你本次的验证码为 <strong style="font-size: 22px;">%s</strong> ，为了保证账号安全，验证码有效期为5分钟。请确认为本人操作，切勿向他人泄露，感谢您的理解与使用。
-      <p/>
-      此邮箱为系统邮箱，请勿回复。
+      <hr>
+      <!-- footer -->
+      %s
     </div>
-    <div>
-      谢谢!
+    <div class="message">
+      This email is a system mailbox. Please do not reply.
     </div>
+    <h3> Thanks </h3>
   </div>
 </body>
 </html>

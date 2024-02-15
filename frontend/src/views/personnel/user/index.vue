@@ -469,6 +469,7 @@
           </el-row>
         </el-form>
         <div slot="footer" class="dialog-footer">
+          <el-switch v-model="notice" active-text="通知用户" style="margin-right: 10px;" />
           <el-button size="mini" @click="cancelForm()">取 消</el-button>
           <el-button
             size="mini"
@@ -555,6 +556,7 @@ export default {
 
       publicKey: process.env.VUE_APP_PUBLIC_KEY,
 
+      notice: true,
       // dialog对话框
       submitLoading: false,
       dialogFormTitle: "",
@@ -576,7 +578,8 @@ export default {
         position: "",
         postalAddress: "",
         departments: "",
-        departmentId: undefined
+        departmentId: undefined,
+        notice: true
       },
 
       dialogFormRules: {
@@ -749,6 +752,7 @@ export default {
       this.dialogFormVisible = true;
 
       this.dialogFormData.roleIds = [2];
+      this.notice = true;
     },
 
     // 修改
@@ -778,6 +782,7 @@ export default {
       this.dialogFormData.postalAddress = row.postalAddress;
       this.dialogFormData.departments = row.departments;
       this.dialogFormData.departmentId = row.departmentId;
+      this.notice = false;
     },
 
     // 将 部门id 转换为 部门name
@@ -864,6 +869,7 @@ export default {
         });
         return false;
       }
+      this.dialogFormData.notice = this.notice;
       if (this.dialogFormData.roleIds === "") {
         Message({
           showClose: true,
@@ -937,7 +943,8 @@ export default {
         postalAddress: "",
         departments: "",
         position: "",
-        departmentId: undefined
+        departmentId: undefined,
+        notice: true
       };
     },
 

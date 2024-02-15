@@ -4,8 +4,6 @@ system:
   mode: release
   # url前缀
   url-path-prefix: api
-  # 程序绑定的域名. (当前用于 email 发送本机地址用途)
-  domain: "example.com"
   # 程序监听IP和端口
   host: "0.0.0.0"
   port: 9000
@@ -84,12 +82,42 @@ rate-limit:
 
 # email configuration
 email:
-  host: 'smtp.office365.com'
+  host: "smtp.office365.com"
   port: 587
-  user: 'test@example.com'
-  pass: 'xxxxxxxxx'
+  user: "test@example.com"
+  pass: "xxxxxxxxx"
 
-# # ldap 配置
+# 通知邮件模板 配置
+notice:
+  project-name: "micro-net-hub"
+  # 程序绑定的域名. (发送本机地址用途)
+  service-domain: "example.com"
+  vpn-server: "1.2.3.4"
+  header-html: |-
+    <div class="note">
+      <p>
+        If there is any issue with the account, contact 
+        <a href="mailto:admin@example.com" style="color: #015281; text-decoration: underline;">@Admin</a>
+        directly.
+      </p>
+    </div>
+  footer-html: |-
+    <h3>Tools Recommended</h3>
+    <h5>MFA otp tools (Scan QRcode of TOTP)</h5>
+    <ul>
+      <li><span class="key"> https://github.com/andOTP/andOTP </span> (OpenSource Software, recommended)</li>
+      <li>Google Authenticator</li>
+      <li>阿里云手机客户端</li>
+    </ul>
+
+    <h5>Ocserv VPN Client</h5>
+    <ul>
+      <li><span class="key"> https://www.infradead.org/openconnect/ </span></li>
+      <li><span class="key"> https://github.com/openconnect/openconnect </span></li>
+      <li><span class="key"> https://github.com/openconnect/openconnect-gui </span></li>
+    </ul>
+
+# ldap 配置
 ldap:
   # ldap服务器地址, TODO: ldaps that use private SSL need adapt
   url: ldap://localhost:389
@@ -104,7 +132,7 @@ ldap:
   # ldap用户OU
   user-dn: "ou=people,dc=example,dc=com"
   # ldap用户初始默认密码
-  user-init-password: "123456"
+  user-init-password: "ldap-init-passwd"
   # 是否允许更改分组DN
   group-name-modify: false
   # 是否允许更改用户DN
@@ -117,8 +145,8 @@ radius:
   secret: "default-radius-secret"
   group-filter: ""
 
-sync: 
-  enable-sync: false  # 是否开启定时同步 IM 的用户和组织
+sync:
+  enable-sync: false # 是否开启定时同步 IM 的用户和组织
   is-update-syncd: false # 如果你不了解这个字段的含义，则不建议开启. 没有测试过. 当 IM 用户的邮箱，手机号，部门等信息更新之后，是否同步更新，默认为false.
   dept-sync-time: "0 30 2 * * *" # 部门同步任务的时间点 * * * * * * 秒 分 时 日 月 周, 请把时间设置在凌晨 1 ~ 5 点
   user-sync-time: "0 30 3 * * *" # 用户同步任务的时间点 * * * * * * 秒 分 时 日 月 周, 请把时间设置在凌晨 1 ~ 5 点,注意请把用户同步的任务滞后于部门同步时间,比如部门为2点,则用户为3点

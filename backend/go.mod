@@ -28,6 +28,7 @@ require (
 require (
 	github.com/chyroc/lark v0.0.96
 	github.com/go-mail/mail v2.3.1+incompatible
+	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/tidwall/gjson v1.13.0
 	github.com/wenerme/go-wecom v0.0.0-20220617125121-2ee950da3e63
 	golang.org/x/sync v0.1.0

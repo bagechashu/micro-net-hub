@@ -52,7 +52,7 @@ func (l UserLogic) Add(c *gin.Context, req interface{}) (data interface{}, rspEr
 			return nil, helper.NewValidatorError(fmt.Errorf("密码长度至少为6位"))
 		}
 	} else {
-		r.Password = config.Conf.Ldap.UserInitPassword
+		r.Password = tools.GeneratePassword(8)
 	}
 
 	// 当前登陆用户角色排序最小值（最高等级角色）以及当前登陆的用户
@@ -122,6 +122,13 @@ func (l UserLogic) Add(c *gin.Context, req interface{}) (data interface{}, rspEr
 	err = CommonAddUser(&user, gs)
 	if err != nil {
 		return nil, helper.NewOperationError(fmt.Errorf("添加用户失败: " + err.Error()))
+	}
+	if r.Notice {
+		var nu userModel.User
+		if nu.Find(tools.H{"username": r.Username}) != nil {
+			return nil, helper.NewValidatorError(fmt.Errorf("系统通知用户账号信息失败, 请手工通知"))
+		}
+		tools.SendUserInfo([]string{nu.Mail}, nu.Username, r.Password, nu.Totp.Secret)
 	}
 	return nil, nil
 }

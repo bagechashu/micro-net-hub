@@ -434,6 +434,7 @@ type UserAddReq struct {
 	DepartmentId  []uint `json:"departmentId" validate:"required"`
 	Source        string `json:"source" validate:"min=0,max=50"`
 	RoleIds       []uint `json:"roleIds" validate:"required"`
+	Notice        bool   `json:"notice" validate:"required"`
 }
 
 // DingUserAddReq 钉钉用户创建资源结构体

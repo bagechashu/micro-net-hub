@@ -1,6 +1,8 @@
 package tools
 
 import (
+	"crypto/rand"
+	"math/big"
 	"micro-net-hub/internal/config"
 )
 
@@ -32,4 +34,20 @@ func NewGenPasswd(passwd string) string {
 func NewParPasswd(passwd string) string {
 	pass, _ := RSADecrypt([]byte(passwd), config.Conf.System.RSAPrivateBytes)
 	return string(pass)
+}
+
+func GeneratePassword(length int) string {
+	charset := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+	password := make([]byte, length)
+
+	for i := 0; i < length; i++ {
+		randomIndex, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
+		if err != nil {
+			return "NotRandomPass"
+		}
+		password[i] = charset[randomIndex.Int64()]
+	}
+
+	return string(password)
 }
