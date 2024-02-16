@@ -352,17 +352,35 @@
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <!-- 修改用户时，不显示密码字段 -->
               <el-form-item
                 v-if="dialogType === 'create'"
-                :label="dialogType === 'create' ? '新密码' : '重置密码'"
+                label="密码"
                 prop="password"
               >
                 <el-input
                   v-model.trim="dialogFormData.password"
                   autocomplete="off"
                   :type="passwordType"
-                  :placeholder="dialogType === 'create' ? '新密码' : '重置密码'"
+                  placeholder="密码"
+                />
+                <span class="show-pwd" @click="showPwd">
+                  <svg-icon
+                    :icon-class="
+                      passwordType === 'password' ? 'eye' : 'eye-open'
+                    "
+                  />
+                </span>
+              </el-form-item>
+              <el-form-item
+                v-else
+                label="重置密码"
+                prop="password"
+              >
+                <el-input
+                  v-model.trim="dialogFormData.password"
+                  autocomplete="off"
+                  :type="passwordType"
+                  placeholder="不填不会重置"
                 />
                 <span class="show-pwd" @click="showPwd">
                   <svg-icon

@@ -123,6 +123,7 @@ func (l UserLogic) Add(c *gin.Context, req interface{}) (data interface{}, rspEr
 	if err != nil {
 		return nil, helper.NewOperationError(fmt.Errorf("添加用户失败: " + err.Error()))
 	}
+
 	if r.Notice {
 		var nu userModel.User
 		if nu.Find(tools.H{"username": r.Username}) != nil {
@@ -130,6 +131,7 @@ func (l UserLogic) Add(c *gin.Context, req interface{}) (data interface{}, rspEr
 		}
 		tools.SendUserInfo([]string{nu.Mail}, nu.Username, r.Password, nu.Totp.Secret)
 	}
+
 	return nil, nil
 }
 
@@ -272,12 +274,36 @@ func (l UserLogic) Update(c *gin.Context, req interface{}) (data interface{}, rs
 		UserDN:        oldData.UserDN,
 	}
 
+	// 密码不为空就解密并更新, 为空则不更新
+	if r.Password != "" {
+		decodeData, err := tools.RSADecrypt([]byte(r.Password), config.Conf.System.RSAPrivateBytes)
+		if err != nil {
+			return nil, helper.NewValidatorError(fmt.Errorf("密码解密失败"))
+		}
+		r.Password = string(decodeData)
+		if len(r.Password) < 6 {
+			return nil, helper.NewValidatorError(fmt.Errorf("密码长度至少为6位"))
+		}
+		user.Password = r.Password
+	} else {
+		r.Password = "The password has not been updated. Please continue using your current password."
+	}
+
 	if err = CommonUpdateUser(oldData, &user, r.DepartmentId); err != nil {
 		return nil, helper.NewOperationError(fmt.Errorf("更新用户失败: " + err.Error()))
 	}
 
 	// flush user info cache
 	userModel.ClearUserInfoCache()
+
+	if r.Notice {
+		var nu userModel.User
+		if nu.Find(tools.H{"username": r.Username}) != nil {
+			return nil, helper.NewValidatorError(fmt.Errorf("系统通知用户账号信息失败, 请手工通知"))
+		}
+		tools.SendUserInfo([]string{nu.Mail}, nu.Username, r.Password, nu.Totp.Secret)
+	}
+
 	return nil, nil
 }
 

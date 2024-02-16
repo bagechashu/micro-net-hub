@@ -434,7 +434,7 @@ type UserAddReq struct {
 	DepartmentId  []uint `json:"departmentId" validate:"required"`
 	Source        string `json:"source" validate:"min=0,max=50"`
 	RoleIds       []uint `json:"roleIds" validate:"required"`
-	Notice        bool   `json:"notice" validate:"required"`
+	Notice        bool   `json:"notice" validate:"omitempty"`
 }
 
 // DingUserAddReq 钉钉用户创建资源结构体
@@ -485,6 +485,7 @@ type WeComUserAddReq struct {
 type UserUpdateReq struct {
 	ID            uint   `json:"id" validate:"required"`
 	Username      string `json:"username" validate:"required,min=2,max=50"`
+	Password      string `json:"password"`
 	Nickname      string `json:"nickname" validate:"min=0,max=20"`
 	GivenName     string `json:"givenName" validate:"min=0,max=50"`
 	Mail          string `json:"mail" validate:"min=0,max=100"`
@@ -498,6 +499,7 @@ type UserUpdateReq struct {
 	DepartmentId  []uint `json:"departmentId" validate:"required"`
 	Source        string `json:"source" validate:"min=0,max=50"`
 	RoleIds       []uint `json:"roleIds" validate:"required"`
+	Notice        bool   `json:"notice" validate:"omitempty"`
 }
 
 // UserDeleteReq 批量删除资源结构体

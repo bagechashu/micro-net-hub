@@ -172,12 +172,17 @@ var bodyHtml = `
     }
     .container {
       max-width: 800px;
-      margin: 50px auto;
+      margin: 20px auto;
       padding: 2px 20px;
       border: 1px solid #ccc;
       border-radius: 8px;
       background-color: #f9f9f9;
       text-align: left;
+    }
+    @media only screen and (max-width: 900px) {
+      .container {
+        margin: auto !important;
+      }
     }
     .message {
       margin-bottom: 20px;
