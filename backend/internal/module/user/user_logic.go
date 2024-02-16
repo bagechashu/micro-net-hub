@@ -367,6 +367,26 @@ func (l UserLogic) Delete(c *gin.Context, req interface{}) (data interface{}, rs
 		return nil, helper.NewMySqlError(fmt.Errorf("在MySQL删除用户失败: " + err.Error()))
 	}
 
+	// flush user info cache
+	userModel.ClearUserInfoCache()
+
+	// Notifications to users by role's keyword
+	keyword := config.Conf.Notice.DefaultNoticeRoleKeyword
+	noticeUsers, err := userModel.GetRoleUsersByKeyword(keyword)
+	if err != nil {
+		return nil, helper.NewMySqlError(fmt.Errorf("通知 %s 组失败, 获取主邮箱失败: %v", keyword, err.Error()))
+	}
+	noticeUsersEmail := []string{}
+	for _, user := range noticeUsers {
+		noticeUsersEmail = append(noticeUsersEmail, user.Mail)
+	}
+
+	delUsernames := []string{}
+	for _, user := range users {
+		delUsernames = append(delUsernames, user.Username)
+	}
+	tools.SendUserStatusNotifications(noticeUsersEmail, delUsernames, "deleted")
+
 	return nil, nil
 }
 
@@ -437,14 +457,13 @@ func (l UserLogic) ChangeUserStatus(c *gin.Context, req interface{}) (data inter
 	if err != nil {
 		return nil, helper.NewMySqlError(fmt.Errorf("在MySQL查询用户失败: " + err.Error()))
 	}
-
-	if r.Status == 1 && r.Status == user.Status {
-		return nil, helper.NewValidatorError(fmt.Errorf("用户已经是在职状态"))
+	if r.Status == user.Status {
+		if r.Status == 2 {
+			return nil, helper.NewValidatorError(fmt.Errorf("用户已经是离职状态"))
+		} else if r.Status == 1 {
+			return nil, helper.NewValidatorError(fmt.Errorf("用户已经是在职状态"))
+		}
 	}
-	if r.Status == 2 && r.Status == user.Status {
-		return nil, helper.NewValidatorError(fmt.Errorf("用户已经是离职状态"))
-	}
-
 	// 获取当前登录用户，只有管理员才能够将用户状态改变
 	// 获取当前登陆用户角色排序最小值（最高等级角色）以及当前用户
 	minSort, _, err := GetCurrentUserMinRoleSort(c)
@@ -456,21 +475,40 @@ func (l UserLogic) ChangeUserStatus(c *gin.Context, req interface{}) (data inter
 		return nil, helper.NewValidatorError(fmt.Errorf("只有管理员才能更改用户状态"))
 	}
 
+	var statusDesc string
 	if r.Status == 2 {
 		err = ldapmgr.LdapUserDelete(user.UserDN)
 		if err != nil {
 			return nil, helper.NewLdapError(fmt.Errorf("在LDAP删除用户失败" + err.Error()))
 		}
-	} else {
+		statusDesc = "deactivated"
+	} else if r.Status == 1 {
 		err = ldapmgr.LdapUserAdd(user)
 		if err != nil {
 			return nil, helper.NewLdapError(fmt.Errorf("在LDAP添加用户失败" + err.Error()))
 		}
+		statusDesc = "actived"
 	}
+
 	err = user.ChangeStatus(int(r.Status))
 	if err != nil {
 		return nil, helper.NewMySqlError(fmt.Errorf("在MySQL更新用户状态失败: " + err.Error()))
 	}
+
+	// Notifications to users by role's keyword
+	keyword := config.Conf.Notice.DefaultNoticeRoleKeyword
+	noticeUsers, err := userModel.GetRoleUsersByKeyword(keyword)
+	if err != nil {
+		return nil, helper.NewMySqlError(fmt.Errorf("通知 %s 组失败, 获取主邮箱失败: %v", keyword, err.Error()))
+	}
+	noticeUsersEmail := []string{}
+	for _, user := range noticeUsers {
+		noticeUsersEmail = append(noticeUsersEmail, user.Mail)
+	}
+
+	usernames := []string{user.Username}
+	tools.SendUserStatusNotifications(noticeUsersEmail, usernames, statusDesc)
+
 	return nil, nil
 }
 

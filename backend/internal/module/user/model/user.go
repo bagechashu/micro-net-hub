@@ -326,7 +326,7 @@ func DeleteUsersById(ids []uint) error {
 		user := new(User)
 		err := user.Find(filter)
 		if err != nil {
-			return fmt.Errorf("获取用户信息失败，err: %v", err)
+			return fmt.Errorf("需要删除的用户获取信息失败，err: %v", err)
 		}
 		us = append(us, user)
 	}

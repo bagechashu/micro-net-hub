@@ -90,6 +90,33 @@ func SendVerificationCode(sendto []string) error {
 	return email(sendto, subject, body)
 }
 
+// SendUserDeleteDenyNotice 邮件发送用户删除和禁用的通知
+func SendUserStatusNotifications(sendto []string, users []string, status string) error {
+	subject := fmt.Sprintf("[ %s ] Notice Of LDAP & VPN Account %s", config.Conf.Notice.ProjectName, status)
+
+	header := config.Conf.Notice.HeaderHTML
+	footer := ""
+
+	userList := "<ul><li><span class=\"key\">" + strings.Join(users, "</span></li><li><span class=\"key\">") + "</span></li></ul>"
+	main := fmt.Sprintf(`
+    <p>
+      The users below has been <span class="key"><strong style="font-size: 18px;"> %s </strong></span>: 
+      %s 
+    </p>
+    <br>
+    <p> Please take note.  </p>
+    <br>
+    <p> Deactivated or Deleted users cannot log in to the VPN or Intranet projects using their LDAP accounts. </p>
+    <br>
+    <p> Actived users can log in to the VPN and Intranet projects using their LDAP accounts. </p>
+  `, status, userList)
+
+	body := fmt.Sprintf(bodyHtml, header, main, footer)
+
+	global.Log.Debugf("User Status Notice to %s", sendto)
+	return email(sendto, subject, body)
+}
+
 // SendUserInfo 邮件发送用户信息
 func SendUserInfo(sendto []string, username string, password string, otpsecret string) error {
 	subject := fmt.Sprintf("[ %s ] LDAP & VPN Account", config.Conf.Notice.ProjectName)

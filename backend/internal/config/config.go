@@ -175,11 +175,12 @@ type EmailConfig struct {
 }
 
 type NoticeConfig struct {
-	ProjectName   string `mapstructure:"project-name" json:"projectName"`
-	ServiceDomain string `mapstructure:"service-domain" json:"serviceDomain"`
-	VPNServer     string `mapstructure:"vpn-server" json:"vpnServer"`
-	HeaderHTML    string `mapstructure:"header-html" json:"headerHTML"`
-	FooterHTML    string `mapstructure:"footer-html" json:"footerHTML"`
+	ProjectName              string `mapstructure:"project-name" json:"projectName"`
+	ServiceDomain            string `mapstructure:"service-domain" json:"serviceDomain"`
+	VPNServer                string `mapstructure:"vpn-server" json:"vpnServer"`
+	DefaultNoticeRoleKeyword string `mapstructure:"default-notice-role-keyword" json:"defaultNoticeRoleKeyword"`
+	HeaderHTML               string `mapstructure:"header-html" json:"headerHTML"`
+	FooterHTML               string `mapstructure:"footer-html" json:"footerHTML"`
 }
 
 type SyncConfig struct {

@@ -55,6 +55,13 @@ func RoleCount() (int64, error) {
 	return count, err
 }
 
+// GetRoleUsers 获取角色下的用户
+func GetRoleUsersByKeyword(keyword string) ([]*User, error) {
+	var role Role
+	err := global.DB.Where("keyword = ?", keyword).Preload("Users").First(&role).Error
+	return role.Users, err
+}
+
 // GetRoleMenusById 获取角色的权限菜单
 func GetRoleMenusById(roleId uint) ([]*Menu, error) {
 	var role Role
