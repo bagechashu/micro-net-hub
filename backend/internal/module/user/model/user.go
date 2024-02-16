@@ -141,6 +141,9 @@ func ClearUserInfoCache() {
 
 // Update 更新资源
 func (u *User) Update() error {
+	if u.Password != "" {
+		u.Password = tools.NewGenPasswd(u.Password)
+	}
 	err := global.DB.Model(u).Updates(u).Error
 	if err != nil {
 		return err
@@ -248,7 +251,7 @@ func (u *User) Login() (*User, error) {
 		return nil, errors.New("用户角色被禁用")
 	}
 
-	if tools.NewParPasswd(userRight.Password) != u.Password {
+	if tools.NewParsePasswd(userRight.Password) != u.Password {
 		return nil, errors.New("密码错误")
 	}
 	return &userRight, nil

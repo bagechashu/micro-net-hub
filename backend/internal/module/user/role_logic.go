@@ -387,7 +387,9 @@ func (l RoleLogic) UpdateApis(c *gin.Context, req interface{}) (data interface{}
 
 	// 根据path中的角色ID获取该角色信息
 	roles := userModel.NewRoles()
-	err := roles.GetRolesByIds([]uint{r.RoleID})
+	if err := roles.GetRolesByIds([]uint{r.RoleID}); err != nil {
+		return nil, helper.NewMySqlError(fmt.Errorf("获取角色信息失败: " + err.Error()))
+	}
 	if len(roles) == 0 {
 		return nil, helper.NewMySqlError(fmt.Errorf("未获取到角色信息"))
 	}

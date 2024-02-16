@@ -401,7 +401,7 @@ func (l UserLogic) ChangePwd(c *gin.Context, req interface{}) (data interface{},
 	// if err != nil {
 	// 	return nil, helper.NewValidatorError(fmt.Errorf("原密码错误"))
 	// }
-	if tools.NewParPasswd(user.Password) != r.OldPassword {
+	if tools.NewParsePasswd(user.Password) != r.OldPassword {
 		return nil, helper.NewValidatorError(fmt.Errorf("原密码错误"))
 	}
 	// ldap更新密码时可以直接指定用户DN和新密码即可更改成功

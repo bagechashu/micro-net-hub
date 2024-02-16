@@ -23,15 +23,15 @@ import (
 // 	return nil
 // }
 
-// 密码加密
+// 后端密码加密
 func NewGenPasswd(passwd string) string {
 	// global.Log.Debugf("password of new user: %s", passwd)
 	pass, _ := RSAEncrypt([]byte(passwd), config.Conf.System.RSAPublicBytes)
 	return string(pass)
 }
 
-// 密码解密
-func NewParPasswd(passwd string) string {
+// 后端密码解密
+func NewParsePasswd(passwd string) string {
 	pass, _ := RSADecrypt([]byte(passwd), config.Conf.System.RSAPrivateBytes)
 	return string(pass)
 }

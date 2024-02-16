@@ -142,7 +142,7 @@ func (l MenuLogic) Delete(c *gin.Context, req interface{}) (data interface{}, rs
 		filter := tools.H{"id": int(id)}
 		var menu = new(userModel.Menu)
 		if !menu.Exist(filter) {
-			return nil, helper.NewMySqlError(fmt.Errorf("Menu ID: %d 对应的记录不存在", menu.ID))
+			return nil, helper.NewMySqlError(fmt.Errorf("menu ID: %d 对应的记录不存在", menu.ID))
 		}
 		// 删除接口
 		err := menu.Delete()

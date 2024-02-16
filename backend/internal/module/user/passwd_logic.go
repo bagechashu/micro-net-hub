@@ -192,5 +192,5 @@ func (l PasswdLogic) DecryptPasswd(c *gin.Context, req interface{}) (data interf
 	}
 	_ = c
 
-	return tools.NewParPasswd(r.Passwd), nil
+	return tools.NewParsePasswd(r.Passwd), nil
 }

@@ -59,7 +59,7 @@ service.interceptors.response.use(
     if (error.response.status === 401) {
       if (error.response.data.message.indexOf("JWT认证失败") !== -1) {
         MessageBox.confirm(
-          "登录状态过期, 或登录失败. 请重新登录.",
+          "登录失败, 或登录状态过期, 请重新登录.",
           "登录状态已失效",
           {
             confirmButtonText: "强行刷新",

@@ -42,7 +42,7 @@ func LdapUserAdd(user *userModel.User) error {
 	add.Attribute("description", []string{user.Introduction})
 	add.Attribute("displayName", []string{user.Nickname})
 	add.Attribute("mail", []string{user.Mail})
-	add.Attribute("userPassword", []string{tools.EncodePass([]byte(tools.NewParPasswd(user.Password)))})
+	add.Attribute("userPassword", []string{tools.EncodePass([]byte(tools.NewParsePasswd(user.Password)))})
 	add.Attribute("employeeNumber", []string{user.JobNumber})
 	add.Attribute("businessCategory", []string{user.Departments})
 	add.Attribute("departmentNumber", []string{user.Position})
