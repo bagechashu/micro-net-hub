@@ -189,7 +189,7 @@ func (u *User) Exist(filter map[string]interface{}) bool {
 
 // Find 获取单个资源
 func (u *User) Find(filter map[string]interface{}) error {
-	return global.DB.Where(filter).Preload("Roles").Preload("Totp").First(&u).Error
+	return global.DB.Where(filter).Preload("Roles").First(&u).Error
 }
 
 // Find 获取同名用户已入库的序号最大的用户信息
@@ -208,7 +208,7 @@ func (u *User) Add() error {
 
 // GetUserById 获取单个用户
 func (u *User) GetUserById(id uint) error {
-	err := global.DB.Where("id = ?", id).Preload("Roles").Preload("Totp").First(&u).Error
+	err := global.DB.Where("id = ?", id).Preload("Roles").First(&u).Error
 	return err
 }
 
@@ -297,7 +297,7 @@ func (us *Users) List(req *UserListReq) error {
 	}
 
 	pageReq := tools.NewPageOption(req.PageNum, req.PageSize)
-	err := db.Offset(pageReq.PageNum).Limit(pageReq.PageSize).Preload("Roles").Preload("Totp").Find(&us).Error
+	err := db.Offset(pageReq.PageNum).Limit(pageReq.PageSize).Preload("Roles").Find(&us).Error
 	return err
 }
 
