@@ -37,6 +37,12 @@ func (m UserHandler) Delete(c *gin.Context) {
 	helper.HandleRequest(c, req, userLogic.UserLogicIns.Delete)
 }
 
+// ReSetTotpSecret 重置 Totp 秘钥
+func (m UserHandler) ReSetTotpSecret(c *gin.Context) {
+	req := new(helper.EmptyStruct)
+	helper.HandleRequest(c, req, userLogic.UserLogicIns.ReSetTotpSecret)
+}
+
 // ChangePwd 更新密码
 func (m UserHandler) ChangePwd(c *gin.Context) {
 	req := new(userModel.UserChangePwdReq)

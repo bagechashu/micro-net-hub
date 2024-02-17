@@ -129,7 +129,11 @@ func (l UserLogic) Add(c *gin.Context, req interface{}) (data interface{}, rspEr
 		if nu.Find(tools.H{"username": r.Username}) != nil {
 			return nil, helper.NewValidatorError(fmt.Errorf("系统通知用户账号信息失败, 请手工通知"))
 		}
-		tools.SendUserInfo([]string{nu.Mail}, nu.Username, r.Password, nu.Totp.Secret)
+		qrRawPngBase64, err := nu.GetRawPngBase64()
+		if err != nil {
+			return nil, helper.NewOperationError(fmt.Errorf("系统通知用户账号信息失败, 请手工通知"))
+		}
+		tools.SendUserInfo([]string{nu.Mail}, nu.Username, r.Password, qrRawPngBase64)
 	}
 
 	return nil, nil
@@ -301,7 +305,11 @@ func (l UserLogic) Update(c *gin.Context, req interface{}) (data interface{}, rs
 		if nu.Find(tools.H{"username": r.Username}) != nil {
 			return nil, helper.NewValidatorError(fmt.Errorf("系统通知用户账号信息失败, 请手工通知"))
 		}
-		tools.SendUserInfo([]string{nu.Mail}, nu.Username, r.Password, nu.Totp.Secret)
+		qrRawPngBase64, err := nu.GetRawPngBase64()
+		if err != nil {
+			return nil, helper.NewOperationError(fmt.Errorf("系统通知用户账号信息失败, 请手工通知"))
+		}
+		tools.SendUserInfo([]string{nu.Mail}, nu.Username, r.Password, qrRawPngBase64)
 	}
 
 	return nil, nil
@@ -388,6 +396,20 @@ func (l UserLogic) Delete(c *gin.Context, req interface{}) (data interface{}, rs
 	tools.SendUserStatusNotifications(noticeUsersEmail, delUsernames, "deleted")
 
 	return nil, nil
+}
+
+// Reset TOTP Secret 重置 TOTP 密钥
+func (l UserLogic) ReSetTotpSecret(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
+	// 获取当前用户
+	user, err := GetCurrentLoginUser(c)
+	if err != nil {
+		return nil, helper.NewMySqlError(fmt.Errorf("获取当前登陆用户失败"))
+	}
+
+	user.Totp.ReSetTotpSecret()
+	qrCodeStr := user.GetQrcodestr()
+
+	return qrCodeStr, nil
 }
 
 // ChangePwd 修改密码

@@ -1,6 +1,7 @@
 package model
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"micro-net-hub/internal/config"
@@ -12,8 +13,10 @@ import (
 	totpModel "micro-net-hub/internal/module/totp/model"
 
 	"github.com/patrickmn/go-cache"
+	qrcode "github.com/skip2/go-qrcode"
 	"github.com/thoas/go-funk"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type User struct {
@@ -39,7 +42,7 @@ type User struct {
 	SourceUnionId string         `gorm:"type:varchar(100);not null;comment:'第三方唯一unionId'" json:"sourceUnionId"`            // 第三方唯一unionId
 	UserDN        string         `gorm:"type:varchar(255);not null;comment:'用户dn'" json:"userDn"`                           // 用户在ldap的dn
 	SyncState     uint           `gorm:"type:tinyint(1);default:1;comment:'同步状态:1已同步, 2未同步'" json:"syncState"`              // 数据到ldap的同步状态
-	Totp          totpModel.Totp `json:"totp"`
+	Totp          totpModel.Totp `json:"-"`
 }
 
 func (u *User) SetUserName(userName string) {
@@ -189,7 +192,7 @@ func (u *User) Exist(filter map[string]interface{}) bool {
 
 // Find 获取单个资源
 func (u *User) Find(filter map[string]interface{}) error {
-	return global.DB.Where(filter).Preload("Roles").First(&u).Error
+	return global.DB.Where(filter).Preload("Roles").Preload("Totp").First(&u).Error
 }
 
 // Find 获取同名用户已入库的序号最大的用户信息
@@ -197,12 +200,26 @@ func (u *User) FindTheSameUserName(username string) error {
 	return global.DB.Where("username REGEXP ? ", fmt.Sprintf("^%s[0-9]{0,3}$", username)).Order("username desc").First(&u).Error
 }
 
+func (u *User) GetQrcodestr() (qrcodestr string) {
+	return fmt.Sprintf(`otpauth://totp/%s_%s?secret=%s`, strings.ReplaceAll(config.Conf.Notice.ProjectName, " ", "-"), u.Username, u.Totp.Secret)
+}
+
+func (u *User) GetRawPngBase64() (qrRawPngBase64 string, err error) {
+	qrcodestr := u.GetQrcodestr()
+	qrRawPng, err := qrcode.Encode(qrcodestr, qrcode.Medium, 224)
+	if err != nil {
+		global.Log.Errorf("%s generate qrcode error : %s", u.Username, err)
+		return "", err
+	}
+	return base64.StdEncoding.EncodeToString(qrRawPng), nil
+}
+
 // Add 添加资源
 func (u *User) Add() error {
 	u.Password = tools.NewGenPasswd(u.Password)
 	//result := global.DB.Create(user)
 	//return user.ID, result.Error
-	u.Totp.SetTotp()
+	u.Totp.SetTotpSecret()
 	return global.DB.Create(u).Error
 }
 
@@ -331,7 +348,7 @@ func DeleteUsersById(ids []uint) error {
 		us = append(us, user)
 	}
 
-	err := global.DB.Select("Roles").Unscoped().Delete(&us).Error
+	err := global.DB.Select(clause.Associations).Unscoped().Delete(&us).Error
 	if err != nil {
 		return err
 	} else {

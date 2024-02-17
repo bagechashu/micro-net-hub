@@ -16,14 +16,14 @@ type Totp struct {
 	Secret string `gorm:"type:varchar(32);unique;comment:'totp secret'" json:"secret"`
 }
 
-func (t *Totp) SetTotp() {
+func (t *Totp) SetTotpSecret() {
 	if t.Secret == "" {
 		// use base32 (google type) secret
 		_, t.Secret = GenerateQRsecret()
 	}
 }
 
-func (t *Totp) ReSetTotp() {
+func (t *Totp) ReSetTotpSecret() {
 	_, t.Secret = GenerateQRsecret()
 }
 

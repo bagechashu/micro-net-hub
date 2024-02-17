@@ -133,13 +133,9 @@
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column show-overflow-tooltip sortable label="用户名">
           <template slot-scope="scope">
-            <el-popover trigger="hover" placement="top">
-              [ {{ scope.row.username }} ] TOTP QRcode
-              <QrCode :id="'QrCode'" :text="scope.row.qrcodestr" />
-              <div slot="reference" class="name-wrapper">
-                <el-tag size="medium">{{ scope.row.username }}</el-tag>
-              </div>
-            </el-popover>
+            <div slot="reference" class="name-wrapper">
+              <el-tag size="medium">{{ scope.row.username }}</el-tag>
+            </div>
           </template>
         </el-table-column>
         <el-table-column
@@ -520,13 +516,11 @@ import {
 import { getRoles } from "@/api/system/role";
 import { getGroupTree } from "@/api/personnel/group";
 import { Message } from "element-ui";
-import QrCode from "@/components/Qrcode/Qrcode.vue";
 
 export default {
   name: "User",
   components: {
-    Treeselect,
-    QrCode
+    Treeselect
   },
   data() {
     var checkPhone = (rule, value, callback) => {
@@ -724,8 +718,6 @@ export default {
             dataIntArr.push(+item);
           });
           item.departmentId = dataIntArr;
-          const trimmedIntro = this.formatIntroduction(item.introduction);
-          item.qrcodestr = `otpauth://totp/${trimmedIntro}_${item.username}?secret=${item.totp.secret}`;
         });
         this.tableData = data.users;
         this.total = data.total;
@@ -1135,11 +1127,6 @@ export default {
         this.loading = false;
         this.getTableData();
       });
-    },
-    formatIntroduction(introraw) {
-      let intro = introraw.replace(/\s/g, ""); // 移除所有空格和制表符
-      intro = intro.substring(0, 20); // 只获取前20个字符
-      return intro;
     }
   }
 };

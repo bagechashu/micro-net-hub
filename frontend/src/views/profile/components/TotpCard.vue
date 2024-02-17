@@ -1,51 +1,54 @@
 <template>
   <el-card class="profile-card">
     <div slot="header" class="clearfix">
-      <span>Totp QRcode</span>
+      <span>重置 Totp 秘钥</span>
     </div>
-
-    <div class="user-profile">
-      <div class="box-center">
-        <!-- <div class="user-name text-center">{{ user.totp.secret }}</div> -->
-        <QrCode :id="'QrCode'" :text="formattedSecret" />
+    <div class="box-center">
+      <div :style="{ display: showDiscribe ? 'block' : 'none' }">
+        <div class="warning-message">
+          <p><b>注意:</b></p>
+          <p>重置后, 之前的TOTP秘钥将失效.</p>
+          <p>二维码只显示一次, 刷新/切换页面后将消失.</p>
+        </div>
+        <el-popconfirm title="确定重置吗？" @onConfirm="resetTotpSecret">
+          <el-button
+            slot="reference"
+            class="right"
+            size="mini"
+            icon="el-icon-refresh"
+            type="danger"
+          >重置
+          </el-button>
+        </el-popconfirm>
       </div>
+      <!-- <div class="user-name">{{ qrCodeStr }}</div> -->
+      <QrCode :id="'QrCode'" class="mt-30" :text="qrCodeStr" />
     </div>
   </el-card>
 </template>
 
 <script>
 import QrCode from "@/components/Qrcode/Qrcode.vue";
+import { resetTotpSecret } from "@/api/personnel/user";
+
 export default {
   components: { QrCode },
-  props: {
-    user: {
-      type: Object,
-      default: () => {
-        return {
-          totp: {},
-          introduction: ""
-        };
-      }
-    }
-  },
   data() {
     return {
-      totp: this.user.totp
+      showDiscribe: true,
+      qrCodeStr: ""
     };
   },
-  computed: {
-    // 使用计算属性来生成最终的secret字符串
-    formattedSecret() {
-      const trimmedIntro = this.formatIntroduction();
-      // eg: otpauth://totp/presightdefault_pvpnuser001?secret=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-      return `otpauth://totp/${trimmedIntro}_${this.user.name}?secret=${this.user.totp.secret}`;
-    }
-  },
   methods: {
-    formatIntroduction() {
-      let intro = this.user.introduction.replace(/\s/g, ""); // 移除所有空格和制表符
-      intro = intro.substring(0, 20); // 只获取前20个字符
-      return intro;
+    async resetTotpSecret() {
+      try {
+        const { data } = await resetTotpSecret();
+        this.qrCodeStr = data;
+        // console.log(this.qrCodeStr)
+        this.showDiscribe = false;
+      } catch (e) {
+        console.log(e);
+      }
     }
   }
 };
@@ -55,62 +58,30 @@ export default {
 .profile-card {
   min-height: 18rem;
   height: 18rem;
-};
+}
 .box-center {
-  margin: 0 auto;
+  margin: auto;
   display: table;
 }
-
-.text-muted {
-  color: #777;
+.right {
+  float: right;
 }
-
-.user-profile {
-  .user-name {
-    font-weight: bold;
-  }
-
-  .box-center {
-    padding-top: 10px;
-  }
-
-  .user-role {
-    padding-top: 10px;
-    font-weight: 400;
-    font-size: 14px;
-  }
-
-  .box-social {
-    padding-top: 30px;
-
-    .el-table {
-      border-top: 1px solid #dfe6ec;
-    }
-  }
-
-  .user-follow {
-    padding-top: 20px;
-  }
+.mt-30 {
+  margin-top: 30px;
 }
-
-.user-bio {
-  margin-top: 20px;
-  color: #606266;
-
-  span {
-    padding-left: 4px;
+.warning-message {
+  background-color: #fef0f0;
+  border: 1px solid #f86c6b;
+  border-radius: 5px;
+  padding: 10px;
+  margin: 0 0 20px 0;
+  font-size: smaller;
+  p {
+    margin: 10px 0;
   }
 
-  .user-bio-section {
-    font-size: 14px;
-    padding: 15px 0;
-
-    .user-bio-section-header {
-      border-bottom: 1px solid #dfe6ec;
-      padding-bottom: 10px;
-      margin-bottom: 10px;
-      font-weight: bold;
-    }
+  b {
+    color: #f86c6b;
   }
 }
 </style>

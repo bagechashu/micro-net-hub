@@ -10,7 +10,6 @@ const getters = {
   mail: state => state.user.mail,
   introduction: state => state.user.introduction,
   roles: state => state.user.roles,
-  totp: state => state.user.totp,
   permission_routes: state => state.permission.routes,
   errorLogs: state => state.errorLog.logs,
   routes: state => state.permission.routes

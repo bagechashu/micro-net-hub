@@ -9,8 +9,7 @@ const state = {
   mail: "",
   avatar: "",
   introduction: "",
-  roles: [],
-  totp: {}
+  roles: []
 };
 
 const mutations = {
@@ -31,9 +30,6 @@ const mutations = {
   },
   SET_ROLES: (state, roles) => {
     state.roles = roles;
-  },
-  SET_TOTP: (state, totp) => {
-    state.totp = totp;
   }
 };
 
@@ -66,7 +62,7 @@ const actions = {
         }
 
         const userInfo = data;
-        const { roles, username, mail, avatar, introduction, totp } = userInfo;
+        const { roles, username, mail, avatar, introduction } = userInfo;
         // roles must be a non-empty array
         if (!roles || roles.length <= 0) {
           reject("getInfo: roles must be a non-null array!");
@@ -78,7 +74,6 @@ const actions = {
         commit("SET_MAIL", mail);
         commit("SET_AVATAR", avatar);
         commit("SET_INTRODUCTION", introduction);
-        commit("SET_TOTP", totp);
         resolve(userInfo);
       }).catch(error => {
         reject(error);

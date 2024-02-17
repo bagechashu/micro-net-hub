@@ -1,7 +1,6 @@
 package tools
 
 import (
-	"encoding/base64"
 	"fmt"
 	"math/rand"
 	"strings"
@@ -13,7 +12,6 @@ import (
 	"github.com/patrickmn/go-cache"
 
 	"github.com/go-mail/mail"
-	qrcode "github.com/skip2/go-qrcode"
 )
 
 // 验证码放到缓存当中
@@ -118,19 +116,11 @@ func SendUserStatusNotifications(sendto []string, users []string, status string)
 }
 
 // SendUserInfo 邮件发送用户信息
-func SendUserInfo(sendto []string, username string, password string, otpsecret string) error {
+func SendUserInfo(sendto []string, username string, password string, qrRawPngBase64 string) error {
 	subject := fmt.Sprintf("[ %s ] LDAP & VPN Account", config.Conf.Notice.ProjectName)
 
 	header := config.Conf.Notice.HeaderHTML
 	footer := config.Conf.Notice.FooterHTML
-
-	qrcodestr := fmt.Sprintf(`otpauth://totp/%s_%s?secret=%s`, strings.ReplaceAll(config.Conf.Notice.ProjectName, " ", "-"), username, otpsecret)
-	qrRawPng, err := qrcode.Encode(qrcodestr, qrcode.Medium, 224)
-	if err != nil {
-		global.Log.Errorf("generate qrcode error at SendUserInfo : %s", err)
-		return err
-	}
-	qrRawPngBase64 := base64.StdEncoding.EncodeToString(qrRawPng)
 
 	main := fmt.Sprintf(`
     <h3> Intranet account and related information </h3>

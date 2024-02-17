@@ -326,6 +326,13 @@ func InitData() {
 			Creator:  "System",
 		},
 		{
+			Method:   "GET",
+			Path:     "/user/resetTotpSecret",
+			Category: "user",
+			Remark:   "重置用户 TOTP 秘钥",
+			Creator:  "System",
+		},
+		{
 			Method:   "POST",
 			Path:     "/user/changePwd",
 			Category: "user",
@@ -737,6 +744,7 @@ func InitData() {
 				"/base/changePwd",
 				"/base/dashboard",
 				"/user/info",
+				"/user/resetTotpSecret",
 				"/user/changePwd",
 				"/menu/access/tree",
 				"/sitenav/list",
