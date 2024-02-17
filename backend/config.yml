@@ -93,6 +93,7 @@ notice:
   # 程序绑定的域名. (发送本机地址用途)
   service-domain: "example.com"
   vpn-server: "1.2.3.4"
+  default-notice-switch: true
   # 默认通知消息发送角色的关键字, 在[角色管理]查看.
   default-notice-role-keyword: "admin"
   header-html: |-

@@ -378,22 +378,24 @@ func (l UserLogic) Delete(c *gin.Context, req interface{}) (data interface{}, rs
 	// flush user info cache
 	userModel.ClearUserInfoCache()
 
-	// Notifications to users by role's keyword
-	keyword := config.Conf.Notice.DefaultNoticeRoleKeyword
-	noticeUsers, err := userModel.GetRoleUsersByKeyword(keyword)
-	if err != nil {
-		return nil, helper.NewMySqlError(fmt.Errorf("通知 %s 组失败, 获取主邮箱失败: %v", keyword, err.Error()))
-	}
-	noticeUsersEmail := []string{}
-	for _, user := range noticeUsers {
-		noticeUsersEmail = append(noticeUsersEmail, user.Mail)
-	}
+	if config.Conf.Notice.DefaultNoticeSwitch {
+		// Notifications to users by role's keyword
+		keyword := config.Conf.Notice.DefaultNoticeRoleKeyword
+		noticeUsers, err := userModel.GetRoleUsersByKeyword(keyword)
+		if err != nil {
+			return nil, helper.NewMySqlError(fmt.Errorf("通知 %s 组失败, 获取主邮箱失败: %v", keyword, err.Error()))
+		}
+		noticeUsersEmail := []string{}
+		for _, user := range noticeUsers {
+			noticeUsersEmail = append(noticeUsersEmail, user.Mail)
+		}
 
-	delUsernames := []string{}
-	for _, user := range users {
-		delUsernames = append(delUsernames, user.Username)
+		delUsernames := []string{}
+		for _, user := range users {
+			delUsernames = append(delUsernames, user.Username)
+		}
+		tools.SendUserStatusNotifications(noticeUsersEmail, delUsernames, "deleted")
 	}
-	tools.SendUserStatusNotifications(noticeUsersEmail, delUsernames, "deleted")
 
 	return nil, nil
 }
@@ -517,19 +519,21 @@ func (l UserLogic) ChangeUserStatus(c *gin.Context, req interface{}) (data inter
 		return nil, helper.NewMySqlError(fmt.Errorf("在MySQL更新用户状态失败: " + err.Error()))
 	}
 
-	// Notifications to users by role's keyword
-	keyword := config.Conf.Notice.DefaultNoticeRoleKeyword
-	noticeUsers, err := userModel.GetRoleUsersByKeyword(keyword)
-	if err != nil {
-		return nil, helper.NewMySqlError(fmt.Errorf("通知 %s 组失败, 获取主邮箱失败: %v", keyword, err.Error()))
-	}
-	noticeUsersEmail := []string{}
-	for _, user := range noticeUsers {
-		noticeUsersEmail = append(noticeUsersEmail, user.Mail)
-	}
+	if config.Conf.Notice.DefaultNoticeSwitch {
+		// Notifications to users by role's keyword
+		keyword := config.Conf.Notice.DefaultNoticeRoleKeyword
+		noticeUsers, err := userModel.GetRoleUsersByKeyword(keyword)
+		if err != nil {
+			return nil, helper.NewMySqlError(fmt.Errorf("通知 %s 组失败, 获取主邮箱失败: %v", keyword, err.Error()))
+		}
+		noticeUsersEmail := []string{}
+		for _, user := range noticeUsers {
+			noticeUsersEmail = append(noticeUsersEmail, user.Mail)
+		}
 
-	usernames := []string{user.Username}
-	tools.SendUserStatusNotifications(noticeUsersEmail, usernames, statusDesc)
+		usernames := []string{user.Username}
+		tools.SendUserStatusNotifications(noticeUsersEmail, usernames, statusDesc)
+	}
 
 	return nil, nil
 }

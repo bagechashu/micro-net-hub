@@ -178,6 +178,7 @@ type NoticeConfig struct {
 	ProjectName              string `mapstructure:"project-name" json:"projectName"`
 	ServiceDomain            string `mapstructure:"service-domain" json:"serviceDomain"`
 	VPNServer                string `mapstructure:"vpn-server" json:"vpnServer"`
+	DefaultNoticeSwitch      bool   `mapstructure:"default-notice-switch" json:"default-notice-switch"`
 	DefaultNoticeRoleKeyword string `mapstructure:"default-notice-role-keyword" json:"defaultNoticeRoleKeyword"`
 	HeaderHTML               string `mapstructure:"header-html" json:"headerHTML"`
 	FooterHTML               string `mapstructure:"footer-html" json:"footerHTML"`
