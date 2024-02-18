@@ -148,7 +148,7 @@ export default {
           const { code, msg } = await changePwd(this.dialogFormDataCopy);
 
           this.submitLoading = false;
-          if (code !== 0) {
+          if (code !== 200) {
             return Message({
               showClose: true,
               message: msg,

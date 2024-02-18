@@ -9,15 +9,17 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-var ReqAssertErr = NewRspError(SystemErr, fmt.Errorf("请求异常"))
+var ReqAssertErr = NewRspError(RspCodeSystemErr, fmt.Errorf("请求异常"))
 
 const (
-	SystemErr    = 500
-	MySqlErr     = 501
-	LdapErr      = 505
-	OperationErr = 506
-	ConfigErr    = 507
-	ValidatorErr = 412
+	RspCodeSuccess       = 200
+	RspCodeBadRequestErr = 400
+	RspCodeValidatorErr  = 412
+	RspCodeSystemErr     = 500
+	RspCodeMySqlErr      = 501
+	RspCodeLdapErr       = 505
+	RspCodeOperationErr  = 506
+	RspCodeConfigErr     = 507
 )
 
 type RspError struct {
@@ -43,27 +45,27 @@ func NewRspError(code int, err error) *RspError {
 
 // NewMySqlError mysql错误
 func NewMySqlError(err error) *RspError {
-	return NewRspError(MySqlErr, err)
+	return NewRspError(RspCodeMySqlErr, err)
 }
 
 // NewValidatorError 验证错误
 func NewValidatorError(err error) *RspError {
-	return NewRspError(ValidatorErr, err)
+	return NewRspError(RspCodeValidatorErr, err)
 }
 
 // NewLdapError ldap错误
 func NewLdapError(err error) *RspError {
-	return NewRspError(LdapErr, err)
+	return NewRspError(RspCodeLdapErr, err)
 }
 
 // NewOperationError 操作错误
 func NewOperationError(err error) *RspError {
-	return NewRspError(OperationErr, err)
+	return NewRspError(RspCodeOperationErr, err)
 }
 
 // NewConfigError 操作错误
 func NewConfigError(err error) *RspError {
-	return NewRspError(ConfigErr, err)
+	return NewRspError(RspCodeConfigErr, err)
 }
 
 // ReloadErr 重新加载错误
@@ -73,12 +75,12 @@ func ReloadErr(err interface{}) *RspError {
 		rspError, ok := err.(error)
 		if !ok {
 			return &RspError{
-				code: SystemErr,
+				code: RspCodeSystemErr,
 				err:  fmt.Errorf("unknow error"),
 			}
 		}
 		return &RspError{
-			code: SystemErr,
+			code: RspCodeSystemErr,
 			err:  rspError,
 		}
 	}
@@ -119,7 +121,7 @@ func HandleRequest(c *gin.Context, reqStructInstance interface{}, fn HandlerLogi
 // Success http 成功
 func Success(c *gin.Context, data interface{}) {
 	c.JSON(http.StatusOK, gin.H{
-		"code": 0,
+		"code": RspCodeSuccess,
 		"msg":  "success",
 		"data": data,
 	})
@@ -145,10 +147,10 @@ func Response(c *gin.Context, httpStatus int, code int, data gin.H, message stri
 
 // 返回前端-成功
 func SuccessWithMessage(c *gin.Context, data gin.H, message string) {
-	Response(c, http.StatusOK, 200, data, message)
+	Response(c, http.StatusOK, RspCodeSuccess, data, message)
 }
 
 // 返回前端-失败
 func FailWithMessage(c *gin.Context, data gin.H, message string) {
-	Response(c, http.StatusBadRequest, 400, data, message)
+	Response(c, http.StatusBadRequest, RspCodeBadRequestErr, data, message)
 }

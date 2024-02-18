@@ -39,7 +39,7 @@ func (m UserHandler) Delete(c *gin.Context) {
 
 // ReSetTotpSecret 重置 Totp 秘钥
 func (m UserHandler) ReSetTotpSecret(c *gin.Context) {
-	req := new(helper.EmptyStruct)
+	req := new(userModel.UserResetTotpSecret)
 	helper.HandleRequest(c, req, userLogic.UserLogicIns.ReSetTotpSecret)
 }
 

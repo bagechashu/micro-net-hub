@@ -27,7 +27,6 @@ A tool for managing your OpenLDAP/Ocserv/Navigation at a private network.
 - https://github.com/lework/lenav
 
 # TODO
-- Send Email to users in admin group after delete user.
 - VPNManager
 - CoreDnsManager
 

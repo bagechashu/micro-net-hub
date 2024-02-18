@@ -53,7 +53,7 @@ export default {
       this.vCodeLoading = true;
       try {
         await sendCode({ mail: this.form.mail }).then((res) => {
-          if (res.code === 0) {
+          if (res.code === 200) {
             Message({
               showClose: true,
               message: "验证码已发送, 60s后再次发送",
@@ -83,7 +83,7 @@ export default {
       this.resetPassLoading = true;
       try {
         await emailPass(this.form).then((res) => {
-          if (res.code === 0) {
+          if (res.code === 200) {
             Message({
               showClose: true,
               message: "操作成功, 3s后返回首页",

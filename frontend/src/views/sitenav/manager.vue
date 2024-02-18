@@ -553,7 +553,7 @@ export default {
 
     // 判断结果
     judgeResult(res) {
-      if (res.code === 0) {
+      if (res.code === 200) {
         Message({
           showClose: true,
           message: "操作成功",

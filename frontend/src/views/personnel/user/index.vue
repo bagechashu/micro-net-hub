@@ -820,7 +820,7 @@ export default {
 
     // 判断结果
     judgeResult(res) {
-      if (res.code === 0) {
+      if (res.code === 200) {
         Message({
           showClose: true,
           message: "操作成功",
@@ -1024,7 +1024,7 @@ export default {
       this.changeUserStatusFormData.id = userInfo.ID;
       this.changeUserStatusFormData.status = userInfo.status;
       const { code } = await changeUserStatus(this.changeUserStatusFormData);
-      if (code !== 0) {
+      if (code !== 200) {
         // error  Possible race condition: `userInfo.status` might be reassigned based on an outdated value of `userInfo.status`  require-atomic-updates
         // userInfo.status = !userInfo.status;
 

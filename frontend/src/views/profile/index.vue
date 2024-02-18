@@ -5,10 +5,10 @@
         <el-col :span="6" :xs="24">
           <user-card :user="user" />
         </el-col>
-        <el-col :span="6" :xs="24">
+        <el-col :span="8" :xs="24">
           <TotpCard :user="user" />
         </el-col>
-        <el-col :span="12" :xs="24">
+        <el-col :span="10" :xs="24">
           <Account />
         </el-col>
 

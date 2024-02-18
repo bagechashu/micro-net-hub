@@ -225,7 +225,7 @@ func (u *User) Add() error {
 
 // GetUserById 获取单个用户
 func (u *User) GetUserById(id uint) error {
-	err := global.DB.Where("id = ?", id).Preload("Roles").First(&u).Error
+	err := global.DB.Where("id = ?", id).Preload("Roles").Preload("Totp").First(&u).Error
 	return err
 }
 
@@ -525,6 +525,10 @@ type UserUpdateReq struct {
 // UserDeleteReq 批量删除资源结构体
 type UserDeleteReq struct {
 	UserIds []uint `json:"userIds" validate:"required"`
+}
+
+type UserResetTotpSecret struct {
+	Totp string `json:"totp" validate:"required,number,len=6"`
 }
 
 // UserChangePwdReq 修改密码结构体

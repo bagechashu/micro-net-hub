@@ -18,10 +18,11 @@ export function getUsers(params) {
 }
 
 // 重置 totp 秘钥
-export function resetTotpSecret() {
+export function resetTotpSecret(data) {
   return request({
     url: "/api/user/resetTotpSecret",
-    method: "get"
+    method: "post",
+    data
   });
 }
 

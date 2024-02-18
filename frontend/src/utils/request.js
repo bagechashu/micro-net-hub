@@ -45,7 +45,7 @@ service.interceptors.response.use(
    */
   response => {
     const res = response.data;
-    if (res.code === 0 || res.code === 200) {
+    if (res.code === 200 || res.code === 0) {
       return res;
     } else {
       Message({

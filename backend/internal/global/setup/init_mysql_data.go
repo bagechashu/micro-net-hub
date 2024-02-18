@@ -326,7 +326,7 @@ func InitData() {
 			Creator:  "System",
 		},
 		{
-			Method:   "GET",
+			Method:   "POST",
 			Path:     "/user/resetTotpSecret",
 			Category: "user",
 			Remark:   "重置用户 TOTP 秘钥",

@@ -7,6 +7,7 @@ import (
 
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/module/goldap/ldapmgr"
+	totpModel "micro-net-hub/internal/module/totp/model"
 	userModel "micro-net-hub/internal/module/user/model"
 	"micro-net-hub/internal/server/helper"
 	"micro-net-hub/internal/tools"
@@ -402,10 +403,18 @@ func (l UserLogic) Delete(c *gin.Context, req interface{}) (data interface{}, rs
 
 // Reset TOTP Secret 重置 TOTP 密钥
 func (l UserLogic) ReSetTotpSecret(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
+	r, ok := req.(*userModel.UserResetTotpSecret)
+	if !ok {
+		return nil, helper.ReqAssertErr
+	}
 	// 获取当前用户
 	user, err := GetCurrentLoginUser(c)
 	if err != nil {
 		return nil, helper.NewMySqlError(fmt.Errorf("获取当前登陆用户失败"))
+	}
+
+	if !totpModel.CheckTotp(user.Totp.Secret, r.Totp) {
+		return nil, helper.NewValidatorError(fmt.Errorf("OTP验证失败, 如原 TOTP 秘钥无法找回, 可以联系管理员 Update 您的用户信息重新获取"))
 	}
 
 	user.Totp.ReSetTotpSecret()

@@ -10,16 +10,40 @@
           <p>重置后, 之前的TOTP秘钥将失效.</p>
           <p>二维码只显示一次, 刷新/切换页面后将消失.</p>
         </div>
-        <el-popconfirm title="确定重置吗？" @onConfirm="resetTotpSecret">
-          <el-button
-            slot="reference"
-            class="right"
-            size="mini"
-            icon="el-icon-refresh"
-            type="danger"
-          >重置
-          </el-button>
-        </el-popconfirm>
+        <el-form
+          ref="resetTotpSecretForm"
+          size="small"
+          :model="resetTotpSecretFormData"
+          :rules="resetTotpSecretFormRules"
+          label-width="auto"
+        >
+          <el-form-item label="OTP" prop="totp">
+            <el-row type="flex" justify="space-between" align="middle">
+              <el-col :xs="16" :sm="14" :md="16" :lg="16" :xl="16">
+                <el-input
+                  v-model.trim="resetTotpSecretFormData.totp"
+                  placeholder="请输入OTP"
+                />
+              </el-col>
+
+              <el-col :xs="8" :sm="10" :md="8" :lg="8" :xl="8">
+                <el-popconfirm
+                  title="确定重置吗？"
+                  @onConfirm="resetTotpSecret"
+                >
+                  <el-button
+                    slot="reference"
+                    class="right"
+                    size="mini"
+                    icon="el-icon-refresh"
+                    type="danger"
+                  >重置
+                  </el-button>
+                </el-popconfirm>
+              </el-col>
+            </el-row>
+          </el-form-item>
+        </el-form>
       </div>
       <!-- <div class="user-name">{{ qrCodeStr }}</div> -->
       <QrCode :id="'QrCode'" class="mt-30" :text="qrCodeStr" />
@@ -36,19 +60,51 @@ export default {
   data() {
     return {
       showDiscribe: true,
-      qrCodeStr: ""
+      qrCodeStr: "",
+      resetTotpSecretFormData: {
+        totp: ""
+      },
+      resetTotpSecretFormRules: {
+        totp: [
+          {
+            required: true,
+            message: "请输入 OTP",
+            trigger: "blur"
+          },
+          {
+            validator: (rule, value, callback) => {
+              if (!/^\d{6}$/.test(value)) {
+                return callback(new Error("OTP 为6位数字码"));
+              }
+              callback();
+            },
+            trigger: "blur"
+          }
+        ]
+      }
     };
   },
   methods: {
     async resetTotpSecret() {
-      try {
-        const { data } = await resetTotpSecret();
-        this.qrCodeStr = data;
-        // console.log(this.qrCodeStr)
-        this.showDiscribe = false;
-      } catch (e) {
-        console.log(e);
-      }
+      this.$refs["resetTotpSecretForm"].validate(async(valid) => {
+        if (valid) {
+          const { code, data } = await resetTotpSecret(
+            this.resetTotpSecretFormData
+          );
+          if (code === 200) {
+            this.qrCodeStr = data;
+            // console.log(this.qrCodeStr)
+            this.showDiscribe = false;
+          }
+        } else {
+          this.$message({
+            showClose: true,
+            message: "重置 TOTP 秘钥表单校验失败",
+            type: "warn"
+          });
+          return false;
+        }
+      });
     }
   }
 };
