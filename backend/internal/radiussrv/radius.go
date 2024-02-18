@@ -19,18 +19,44 @@ limitations under the License.
 package radiussrv
 
 import (
+	"fmt"
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
 	totpModel "micro-net-hub/internal/module/totp/model"
 	userModel "micro-net-hub/internal/module/user/model"
+	"time"
 
+	"github.com/patrickmn/go-cache"
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
 )
 
+type loginAttemptInfo struct {
+	Times        int
+	LastFailedAt time.Time
+}
+
+// 初始化一个缓存实例，设置过期时间为 banDurationMinute 分钟
+var banDurationMinute float64 = 5
+var loginAttemptsCache = cache.New(time.Duration(banDurationMinute)*time.Minute, time.Duration(banDurationMinute)*time.Minute)
+
 // AuthRequest - encapsulates approval logic
 func AuthRequest(username string, password string) (valid bool, err error) {
 	valid = false
+
+	var loginAttempt = &loginAttemptInfo{}
+	attempt, found := loginAttemptsCache.Get(username)
+	if found {
+		loginAttempt = attempt.(*loginAttemptInfo)
+		global.Log.Debugf("radius cache: %s-before: %+v attempt %+v", username, loginAttempt.Times, loginAttempt.LastFailedAt)
+
+		// 如果最后一次失败尝试距离现在不足10分钟，则返回错误并禁止登录
+		if loginAttempt.Times > config.Conf.Radius.FailTimesBeforeBlock5min && time.Since(loginAttempt.LastFailedAt).Minutes() < banDurationMinute {
+			err = fmt.Errorf("登录失败次数过多，账户已被锁定5分钟")
+			return
+		}
+	}
+
 	// password 后六位校验 TOTP, 其余的数据库校验密码
 	pl := len(password)
 	pinCode := password[:pl-6]
@@ -43,13 +69,26 @@ func AuthRequest(username string, password string) (valid bool, err error) {
 	}
 	userRight, err := u.Login()
 	if err != nil && userRight == nil {
+		loginAttempt.Times++
+		loginAttempt.LastFailedAt = time.Now()
+		loginAttemptsCache.Set(username, loginAttempt, cache.DefaultExpiration)
+
+		global.Log.Debugf("radius cache: %s-after: %+v attempt %+v", username, loginAttempt.Times, loginAttempt.LastFailedAt)
 		return
 	}
 	// 校验 totp
 	if totpModel.CheckTotp(userRight.Totp.Secret, otp) {
 		valid = true
+		// 清除该用户的登录失败记录，因为验证成功了
+		loginAttemptsCache.Delete(username)
 		return
 	}
+
+	loginAttempt.Times++
+	loginAttempt.LastFailedAt = time.Now()
+	loginAttemptsCache.Set(username, loginAttempt, cache.DefaultExpiration)
+
+	global.Log.Debugf("radius cache: %s-after: %+v attempt %+v", username, loginAttempt.Times, loginAttempt.LastFailedAt)
 	return
 }
 

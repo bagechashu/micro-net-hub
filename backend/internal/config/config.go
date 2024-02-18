@@ -46,6 +46,7 @@ func InitConfig() {
 
 	// 在读取配置文件前设置默认值
 	viper.SetDefault("sync.ldap-sync-time", "0 */2 * * * *")
+	viper.SetDefault("radius.fail-times-before-block5min", 3)
 
 	// 读取配置信息
 	err = viper.ReadInConfig()
@@ -162,9 +163,10 @@ type LdapConfig struct {
 }
 
 type RadiusConfig struct {
-	ListenAddr  string `mapstructure:"listen-addr" json:"listenAddr"`
-	Secret      string `mapstructure:"secret" json:"secret"`
-	GroupFilter string `mapstructure:"group-filter" json:"groupFilter"`
+	FailTimesBeforeBlock5min int    `mapstructure:"fail-times-before-block5min" json:"failTimesBeforeBlock5min"`
+	ListenAddr               string `mapstructure:"listen-addr" json:"listenAddr"`
+	Secret                   string `mapstructure:"secret" json:"secret"`
+	GroupFilter              string `mapstructure:"group-filter" json:"groupFilter"`
 }
 
 type EmailConfig struct {

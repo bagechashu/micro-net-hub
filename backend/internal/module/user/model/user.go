@@ -134,7 +134,6 @@ func (u *User) CheckAttrVacancies() {
 }
 
 // 当前用户信息缓存，避免频繁获取数据库
-// TODO: Learn ????
 var UserInfoCache = cache.New(24*time.Hour, 48*time.Hour)
 
 // ClearUserInfoCache 清理所有用户信息缓存
