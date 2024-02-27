@@ -1,12 +1,5 @@
 <!-- @format -->
-
-<div style="font-size: 32px; font-weight: bold; background-color: #000000 !important; display: inline-table; text-align: center; line-height: 52px; padding: 12px 10px; border-radius: 5px;">
-<span style="color: #ffffff; display: inline-block; padding: 0 8px;">Micro</span>
-<span style="color: #000000; background-color: #eeb968 !important; display: inline-block; padding: 0 10px; border-radius: 10px;">Net</span>
-<span style="color: #ffffff; display: inline-block; padding: 0 8px;">Hub</span>
-</div>
-
-<br>
+![](docs/logo/micro-net-hub.png)
 
 A tool for managing your OpenLDAP/Ocserv/Navigation at a private network.
 
