@@ -1,5 +1,8 @@
 # Makefile for compiling Golang Linux installation package and frontend package
 
+# TAG name for docker image
+TAG ?= latest
+
 # builder and cleaner
 GO := go
 GO_BUILD := $(GO) build
@@ -18,7 +21,7 @@ APP_NAME := micro-net-hub-$(GOOS)-$(GOARCH)
 BIN_DIR := ../bin
 GO_SRC := ./cmd/micro-net-hub/main.go
 
-all: fe be
+all: fe be dockerimage
 
 be:
 	@echo "===== compile $(GOOS) $(GOARCH)... ====="
@@ -28,6 +31,11 @@ be:
 fe:
 	@echo "===== compile webui... ====="
 	cd $(WEB_SRC_DIR) && npm run build:prod
+
+# make dockerimage TAG=v0.1.2
+dockerimage:
+	@echo "===== build docker image... ====="
+	docker build -t micro-net-hub:$(TAG) .
 
 run:
 	@echo "===== use Air to start backend... ====="
