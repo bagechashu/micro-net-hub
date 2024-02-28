@@ -1,0 +1,187 @@
+# delelopment
+system:
+  # 设定模式(debug/release/test,正式版改为release)
+  mode: release
+  # url前缀
+  url-path-prefix: api
+  # 程序监听IP和端口
+  host: "0.0.0.0"
+  port: 9000
+  read-timeout: 5
+  # write-timeout 除了被用于 gin 的写超时外, 还用于 email dial 的写超时.
+  write-timeout: 10
+  max-header-MBytes: 1
+  # 是否初始化数据(没有初始数据时使用, 已发布正式版改为false)
+  init-data: true
+  # rsa公钥文件路径(config.yml相对路径, 也可以填绝对路径)
+  rsa-public-key: auth-pub.pem
+  # rsa私钥文件路径(config.yml相对路径, 也可以填绝对路径)
+  rsa-private-key: auth-priv-rsa.pem
+
+logs:
+  # 日志等级(-1:Debug, 0:Info, 1:Warn, 2:Error, 3:DPanic, 4:Panic, 5:Fatal, -1<=level<=5, 参照zap.level源码)
+  level: -1
+  # 日志路径
+  path: logs
+  # 文件最大大小, M
+  max-size: 50
+  # 备份数
+  max-backups: 100
+  # 存放时间, 天
+  max-age: 30
+  # 是否压缩
+  compress: false
+
+database:
+  # 数据库类型 mysql sqlite3
+  driver: mysql
+  # 数据库连接sqlite3数据文件的路径
+  # source: go-ldap-admin.db
+
+mysql:
+  # 用户名
+  username: root
+  # 密码
+  password: root_1234
+  # 数据库名
+  database: micro_net_hub
+  # 主机地址
+  host: localhost
+  # 端口
+  port: 3306
+  # 连接字符串参数
+  query: parseTime=True&loc=Local&timeout=10000ms
+  # 是否打印日志
+  log-mode: true
+  # gorm.io/gorm/logger.LogLevel 4: info; 3: warn; 2: error; 1: silent
+  log-level: 3
+  # 数据库表前缀(无需再末尾添加下划线, 程序内部自动处理)
+  table-prefix: tb
+  # 编码方式
+  charset: utf8mb4
+  # 字符集(utf8mb4_general_ci速度比utf8mb4_unicode_ci快些)
+  collation: utf8mb4_general_ci
+
+# jwt配置
+jwt:
+  # jwt标识
+  realm: test jwt
+  # 服务端密钥
+  key: secret key
+  # token过期时间, 小时
+  timeout: 12000
+  # 刷新token最大过期时间, 小时
+  max-refresh: 12000
+
+# 令牌桶限流配置
+rate-limit:
+  # 填充一个令牌需要的时间间隔,毫秒
+  fill-interval: 50
+  # 桶容量
+  capacity: 200
+
+# email configuration
+email:
+  # 是否启用邮件通知, 如果不启用, 用户忘记密码不能自行找回.
+  enable: false
+  host: "smtp.office365.com"
+  port: 587
+  user: "test@example.com"
+  pass: "xxxxxxxxx"
+
+# 通知邮件模板 配置
+notice:
+  project-name: "micro-net-hub"
+  # 程序绑定的域名. (发送本机地址用途)
+  service-domain: "example.com"
+  vpn-server: "1.2.3.4"
+  default-notice-switch: true
+  # 默认通知消息发送角色的关键字, 在[角色管理]查看.
+  default-notice-role-keyword: "admin"
+  header-html: |-
+    <div class="note">
+      <p>
+        If there is any issue with the account, contact 
+        <a href="mailto:admin@example.com" style="color: #015281; text-decoration: underline;">@Admin</a>
+        directly.
+      </p>
+    </div>
+  footer-html: |-
+    <h3>Tools Recommended</h3>
+    <h5>MFA otp tools (Scan QRcode of TOTP)</h5>
+    <ul>
+      <li><span class="key"> https://github.com/andOTP/andOTP </span> (OpenSource Software, recommended)</li>
+      <li>Google Authenticator</li>
+      <li>阿里云手机客户端</li>
+    </ul>
+
+    <h5>Ocserv VPN Client</h5>
+    <ul>
+      <li><span class="key"> https://www.infradead.org/openconnect/ </span></li>
+      <li><span class="key"> https://github.com/openconnect/openconnect </span></li>
+      <li><span class="key"> https://github.com/openconnect/openconnect-gui </span></li>
+    </ul>
+
+# ldap 配置
+ldap:
+  # ldap服务器地址, TODO: ldaps that use private SSL need adapt
+  url: ldap://localhost:389
+  # ladp最大连接数设置
+  max-conn: 10
+  # ldap服务器基础DN
+  base-dn: "dc=example,dc=com"
+  # ldap管理员DN
+  admin-dn: "cn=admin,dc=example,dc=com"
+  # ldap管理员密码
+  admin-pass: "admin_pass"
+  # ldap用户OU
+  user-dn: "ou=people,dc=example,dc=com"
+  # ldap用户初始默认密码
+  user-init-password: "ldap-init-passwd"
+  # 是否允许更改分组DN
+  group-name-modify: false
+  # 是否允许更改用户DN
+  user-name-modify: false
+  # 默认邮箱后缀
+  default-email-suffix: "example.com"
+
+radius:
+  # 验证失败多次后, 禁止登录 5 分钟. (默认为 3 次)
+  fail-times-before-block5min: 5
+  listen-addr: "0.0.0.0:1812"
+  secret: "default-radius-secret"
+  # TODO: radius LDAP group filter
+  group-filter: ""
+
+sync:
+  enable-sync: false # 是否开启定时同步 IM 的用户和组织
+  is-update-syncd: false # 如果你不了解这个字段的含义，则不建议开启. 没有测试过. 当 IM 用户的邮箱，手机号，部门等信息更新之后，是否同步更新，默认为false.
+  dept-sync-time: "0 30 2 * * *" # 部门同步任务的时间点 * * * * * * 秒 分 时 日 月 周, 请把时间设置在凌晨 1 ~ 5 点
+  user-sync-time: "0 30 3 * * *" # 用户同步任务的时间点 * * * * * * 秒 分 时 日 月 周, 请把时间设置在凌晨 1 ~ 5 点,注意请把用户同步的任务滞后于部门同步时间,比如部门为2点,则用户为3点
+  ldap-sync-time: "0 */2 * * * *" # 数据库用户 同步到 ldap 定时同步
+
+# 同步 IM 上的用户和组织架构, 因为没有做到特别细致的校验, 配置以下 IM 相关项目,尽量不要遗漏.
+# dingtalk:
+#   # 配置获取详细文档参考： http://ldapdoc.eryajf.net/pages/94f43a/
+#   flag: "dingtalk" # 作为钉钉在平台的标识
+#   app-key: "xxxxxxxxxxxxxxx" # 应用的key
+#   app-secret: "xxxxxxxxxxxxxxxxxxxxxxxxxxxx" # 应用的secret
+#   agent-id: "12121212" # 目前agent-id未使用到，可忽略
+#   dept-list:    # 配置要同步的部门列表，配置留空则同步所有部门，在开头加^表示不同步此部门
+#     #- "48456726"   # 需要同步的部门ID
+#     #- "^61213417"  # 不需要同步的部门ID
+#   user-leave-range: 0 #按配置天数查离职时间范围内的用户,为0时不限制
+# wecom:
+#   # 配置获取详细文档参考：http://ldapdoc.eryajf.net/pages/cf1698/
+#   flag: "wecom" # 作为微信在平台的标识
+#   corp-id: "xxxx" # 企业微信企业ID
+#   agent-id: 1000003 # 企业微信中创建的应用ID
+#   corp-secret: "xxxxx" # 企业微信中创建的应用secret
+# feishu:
+#   # 配置获取详细文档参考：http://ldapdoc.eryajf.net/pages/83c90b/
+#   flag: "feishu" # 作为飞书在平台的标识
+#   app-id: "xxxxxxx" # 飞书的app-id
+#   app-secret: "xxxxxxxxxxx" # 飞书的app-secret
+#   dept-list:    # 配置要同步的部门列表，配置留空则同步所有部门，在开头加^表示不同步此部门
+#     #- "48456726"   # 需要同步的部门ID
+#     #- "^61213417"  # 不需要同步的部门ID

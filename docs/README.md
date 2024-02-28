@@ -1,6 +1,17 @@
 <!-- @format -->
 
-# Install LDAP/Ocserv/micro-net-hub on centos step by step
+# Install micro-net-hub/LDAP/Ocserv by docker-compose
+
+```shell
+
+git clone https://github.com/bagechashu/micro-net-hub.git
+
+cd micro-net-hub/docs/docker-compose/all-in-one
+docker-compose up -d
+
+```
+
+# Install micro-net-hub(from source)/LDAP/Ocserv on centos step by step
 
 > This installation document is for reference only,
 > and you can deployed in the way you need according to your actual situation.
@@ -86,7 +97,9 @@ chmod +x /data/micro-net-hub-linux-amd64
 /data/micro-net-hub-linux-amd64
 
 ```
+
 Administrator of Micro-Net-Hub Dashboard:
+
 - username: admin
 - password: admin_pass
 

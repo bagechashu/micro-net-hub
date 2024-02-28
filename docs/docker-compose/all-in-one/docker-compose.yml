@@ -1,0 +1,97 @@
+# @format
+
+version: "3"
+services:
+  mysql:
+    image: mysql:5.7
+    container_name: "mysql"
+    restart: always
+    environment:
+      MYSQL_DATABASE: "micro_net_hub"
+      MYSQL_ROOT_PASSWORD: "root_1234"
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    ports:
+      - 3306:3306
+    networks:
+      - micro-net-hub-net
+
+  openldap:
+    # openldap version: 2.4.57
+    image: osixia/openldap:1.5.0
+    container_name: openldap
+    hostname: openldap
+    ports:
+      - "389:389"
+      - "636:636"
+    volumes:
+      - ./data/certificates:/container/service/slapd/assets/certs
+      - ./data/slapd/database:/var/lib/ldap
+      - ./data/slapd/config:/etc/ldap/slapd.d
+      - ./config/ldap/init.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/init.ldif
+    command: ["--copy-service"]
+    environment:
+      - LDAP_ORGANISATION=example.com
+      - LDAP_DOMAIN=example.com
+      - LDAP_ADMIN_USERNAME=admin
+      - LDAP_ADMIN_PASSWORD=admin_pass
+      - "LDAP_BASE_DN=dc=example,dc=com"
+      - LDAP_TLS_CRT_FILENAME=server.crt
+      - LDAP_TLS_KEY_FILENAME=server.key
+      - LDAP_TLS_CA_CRT_FILENAME=example.com.ca.crt
+    networks:
+      - micro-net-hub-net
+
+  phpldapadmin:
+    image: osixia/phpldapadmin:stable
+    container_name: phpldapadmin
+    hostname: phpldapadmin
+    ports:
+      - "8000:80"
+    environment:
+      - PHPLDAPADMIN_LDAP_HOSTS=openldap
+      - PHPLDAPADMIN_HTTPS=false
+    depends_on:
+      - openldap
+    networks:
+      - micro-net-hub-net
+
+  micro-net-hub:
+    depends_on:
+      - mysql
+      - openldap
+    image: xianleeti/micro-net-hub:v0.1.2
+    container_name: "micro-net-hub"
+    restart: always
+    volumes:
+      - ./config/app/config.yml:/app/
+      - ./config/app/auth-pub.pem:/app/
+      - ./config/app/auth-priv-rsa.pem:/app/
+    ports:
+      - 9000:9000
+      - 1812:1812/udp
+    networks:
+      - micro-net-hub-net
+
+  ocserv:
+    depends_on:
+      - micro-net-hub
+    image: xianleeti/docker-ocserv-radius:v0.0.1
+    container_name: "micro-net-hub"
+    restart: always
+    volumes:
+      - ./config/ocserv/ocserv.conf:/etc/ocserv/ocserv.conf
+      - ./config/ocserv/radcli.conf:/etc/radcli/radcli.conf
+      - ./config/ocserv/servers:/etc/radcli/servers
+    network_mode: host
+    ports:
+      - 443:443
+      - 443:443/udp
+    sysctls:
+      - net.ipv4.ip_forward=1
+    networks:
+      - micro-net-hub-net
+
+networks:
+  micro-net-hub-net:
+    driver: bridge
