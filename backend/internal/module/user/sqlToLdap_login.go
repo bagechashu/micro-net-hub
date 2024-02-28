@@ -53,7 +53,7 @@ func (d *SqlLogic) SyncSqlUsers(c *gin.Context, req interface{}) (data interface
 				return nil, helper.NewMySqlError(fmt.Errorf("向Ldap添加用户到分组关系失败：" + err.Error()))
 			}
 		}
-		err = user.ChangeSyncState(1)
+		err = user.ChangeStatus(1)
 		if err != nil {
 			return nil, helper.NewLdapError(fmt.Errorf("用户同步完毕之后更新状态失败：" + err.Error()))
 		}
@@ -153,7 +153,7 @@ func SearchUserDiff() (err error) {
 		if user.UserDN == config.Conf.Ldap.AdminDN {
 			continue
 		}
-		err = user.ChangeSyncState(2)
+		err = user.ChangeStatus(2)
 	}
 	return
 }

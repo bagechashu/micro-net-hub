@@ -257,7 +257,7 @@
               </el-popconfirm>
             </el-tooltip>
             <el-tooltip
-              v-if="scope.row.syncState === 2"
+              v-if="scope.row.syncState === 2 && scope.row.status === 1"
               class="delete-popover"
               content="同步"
               effect="dark"

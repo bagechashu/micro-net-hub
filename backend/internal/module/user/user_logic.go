@@ -492,9 +492,9 @@ func (l UserLogic) ChangeUserStatus(c *gin.Context, req interface{}) (data inter
 	}
 	if r.Status == user.Status {
 		if r.Status == 2 {
-			return nil, helper.NewValidatorError(fmt.Errorf("用户已经是离职状态"))
+			return nil, helper.NewValidatorError(fmt.Errorf("用户已经是禁用状态"))
 		} else if r.Status == 1 {
-			return nil, helper.NewValidatorError(fmt.Errorf("用户已经是在职状态"))
+			return nil, helper.NewValidatorError(fmt.Errorf("用户已经是启用状态"))
 		}
 	}
 	// 获取当前登录用户，只有管理员才能够将用户状态改变
@@ -523,7 +523,7 @@ func (l UserLogic) ChangeUserStatus(c *gin.Context, req interface{}) (data inter
 		statusDesc = "actived"
 	}
 
-	err = user.ChangeStatus(int(r.Status))
+	err = user.ChangeStatus(r.Status)
 	if err != nil {
 		return nil, helper.NewMySqlError(fmt.Errorf("在MySQL更新用户状态失败: " + err.Error()))
 	}

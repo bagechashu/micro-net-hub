@@ -228,14 +228,9 @@ func (u *User) GetUserById(id uint) error {
 	return err
 }
 
-// ChangeStatus 更新状态
-func (u *User) ChangeStatus(status int) error {
-	return global.DB.Model(&User{}).Where("id = ?", u.ID).Update("status", status).Error
-}
-
-// ChangeSyncState 更新用户的同步状态
-func (u *User) ChangeSyncState(status int) error {
-	return global.DB.Model(&User{}).Where("id = ?", u.ID).Update("sync_state", status).Error
+// ChangeStatus 更新用户的启用状态 和 ldap 同步状态
+func (u *User) ChangeStatus(status uint) error {
+	return global.DB.Model(&User{}).Where("id = ?", u.ID).UpdateColumns(User{Status: status, SyncState: status}).Error
 }
 
 // Login 登录
