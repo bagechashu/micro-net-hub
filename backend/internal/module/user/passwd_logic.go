@@ -36,7 +36,7 @@ func (l PasswdLogic) SendCode(c *gin.Context, req interface{}) (data interface{}
 	// global.Log.Debugf("SendCode Request User: %+v", user)
 	err = tools.SendVerificationCode([]string{r.Mail})
 	if err != nil {
-		return nil, helper.NewLdapError(fmt.Errorf("邮件发送失败" + err.Error()))
+		return nil, helper.NewLdapError(fmt.Errorf("邮件发送验证码失败, 请联系管理员" + err.Error()))
 	}
 
 	return nil, nil
@@ -75,17 +75,16 @@ func (l PasswdLogic) ChangePwd(c *gin.Context, req interface{}) (data interface{
 		return nil, helper.NewLdapError(fmt.Errorf("LDAP生成新密码失败" + err.Error()))
 	}
 
-	err = tools.SendNewPass([]string{user.Mail}, newpass)
-	if err != nil {
-		return nil, helper.NewLdapError(fmt.Errorf("邮件发送失败" + err.Error()))
-	}
-
 	// 更新数据库密码
 	err = user.ChangePwd(tools.NewGenPasswd(newpass))
 	if err != nil {
 		return nil, helper.NewMySqlError(fmt.Errorf("在MySQL更新密码失败: " + err.Error()))
 	}
 
+	err = tools.SendNewPass([]string{user.Mail}, newpass)
+	if err != nil {
+		return nil, helper.NewLdapError(fmt.Errorf("邮件发送新密码失败, 请联系管理员" + err.Error()))
+	}
 	return nil, nil
 }
 

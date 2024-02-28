@@ -18,6 +18,9 @@ import (
 var VerificationCodeCache = cache.New(24*time.Hour, 48*time.Hour)
 
 func email(mailTo []string, subject string, body string) error {
+	if !config.Conf.Email.Enable {
+		return nil
+	}
 	m := mail.NewMessage()
 	m.SetHeader("From", config.Conf.Email.User)
 	m.SetHeader("To", mailTo...)

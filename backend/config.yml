@@ -82,6 +82,7 @@ rate-limit:
 
 # email configuration
 email:
+  enable: false
   host: "smtp.office365.com"
   port: 587
   user: "test@example.com"

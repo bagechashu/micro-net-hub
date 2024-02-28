@@ -50,7 +50,8 @@ service.interceptors.response.use(
     } else {
       Message({
         message: res.msg,
-        type: "error"
+        type: "error",
+        duration: 5 * 1000
       });
       return false;
     }

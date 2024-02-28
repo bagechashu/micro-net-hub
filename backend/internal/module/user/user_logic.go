@@ -134,7 +134,9 @@ func (l UserLogic) Add(c *gin.Context, req interface{}) (data interface{}, rspEr
 		if err != nil {
 			return nil, helper.NewOperationError(fmt.Errorf("系统通知用户账号信息失败, 请手工通知"))
 		}
-		tools.SendUserInfo([]string{nu.Mail}, nu.Username, r.Password, qrRawPngBase64)
+		if err := tools.SendUserInfo([]string{nu.Mail}, nu.Username, r.Password, qrRawPngBase64); err != nil {
+			return nil, helper.NewLdapError(fmt.Errorf("邮件发送新用户账户信息失败, 请手工通知" + err.Error()))
+		}
 	}
 
 	return nil, nil
@@ -310,7 +312,9 @@ func (l UserLogic) Update(c *gin.Context, req interface{}) (data interface{}, rs
 		if err != nil {
 			return nil, helper.NewOperationError(fmt.Errorf("系统通知用户账号信息失败, 请手工通知"))
 		}
-		tools.SendUserInfo([]string{nu.Mail}, nu.Username, r.Password, qrRawPngBase64)
+		if err := tools.SendUserInfo([]string{nu.Mail}, nu.Username, r.Password, qrRawPngBase64); err != nil {
+			return nil, helper.NewLdapError(fmt.Errorf("邮件发送用户账号更新信息失败, 请手工通知" + err.Error()))
+		}
 	}
 
 	return nil, nil
@@ -395,7 +399,9 @@ func (l UserLogic) Delete(c *gin.Context, req interface{}) (data interface{}, rs
 		for _, user := range users {
 			delUsernames = append(delUsernames, user.Username)
 		}
-		tools.SendUserStatusNotifications(noticeUsersEmail, delUsernames, "deleted")
+		if err := tools.SendUserStatusNotifications(noticeUsersEmail, delUsernames, "deleted"); err != nil {
+			return nil, helper.NewLdapError(fmt.Errorf("邮件发送删除用户通知失败, 请手工通知" + err.Error()))
+		}
 	}
 
 	return nil, nil
@@ -541,7 +547,9 @@ func (l UserLogic) ChangeUserStatus(c *gin.Context, req interface{}) (data inter
 		}
 
 		usernames := []string{user.Username}
-		tools.SendUserStatusNotifications(noticeUsersEmail, usernames, statusDesc)
+		if err := tools.SendUserStatusNotifications(noticeUsersEmail, usernames, statusDesc); err != nil {
+			return nil, helper.NewLdapError(fmt.Errorf("邮件发送变更用户通知失败, 请手工通知" + err.Error()))
+		}
 	}
 
 	return nil, nil

@@ -47,6 +47,7 @@ func InitConfig() {
 	// 在读取配置文件前设置默认值
 	viper.SetDefault("sync.ldap-sync-time", "0 */2 * * * *")
 	viper.SetDefault("radius.fail-times-before-block5min", 3)
+	viper.SetDefault("email.enable", false)
 
 	// 读取配置信息
 	err = viper.ReadInConfig()
@@ -170,10 +171,11 @@ type RadiusConfig struct {
 }
 
 type EmailConfig struct {
-	Host string `mapstructure:"host" json:"host"`
-	Port int    `mapstructure:"port" json:"port"`
-	User string `mapstructure:"user" json:"user"`
-	Pass string `mapstructure:"pass" json:"pass"`
+	Enable bool   `mapstructure:"enable" json:"enable"`
+	Host   string `mapstructure:"host" json:"host"`
+	Port   int    `mapstructure:"port" json:"port"`
+	User   string `mapstructure:"user" json:"user"`
+	Pass   string `mapstructure:"pass" json:"pass"`
 }
 
 type NoticeConfig struct {
