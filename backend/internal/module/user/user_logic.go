@@ -429,7 +429,7 @@ func (l UserLogic) ReSetTotpSecret(c *gin.Context, req interface{}) (data interf
 	return qrCodeStr, nil
 }
 
-// ChangePwd 修改密码
+// ChangePwd 使用原密码修改密码
 func (l UserLogic) ChangePwd(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*userModel.UserChangePwdReq)
 	if !ok {

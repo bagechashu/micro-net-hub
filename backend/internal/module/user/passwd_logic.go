@@ -3,6 +3,7 @@ package user
 import (
 	"fmt"
 
+	"micro-net-hub/internal/config"
 	apiMgrModel "micro-net-hub/internal/module/apimgr/model"
 	dashboardModel "micro-net-hub/internal/module/dashboard/model"
 	"micro-net-hub/internal/module/goldap/ldapmgr"
@@ -33,6 +34,9 @@ func (l PasswdLogic) SendCode(c *gin.Context, req interface{}) (data interface{}
 		return nil, helper.NewMySqlError(fmt.Errorf("该用户已离职或者未同步在ldap，无法重置密码，如有疑问，请联系管理员"))
 	}
 
+	if !config.Conf.Email.Enable {
+		return nil, helper.NewValidatorError(fmt.Errorf("邮件通知功能未启用, 请联系管理员"))
+	}
 	// global.Log.Debugf("SendCode Request User: %+v", user)
 	err = tools.SendVerificationCode([]string{r.Mail})
 	if err != nil {
@@ -42,7 +46,7 @@ func (l PasswdLogic) SendCode(c *gin.Context, req interface{}) (data interface{}
 	return nil, nil
 }
 
-// ChangePwd 重置密码
+// ChangePwd 使用验证码重置密码
 func (l PasswdLogic) ChangePwd(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
 	r, ok := req.(*userModel.BaseChangePwdReq)
 	if !ok {
@@ -81,6 +85,9 @@ func (l PasswdLogic) ChangePwd(c *gin.Context, req interface{}) (data interface{
 		return nil, helper.NewMySqlError(fmt.Errorf("在MySQL更新密码失败: " + err.Error()))
 	}
 
+	if !config.Conf.Email.Enable {
+		return nil, helper.NewValidatorError(fmt.Errorf("邮件通知功能未启用, 请联系管理员"))
+	}
 	err = tools.SendNewPass([]string{user.Mail}, newpass)
 	if err != nil {
 		return nil, helper.NewLdapError(fmt.Errorf("邮件发送新密码失败, 请联系管理员" + err.Error()))

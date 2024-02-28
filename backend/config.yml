@@ -82,6 +82,7 @@ rate-limit:
 
 # email configuration
 email:
+  # 是否启用邮件通知, 如果不启用, 用户忘记密码不能自行找回.
   enable: false
   host: "smtp.office365.com"
   port: 587
