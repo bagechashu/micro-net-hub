@@ -64,9 +64,9 @@ services:
     container_name: "micro-net-hub"
     restart: always
     volumes:
-      - ./config/app/config.yml:/app/
-      - ./config/app/auth-pub.pem:/app/
-      - ./config/app/auth-priv-rsa.pem:/app/
+      - ./config/app/config.yml:/app/config.yml
+      - ./config/app/auth-pub.pem:/app/auth-pub.pem
+      - ./config/app/auth-priv-rsa.pem:/app/auth-priv-rsa.pem
     ports:
       - 9000:9000
       - 1812:1812/udp
@@ -76,21 +76,22 @@ services:
   ocserv:
     depends_on:
       - micro-net-hub
-    image: xianleeti/docker-ocserv-radius:v0.0.1
-    container_name: "micro-net-hub"
+    image: xianleeti/docker-ocserv-radius:v0.0.5
+    container_name: "ocserv"
     restart: always
+    environment:
+      - OCSERV_SERVER_NAME=example.com
     volumes:
       - ./config/ocserv/ocserv.conf:/etc/ocserv/ocserv.conf
       - ./config/ocserv/radcli.conf:/etc/radcli/radcli.conf
       - ./config/ocserv/servers:/etc/radcli/servers
-    network_mode: host
-    ports:
-      - 443:443
-      - 443:443/udp
-    sysctls:
-      - net.ipv4.ip_forward=1
-    networks:
-      - micro-net-hub-net
+    #    ports:
+    #      - 443:443
+    #      - 443:443/udp
+    #    sysctls:
+    #      - net.ipv4.ip_forward=1
+    privileged: true
+    network_mode: "host"
 
 networks:
   micro-net-hub-net:
