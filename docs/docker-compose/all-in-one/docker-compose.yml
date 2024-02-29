@@ -67,6 +67,8 @@ services:
       - ./config/app/config.yml:/app/config.yml
       - ./config/app/auth-pub.pem:/app/auth-pub.pem
       - ./config/app/auth-priv-rsa.pem:/app/auth-priv-rsa.pem
+      - ./config/app/entrypoint.sh:/entrypoint.sh
+    entrypoint: ["sh", "/entrypoint.sh"]
     ports:
       - 9000:9000
       - 1812:1812/udp
