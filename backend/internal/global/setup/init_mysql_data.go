@@ -30,7 +30,6 @@ func InitData() {
 	}
 
 	// 1.写入角色数据
-	newRoles := make([]*userModel.Role, 0)
 	roles := []*userModel.Role{
 		{
 			Model:   gorm.Model{ID: 1},
@@ -61,22 +60,31 @@ func InitData() {
 		},
 	}
 
-	for _, role := range roles {
-		err := global.DB.First(&role, role.ID).Error
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			newRoles = append(newRoles, role)
-		}
-	}
+	// newRoles := make([]*userModel.Role, 0)
+	// for _, role := range roles {
+	// 	err := global.DB.First(&role, role.ID).Error
+	// 	if errors.Is(err, gorm.ErrRecordNotFound) {
+	// 		newRoles = append(newRoles, role)
+	// 	}
+	// }
 
-	if len(newRoles) > 0 {
-		err := global.DB.Create(&newRoles).Error
-		if err != nil {
-			global.Log.Errorf("写入系统角色数据失败：%v", err)
-		}
+	// if len(newRoles) > 0 {
+	// 	err := global.DB.Create(&newRoles).Error
+	// 	if err != nil {
+	// 		global.Log.Errorf("写入系统角色数据失败：%s", err)
+	// 	} else {
+	// 		global.Log.Infof("写入系统角色数据成功: %v", newRoles)
+	// 	}
+	// }
+
+	err = global.DB.Create(&roles).Error
+	if err != nil {
+		global.Log.Errorf("写入系统角色数据失败：%s", err)
+	} else {
+		global.Log.Info("写入系统角色数据成功")
 	}
 
 	// 2写入菜单
-	newMenus := make([]userModel.Menu, 0)
 	var basicGID uint = 0
 	var userMgrGID uint = 1
 	var sysMgrGID uint = 2
@@ -223,21 +231,31 @@ func InitData() {
 			Creator:   "System",
 		},
 	}
-	for _, menu := range menus {
-		err := global.DB.First(&menu, menu.ID).Error
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			newMenus = append(newMenus, menu)
-		}
-	}
-	if len(newMenus) > 0 {
-		err := global.DB.Create(&newMenus).Error
-		if err != nil {
-			global.Log.Errorf("写入系统菜单数据失败：%v", err)
-		}
+
+	// newMenus := make([]userModel.Menu, 0)
+	// for _, menu := range menus {
+	// 	err := global.DB.First(&menu, menu.ID).Error
+	// 	if errors.Is(err, gorm.ErrRecordNotFound) {
+	// 		newMenus = append(newMenus, menu)
+	// 	}
+	// }
+	// if len(newMenus) > 0 {
+	// 	err := global.DB.Create(&newMenus).Error
+	// 	if err != nil {
+	// 		global.Log.Errorf("写入系统菜单数据失败：%s", err)
+	// 	} else {
+	// 		global.Log.Infof("写入系统菜单数据成功: %v", newMenus)
+	// 	}
+	// }
+
+	err = global.DB.Create(&menus).Error
+	if err != nil {
+		global.Log.Errorf("写入系统菜单数据失败：%s", err)
+	} else {
+		global.Log.Info("写入系统菜单数据成功")
 	}
 
 	// 3.写入用户
-	newUsers := make([]*userModel.User, 0)
 	users := []*userModel.User{
 		{
 			Model:         gorm.Model{ID: 1},
@@ -260,18 +278,28 @@ func InitData() {
 		},
 	}
 
-	for _, user := range users {
-		err := global.DB.First(&user, user.ID).Error
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			newUsers = append(newUsers, user)
-		}
-	}
+	// newUsers := make([]*userModel.User, 0)
+	// for _, user := range users {
+	// 	err := global.DB.First(&user, user.ID).Error
+	// 	if errors.Is(err, gorm.ErrRecordNotFound) {
+	// 		newUsers = append(newUsers, user)
+	// 	}
+	// }
 
-	if len(newUsers) > 0 {
-		err := global.DB.Create(&newUsers).Error
-		if err != nil {
-			global.Log.Errorf("写入用户数据失败：%v", err)
-		}
+	// if len(newUsers) > 0 {
+	// 	err := global.DB.Create(&newUsers).Error
+	// 	if err != nil {
+	// 		global.Log.Errorf("写入用户数据失败：%s", err)
+	// 	} else {
+	// 		global.Log.Infof("写入用户数据成功: %v", newUsers)
+	// 	}
+	// }
+
+	err = global.DB.Create(&users).Error
+	if err != nil {
+		global.Log.Errorf("写入用户数据失败：%s", err)
+	} else {
+		global.Log.Info("写入用户数据成功")
 	}
 
 	// 4.写入api
@@ -718,69 +746,118 @@ func InitData() {
 			Creator:  "System",
 		},
 	}
+	if err := global.DB.Create(&apis).Error; err != nil {
+		global.Log.Errorf("写入api数据失败：%s", err)
+	} else {
+		global.Log.Info("写入api数据成功")
+	}
 
 	// 5. 将角色绑定给菜单
-	newApi := make([]apiMgrModel.Api, 0)
-	newRoleCasbin := make([]userModel.RoleCasbin, 0)
-	for i, api := range apis {
-		api.ID = uint(i + 1)
-		err := global.DB.First(&api, api.ID).Error
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			newApi = append(newApi, api)
+	// newApi := make([]apiMgrModel.Api, 0)
+	// newRoleCasbin := make([]userModel.RoleCasbin, 0)
+	// for i, api := range apis {
+	// 	api.ID = uint(i + 1)
+	// 	err := global.DB.First(&api, api.ID).Error
+	// 	if errors.Is(err, gorm.ErrRecordNotFound) {
+	// 		newApi = append(newApi, api)
 
-			// 管理员拥有所有API权限
-			newRoleCasbin = append(newRoleCasbin, userModel.RoleCasbin{
-				Keyword: roles[0].Keyword,
+	// 		// 管理员拥有所有API权限
+	// 		newRoleCasbin = append(newRoleCasbin, userModel.RoleCasbin{
+	// 			Keyword: roles[adminRID].Keyword,
+	// 			Path:    api.Path,
+	// 			Method:  api.Method,
+	// 		})
+
+	// 		// 非管理员拥有基础权限
+	// 		basePaths := []string{
+	// 			"/base/login",
+	// 			"/base/logout",
+	// 			"/base/refreshToken",
+	// 			"/base/sendcode",
+	// 			"/base/changePwd",
+	// 			"/base/dashboard",
+	// 			"/user/info",
+	// 			"/user/resetTotpSecret",
+	// 			"/user/changePwd",
+	// 			"/menu/access/tree",
+	// 			"/sitenav/list",
+	// 		}
+
+	// 		if funk.ContainsString(basePaths, api.Path) {
+	// 			newRoleCasbin = append(newRoleCasbin, userModel.RoleCasbin{
+	// 				Keyword: roles[userRID].Keyword,
+	// 				Path:    api.Path,
+	// 				Method:  api.Method,
+	// 			})
+	// 		}
+	// 	}
+	// }
+
+	// if len(newApi) > 0 {
+	// 	if err := global.DB.Create(&newApi).Error; err != nil {
+	// 		global.Log.Errorf("写入api数据失败：%s", err)
+	// 	} else {
+	// 		global.Log.Infof("写入api数据成功: %v", newApi)
+	// 	}
+	// }
+
+	// if len(newRoleCasbin) > 0 {
+	// 	rules := make([][]string, 0)
+	// 	for _, c := range newRoleCasbin {
+	// 		rules = append(rules, []string{
+	// 			c.Keyword, c.Path, c.Method,
+	// 		})
+	// 	}
+	// 	isAdd, err := global.CasbinEnforcer.AddPolicies(rules)
+	// 	if !isAdd {
+	// 		global.Log.Errorf("写入casbin数据失败：%v", err)
+	// 	}
+	// }
+
+	// 管理员拥有所有API权限
+	roleCasbin := make([]userModel.RoleCasbin, 0)
+	for _, api := range apis {
+		roleCasbin = append(roleCasbin, userModel.RoleCasbin{
+			Keyword: roles[0].Keyword,
+			Path:    api.Path,
+			Method:  api.Method,
+		})
+
+		// 非管理员拥有基础权限
+		basePaths := []string{
+			"/base/login",
+			"/base/logout",
+			"/base/refreshToken",
+			"/base/sendcode",
+			"/base/changePwd",
+			"/base/dashboard",
+			"/user/info",
+			"/user/resetTotpSecret",
+			"/user/changePwd",
+			"/menu/access/tree",
+			"/sitenav/list",
+		}
+
+		if funk.ContainsString(basePaths, api.Path) {
+			roleCasbin = append(roleCasbin, userModel.RoleCasbin{
+				Keyword: roles[1].Keyword,
 				Path:    api.Path,
 				Method:  api.Method,
 			})
-
-			// 非管理员拥有基础权限
-			basePaths := []string{
-				"/base/login",
-				"/base/logout",
-				"/base/refreshToken",
-				"/base/sendcode",
-				"/base/changePwd",
-				"/base/dashboard",
-				"/user/info",
-				"/user/resetTotpSecret",
-				"/user/changePwd",
-				"/menu/access/tree",
-				"/sitenav/list",
-			}
-
-			if funk.ContainsString(basePaths, api.Path) {
-				newRoleCasbin = append(newRoleCasbin, userModel.RoleCasbin{
-					Keyword: roles[1].Keyword,
-					Path:    api.Path,
-					Method:  api.Method,
-				})
-			}
 		}
 	}
-
-	if len(newApi) > 0 {
-		if err := global.DB.Create(&newApi).Error; err != nil {
-			global.Log.Errorf("写入api数据失败：%v", err)
-		}
+	rules := make([][]string, 0)
+	for _, c := range roleCasbin {
+		rules = append(rules, []string{
+			c.Keyword, c.Path, c.Method,
+		})
 	}
-
-	if len(newRoleCasbin) > 0 {
-		rules := make([][]string, 0)
-		for _, c := range newRoleCasbin {
-			rules = append(rules, []string{
-				c.Keyword, c.Path, c.Method,
-			})
-		}
-		isAdd, err := global.CasbinEnforcer.AddPolicies(rules)
-		if !isAdd {
-			global.Log.Errorf("写入casbin数据失败：%v", err)
-		}
+	isAdd, err := global.CasbinEnforcer.AddPolicies(rules)
+	if !isAdd {
+		global.Log.Errorf("写入casbin数据失败：%v", err)
 	}
 
 	// 6.写入分组
-	newGroups := make([]userModel.Group, 0)
 	groups := []userModel.Group{
 		{
 			Model:              gorm.Model{ID: 1},
@@ -841,27 +918,40 @@ func InitData() {
 		})
 	}
 
-	for _, group := range groups {
-		err := global.DB.First(&group, group.ID).Error
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			newGroups = append(newGroups, group)
-		}
+	// newGroups := make([]userModel.Group, 0)
+	// for _, group := range groups {
+	// 	err := global.DB.First(&group, group.ID).Error
+	// 	if errors.Is(err, gorm.ErrRecordNotFound) {
+	// 		newGroups = append(newGroups, group)
+	// 	}
+	// }
+	// if len(newGroups) > 0 {
+	// 	err := global.DB.Create(&newGroups).Error
+	// 	if err != nil {
+	// 		global.Log.Errorf("写入分组数据失败：%s", err)
+	// 	} else {
+	// 		global.Log.Infof("写入分组数据成功: %v", newGroups)
+	// 	}
+	// }
+	err = global.DB.Create(&groups).Error
+	if err != nil {
+		global.Log.Errorf("写入分组数据失败：%s", err)
+	} else {
+		global.Log.Info("写入分组数据成功")
 	}
-	if len(newGroups) > 0 {
-		err := global.DB.Create(&newGroups).Error
-		if err != nil {
-			global.Log.Errorf("写入分组数据失败：%v", err)
-		}
-	}
+
 	sitenavGroup := sitenavModel.NavGroup{
 		Model:   gorm.Model{ID: 1},
 		Name:    "project01",
 		Title:   "项目01",
 		Creator: "System",
 	}
-	if err := global.DB.Create(&sitenavGroup); err != nil {
-		global.Log.Errorf("写入导航页分组数据失败：%v", err)
+	if err := global.DB.Create(&sitenavGroup).Error; err != nil {
+		global.Log.Errorf("写入导航页分组数据失败：%s", err)
+	} else {
+		global.Log.Info("写入导航页分组数据成功")
 	}
+
 	sitenavSite := sitenavModel.NavSite{
 		Name:        "jenkins",
 		NavGroupID:  1,
@@ -871,9 +961,11 @@ func InitData() {
 		DocUrl:      "https://www.jenkins.io/doc/",
 		Creator:     "System",
 	}
-	if err := global.DB.Create(&sitenavSite); err != nil {
-		global.Log.Errorf("写入导航页站点数据失败：%v", err)
+	if err := global.DB.Create(&sitenavSite).Error; err != nil {
+		global.Log.Errorf("写入导航页站点数据失败：%s", err)
+	} else {
+		global.Log.Info("写入导航页站点数据成功")
 	}
 
-	global.Log.Info("初始化 [ 基础数据 ] 完成!")
+	global.Log.Info("初始化基础数据完成!")
 }
