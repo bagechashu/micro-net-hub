@@ -9,6 +9,7 @@ services:
     environment:
       MYSQL_DATABASE: "micro_net_hub"
       MYSQL_ROOT_PASSWORD: "root_1234"
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
     volumes:
       - ./data/mysql:/var/lib/mysql
     ports:
