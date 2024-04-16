@@ -17,20 +17,6 @@ type NavGroup struct {
 	NavSites []*NavSite `json:"sites"`
 }
 
-type NavGroupAddReq struct {
-	Title string `json:"title" validate:"required"`
-	Name  string `json:"name" validate:"required"`
-}
-
-type NavGroupUpdateReq struct {
-	Title string `json:"title" validate:"required"`
-	Name  string `json:"name" validate:"required"`
-}
-
-type NavGroupDeleteReq struct {
-	Ids []uint `json:"ids" validate:"required"`
-}
-
 func (g *NavGroup) FindByName(name string) error {
 	if err := global.DB.Where("name = ?", name).First(&g).Error; err != nil {
 		return helper.NewMySqlError(fmt.Errorf("获取 NavGroup 失败: " + err.Error()))
@@ -114,28 +100,6 @@ type NavSite struct {
 	Link        string `gorm:"type:varchar(100);not null;comment:'网址链接'" json:"link" validate:"required"`
 	DocUrl      string `gorm:"type:varchar(100);comment:'网址文档'" json:"doc,omitempty"`
 	Creator     string `gorm:"type:varchar(20);comment:'创建人'" json:"creator" form:"creator"`
-}
-
-type NavSiteAddReq struct {
-	Name        string `json:"name" validate:"required"`
-	NavGroupID  uint   `json:"groupid" validate:"required"`
-	IconUrl     string `json:"icon"`
-	Description string `json:"desc"`
-	Link        string `json:"link" validate:"required"`
-	DocUrl      string `json:"doc,omitempty"`
-}
-
-type NavSiteUpdateReq struct {
-	Name        string `json:"name" validate:"required"`
-	NavGroupID  uint   `json:"groupid" validate:"required"`
-	IconUrl     string `json:"icon"`
-	Description string `json:"desc"`
-	Link        string `json:"link" validate:"required"`
-	DocUrl      string `json:"doc,omitempty"`
-}
-
-type NavSiteDeleteReq struct {
-	Ids []uint `json:"ids" validate:"required"`
 }
 
 func (ni *NavSite) FindByName(name string) error {

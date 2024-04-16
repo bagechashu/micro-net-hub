@@ -118,12 +118,47 @@ func HandleRequest(c *gin.Context, reqStructInstance interface{}, fn HandlerLogi
 	Success(c, data)
 }
 
+func BindAndValidateRequest(c *gin.Context, reqStructInstance interface{}) error {
+	// bind struct
+	if err := c.Bind(reqStructInstance); err != nil {
+		ErrV2(c, NewValidatorError(err))
+		return err
+	}
+
+	// reqStruct validate check
+	if errs := global.Validate.Struct(reqStructInstance); errs != nil {
+		for _, err := range errs.(validator.ValidationErrors) {
+			global.Log.Errorf("bind reqStruct err: \n\treqStruct: %+v\n\terr: %s", reqStructInstance, err)
+			ErrV2(c, NewValidatorError(fmt.Errorf(err.Translate(global.Trans))))
+			return err
+		}
+	}
+	return nil
+}
+
 // Success http 成功
 func Success(c *gin.Context, data interface{}) {
 	c.JSON(http.StatusOK, gin.H{
 		"code": RspCodeSuccess,
 		"msg":  "success",
 		"data": data,
+	})
+}
+
+// Err Response
+func ErrV2(c *gin.Context, err *RspError) {
+	c.JSON(http.StatusOK, gin.H{
+		"errcode": err.Code(),
+		"msg":     err.Error(),
+	})
+}
+
+// Err Response with data
+func ErrV2WithData(c *gin.Context, err *RspError, data interface{}) {
+	c.JSON(http.StatusOK, gin.H{
+		"errcode": err.Code(),
+		"msg":     err.Error(),
+		"data":    data,
 	})
 }
 

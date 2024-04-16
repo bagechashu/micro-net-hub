@@ -5,6 +5,7 @@ import (
 
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
+	"micro-net-hub/internal/module/sitenav"
 	"micro-net-hub/internal/server/middleware"
 
 	"github.com/gin-gonic/gin"
@@ -32,7 +33,7 @@ func InitRoutes(r *gin.Engine) {
 	InitApiRoutes(apiGroup, authMiddleware)           // 注册接口路由, jwt认证中间件,casbin鉴权中间件
 	InitOperationLogRoutes(apiGroup, authMiddleware)  // 注册操作日志路由, jwt认证中间件,casbin鉴权中间件
 	InitFieldRelationRoutes(apiGroup, authMiddleware) // 注册操作日志路由, jwt认证中间件,casbin鉴权中间件
-	InitSiteNavRoutes(apiGroup, authMiddleware)
+	sitenav.InitSiteNavRoutes(apiGroup, authMiddleware)
 
 	global.Log.Info("初始化路由完成！")
 }
