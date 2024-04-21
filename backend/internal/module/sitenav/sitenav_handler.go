@@ -15,7 +15,7 @@ func GetNav(c *gin.Context) {
 
 	err := navGroups.FindWithSites()
 	if err != nil {
-		helper.Err(c, helper.ReloadErr(err), nil)
+		helper.ErrV2(c, helper.ReloadErr(err))
 		return
 	}
 
@@ -61,37 +61,35 @@ type NavGroupUpdateReq struct {
 }
 
 func UpdateNavGroup(c *gin.Context) {
-	req := new(NavGroupUpdateReq)
-	helper.HandleRequest(
-		c,
-		req,
-		func(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
-			r, ok := req.(*NavGroupUpdateReq)
-			if !ok {
-				return nil, helper.ReqAssertErr
-			}
+	var req NavGroupUpdateReq
+	err := helper.BindAndValidateRequest(c, &req)
+	if err != nil {
+		return
+	}
 
-			g := &model.NavGroup{}
-			err := g.FindByName(r.Name)
-			if err != nil {
-				return nil, helper.NewMySqlError(fmt.Errorf("获取 NavGroup 失败: %s", err.Error()))
-			}
-			// 获取当前用户
-			ctxUser, err := userLogic.GetCurrentLoginUser(c)
-			if err != nil {
-				return nil, helper.NewMySqlError(fmt.Errorf("获取当前登陆用户信息失败"))
-			}
+	// 获取当前用户
+	ctxUser, err := userLogic.GetCurrentLoginUser(c)
+	if err != nil {
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取当前登陆用户信息失败")))
+		return
+	}
 
-			g.Title = r.Title
-			g.Creator = ctxUser.Username
+	g := &model.NavGroup{}
+	err = g.FindByName(req.Name)
+	if err != nil {
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取 NavGroup 失败: %s", err.Error())))
+		return
+	}
 
-			err = g.Update()
-			if err != nil {
-				return nil, helper.NewMySqlError(fmt.Errorf("更新 NavGroup 失败: %s", err.Error()))
-			}
+	g.Title = req.Title
+	g.Creator = ctxUser.Username
+	err = g.Update()
+	if err != nil {
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("更新 NavGroup 失败: %s", err.Error())))
+		return
+	}
 
-			return nil, nil
-		})
+	helper.Success(c, nil)
 }
 
 type NavGroupDeleteReq struct {
@@ -99,30 +97,26 @@ type NavGroupDeleteReq struct {
 }
 
 func DeleteNavGroup(c *gin.Context) {
-	req := new(NavGroupDeleteReq)
-	helper.HandleRequest(
-		c,
-		req,
-		func(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
-			r, ok := req.(*NavGroupDeleteReq)
-			if !ok {
-				return nil, helper.ReqAssertErr
-			}
+	var req NavGroupDeleteReq
+	err := helper.BindAndValidateRequest(c, &req)
+	if err != nil {
+		return
+	}
+	g := &model.NavGroup{}
+	for _, id := range req.Ids {
+		err := g.FindById(id)
+		if err != nil {
+			helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("查询 NavGroup 失败: %s", err.Error())))
+			return
+		}
+		err = g.DeleteWithSites()
+		if err != nil {
+			helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("删除 NavGroup 失败: %s", err.Error())))
+			return
+		}
+	}
 
-			g := &model.NavGroup{}
-			for _, id := range r.Ids {
-				err := g.FindById(id)
-				if err != nil {
-					return nil, helper.NewMySqlError(fmt.Errorf("查询 NavGroup 失败: %s", err.Error()))
-				}
-				err = g.DeleteWithSites()
-				if err != nil {
-					return nil, helper.NewMySqlError(fmt.Errorf("删除 NavGroup 失败: %s", err.Error()))
-				}
-			}
-
-			return nil, nil
-		})
+	helper.Success(c, nil)
 }
 
 type NavSiteAddReq struct {
@@ -135,39 +129,36 @@ type NavSiteAddReq struct {
 }
 
 func AddNavSite(c *gin.Context) {
-	req := new(NavSiteAddReq)
-	helper.HandleRequest(
-		c,
-		req,
-		func(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
-			r, ok := req.(*NavSiteAddReq)
-			if !ok {
-				return nil, helper.ReqAssertErr
-			}
+	var req NavSiteAddReq
+	err := helper.BindAndValidateRequest(c, &req)
+	if err != nil {
+		return
+	}
 
-			// 获取当前用户
-			ctxUser, err := userLogic.GetCurrentLoginUser(c)
-			if err != nil {
-				return nil, helper.NewMySqlError(fmt.Errorf("获取当前登陆用户信息失败"))
-			}
+	// 获取当前用户
+	ctxUser, err := userLogic.GetCurrentLoginUser(c)
+	if err != nil {
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取当前登陆用户信息失败")))
+		return
+	}
 
-			s := model.NavSite{
-				Name:        r.Name,
-				NavGroupID:  r.NavGroupID,
-				Description: r.Description,
-				Link:        r.Link,
-				DocUrl:      r.DocUrl,
-				IconUrl:     r.IconUrl,
-				Creator:     ctxUser.Username,
-			}
+	s := model.NavSite{
+		Name:        req.Name,
+		NavGroupID:  req.NavGroupID,
+		Description: req.Description,
+		Link:        req.Link,
+		DocUrl:      req.DocUrl,
+		IconUrl:     req.IconUrl,
+		Creator:     ctxUser.Username,
+	}
 
-			err = s.Add()
-			if err != nil {
-				return nil, helper.NewMySqlError(fmt.Errorf("创建 NavSite 失败: %s", err.Error()))
-			}
+	err = s.Add()
+	if err != nil {
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("创建 NavSite 失败: %s", err.Error())))
+		return
+	}
 
-			return nil, nil
-		})
+	helper.Success(c, nil)
 }
 
 type NavSiteUpdateReq struct {
@@ -180,41 +171,40 @@ type NavSiteUpdateReq struct {
 }
 
 func UpdateNavSite(c *gin.Context) {
-	req := new(NavSiteUpdateReq)
-	helper.HandleRequest(
-		c,
-		req,
-		func(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
-			r, ok := req.(*NavSiteUpdateReq)
-			if !ok {
-				return nil, helper.ReqAssertErr
-			}
+	var req NavSiteUpdateReq
+	err := helper.BindAndValidateRequest(c, &req)
+	if err != nil {
+		return
+	}
 
-			s := &model.NavSite{}
-			err := s.FindByName(r.Name)
-			if err != nil {
-				return nil, helper.NewMySqlError(fmt.Errorf("获取 NavSite 失败: %s", err.Error()))
-			}
-			// 获取当前用户
-			ctxUser, err := userLogic.GetCurrentLoginUser(c)
-			if err != nil {
-				return nil, helper.NewMySqlError(fmt.Errorf("获取当前登陆用户信息失败"))
-			}
+	// 获取当前用户
+	ctxUser, err := userLogic.GetCurrentLoginUser(c)
+	if err != nil {
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取当前登陆用户信息失败")))
+		return
+	}
 
-			s.NavGroupID = r.NavGroupID
-			s.Description = r.Description
-			s.Link = r.Link
-			s.DocUrl = r.DocUrl
-			s.IconUrl = r.IconUrl
-			s.Creator = ctxUser.Username
+	s := &model.NavSite{}
+	err = s.FindByName(req.Name)
+	if err != nil {
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取 NavSite 失败: %s", err.Error())))
+		return
+	}
 
-			err = s.Update()
-			if err != nil {
-				return nil, helper.NewMySqlError(fmt.Errorf("更新 NavSite 失败: %s", err.Error()))
-			}
+	s.NavGroupID = req.NavGroupID
+	s.Description = req.Description
+	s.Link = req.Link
+	s.DocUrl = req.DocUrl
+	s.IconUrl = req.IconUrl
+	s.Creator = ctxUser.Username
 
-			return nil, nil
-		})
+	err = s.Update()
+	if err != nil {
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("更新 NavSite 失败: %s", err.Error())))
+		return
+	}
+
+	helper.Success(c, nil)
 }
 
 type NavSiteDeleteReq struct {
@@ -222,27 +212,24 @@ type NavSiteDeleteReq struct {
 }
 
 func DeleteNavSite(c *gin.Context) {
-	req := new(NavSiteDeleteReq)
-	helper.HandleRequest(
-		c,
-		req,
-		func(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
-			r, ok := req.(*NavSiteDeleteReq)
-			if !ok {
-				return nil, helper.ReqAssertErr
-			}
+	var req NavSiteDeleteReq
+	err := helper.BindAndValidateRequest(c, &req)
+	if err != nil {
+		return
+	}
 
-			for _, id := range r.Ids {
-				s := &model.NavSite{}
-				err := s.FindById(id)
-				if err != nil {
-					return nil, helper.NewMySqlError(fmt.Errorf("获取 NavSite 失败: %s", err.Error()))
-				}
-				err = s.Delete()
-				if err != nil {
-					return nil, helper.NewMySqlError(fmt.Errorf("删除 NavSite 失败: %s", err.Error()))
-				}
-			}
-			return nil, nil
-		})
+	for _, id := range req.Ids {
+		s := &model.NavSite{}
+		err := s.FindById(id)
+		if err != nil {
+			helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取 NavSite 失败: %s", err.Error())))
+			return
+		}
+		err = s.Delete()
+		if err != nil {
+			helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("删除 NavSite 失败: %s", err.Error())))
+			return
+		}
+	}
+	helper.Success(c, nil)
 }
