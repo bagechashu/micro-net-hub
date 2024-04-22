@@ -5,6 +5,7 @@ import (
 
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
+	"micro-net-hub/internal/module/apimgr"
 	"micro-net-hub/internal/module/sitenav"
 	"micro-net-hub/internal/server/middleware"
 
@@ -30,7 +31,7 @@ func InitRoutes(r *gin.Engine) {
 	InitGroupRoutes(apiGroup, authMiddleware)         // 注册分组路由, jwt认证中间件,casbin鉴权中间件
 	InitRoleRoutes(apiGroup, authMiddleware)          // 注册角色路由, jwt认证中间件,casbin鉴权中间件
 	InitMenuRoutes(apiGroup, authMiddleware)          // 注册菜单路由, jwt认证中间件,casbin鉴权中间件
-	InitApiRoutes(apiGroup, authMiddleware)           // 注册接口路由, jwt认证中间件,casbin鉴权中间件
+	apimgr.InitApiRoutes(apiGroup, authMiddleware)    // 注册接口路由, jwt认证中间件,casbin鉴权中间件
 	InitOperationLogRoutes(apiGroup, authMiddleware)  // 注册操作日志路由, jwt认证中间件,casbin鉴权中间件
 	InitFieldRelationRoutes(apiGroup, authMiddleware) // 注册操作日志路由, jwt认证中间件,casbin鉴权中间件
 	sitenav.InitSiteNavRoutes(apiGroup, authMiddleware)

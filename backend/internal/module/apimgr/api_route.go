@@ -1,7 +1,6 @@
-package routes
+package apimgr
 
 import (
-	"micro-net-hub/internal/server/handler"
 	"micro-net-hub/internal/server/middleware"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
@@ -15,12 +14,11 @@ func InitApiRoutes(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) gin
 	// 开启casbin鉴权中间件
 	api.Use(middleware.CasbinMiddleware())
 	{
-		var h handler.ApiHandler
-		api.GET("/tree", h.GetTree)
-		api.GET("/list", h.List)
-		api.POST("/add", h.Add)
-		api.POST("/update", h.Update)
-		api.POST("/delete", h.Delete)
+		api.GET("/tree", GetTree)
+		api.GET("/list", List)
+		api.POST("/add", Add)
+		api.POST("/update", Update)
+		api.POST("/delete", Delete)
 	}
 
 	return r

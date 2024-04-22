@@ -19,77 +19,29 @@ type Api struct {
 	Creator  string `gorm:"type:varchar(20);comment:'创建人'" json:"creator"`
 }
 
-// ApiListReq 获取资源列表结构体
-type ApiListReq struct {
-	Method   string `json:"method" form:"method"`
-	Path     string `json:"path" form:"path"`
-	Category string `json:"category" form:"category"`
-	Creator  string `json:"creator" form:"creator"`
-	PageNum  int    `json:"pageNum" form:"pageNum"`
-	PageSize int    `json:"pageSize" form:"pageSize"`
-}
-
-// ApiAddReq 添加资源结构体
-type ApiAddReq struct {
-	Method   string `json:"method" validate:"required,min=1,max=20"`
-	Path     string `json:"path" validate:"required,min=1,max=100"`
-	Category string `json:"category" validate:"required,min=1,max=50"`
-	Remark   string `json:"remark" validate:"min=0,max=100"`
-}
-
-// ApiUpdateReq 更新资源结构体
-type ApiUpdateReq struct {
-	ID       uint   `json:"id" validate:"required"`
-	Method   string `json:"method" validate:"min=1,max=20"`
-	Path     string `json:"path" validate:"min=1,max=100"`
-	Category string `json:"category" validate:"min=1,max=50"`
-	Remark   string `json:"remark" validate:"min=0,max=100"`
-}
-
-// ApiDeleteReq 删除资源结构体
-type ApiDeleteReq struct {
-	ApiIds []uint `json:"apiIds" validate:"required"`
-}
-
-// ApiGetTreeReq 获取资源树结构体
-type ApiGetTreeReq struct {
-}
-
-type ApiTreeRsp struct {
-	ID       int    `json:"ID"`
-	Remark   string `json:"remark"`
-	Category string `json:"category"`
-	Children []*Api `json:"children"`
-}
-
-type ApiListRsp struct {
-	Total int64 `json:"total"`
-	Apis  []Api `json:"apis"`
-}
-
 // List 获取数据列表
-func List(req *ApiListReq) ([]*Api, error) {
+func List(api *Api, pageNum int, pageSize int) ([]*Api, error) {
 	var list []*Api
 	db := global.DB.Model(&Api{}).Order("created_at DESC")
 
-	method := strings.TrimSpace(req.Method)
+	method := strings.TrimSpace(api.Method)
 	if method != "" {
 		db = db.Where("method LIKE ?", fmt.Sprintf("%%%s%%", method))
 	}
-	path := strings.TrimSpace(req.Path)
+	path := strings.TrimSpace(api.Path)
 	if path != "" {
 		db = db.Where("path LIKE ?", fmt.Sprintf("%%%s%%", path))
 	}
-	category := strings.TrimSpace(req.Category)
+	category := strings.TrimSpace(api.Category)
 	if category != "" {
 		db = db.Where("category LIKE ?", fmt.Sprintf("%%%s%%", category))
 	}
-	creator := strings.TrimSpace(req.Creator)
+	creator := strings.TrimSpace(api.Creator)
 	if creator != "" {
 		db = db.Where("creator LIKE ?", fmt.Sprintf("%%%s%%", creator))
 	}
 
-	pageReq := tools.NewPageOption(req.PageNum, req.PageSize)
+	pageReq := tools.NewPageOption(pageNum, pageSize)
 	err := db.Offset(pageReq.PageNum).Limit(pageReq.PageSize).Find(&list).Error
 	return list, err
 }
