@@ -7,7 +7,7 @@ import (
 
 	"micro-net-hub/internal/config"
 	apiMgrModel "micro-net-hub/internal/module/apimgr/model"
-	operationLogModel "micro-net-hub/internal/module/operation_log/model"
+	operationLogModel "micro-net-hub/internal/module/operationlog/model"
 	userModel "micro-net-hub/internal/module/user/model"
 	"micro-net-hub/internal/tools"
 

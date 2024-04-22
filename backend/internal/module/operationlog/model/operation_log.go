@@ -25,49 +25,29 @@ type OperationLog struct {
 	UserAgent  string `gorm:"type:varchar(2048);comment:'浏览器标识'" json:"userAgent"`
 }
 
-// OperationLogListReq 操作日志请求结构体
-type OperationLogListReq struct {
-	Username string `json:"username" form:"username"`
-	Ip       string `json:"ip" form:"ip"`
-	Path     string `json:"path" form:"path"`
-	Status   int    `json:"status" form:"status"`
-	PageNum  int    `json:"pageNum" form:"pageNum"`
-	PageSize int    `json:"pageSize" form:"pageSize"`
-}
-
-// OperationLogDeleteReq 批量删除操作日志结构体
-type OperationLogDeleteReq struct {
-	OperationLogIds []uint `json:"operationLogIds" validate:"required"`
-}
-
-type LogListRsp struct {
-	Total int64          `json:"total"`
-	Logs  []OperationLog `json:"logs"`
-}
-
 // List 获取数据列表
-func List(req *OperationLogListReq) ([]*OperationLog, error) {
+func List(api *OperationLog, pageNum int, pageSize int) ([]*OperationLog, error) {
 	var list []*OperationLog
 	db := global.DB.Model(&OperationLog{}).Order("id DESC")
 
-	username := strings.TrimSpace(req.Username)
+	username := strings.TrimSpace(api.Username)
 	if username != "" {
 		db = db.Where("username LIKE ?", fmt.Sprintf("%%%s%%", username))
 	}
-	ip := strings.TrimSpace(req.Ip)
+	ip := strings.TrimSpace(api.Ip)
 	if ip != "" {
 		db = db.Where("ip LIKE ?", fmt.Sprintf("%%%s%%", ip))
 	}
-	path := strings.TrimSpace(req.Path)
+	path := strings.TrimSpace(api.Path)
 	if path != "" {
 		db = db.Where("path LIKE ?", fmt.Sprintf("%%%s%%", path))
 	}
-	status := req.Status
+	status := api.Status
 	if status != 0 {
 		db = db.Where("status = ?", status)
 	}
 
-	pageReq := tools.NewPageOption(req.PageNum, req.PageSize)
+	pageReq := tools.NewPageOption(pageNum, pageSize)
 	err := db.Offset(pageReq.PageNum).Limit(pageReq.PageSize).Find(&list).Error
 
 	return list, err

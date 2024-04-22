@@ -8,7 +8,7 @@ import (
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
 	"micro-net-hub/internal/global/setup"
-	operationLogModel "micro-net-hub/internal/module/operation_log/model"
+	operationLogModel "micro-net-hub/internal/module/operationlog/model"
 	"micro-net-hub/internal/radiussrv"
 	"micro-net-hub/internal/server"
 	"micro-net-hub/internal/server/middleware"

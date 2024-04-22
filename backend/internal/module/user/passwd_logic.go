@@ -7,7 +7,7 @@ import (
 	apiMgrModel "micro-net-hub/internal/module/apimgr/model"
 	dashboardModel "micro-net-hub/internal/module/dashboard/model"
 	"micro-net-hub/internal/module/goldap/ldapmgr"
-	opLogModel "micro-net-hub/internal/module/operation_log/model"
+	opLogModel "micro-net-hub/internal/module/operationlog/model"
 	userModel "micro-net-hub/internal/module/user/model"
 	"micro-net-hub/internal/server/helper"
 	"micro-net-hub/internal/tools"

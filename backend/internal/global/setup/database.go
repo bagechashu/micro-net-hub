@@ -7,7 +7,7 @@ import (
 	"micro-net-hub/internal/global"
 	apiMgrModel "micro-net-hub/internal/module/apimgr/model"
 	fieldRelationModel "micro-net-hub/internal/module/goldap/field_relation/model"
-	opLogModel "micro-net-hub/internal/module/operation_log/model"
+	opLogModel "micro-net-hub/internal/module/operationlog/model"
 	siteNavModel "micro-net-hub/internal/module/sitenav/model"
 	totpModel "micro-net-hub/internal/module/totp/model"
 	userModel "micro-net-hub/internal/module/user/model"
