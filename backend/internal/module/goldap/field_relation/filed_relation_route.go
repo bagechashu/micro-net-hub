@@ -7,8 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func InitFieldRelationRoutes(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) gin.IRoutes {
-	filed_relation := r.Group("/fieldrelation")
+func InitGoldapFieldRelationRoutes(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) gin.IRoutes {
+	filed_relation := r.Group("/goldap/fieldrelation")
 	// 开启jwt认证中间件
 	filed_relation.Use(authMiddleware.MiddlewareFunc())
 	// 开启casbin鉴权中间件

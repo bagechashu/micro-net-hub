@@ -11,6 +11,7 @@ import (
 	"micro-net-hub/internal/module/account/user"
 	"micro-net-hub/internal/module/apimgr"
 	fieldrelation "micro-net-hub/internal/module/goldap/field_relation"
+	"micro-net-hub/internal/module/goldap/sync"
 	"micro-net-hub/internal/module/operationlog"
 	"micro-net-hub/internal/module/sitenav"
 	"micro-net-hub/ui"
@@ -31,16 +32,44 @@ func InitRoutes(r *gin.Engine) {
 	apiGroup := r.Group("/" + config.Conf.System.UrlPathPrefix)
 
 	// 注册路由
-	ui.InitUiRoutes(r)                                              // 注册基础路由, 不需要jwt认证中间件,不需要casbin中间件
-	user.InitBaseRoutes(apiGroup, authMiddleware)                   // 注册基础路由, 不需要jwt认证中间件,不需要casbin中间件
-	user.InitUserRoutes(apiGroup, authMiddleware)                   // 注册用户路由, jwt认证中间件,casbin鉴权中间件
-	group.InitGroupRoutes(apiGroup, authMiddleware)                 // 注册分组路由, jwt认证中间件,casbin鉴权中间件
-	role.InitRoleRoutes(apiGroup, authMiddleware)                   // 注册角色路由, jwt认证中间件,casbin鉴权中间件
-	menu.InitMenuRoutes(apiGroup, authMiddleware)                   // 注册菜单路由, jwt认证中间件,casbin鉴权中间件
-	apimgr.InitApiRoutes(apiGroup, authMiddleware)                  // 注册接口路由, jwt认证中间件,casbin鉴权中间件
-	operationlog.InitOperationLogRoutes(apiGroup, authMiddleware)   // 注册操作日志路由, jwt认证中间件,casbin鉴权中间件
-	fieldrelation.InitFieldRelationRoutes(apiGroup, authMiddleware) // 注册操作日志路由, jwt认证中间件,casbin鉴权中间件
-	sitenav.InitSiteNavRoutes(apiGroup, authMiddleware)
+	// 注册嵌入式 UI 路由, 不需要jwt认证中间件,不需要casbin中间件
+	{
+		ui.InitUiRoutes(r)
+
+	}
+
+	// Account module routes
+	{
+		user.InitBaseRoutes(apiGroup, authMiddleware)   // 注册基础路由, 不需要jwt认证中间件,不需要casbin中间件
+		user.InitUserRoutes(apiGroup, authMiddleware)   // 注册用户路由, jwt认证中间件,casbin鉴权中间件
+		group.InitGroupRoutes(apiGroup, authMiddleware) // 注册分组路由, jwt认证中间件,casbin鉴权中间件
+		role.InitRoleRoutes(apiGroup, authMiddleware)   // 注册角色路由, jwt认证中间件,casbin鉴权中间件
+		menu.InitMenuRoutes(apiGroup, authMiddleware)   // 注册菜单路由, jwt认证中间件,casbin鉴权中间件
+
+	}
+
+	// ApiMgr module routes
+	{
+		apimgr.InitApiRoutes(apiGroup, authMiddleware) // 注册接口路由, jwt认证中间件,casbin鉴权中间件
+
+	}
+
+	// OperationLog module routes
+	{
+		operationlog.InitOperationLogRoutes(apiGroup, authMiddleware) // 注册操作日志路由, jwt认证中间件,casbin鉴权中间件
+
+	}
+
+	// Goldap module routes
+	{
+		sync.InitGoldapSyncRoutes(apiGroup, authMiddleware)                   // 注册goldap同步路由, jwt认证中间件,casbin鉴权中间件
+		fieldrelation.InitGoldapFieldRelationRoutes(apiGroup, authMiddleware) // 注册字段关联路由, jwt认证中间件,casbin鉴权中间件
+	}
+
+	// SiteNav module routess
+	{
+		sitenav.InitSiteNavRoutes(apiGroup, authMiddleware)
+	}
 
 	global.Log.Info("初始化路由完成！")
 }
