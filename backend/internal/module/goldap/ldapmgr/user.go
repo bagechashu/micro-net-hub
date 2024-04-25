@@ -6,7 +6,7 @@ import (
 
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
-	userModel "micro-net-hub/internal/module/user/model"
+	accountModel "micro-net-hub/internal/module/account/model"
 	"micro-net-hub/internal/server/helper"
 	"micro-net-hub/internal/tools"
 
@@ -31,7 +31,7 @@ type LdapUser struct {
 }
 
 // 创建资源
-func LdapUserAdd(user *userModel.User) error {
+func LdapUserAdd(user *accountModel.User) error {
 	user.CheckAttrVacancies()
 	add := ldap.NewAddRequest(user.UserDN, nil)
 	add.Attribute("objectClass", []string{"inetOrgPerson"})
@@ -60,7 +60,7 @@ func LdapUserAdd(user *userModel.User) error {
 }
 
 // Update 更新资源
-func LdapUserUpdate(oldusername string, user *userModel.User) error {
+func LdapUserUpdate(oldusername string, user *accountModel.User) error {
 	global.Log.Debugf("更新用户：%+v", user.Position)
 	modify := ldap.NewModifyRequest(user.UserDN, nil)
 	modify.Replace("cn", []string{user.Username})
@@ -177,7 +177,7 @@ func LdapUserNewPwd(username string) (string, error) {
 	}
 	return newpass.GeneratedPassword, nil
 }
-func LdapUserListUserDN() (users []*userModel.User, err error) {
+func LdapUserListUserDN() (users []*accountModel.User, err error) {
 	// Construct query request
 	searchRequest := ldap.NewSearchRequest(
 		config.Conf.Ldap.BaseDN,                                     // This is basedn, we will start searching from this node.
@@ -201,7 +201,7 @@ func LdapUserListUserDN() (users []*userModel.User, err error) {
 	}
 	if len(sr.Entries) > 0 {
 		for _, v := range sr.Entries {
-			users = append(users, &userModel.User{
+			users = append(users, &accountModel.User{
 				UserDN: v.DN,
 			})
 		}
@@ -297,7 +297,7 @@ func LdapUserGetDeptIds(udn string) (ret []string, err error) {
 }
 
 // / 添加 Ldap 用户数据 到数据库
-func LdapUserSyncToDB(user *userModel.User) error {
+func LdapUserSyncToDB(user *accountModel.User) error {
 	// 根据 user_dn 查询用户,不存在则创建
 	if !user.Exist(tools.H{"user_dn": user.UserDN}) {
 		user.CheckAttrVacancies()
@@ -309,7 +309,7 @@ func LdapUserSyncToDB(user *userModel.User) error {
 
 		// 获取用户将要添加的分组
 
-		var gs = userModel.NewGroups()
+		var gs = accountModel.NewGroups()
 		err = gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentId, ","))
 		if err != nil {
 			return helper.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))

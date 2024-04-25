@@ -8,10 +8,10 @@ import (
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
 	"micro-net-hub/internal/global/setup"
+	"micro-net-hub/internal/module/operationlog"
 	operationLogModel "micro-net-hub/internal/module/operationlog/model"
 	"micro-net-hub/internal/radiussrv"
 	"micro-net-hub/internal/server"
-	"micro-net-hub/internal/server/middleware"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -51,7 +51,7 @@ func main() {
 	// 操作日志中间件处理日志时没有将日志发送到rabbitmq或者kafka中, 而是发送到了channel中
 	// 这里开启3个goroutine处理channel将日志记录到数据库
 	for i := 0; i < 3; i++ {
-		go operationLogModel.SaveOperationLogChannel(middleware.OperationLogChan)
+		go operationLogModel.SaveOperationLogChannel(operationlog.OperationLogChan)
 	}
 
 	ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)

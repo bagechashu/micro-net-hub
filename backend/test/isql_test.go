@@ -6,7 +6,7 @@ import (
 
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global/setup"
-	userModel "micro-net-hub/internal/module/user/model"
+	accountModel "micro-net-hub/internal/module/account/model"
 	"micro-net-hub/internal/tools"
 )
 
@@ -30,7 +30,7 @@ func InitConfig() {
 func TestUserExist(t *testing.T) {
 	InitConfig()
 
-	var u userModel.User
+	var u accountModel.User
 	filter := tools.H{
 		"id": "111",
 	}

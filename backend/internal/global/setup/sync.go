@@ -3,8 +3,8 @@ package setup
 import (
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
+	"micro-net-hub/internal/module/account/ldap"
 	"micro-net-hub/internal/module/goldap/usermgr"
-	"micro-net-hub/internal/module/user"
 
 	"github.com/robfig/cron/v3"
 )
@@ -70,8 +70,8 @@ func InitCron() {
 	// 自动检索未同步数据
 	global.Log.Infof("启动同步ldap数据的定时任务: %s", config.Conf.Sync.LdapSyncTime)
 	_, err := c.AddFunc(config.Conf.Sync.LdapSyncTime, func() {
-		_ = user.SearchGroupDiff()
-		_ = user.SearchUserDiff()
+		_ = ldap.SearchGroupDiff()
+		_ = ldap.SearchUserDiff()
 	})
 	if err != nil {
 		global.Log.Errorf("启动同步任务状态检查任务失败: %v", err)

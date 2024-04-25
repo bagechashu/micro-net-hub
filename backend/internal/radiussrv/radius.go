@@ -22,8 +22,8 @@ import (
 	"fmt"
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
+	accountModel "micro-net-hub/internal/module/account/model"
 	totpModel "micro-net-hub/internal/module/totp/model"
-	userModel "micro-net-hub/internal/module/user/model"
 	"time"
 
 	"github.com/patrickmn/go-cache"
@@ -63,7 +63,7 @@ func AuthRequest(username string, password string) (valid bool, err error) {
 	otp := password[pl-6:]
 
 	// 用数据库校验密码
-	u := &userModel.User{
+	u := &accountModel.User{
 		Username: username,
 		Password: pinCode,
 	}

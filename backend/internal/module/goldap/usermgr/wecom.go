@@ -5,9 +5,9 @@ import (
 	"strings"
 
 	"micro-net-hub/internal/config"
+	accountModel "micro-net-hub/internal/module/account/model"
+	userProcess "micro-net-hub/internal/module/account/user"
 	"micro-net-hub/internal/module/goldap/ldapmgr"
-	userLogic "micro-net-hub/internal/module/user"
-	userModel "micro-net-hub/internal/module/user/model"
 	"micro-net-hub/internal/server/helper"
 	"micro-net-hub/internal/tools"
 
@@ -40,13 +40,13 @@ func (mgr WeChat) SyncDepts(c *gin.Context, req interface{}) (data interface{}, 
 	if err != nil {
 		return nil, helper.NewOperationError(fmt.Errorf("获取企业微信部门列表失败：%s", err.Error()))
 	}
-	depts, err := userLogic.ConvertDeptData(config.Conf.WeCom.Flag, deptSource)
+	depts, err := userProcess.ConvertDeptData(config.Conf.WeCom.Flag, deptSource)
 	if err != nil {
 		return nil, helper.NewOperationError(fmt.Errorf("转换企业微信部门数据失败：%s", err.Error()))
 	}
 
 	// 2.将远程数据转换成树
-	deptTree := userLogic.GroupListToTree(fmt.Sprintf("%s_1", config.Conf.WeCom.Flag), depts)
+	deptTree := userProcess.GroupListToTree(fmt.Sprintf("%s_1", config.Conf.WeCom.Flag), depts)
 
 	// 3.根据树进行创建
 	err = mgr.addDeptsRec(deptTree.Children)
@@ -61,7 +61,7 @@ func (mgr WeChat) SyncUsers(c *gin.Context, req interface{}) (data interface{}, 
 	if err != nil {
 		return nil, helper.NewOperationError(fmt.Errorf("获取企业微信用户列表失败：%s", err.Error()))
 	}
-	staffs, err := userLogic.ConvertUserData(config.Conf.WeCom.Flag, staffSource)
+	staffs, err := userProcess.ConvertUserData(config.Conf.WeCom.Flag, staffSource)
 	if err != nil {
 		return nil, helper.NewOperationError(fmt.Errorf("转换企业微信用户数据失败：%s", err.Error()))
 	}
@@ -77,8 +77,8 @@ func (mgr WeChat) SyncUsers(c *gin.Context, req interface{}) (data interface{}, 
 	// 3.获取企业微信已离职用户id列表
 	// 拿到MySQL所有用户数据(来源为 wecom的用户)，远程没有的，则说明被删除了
 	// 如果以后企业微信透出了已离职用户列表的接口，则这里可以进行改进
-	var res []*userModel.User
-	var users = userModel.NewUsers()
+	var res []*accountModel.User
+	var users = accountModel.NewUsers()
 	err = users.ListAll()
 	if err != nil {
 		return nil, helper.NewMySqlError(fmt.Errorf("获取用户列表失败：" + err.Error()))
@@ -100,7 +100,7 @@ func (mgr WeChat) SyncUsers(c *gin.Context, req interface{}) (data interface{}, 
 	}
 	// 4.遍历id，开始处理
 	for _, userTmp := range res {
-		user := new(userModel.User)
+		user := new(accountModel.User)
 		err = user.Find(tools.H{"source_user_id": userTmp.SourceUserId, "status": 1})
 		if err != nil {
 			return nil, helper.NewMySqlError(fmt.Errorf("在MySQL查询用户失败: " + err.Error()))
@@ -196,7 +196,7 @@ func (mgr WeChat) GetAllUsers() (ret []map[string]interface{}, err error) {
 }
 
 // 添加部门
-func (mgr WeChat) addDeptsRec(depts []*userModel.Group) error {
+func (mgr WeChat) addDeptsRec(depts []*accountModel.Group) error {
 	for _, dept := range depts {
 		err := mgr.AddDept(dept)
 		if err != nil {
@@ -213,9 +213,9 @@ func (mgr WeChat) addDeptsRec(depts []*userModel.Group) error {
 }
 
 // AddGroup 添加部门数据
-func (mgr WeChat) AddDept(group *userModel.Group) error {
+func (mgr WeChat) AddDept(group *accountModel.Group) error {
 	// 判断部门名称是否存在
-	parentGroup := new(userModel.Group)
+	parentGroup := new(accountModel.Group)
 	err := parentGroup.Find(tools.H{"source_dept_id": group.SourceDeptParentId})
 	if err != nil {
 		return helper.NewMySqlError(fmt.Errorf("查询父级部门失败：%s", err.Error()))
@@ -229,7 +229,7 @@ func (mgr WeChat) AddDept(group *userModel.Group) error {
 	group.GroupDN = fmt.Sprintf("cn=%s,%s", group.GroupName, parentGroup.GroupDN)
 
 	if !group.Exist(tools.H{"group_dn": group.GroupDN}) {
-		err = userLogic.CommonAddGroup(group)
+		err = userProcess.CommonAddGroup(group)
 		if err != nil {
 			return helper.NewOperationError(fmt.Errorf("添加部门: %s, 失败: %s", group.GroupName, err.Error()))
 		}
@@ -238,9 +238,9 @@ func (mgr WeChat) AddDept(group *userModel.Group) error {
 }
 
 // AddUser 添加用户数据
-func (mgr WeChat) AddUsers(user *userModel.User) error {
+func (mgr WeChat) AddUsers(user *accountModel.User) error {
 	// 根据角色id获取角色
-	roles := userModel.NewRoles()
+	roles := accountModel.NewRoles()
 	err := roles.GetRolesByIds([]uint{2})
 	if err != nil {
 		return helper.NewValidatorError(fmt.Errorf("根据角色ID获取角色信息失败:%s", err.Error()))
@@ -252,7 +252,7 @@ func (mgr WeChat) AddUsers(user *userModel.User) error {
 	user.UserDN = fmt.Sprintf("uid=%s,%s", user.Username, config.Conf.Ldap.UserDN)
 
 	// 根据 user_dn 查询用户,不存在则创建
-	var gs = userModel.NewGroups()
+	var gs = accountModel.NewGroups()
 	if !user.Exist(tools.H{"user_dn": user.UserDN}) {
 		// 获取用户将要添加的分组
 		err := gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentId, ","))
@@ -266,7 +266,7 @@ func (mgr WeChat) AddUsers(user *userModel.User) error {
 		user.Departments = strings.TrimRight(deptTmp, ",")
 
 		// 创建用户
-		err = userLogic.CommonAddUser(user, gs)
+		err = userProcess.CommonAddUser(user, gs)
 		if err != nil {
 			return helper.NewOperationError(fmt.Errorf("添加用户: %s, 失败: %s", user.Username, err.Error()))
 		}
@@ -274,7 +274,7 @@ func (mgr WeChat) AddUsers(user *userModel.User) error {
 		// 此处逻辑未经实际验证，如在使用中有问题，请反馈
 		if config.Conf.Sync.IsUpdateSyncd {
 			// 先获取用户信息
-			oldData := new(userModel.User)
+			oldData := new(accountModel.User)
 			err = oldData.Find(tools.H{"user_dn": user.UserDN})
 			if err != nil {
 				return err
@@ -324,7 +324,7 @@ func (mgr WeChat) AddUsers(user *userModel.User) error {
 			if user.Mobile == "" {
 				user.Mobile = oldData.Mobile
 			}
-			if err = userLogic.CommonUpdateUser(oldData, user, tools.StringToSlice(user.DepartmentId, ",")); err != nil {
+			if err = userProcess.CommonUpdateUser(oldData, user, tools.StringToSlice(user.DepartmentId, ",")); err != nil {
 				return err
 			}
 		}

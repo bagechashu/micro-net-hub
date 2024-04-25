@@ -7,7 +7,7 @@ import (
 
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
-	userModel "micro-net-hub/internal/module/user/model"
+	accountModel "micro-net-hub/internal/module/account/model"
 	"micro-net-hub/internal/server/helper"
 	"micro-net-hub/internal/tools"
 
@@ -23,7 +23,7 @@ type LdapDept struct {
 }
 
 // Add 添加资源
-func LdapDeptAdd(g *userModel.Group) error { //organizationalUnit
+func LdapDeptAdd(g *accountModel.Group) error { //organizationalUnit
 	if g.Remark == "" {
 		g.Remark = g.GroupName
 	}
@@ -49,7 +49,7 @@ func LdapDeptAdd(g *userModel.Group) error { //organizationalUnit
 }
 
 // UpdateGroup 更新一个分组
-func LdapDeptUpdate(oldGroup, newGroup *userModel.Group) error {
+func LdapDeptUpdate(oldGroup, newGroup *accountModel.Group) error {
 	modify1 := ldap.NewModifyRequest(oldGroup.GroupDN, nil)
 	modify1.Replace("description", []string{newGroup.Remark})
 
@@ -125,7 +125,7 @@ func LdapDeptRemoveUserFromGroup(gdn, udn string) error {
 }
 
 // DelUserFromGroup 将用户从分组删除
-func LdapDeptListGroupDN() (groups []*userModel.Group, err error) {
+func LdapDeptListGroupDN() (groups []*accountModel.Group, err error) {
 	// Construct query request
 	searchRequest := ldap.NewSearchRequest(
 		config.Conf.Ldap.BaseDN,                                     // This is basedn, we will start searching from this node.
@@ -149,7 +149,7 @@ func LdapDeptListGroupDN() (groups []*userModel.Group, err error) {
 	}
 	if len(sr.Entries) > 0 {
 		for _, v := range sr.Entries {
-			groups = append(groups, &userModel.Group{
+			groups = append(groups, &accountModel.Group{
 				GroupDN: v.DN,
 			})
 		}
@@ -203,7 +203,7 @@ func LdapDeptGetAll() (ret []*LdapDept, err error) {
 }
 
 // AddGroup 添加部门数据
-func LdapDeptGetParentGroupID(group *userModel.Group) (id uint, err error) {
+func LdapDeptGetParentGroupID(group *accountModel.Group) (id uint, err error) {
 	switch group.SourceDeptParentId {
 	case "dingtalkroot":
 		group.SourceDeptParentId = "dingtalk_1"
@@ -212,7 +212,7 @@ func LdapDeptGetParentGroupID(group *userModel.Group) (id uint, err error) {
 	case "wecomroot":
 		group.SourceDeptParentId = "wecom_1"
 	}
-	parentGroup := new(userModel.Group)
+	parentGroup := new(accountModel.Group)
 	err = parentGroup.Find(tools.H{"source_dept_id": group.SourceDeptParentId})
 	if err != nil {
 		return id, helper.NewMySqlError(fmt.Errorf("查询父级部门失败：%s,%s", err.Error(), group.GroupName))
@@ -221,7 +221,7 @@ func LdapDeptGetParentGroupID(group *userModel.Group) (id uint, err error) {
 }
 
 // 添加 Ldap 部门数据 到数据库
-func LdapDeptSyncToDB(group *userModel.Group) error {
+func LdapDeptSyncToDB(group *accountModel.Group) error {
 	// 判断部门名称是否存在,此处使用ldap中的唯一值dn,以免出现数据同步不全的问题
 	if !group.Exist(tools.H{"group_dn": group.GroupDN}) {
 		// 此时的 group 已经附带了Build后动态关联好的字段，接下来将一些确定性的其他字段值添加上，就可以创建这个分组了
@@ -242,7 +242,7 @@ func LdapDeptSyncToDB(group *userModel.Group) error {
 }
 
 // 添加 Ldap 部门数据 到数据库
-func LdapDeptsSyncToDBRec(depts []*userModel.Group) error {
+func LdapDeptsSyncToDBRec(depts []*accountModel.Group) error {
 	for _, dept := range depts {
 		err := LdapDeptSyncToDB(dept)
 		if err != nil {

@@ -14,9 +14,9 @@ import (
 	"github.com/zhaoyunxing92/dingtalk/v2"
 	"github.com/zhaoyunxing92/dingtalk/v2/request"
 
+	accountModel "micro-net-hub/internal/module/account/model"
+	userProcess "micro-net-hub/internal/module/account/user"
 	"micro-net-hub/internal/module/goldap/ldapmgr"
-	userLogic "micro-net-hub/internal/module/user"
-	userModel "micro-net-hub/internal/module/user/model"
 
 	"github.com/gin-gonic/gin"
 )
@@ -46,13 +46,13 @@ func (mgr DingTalk) SyncDepts(c *gin.Context, req interface{}) (data interface{}
 	if err != nil {
 		return nil, helper.NewOperationError(fmt.Errorf("获取钉钉部门列表失败：%s", err.Error()))
 	}
-	depts, err := userLogic.ConvertDeptData(config.Conf.DingTalk.Flag, deptSource)
+	depts, err := userProcess.ConvertDeptData(config.Conf.DingTalk.Flag, deptSource)
 	if err != nil {
 		return nil, helper.NewOperationError(fmt.Errorf("转换钉钉部门数据失败：%s", err.Error()))
 	}
 
 	// 2.将远程数据转换成树
-	deptTree := userLogic.GroupListToTree(fmt.Sprintf("%s_1", config.Conf.DingTalk.Flag), depts)
+	deptTree := userProcess.GroupListToTree(fmt.Sprintf("%s_1", config.Conf.DingTalk.Flag), depts)
 
 	// 3.根据树进行创建
 	err = mgr.addDeptsRec(deptTree.Children)
@@ -67,7 +67,7 @@ func (mgr DingTalk) SyncUsers(c *gin.Context, req interface{}) (data interface{}
 	if err != nil {
 		return nil, helper.NewOperationError(fmt.Errorf("SyncDingTalkUsers获取钉钉用户列表失败：%s", err.Error()))
 	}
-	staffs, err := userLogic.ConvertUserData(config.Conf.DingTalk.Flag, staffSource)
+	staffs, err := userProcess.ConvertUserData(config.Conf.DingTalk.Flag, staffSource)
 	if err != nil {
 		return nil, helper.NewOperationError(fmt.Errorf("转换钉钉用户数据失败：%s", err.Error()))
 	}
@@ -93,13 +93,13 @@ func (mgr DingTalk) SyncUsers(c *gin.Context, req interface{}) (data interface{}
 	}
 	// 4.遍历id，开始处理
 	for _, uid := range userIds {
-		var u userModel.User
+		var u accountModel.User
 		if u.Exist(
 			tools.H{
 				"source_user_id": fmt.Sprintf("%s_%s", config.Conf.DingTalk.Flag, uid),
 				"status":         1, //只处理1在职的
 			}) {
-			user := new(userModel.User)
+			user := new(accountModel.User)
 			err = user.Find(tools.H{"source_user_id": fmt.Sprintf("%s_%s", config.Conf.DingTalk.Flag, uid)})
 			if err != nil {
 				return nil, helper.NewMySqlError(fmt.Errorf("在MySQL查询用户失败: " + err.Error()))
@@ -319,7 +319,7 @@ func (mgr DingTalk) GetLeaveUserIdsDateRange(pushDays uint) ([]string, error) {
 }
 
 // 添加部门
-func (mgr DingTalk) addDeptsRec(depts []*userModel.Group) error {
+func (mgr DingTalk) addDeptsRec(depts []*accountModel.Group) error {
 	for _, dept := range depts {
 		err := mgr.AddDept(dept)
 		if err != nil {
@@ -336,8 +336,8 @@ func (mgr DingTalk) addDeptsRec(depts []*userModel.Group) error {
 }
 
 // AddGroup 添加部门数据
-func (mgr DingTalk) AddDept(group *userModel.Group) error {
-	parentGroup := new(userModel.Group)
+func (mgr DingTalk) AddDept(group *accountModel.Group) error {
+	parentGroup := new(accountModel.Group)
 	err := parentGroup.Find(tools.H{"source_dept_id": group.SourceDeptParentId}) // 查询当前分组父ID在MySQL中的数据信息
 	if err != nil {
 		return helper.NewMySqlError(fmt.Errorf("查询父级部门失败：%s", err.Error()))
@@ -351,7 +351,7 @@ func (mgr DingTalk) AddDept(group *userModel.Group) error {
 	group.GroupDN = fmt.Sprintf("cn=%s,%s", group.GroupName, parentGroup.GroupDN)
 
 	if !group.Exist(tools.H{"group_dn": group.GroupDN}) { // 判断当前部门是否已落库
-		err = userLogic.CommonAddGroup(group)
+		err = userProcess.CommonAddGroup(group)
 		if err != nil {
 			return helper.NewOperationError(fmt.Errorf("添加部门: %s, 失败: %s", group.GroupName, err.Error()))
 		}
@@ -360,9 +360,9 @@ func (mgr DingTalk) AddDept(group *userModel.Group) error {
 }
 
 // AddUser 添加用户数据
-func (mgr DingTalk) AddUsers(user *userModel.User) error {
+func (mgr DingTalk) AddUsers(user *accountModel.User) error {
 	// 根据角色id获取角色
-	roles := userModel.NewRoles()
+	roles := accountModel.NewRoles()
 	err := roles.GetRolesByIds([]uint{2}) // 默认添加为普通用户角色
 	if err != nil {
 		return helper.NewValidatorError(fmt.Errorf("根据角色ID获取角色信息失败:%s", err.Error()))
@@ -374,7 +374,7 @@ func (mgr DingTalk) AddUsers(user *userModel.User) error {
 	user.UserDN = fmt.Sprintf("uid=%s,%s", user.Username, config.Conf.Ldap.UserDN)
 
 	// 根据 user_dn 查询用户,不存在则创建
-	var gs = userModel.NewGroups()
+	var gs = accountModel.NewGroups()
 	if !user.Exist(tools.H{"user_dn": user.UserDN}) {
 		// 获取用户将要添加的分组
 		err := gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentId, ","))
@@ -388,14 +388,14 @@ func (mgr DingTalk) AddUsers(user *userModel.User) error {
 		user.Departments = strings.TrimRight(deptTmp, ",")
 
 		// 新增用户
-		err = userLogic.CommonAddUser(user, gs)
+		err = userProcess.CommonAddUser(user, gs)
 		if err != nil {
 			return helper.NewOperationError(fmt.Errorf("添加用户: %s, 失败: %s", user.Username, err.Error()))
 		}
 	} else {
 		if config.Conf.Sync.IsUpdateSyncd {
 			// 先获取用户信息
-			oldData := new(userModel.User)
+			oldData := new(accountModel.User)
 			err = oldData.Find(tools.H{"user_dn": user.UserDN})
 			if err != nil {
 				return err
@@ -445,7 +445,7 @@ func (mgr DingTalk) AddUsers(user *userModel.User) error {
 			if user.Mobile == "" {
 				user.Mobile = oldData.Mobile
 			}
-			if err = userLogic.CommonUpdateUser(oldData, user, tools.StringToSlice(user.DepartmentId, ",")); err != nil {
+			if err = userProcess.CommonUpdateUser(oldData, user, tools.StringToSlice(user.DepartmentId, ",")); err != nil {
 				return err
 			}
 		}

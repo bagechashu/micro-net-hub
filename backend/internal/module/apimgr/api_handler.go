@@ -1,13 +1,13 @@
 package apimgr
 
 import (
+	"micro-net-hub/internal/module/account/current"
 	"micro-net-hub/internal/module/apimgr/model"
 
 	"github.com/gin-gonic/gin"
 
 	"fmt"
 
-	userLogic "micro-net-hub/internal/module/user"
 	"micro-net-hub/internal/server/helper"
 	"micro-net-hub/internal/tools"
 
@@ -128,7 +128,7 @@ func Add(c *gin.Context) {
 	}
 
 	// 获取当前用户
-	ctxUser, err := userLogic.GetCurrentLoginUser(c)
+	ctxUser, err := current.GetCurrentLoginUser(c)
 	if err != nil {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取当前登陆用户信息失败")))
 		return
@@ -176,7 +176,7 @@ func Update(c *gin.Context) {
 	}
 
 	// 获取当前登陆用户
-	ctxUser, err := userLogic.GetCurrentLoginUser(c)
+	ctxUser, err := current.GetCurrentLoginUser(c)
 	if err != nil {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取当前登陆用户失败")))
 		return

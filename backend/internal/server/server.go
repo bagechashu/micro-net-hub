@@ -7,7 +7,7 @@ import (
 
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
-	"micro-net-hub/internal/server/routes"
+	"micro-net-hub/internal/module/operationlog"
 
 	"micro-net-hub/internal/server/middleware"
 
@@ -38,10 +38,10 @@ func NewGinServer() *http.Server {
 	r.Use(middleware.CORSMiddleware())
 
 	// 启用操作日志中间件
-	r.Use(middleware.OperationLogMiddleware())
+	r.Use(operationlog.OperationLogMiddleware())
 
 	// 注册所有路由
-	routes.InitRoutes(r)
+	InitRoutes(r)
 
 	host := config.Conf.System.Host
 	port := config.Conf.System.Port

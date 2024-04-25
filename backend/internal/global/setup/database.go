@@ -5,12 +5,12 @@ import (
 
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
+	accountModel "micro-net-hub/internal/module/account/model"
 	apiMgrModel "micro-net-hub/internal/module/apimgr/model"
 	fieldRelationModel "micro-net-hub/internal/module/goldap/field_relation/model"
 	opLogModel "micro-net-hub/internal/module/operationlog/model"
 	siteNavModel "micro-net-hub/internal/module/sitenav/model"
 	totpModel "micro-net-hub/internal/module/totp/model"
-	userModel "micro-net-hub/internal/module/user/model"
 
 	"github.com/glebarez/sqlite"
 	"gorm.io/driver/mysql"
@@ -33,10 +33,10 @@ func InitDB() {
 // 自动迁移表结构
 func dbAutoMigrate() {
 	_ = global.DB.AutoMigrate(
-		&userModel.User{},
-		&userModel.Role{},
-		&userModel.Group{},
-		&userModel.Menu{},
+		&accountModel.User{},
+		&accountModel.Role{},
+		&accountModel.Group{},
+		&accountModel.Menu{},
 		&totpModel.Totp{},
 		&apiMgrModel.Api{},
 		&opLogModel.OperationLog{},

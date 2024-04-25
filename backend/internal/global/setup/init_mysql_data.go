@@ -6,9 +6,9 @@ import (
 
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
+	accountModel "micro-net-hub/internal/module/account/model"
 	apiMgrModel "micro-net-hub/internal/module/apimgr/model"
 	sitenavModel "micro-net-hub/internal/module/sitenav/model"
-	userModel "micro-net-hub/internal/module/user/model"
 	"micro-net-hub/internal/tools"
 
 	"github.com/thoas/go-funk"
@@ -22,7 +22,7 @@ func InitData() {
 		return
 	}
 
-	u := new(userModel.User)
+	u := new(accountModel.User)
 	err := global.DB.First(u, gorm.Model{ID: 1}).Error
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		global.Log.Warnf("数据库中已存在用户数据，无需初始化数据!")
@@ -30,7 +30,7 @@ func InitData() {
 	}
 
 	// 1.写入角色数据
-	roles := []*userModel.Role{
+	roles := []*accountModel.Role{
 		{
 			Model:   gorm.Model{ID: 1},
 			Name:    "Admins",
@@ -60,7 +60,7 @@ func InitData() {
 		},
 	}
 
-	// newRoles := make([]*userModel.Role, 0)
+	// newRoles := make([]*accountModel.Role, 0)
 	// for _, role := range roles {
 	// 	err := global.DB.First(&role, role.ID).Error
 	// 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -90,7 +90,7 @@ func InitData() {
 	var sysMgrGID uint = 2
 	var OperationLogGID uint = 3
 
-	menus := []userModel.Menu{
+	menus := []accountModel.Menu{
 		{
 			Model:     gorm.Model{ID: userMgrGID},
 			Name:      "UserManage",
@@ -232,7 +232,7 @@ func InitData() {
 		},
 	}
 
-	// newMenus := make([]userModel.Menu, 0)
+	// newMenus := make([]accountModel.Menu, 0)
 	// for _, menu := range menus {
 	// 	err := global.DB.First(&menu, menu.ID).Error
 	// 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -256,7 +256,7 @@ func InitData() {
 	}
 
 	// 3.写入用户
-	users := []*userModel.User{
+	users := []*accountModel.User{
 		{
 			Model:         gorm.Model{ID: 1},
 			Username:      "admin",
@@ -278,7 +278,7 @@ func InitData() {
 		},
 	}
 
-	// newUsers := make([]*userModel.User, 0)
+	// newUsers := make([]*accountModel.User, 0)
 	// for _, user := range users {
 	// 	err := global.DB.First(&user, user.ID).Error
 	// 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -754,7 +754,7 @@ func InitData() {
 
 	// 5. 将角色绑定给菜单
 	// newApi := make([]apiMgrModel.Api, 0)
-	// newRoleCasbin := make([]userModel.RoleCasbin, 0)
+	// newRoleCasbin := make([]accountModel.RoleCasbin, 0)
 	// for i, api := range apis {
 	// 	api.ID = uint(i + 1)
 	// 	err := global.DB.First(&api, api.ID).Error
@@ -762,7 +762,7 @@ func InitData() {
 	// 		newApi = append(newApi, api)
 
 	// 		// 管理员拥有所有API权限
-	// 		newRoleCasbin = append(newRoleCasbin, userModel.RoleCasbin{
+	// 		newRoleCasbin = append(newRoleCasbin, accountModel.RoleCasbin{
 	// 			Keyword: roles[adminRID].Keyword,
 	// 			Path:    api.Path,
 	// 			Method:  api.Method,
@@ -784,7 +784,7 @@ func InitData() {
 	// 		}
 
 	// 		if funk.ContainsString(basePaths, api.Path) {
-	// 			newRoleCasbin = append(newRoleCasbin, userModel.RoleCasbin{
+	// 			newRoleCasbin = append(newRoleCasbin, accountModel.RoleCasbin{
 	// 				Keyword: roles[userRID].Keyword,
 	// 				Path:    api.Path,
 	// 				Method:  api.Method,
@@ -815,9 +815,9 @@ func InitData() {
 	// }
 
 	// 管理员拥有所有API权限
-	roleCasbin := make([]userModel.RoleCasbin, 0)
+	roleCasbin := make([]accountModel.RoleCasbin, 0)
 	for _, api := range apis {
-		roleCasbin = append(roleCasbin, userModel.RoleCasbin{
+		roleCasbin = append(roleCasbin, accountModel.RoleCasbin{
 			Keyword: roles[0].Keyword,
 			Path:    api.Path,
 			Method:  api.Method,
@@ -839,7 +839,7 @@ func InitData() {
 		}
 
 		if funk.ContainsString(basePaths, api.Path) {
-			roleCasbin = append(roleCasbin, userModel.RoleCasbin{
+			roleCasbin = append(roleCasbin, accountModel.RoleCasbin{
 				Keyword: roles[1].Keyword,
 				Path:    api.Path,
 				Method:  api.Method,
@@ -858,7 +858,7 @@ func InitData() {
 	}
 
 	// 6.写入分组
-	groups := []userModel.Group{
+	groups := []accountModel.Group{
 		{
 			Model:              gorm.Model{ID: 1},
 			GroupName:          "root",
@@ -874,7 +874,7 @@ func InitData() {
 	}
 
 	if config.Conf.DingTalk != nil && config.Conf.DingTalk.Flag != "" {
-		groups = append(groups, userModel.Group{
+		groups = append(groups, accountModel.Group{
 			Model:              gorm.Model{ID: 2},
 			GroupName:          config.Conf.DingTalk.Flag,
 			Remark:             config.Conf.DingTalk.Flag,
@@ -889,7 +889,7 @@ func InitData() {
 	}
 
 	if config.Conf.WeCom != nil && config.Conf.WeCom.Flag != "" {
-		groups = append(groups, userModel.Group{
+		groups = append(groups, accountModel.Group{
 			Model:              gorm.Model{ID: 3},
 			GroupName:          config.Conf.WeCom.Flag,
 			Remark:             config.Conf.WeCom.Flag,
@@ -904,7 +904,7 @@ func InitData() {
 	}
 
 	if config.Conf.FeiShu != nil && config.Conf.FeiShu.Flag != "" {
-		groups = append(groups, userModel.Group{
+		groups = append(groups, accountModel.Group{
 			Model:              gorm.Model{ID: 4},
 			GroupName:          config.Conf.FeiShu.Flag,
 			Remark:             config.Conf.FeiShu.Flag,
@@ -918,7 +918,7 @@ func InitData() {
 		})
 	}
 
-	// newGroups := make([]userModel.Group, 0)
+	// newGroups := make([]accountModel.Group, 0)
 	// for _, group := range groups {
 	// 	err := global.DB.First(&group, group.ID).Error
 	// 	if errors.Is(err, gorm.ErrRecordNotFound) {
