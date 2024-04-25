@@ -73,7 +73,7 @@ export function changeUserStatus(data) {
 // 同步钉钉用户信息
 export function syncDingTalkUsersApi(data) {
   return request({
-    url: "/api/user/syncDingTalkUsers",
+    url: "/api/goldap/sync/syncDingTalkUsers",
     method: "post",
     data
   });
@@ -82,7 +82,7 @@ export function syncDingTalkUsersApi(data) {
 // 同步企业微信用户信息
 export function syncWeComUsersApi(data) {
   return request({
-    url: "/api/user/syncWeComUsers",
+    url: "/api/goldap/sync/syncWeComUsers",
     method: "post",
     data
   });
@@ -91,7 +91,7 @@ export function syncWeComUsersApi(data) {
 // 同步飞书用户信息
 export function syncFeiShuUsersApi(data) {
   return request({
-    url: "/api/user/syncFeiShuUsers",
+    url: "/api/goldap/sync/syncFeiShuUsers",
     method: "post",
     data
   });
@@ -100,7 +100,7 @@ export function syncFeiShuUsersApi(data) {
 // 同步openldap用户信息
 export function syncOpenLdapUsersApi(data) {
   return request({
-    url: "/api/user/syncOpenLdapUsers",
+    url: "/api/goldap/sync/syncOpenLdapUsers",
     method: "post",
     data
   });
@@ -109,7 +109,7 @@ export function syncOpenLdapUsersApi(data) {
 // 同步Sql中的用户到ldap
 export function syncSqlUsers(data) {
   return request({
-    url: "/api/user/syncSqlUsers",
+    url: "/api/goldap/sync/syncSqlUsers",
     method: "post",
     data
   });
