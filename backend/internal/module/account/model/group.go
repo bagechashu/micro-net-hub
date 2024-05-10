@@ -152,17 +152,8 @@ func (gs *Groups) GetGroupsByIds(ids []uint) (err error) {
 	return err
 }
 
-// GroupListReq 获取资源列表结构体
-type GroupListReq struct {
-	GroupName string `json:"groupName" form:"groupName"`
-	Remark    string `json:"remark" form:"remark"`
-	PageNum   int    `json:"pageNum" form:"pageNum"`
-	PageSize  int    `json:"pageSize" form:"pageSize"`
-	SyncState uint   `json:"syncState" form:"syncState"`
-}
-
 // List 获取数据列表
-func (req GroupListReq) List() ([]*Group, error) {
+func (gs *Groups) List(req *Group, pageNum int, pageSize int) error {
 	var list []*Group
 	db := global.DB.Model(&Group{}).Order("created_at DESC")
 
@@ -179,14 +170,13 @@ func (req GroupListReq) List() ([]*Group, error) {
 		db = db.Where("sync_state = ?", syncState)
 	}
 
-	pageReq := tools.NewPageOption(req.PageNum, req.PageSize)
+	pageReq := tools.NewPageOption(pageNum, pageSize)
 	err := db.Offset(pageReq.PageNum).Limit(pageReq.PageSize).Preload("Users").Find(&list).Error
-	return list, err
+	return err
 }
 
 // List 获取数据列表
-func (req GroupListReq) ListTree() ([]*Group, error) {
-	var gs = NewGroups()
+func (gs *Groups) ListTree(req *Group, pageNum int, pageSize int) error {
 	db := global.DB.Model(&Group{}).Order("created_at DESC")
 
 	groupName := strings.TrimSpace(req.GroupName)
@@ -198,96 +188,9 @@ func (req GroupListReq) ListTree() ([]*Group, error) {
 		db = db.Where("remark LIKE ?", fmt.Sprintf("%%%s%%", groupRemark))
 	}
 
-	pageReq := tools.NewPageOption(req.PageNum, req.PageSize)
+	pageReq := tools.NewPageOption(pageNum, pageSize)
 	err := db.Offset(pageReq.PageNum).Limit(pageReq.PageSize).Find(&gs).Error
-	return gs, err
-}
-
-// GroupListAllReq 获取资源列表结构体，不分页
-type GroupListAllReq struct {
-	GroupName          string `json:"groupName" form:"groupName"`
-	GroupType          string `json:"groupType" form:"groupType"`
-	Remark             string `json:"remark" form:"remark"`
-	Source             string `json:"source" form:"source"`
-	SourceDeptId       string `json:"sourceDeptId"`
-	SourceDeptParentId string `json:"SourceDeptParentId"`
-}
-
-// GroupAddReq 添加资源结构体
-type GroupAddReq struct {
-	GroupType string `json:"groupType" validate:"required,min=1,max=20"`
-	GroupName string `json:"groupName" validate:"required,min=1,max=128"`
-	//父级Id 大于等于0 必填
-	ParentId uint   `json:"parentId" validate:"omitempty,min=0"`
-	Remark   string `json:"remark" validate:"min=0,max=128"` // 分组的中文描述
-}
-
-// DingTalkGroupAddReq 添加钉钉资源结构体
-type DingGroupAddReq struct {
-	GroupType string `json:"groupType" validate:"required,min=1,max=20"`
-	GroupName string `json:"groupName" validate:"required,min=1,max=128"`
-	//父级Id 大于等于0 必填
-	ParentId           uint   `json:"parentId" validate:"omitempty,min=0"`
-	Remark             string `json:"remark" validate:"min=0,max=128"` // 分组的中文描述
-	SourceDeptId       string `json:"sourceDeptId"`
-	Source             string `json:"source"`
-	SourceDeptParentId string `json:"SourceDeptParentId"`
-	SourceUserNum      int    `json:"sourceUserNum"`
-}
-
-// WeComGroupAddReq 添加企业微信资源结构体
-type WeComGroupAddReq struct {
-	GroupType string `json:"groupType" validate:"required,min=1,max=20"`
-	GroupName string `json:"groupName" validate:"required,min=1,max=128"`
-	//父级Id 大于等于0 必填
-	ParentId           uint   `json:"parentId" validate:"omitempty,min=0"`
-	Remark             string `json:"remark" validate:"min=0,max=128"` // 分组的中文描述
-	SourceDeptId       string `json:"sourceDeptId"`
-	Source             string `json:"source"`
-	SourceDeptParentId string `json:"SourceDeptParentId"`
-	SourceUserNum      int    `json:"sourceUserNum"`
-}
-
-// GroupUpdateReq 更新资源结构体
-type GroupUpdateReq struct {
-	ID        uint   `json:"id" form:"id" validate:"required"`
-	GroupName string `json:"groupName" validate:"required,min=1,max=128"`
-	Remark    string `json:"remark" validate:"min=0,max=128"` // 分组的中文描述
-}
-
-// GroupDeleteReq 删除资源结构体
-type GroupDeleteReq struct {
-	GroupIds []uint `json:"groupIds" validate:"required"`
-}
-
-// GroupGetTreeReq 获取资源树结构体
-type GroupGetTreeReq struct {
-	GroupName string `json:"groupName" form:"groupName"`
-	Remark    string `json:"remark" form:"remark"`
-	PageNum   int    `json:"pageNum" form:"pageNum"`
-	PageSize  int    `json:"pageSize" form:"pageSize"`
-}
-
-type GroupAddUserReq struct {
-	GroupID uint   `json:"groupId" validate:"required"`
-	UserIds []uint `json:"userIds" validate:"required"`
-}
-
-type GroupRemoveUserReq struct {
-	GroupID uint   `json:"groupId" validate:"required"`
-	UserIds []uint `json:"userIds" validate:"required"`
-}
-
-// UserInGroupReq 在分组内的用户
-type UserInGroupReq struct {
-	GroupID  uint   `json:"groupId" form:"groupId" validate:"required"`
-	Nickname string `json:"nickname" form:"nickname"`
-}
-
-// UserNoInGroupReq 不在分组内的用户
-type UserNoInGroupReq struct {
-	GroupID  uint   `json:"groupId" form:"groupId" validate:"required"`
-	Nickname string `json:"nickname" form:"nickname"`
+	return err
 }
 
 // SyncDingTalkDeptsReq 同步钉钉部门信息
@@ -309,26 +212,4 @@ type SyncOpenLdapDeptsReq struct {
 // SyncOpenLdapDeptsReq 同步原ldap部门信息
 type SyncSqlGrooupsReq struct {
 	GroupIds []uint `json:"groupIds" validate:"required"`
-}
-
-type GroupListRsp struct {
-	Total  int64   `json:"total"`
-	Groups []Group `json:"groups"`
-}
-
-type GuserRsp struct {
-	UserId       int64  `json:"userId"`
-	UserName     string `json:"userName"`
-	NickName     string `json:"nickName"`
-	Mail         string `json:"mail"`
-	JobNumber    string `json:"jobNumber"`
-	Mobile       string `json:"mobile"`
-	Introduction string `json:"introduction"`
-}
-
-type GroupUsersRsp struct {
-	GroupId     int64      `json:"groupId"`
-	GroupName   string     `json:"groupName"`
-	GroupRemark string     `json:"groupRemark"`
-	UserList    []GuserRsp `json:"userList"`
 }
