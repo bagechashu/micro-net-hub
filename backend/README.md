@@ -36,6 +36,12 @@ go run cmd/gen_pass/main.go
 # JrHB7jOVjZOKLa46/bv96rg80aYPRzdsxl5kQJhAVdnMH/nwsqAq696suIwE5+CbgW+W6Shec0mO4tZeojcCPRyAwdNNG9+OAMuH2R5+edfaE2OBe57S07ZBg8uJfmSjgFYxOx1FOSUtCr9bdKgjWFWTtMR714AB23TZ8unSvHY=   # admin_pass
 ```
 
+or
+
+```shell
+curl "http://127.0.0.1:9000/api/base/encryptpwd?passwd=admin_pass"
+```
+
 ```sql
 # Update admin password after renew public key
 UPDATE `users` SET password='JrHB7jOVjZOKLa46/bv96rg80aYPRzdsxl5kQJhAVdnMH/nwsqAq696suIwE5+CbgW+W6Shec0mO4tZeojcCPRyAwdNNG9+OAMuH2R5+edfaE2OBe57S07ZBg8uJfmSjgFYxOx1FOSUtCr9bdKgjWFWTtMR714AB23TZ8unSvHY=' WHERE username='admin';

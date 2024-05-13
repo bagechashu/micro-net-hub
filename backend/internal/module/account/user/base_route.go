@@ -9,8 +9,8 @@ import (
 func InitBaseRoutes(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) gin.IRoutes {
 	base := r.Group("/base")
 	{
-		base.GET("encryptpwd", EncryptPasswd) // 生成加密密码
-		base.GET("decryptpwd", DecryptPasswd) // 密码解密为明文
+		base.GET("/encryptpwd", EncryptPasswd) // 生成加密密码
+		// base.GET("/decryptpwd", DecryptPasswd) // 密码解密为明文
 		// 登录登出刷新token无需鉴权
 		base.POST("/login", authMiddleware.LoginHandler)
 		base.POST("/logout", authMiddleware.LogoutHandler)
