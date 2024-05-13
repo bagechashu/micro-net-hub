@@ -5,7 +5,7 @@ import (
 
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
-	accountModel "micro-net-hub/internal/module/account/model"
+	"micro-net-hub/internal/module/account/model"
 	"micro-net-hub/internal/server/helper"
 	"micro-net-hub/internal/tools"
 
@@ -40,7 +40,7 @@ func InitAuth() (*jwt.GinJWTMiddleware, error) {
 // 有效载荷处理
 func payloadFunc(data interface{}) jwt.MapClaims {
 	if v, ok := data.(tools.H); ok {
-		var user accountModel.User
+		var user model.User
 		// 将用户json转为结构体
 		tools.JsonI2Struct(v["user"], &user)
 		return jwt.MapClaims{
@@ -61,9 +61,15 @@ func identityHandler(c *gin.Context) interface{} {
 	}
 }
 
+// RegisterAndLoginReq 用户登录结构体
+type RegisterAndLoginReq struct {
+	Username string `form:"username" json:"username" binding:"required"`
+	Password string `form:"password" json:"password" binding:"required"`
+}
+
 // 校验token的正确性, 处理登录逻辑
 func login(c *gin.Context) (interface{}, error) {
-	var req accountModel.RegisterAndLoginReq
+	var req RegisterAndLoginReq
 	// 请求json绑定
 	if err := c.ShouldBind(&req); err != nil {
 		return "", err
@@ -75,7 +81,7 @@ func login(c *gin.Context) (interface{}, error) {
 		return nil, err
 	}
 
-	u := &accountModel.User{
+	u := &model.User{
 		Username: req.Username,
 		Password: string(decodeData),
 	}
@@ -95,7 +101,7 @@ func login(c *gin.Context) (interface{}, error) {
 func authorizator(data interface{}, c *gin.Context) bool {
 	if v, ok := data.(tools.H); ok {
 		userStr := v["user"].(string)
-		var user accountModel.User
+		var user model.User
 		// 将用户json转为结构体
 		tools.Json2Struct(userStr, &user)
 		// 将用户保存到context, api调用时取数据方便
