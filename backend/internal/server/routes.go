@@ -10,6 +10,7 @@ import (
 	"micro-net-hub/internal/module/account/role"
 	"micro-net-hub/internal/module/account/user"
 	"micro-net-hub/internal/module/apimgr"
+	"micro-net-hub/internal/module/dashboard"
 	fieldrelation "micro-net-hub/internal/module/goldap/field_relation"
 	"micro-net-hub/internal/module/goldap/sync"
 	"micro-net-hub/internal/module/operationlog"
@@ -40,11 +41,12 @@ func InitRoutes(r *gin.Engine) {
 
 	// Account module routes
 	{
-		user.InitBaseRoutes(apiGroup, authMiddleware)   // 注册基础路由, 不需要jwt认证中间件,不需要casbin中间件
-		user.InitUserRoutes(apiGroup, authMiddleware)   // 注册用户路由, jwt认证中间件,casbin鉴权中间件
-		group.InitGroupRoutes(apiGroup, authMiddleware) // 注册分组路由, jwt认证中间件,casbin鉴权中间件
-		role.InitRoleRoutes(apiGroup, authMiddleware)   // 注册角色路由, jwt认证中间件,casbin鉴权中间件
-		menu.InitMenuRoutes(apiGroup, authMiddleware)   // 注册菜单路由, jwt认证中间件,casbin鉴权中间件
+		dashboard.InitDashboardRoutes(apiGroup, authMiddleware) // 注册dashboard路由, 不需要jwt认证中间件,不需要casbin中间件
+		user.InitBaseRoutes(apiGroup, authMiddleware)           // 注册基础路由, 不需要jwt认证中间件,不需要casbin中间件
+		user.InitUserRoutes(apiGroup, authMiddleware)           // 注册用户路由, jwt认证中间件,casbin鉴权中间件
+		group.InitGroupRoutes(apiGroup, authMiddleware)         // 注册分组路由, jwt认证中间件,casbin鉴权中间件
+		role.InitRoleRoutes(apiGroup, authMiddleware)           // 注册角色路由, jwt认证中间件,casbin鉴权中间件
+		menu.InitMenuRoutes(apiGroup, authMiddleware)           // 注册菜单路由, jwt认证中间件,casbin鉴权中间件
 
 	}
 
