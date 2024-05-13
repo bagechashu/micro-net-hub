@@ -28,8 +28,10 @@ A tool for managing your OpenLDAP/Ocserv/Navigation at a private network.
 
 # TODO
 
-- VPNManager
-- CoreDnsManager
+- Config Center
+- VPN Manager
+- CoreDns Manager
+- Cron Manager
 
 # Architechture
 

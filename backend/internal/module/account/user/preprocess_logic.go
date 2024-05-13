@@ -164,8 +164,20 @@ func CommonUpdateUser(oldUser, newUser *accountModel.User, groupId []uint) error
 	return nil
 }
 
-// BuildGroupData 根据数据与动态字段组装成分组数据
-func BuildGroupData(flag string, remoteData map[string]interface{}) (*accountModel.Group, error) {
+// ConvertDeptData 将部门信息转成本地结构体
+func ConvertDeptData(flag string, remoteData []map[string]interface{}) (groups []*accountModel.Group, err error) {
+	for _, dept := range remoteData {
+		group, err := buildGroupData(flag, dept)
+		if err != nil {
+			return nil, err
+		}
+		groups = append(groups, group)
+	}
+	return
+}
+
+// buildGroupData 根据数据与动态字段组装成分组数据
+func buildGroupData(flag string, remoteData map[string]interface{}) (*accountModel.Group, error) {
 	output, err := json.Marshal(&remoteData)
 	if err != nil {
 		return nil, err
@@ -197,8 +209,27 @@ func BuildGroupData(flag string, remoteData map[string]interface{}) (*accountMod
 	return g, nil
 }
 
-// BuildUserData 根据数据与动态字段组装成用户数据
-func BuildUserData(flag string, remoteData map[string]interface{}) (*accountModel.User, error) {
+// ConvertUserData 将用户信息转成本地结构体
+func ConvertUserData(flag string, remoteData []map[string]interface{}) (users []*accountModel.User, err error) {
+	for _, staff := range remoteData {
+		groupIds, err := accountModel.DeptIdsToGroupIds(staff["department_ids"].([]string))
+		if err != nil {
+			return nil, helper.NewMySqlError(fmt.Errorf("将部门ids转换为内部部门id失败：%s", err.Error()))
+		}
+		user, err := buildUserData(flag, staff)
+		if err != nil {
+			return nil, err
+		}
+		if user != nil {
+			user.DepartmentId = tools.SliceToString(groupIds, ",")
+			users = append(users, user)
+		}
+	}
+	return
+}
+
+// buildUserData 根据数据与动态字段组装成用户数据
+func buildUserData(flag string, remoteData map[string]interface{}) (*accountModel.User, error) {
 	output, err := json.Marshal(&remoteData)
 	if err != nil {
 		return nil, err
@@ -252,38 +283,6 @@ func BuildUserData(flag string, remoteData map[string]interface{}) (*accountMode
 	}
 	return u, nil
 }
-
-// ConvertDeptData 将部门信息转成本地结构体
-func ConvertDeptData(flag string, remoteData []map[string]interface{}) (groups []*accountModel.Group, err error) {
-	for _, dept := range remoteData {
-		group, err := BuildGroupData(flag, dept)
-		if err != nil {
-			return nil, err
-		}
-		groups = append(groups, group)
-	}
-	return
-}
-
-// ConvertUserData 将用户信息转成本地结构体
-func ConvertUserData(flag string, remoteData []map[string]interface{}) (users []*accountModel.User, err error) {
-	for _, staff := range remoteData {
-		groupIds, err := accountModel.DeptIdsToGroupIds(staff["department_ids"].([]string))
-		if err != nil {
-			return nil, helper.NewMySqlError(fmt.Errorf("将部门ids转换为内部部门id失败：%s", err.Error()))
-		}
-		user, err := BuildUserData(flag, staff)
-		if err != nil {
-			return nil, err
-		}
-		if user != nil {
-			user.DepartmentId = tools.SliceToString(groupIds, ",")
-			users = append(users, user)
-		}
-	}
-	return
-}
-
 func GroupListToTree(rootId string, groupList []*accountModel.Group) *accountModel.Group {
 	// 创建空根节点
 	rootGroup := &accountModel.Group{SourceDeptId: rootId}

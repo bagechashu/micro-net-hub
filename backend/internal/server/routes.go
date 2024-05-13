@@ -23,7 +23,7 @@ import (
 // 初始化
 func InitRoutes(r *gin.Engine) {
 	// 初始化JWT认证中间件
-	authMiddleware, err := user.InitAuth()
+	authMiddleware, err := user.InitAuthMiddleware()
 	if err != nil {
 		global.Log.Panicf("初始化JWT中间件失败：%v", err)
 		panic(fmt.Sprintf("初始化JWT中间件失败：%v", err))
