@@ -253,7 +253,7 @@ func (mgr WeChat) AddUsers(user *accountModel.User) error {
 	var gs = accountModel.NewGroups()
 	if !user.Exist(tools.H{"user_dn": user.UserDN}) {
 		// 获取用户将要添加的分组
-		err := gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentId, ","))
+		err := gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentIds, ","))
 		if err != nil {
 			return helper.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
 		}
@@ -278,7 +278,7 @@ func (mgr WeChat) AddUsers(user *accountModel.User) error {
 				return err
 			}
 			// 获取用户将要添加的分组
-			err := gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentId, ","))
+			err := gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentIds, ","))
 			if err != nil {
 				return helper.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
 			}
@@ -322,7 +322,7 @@ func (mgr WeChat) AddUsers(user *accountModel.User) error {
 			if user.Mobile == "" {
 				user.Mobile = oldData.Mobile
 			}
-			if err = userProcess.CommonUpdateUser(oldData, user, tools.StringToSlice(user.DepartmentId, ",")); err != nil {
+			if err = userProcess.CommonUpdateUser(oldData, user, tools.StringToSlice(user.DepartmentIds, ",")); err != nil {
 				return err
 			}
 		}

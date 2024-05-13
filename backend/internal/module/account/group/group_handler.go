@@ -517,7 +517,7 @@ func AddUser(c *gin.Context) {
 		}
 		newData := oldData
 		// 添加新增的分组ID与部门
-		newData.DepartmentId = oldData.DepartmentId + "," + strconv.Itoa(int(req.GroupID))
+		newData.DepartmentIds = oldData.DepartmentIds + "," + strconv.Itoa(int(req.GroupID))
 		newData.Departments = oldData.Departments + "," + group.GroupName
 		err = newData.Update()
 		if err != nil {
@@ -602,14 +602,14 @@ func RemoveUser(c *gin.Context) {
 			}
 		}
 		// 删掉移除的分组id
-		for _, v := range strings.Split(oldData.DepartmentId, ",") {
+		for _, v := range strings.Split(oldData.DepartmentIds, ",") {
 			if v != strconv.Itoa(int(req.GroupID)) {
 				newDeptIds = append(newDeptIds, v)
 			}
 		}
 
 		newData.Departments = strings.Join(newDepts, ",")
-		newData.DepartmentId = strings.Join(newDeptIds, ",")
+		newData.DepartmentIds = strings.Join(newDeptIds, ",")
 		err = newData.Update()
 		if err != nil {
 			helper.ErrV2(c, helper.NewOperationError(fmt.Errorf("处理用户的部门数据失败:"+err.Error())))

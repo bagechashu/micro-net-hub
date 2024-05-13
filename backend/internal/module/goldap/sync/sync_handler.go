@@ -160,7 +160,7 @@ func SyncSqlUsers(c *gin.Context) {
 		}
 		// 获取用户将要添加的分组
 		var gs = accountModel.NewGroups()
-		err := gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentId, ","))
+		err := gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentIds, ","))
 		if err != nil {
 			helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败"+err.Error())))
 			return

@@ -243,6 +243,7 @@ func LdapUserGetAll() (ret []*LdapUser, err error) {
 			if err != nil {
 				return ret, err
 			}
+			// TODO: 调试 LdapUser 中 DepartmentIds 和 User 中 DepartmentIds 的关系
 			ret = append(ret, &LdapUser{
 				Name:             name,
 				DN:               v.DN,
@@ -310,7 +311,7 @@ func LdapUserSyncToDB(user *accountModel.User) error {
 		// 获取用户将要添加的分组
 
 		var gs = accountModel.NewGroups()
-		err = gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentId, ","))
+		err = gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentIds, ","))
 		if err != nil {
 			return helper.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
 		}

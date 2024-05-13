@@ -74,7 +74,7 @@ func (mgr OpenLdap) SyncUsers() *helper.RspError {
 			Introduction:  staff.CN,
 			Creator:       "system",
 			Source:        "openldap",
-			DepartmentId:  tools.SliceToString(groupIds, ","),
+			DepartmentIds: tools.SliceToString(groupIds, ","),
 			SourceUserId:  staff.Name,
 			SourceUnionId: staff.Name,
 			Roles:         roles,

@@ -117,7 +117,7 @@ func CommonUpdateUser(oldUser, newUser *accountModel.User, groupId []uint) error
 	}
 
 	//判断部门信息是否有变化有变化则更新相应的数据库
-	oldDeptIds := tools.StringToSlice(oldUser.DepartmentId, ",")
+	oldDeptIds := tools.StringToSlice(oldUser.DepartmentIds, ",")
 	addDeptIds, removeDeptIds := tools.ArrUintCmp(oldDeptIds, groupId)
 
 	// 先处理添加的部门
@@ -221,7 +221,7 @@ func ConvertUserData(flag string, remoteData []map[string]interface{}) (users []
 			return nil, err
 		}
 		if user != nil {
-			user.DepartmentId = tools.SliceToString(groupIds, ",")
+			user.DepartmentIds = tools.SliceToString(groupIds, ",")
 			users = append(users, user)
 		}
 	}
