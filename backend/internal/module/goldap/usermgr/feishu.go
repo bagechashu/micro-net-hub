@@ -14,8 +14,6 @@ import (
 	accountModel "micro-net-hub/internal/module/account/model"
 	userProcess "micro-net-hub/internal/module/account/user"
 	"micro-net-hub/internal/module/goldap/ldapmgr"
-
-	"github.com/gin-gonic/gin"
 )
 
 type FeiShu struct {
@@ -35,50 +33,48 @@ func NewFeiShu() FeiShu {
 }
 
 // 通过飞书获取部门信息
-func (mgr FeiShu) SyncDepts(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
+func (mgr FeiShu) SyncDepts() *helper.RspError {
 	// 1.获取所有部门
 	deptSource, err := mgr.GetAllDepts()
 	if err != nil {
-		return nil, helper.NewOperationError(fmt.Errorf("获取飞书部门列表失败：%s", err.Error()))
+		return helper.NewOperationError(fmt.Errorf("获取飞书部门列表失败：%s", err.Error()))
 	}
 	depts, err := userProcess.ConvertDeptData(config.Conf.FeiShu.Flag, deptSource)
 	if err != nil {
-		return nil, helper.NewOperationError(fmt.Errorf("转换飞书部门数据失败：%s", err.Error()))
+		return helper.NewOperationError(fmt.Errorf("转换飞书部门数据失败：%s", err.Error()))
 	}
 
 	// 2.将远程数据转换成树
 	deptTree := userProcess.GroupListToTree(fmt.Sprintf("%s_0", config.Conf.FeiShu.Flag), depts)
 
 	// 3.根据树进行创建
-	err = mgr.addDeptsRec(deptTree.Children)
-
-	return nil, err
+	return mgr.addDeptsRec(deptTree.Children)
 }
 
 // 根据现有数据库同步到的部门信息，开启用户同步
-func (mgr FeiShu) SyncUsers(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
+func (mgr FeiShu) SyncUsers() *helper.RspError {
 	// 1.获取飞书用户列表
 	staffSource, err := mgr.GetAllUsers()
 	if err != nil {
-		return nil, helper.NewOperationError(fmt.Errorf("获取飞书用户列表失败：%s", err.Error()))
+		return helper.NewOperationError(fmt.Errorf("获取飞书用户列表失败：%s", err.Error()))
 	}
 	staffs, err := userProcess.ConvertUserData(config.Conf.FeiShu.Flag, staffSource)
 	if err != nil {
-		return nil, helper.NewOperationError(fmt.Errorf("转换飞书用户数据失败：%s", err.Error()))
+		return helper.NewOperationError(fmt.Errorf("转换飞书用户数据失败：%s", err.Error()))
 	}
 	// 2.遍历用户，开始写入
 	for _, staff := range staffs {
 		// 入库
 		err = mgr.AddUsers(staff)
 		if err != nil {
-			return nil, helper.NewOperationError(fmt.Errorf("SyncFeiShuUsers写入用户失败：%s", err.Error()))
+			return helper.NewOperationError(fmt.Errorf("SyncFeiShuUsers写入用户失败：%s", err.Error()))
 		}
 	}
 
 	// 3.获取飞书已离职用户id列表
 	userIds, err := mgr.GetLeaveUserIds()
 	if err != nil {
-		return nil, helper.NewOperationError(fmt.Errorf("SyncFeiShuUsers获取飞书离职用户列表失败：%s", err.Error()))
+		return helper.NewOperationError(fmt.Errorf("SyncFeiShuUsers获取飞书离职用户列表失败：%s", err.Error()))
 	}
 	// 4.遍历id，开始处理
 	for _, uid := range userIds {
@@ -91,22 +87,22 @@ func (mgr FeiShu) SyncUsers(c *gin.Context, req interface{}) (data interface{}, 
 			user := new(accountModel.User)
 			err = user.Find(tools.H{"source_union_id": fmt.Sprintf("%s_%s", config.Conf.FeiShu.Flag, uid)})
 			if err != nil {
-				return nil, helper.NewMySqlError(fmt.Errorf("在MySQL查询用户失败: " + err.Error()))
+				return helper.NewMySqlError(fmt.Errorf("在MySQL查询用户失败: " + err.Error()))
 			}
 			// 先从ldap删除用户
 			err = ldapmgr.LdapUserDelete(user.UserDN)
 			if err != nil {
-				return nil, helper.NewLdapError(fmt.Errorf("在LDAP删除用户失败" + err.Error()))
+				return helper.NewLdapError(fmt.Errorf("在LDAP删除用户失败" + err.Error()))
 			}
 			// 然后更新MySQL中用户状态
 			err = user.ChangeStatus(2)
 			if err != nil {
-				return nil, helper.NewMySqlError(fmt.Errorf("在MySQL更新用户状态失败: " + err.Error()))
+				return helper.NewMySqlError(fmt.Errorf("在MySQL更新用户状态失败: " + err.Error()))
 			}
 		}
 	}
 
-	return nil, nil
+	return nil
 }
 
 // 官方文档： https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/reference/contact-v3/department/children
@@ -332,7 +328,7 @@ func (mgr FeiShu) GetLeaveUserIds() ([]string, error) {
 }
 
 // 添加部门
-func (mgr FeiShu) addDeptsRec(depts []*accountModel.Group) error {
+func (mgr FeiShu) addDeptsRec(depts []*accountModel.Group) *helper.RspError {
 	for _, dept := range depts {
 		err := mgr.AddDept(dept)
 		if err != nil {
@@ -349,7 +345,7 @@ func (mgr FeiShu) addDeptsRec(depts []*accountModel.Group) error {
 }
 
 // AddGroup 添加部门数据
-func (mgr FeiShu) AddDept(group *accountModel.Group) error {
+func (mgr FeiShu) AddDept(group *accountModel.Group) *helper.RspError {
 	// 查询当前分组父ID在MySQL中的数据信息
 	parentGroup := new(accountModel.Group)
 	err := parentGroup.Find(tools.H{"source_dept_id": group.SourceDeptParentId})

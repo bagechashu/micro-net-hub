@@ -17,8 +17,6 @@ import (
 	accountModel "micro-net-hub/internal/module/account/model"
 	userProcess "micro-net-hub/internal/module/account/user"
 	"micro-net-hub/internal/module/goldap/ldapmgr"
-
-	"github.com/gin-gonic/gin"
 )
 
 type DingTalk struct {
@@ -40,43 +38,41 @@ func NewDingTalk() DingTalk {
 }
 
 // 通过钉钉获取部门信息
-func (mgr DingTalk) SyncDepts(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
+func (mgr DingTalk) SyncDepts() *helper.RspError {
 	// 1.获取所有部门
 	deptSource, err := mgr.GetAllDepts()
 	if err != nil {
-		return nil, helper.NewOperationError(fmt.Errorf("获取钉钉部门列表失败：%s", err.Error()))
+		return helper.NewOperationError(fmt.Errorf("获取钉钉部门列表失败：%s", err.Error()))
 	}
 	depts, err := userProcess.ConvertDeptData(config.Conf.DingTalk.Flag, deptSource)
 	if err != nil {
-		return nil, helper.NewOperationError(fmt.Errorf("转换钉钉部门数据失败：%s", err.Error()))
+		return helper.NewOperationError(fmt.Errorf("转换钉钉部门数据失败：%s", err.Error()))
 	}
 
 	// 2.将远程数据转换成树
 	deptTree := userProcess.GroupListToTree(fmt.Sprintf("%s_1", config.Conf.DingTalk.Flag), depts)
 
 	// 3.根据树进行创建
-	err = mgr.addDeptsRec(deptTree.Children)
-
-	return nil, err
+	return mgr.addDeptsRec(deptTree.Children)
 }
 
 // 根据现有数据库同步到的部门信息，开启用户同步
-func (mgr DingTalk) SyncUsers(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
+func (mgr DingTalk) SyncUsers() *helper.RspError {
 	// 1.获取钉钉用户列表
 	staffSource, err := mgr.GetAllUsers()
 	if err != nil {
-		return nil, helper.NewOperationError(fmt.Errorf("SyncDingTalkUsers获取钉钉用户列表失败：%s", err.Error()))
+		return helper.NewOperationError(fmt.Errorf("SyncDingTalkUsers获取钉钉用户列表失败：%s", err.Error()))
 	}
 	staffs, err := userProcess.ConvertUserData(config.Conf.DingTalk.Flag, staffSource)
 	if err != nil {
-		return nil, helper.NewOperationError(fmt.Errorf("转换钉钉用户数据失败：%s", err.Error()))
+		return helper.NewOperationError(fmt.Errorf("转换钉钉用户数据失败：%s", err.Error()))
 	}
 	// 2.遍历用户，开始写入
 	for _, staff := range staffs {
 		// 入库
 		err = mgr.AddUsers(staff)
 		if err != nil {
-			return nil, helper.NewOperationError(fmt.Errorf("SyncDingTalkUsers写入用户失败：%s", err.Error()))
+			return helper.NewOperationError(fmt.Errorf("SyncDingTalkUsers写入用户失败：%s", err.Error()))
 		}
 	}
 
@@ -89,7 +85,7 @@ func (mgr DingTalk) SyncUsers(c *gin.Context, req interface{}) (data interface{}
 		userIds, err = mgr.GetLeaveUserIdsDateRange(config.Conf.DingTalk.ULeaveRange)
 	}
 	if err != nil {
-		return nil, helper.NewOperationError(fmt.Errorf("SyncDingTalkUsers获取钉钉离职用户列表失败：%s", err.Error()))
+		return helper.NewOperationError(fmt.Errorf("SyncDingTalkUsers获取钉钉离职用户列表失败：%s", err.Error()))
 	}
 	// 4.遍历id，开始处理
 	for _, uid := range userIds {
@@ -102,22 +98,22 @@ func (mgr DingTalk) SyncUsers(c *gin.Context, req interface{}) (data interface{}
 			user := new(accountModel.User)
 			err = user.Find(tools.H{"source_user_id": fmt.Sprintf("%s_%s", config.Conf.DingTalk.Flag, uid)})
 			if err != nil {
-				return nil, helper.NewMySqlError(fmt.Errorf("在MySQL查询用户失败: " + err.Error()))
+				return helper.NewMySqlError(fmt.Errorf("在MySQL查询用户失败: " + err.Error()))
 			}
 			// 先从ldap删除用户
 			err = ldapmgr.LdapUserDelete(user.UserDN)
 			if err != nil {
-				return nil, helper.NewLdapError(fmt.Errorf("在LDAP删除用户失败" + err.Error()))
+				return helper.NewLdapError(fmt.Errorf("在LDAP删除用户失败" + err.Error()))
 			}
 			// 然后更新MySQL中用户状态
 			err = user.ChangeStatus(2)
 			if err != nil {
-				return nil, helper.NewMySqlError(fmt.Errorf("在MySQL更新用户状态失败: " + err.Error()))
+				return helper.NewMySqlError(fmt.Errorf("在MySQL更新用户状态失败: " + err.Error()))
 			}
 		}
 	}
 
-	return nil, nil
+	return nil
 }
 
 // 官方文档地址： https://open.dingtalk.com/document/orgapp-server/obtain-the-department-list
@@ -319,7 +315,7 @@ func (mgr DingTalk) GetLeaveUserIdsDateRange(pushDays uint) ([]string, error) {
 }
 
 // 添加部门
-func (mgr DingTalk) addDeptsRec(depts []*accountModel.Group) error {
+func (mgr DingTalk) addDeptsRec(depts []*accountModel.Group) *helper.RspError {
 	for _, dept := range depts {
 		err := mgr.AddDept(dept)
 		if err != nil {
@@ -336,7 +332,7 @@ func (mgr DingTalk) addDeptsRec(depts []*accountModel.Group) error {
 }
 
 // AddGroup 添加部门数据
-func (mgr DingTalk) AddDept(group *accountModel.Group) error {
+func (mgr DingTalk) AddDept(group *accountModel.Group) *helper.RspError {
 	parentGroup := new(accountModel.Group)
 	err := parentGroup.Find(tools.H{"source_dept_id": group.SourceDeptParentId}) // 查询当前分组父ID在MySQL中的数据信息
 	if err != nil {

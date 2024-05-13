@@ -9,8 +9,6 @@ import (
 	"micro-net-hub/internal/server/helper"
 
 	"micro-net-hub/internal/tools"
-
-	"github.com/gin-gonic/gin"
 )
 
 type OpenLdap struct{}
@@ -20,11 +18,11 @@ func NewOpenLdap() OpenLdap {
 }
 
 // 同步 ldap部门信息 到 数据库
-func (mgr OpenLdap) SyncDepts(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
+func (mgr OpenLdap) SyncDepts() *helper.RspError {
 	// 1.获取所有部门
 	depts, err := ldapmgr.LdapDeptGetAll()
 	if err != nil {
-		return nil, helper.NewOperationError(fmt.Errorf("获取ldap部门列表失败：%s", err.Error()))
+		return helper.NewOperationError(fmt.Errorf("获取ldap部门列表失败：%s", err.Error()))
 	}
 	groups := make([]*accountModel.Group, 0)
 	for _, dept := range depts {
@@ -40,29 +38,27 @@ func (mgr OpenLdap) SyncDepts(c *gin.Context, req interface{}) (data interface{}
 	deptTree := user.GroupListToTree("0", groups)
 
 	// 3.根据树进行创建
-	err = ldapmgr.LdapDeptsSyncToDBRec(deptTree.Children)
-
-	return nil, err
+	return ldapmgr.LdapDeptsSyncToDBRec(deptTree.Children)
 }
 
 // 同步 ldap用户信息 到 数据库
-func (mgr OpenLdap) SyncUsers(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
+func (mgr OpenLdap) SyncUsers() *helper.RspError {
 	// 1.获取ldap用户列表
 	staffs, err := ldapmgr.LdapUserGetAll()
 	if err != nil {
-		return nil, helper.NewOperationError(fmt.Errorf("获取ldap用户列表失败：%s", err.Error()))
+		return helper.NewOperationError(fmt.Errorf("获取ldap用户列表失败：%s", err.Error()))
 	}
 	// 2.遍历用户，开始写入
 	for _, staff := range staffs {
 		groupIds, err := accountModel.DeptIdsToGroupIds(staff.DepartmentIds)
 		if err != nil {
-			return nil, helper.NewMySqlError(fmt.Errorf("将部门ids转换为内部部门id失败：%s", err.Error()))
+			return helper.NewMySqlError(fmt.Errorf("将部门ids转换为内部部门id失败：%s", err.Error()))
 		}
 		// 根据角色id获取角色
 		roles := accountModel.NewRoles()
 		err = roles.GetRolesByIds([]uint{2})
 		if err != nil {
-			return nil, helper.NewValidatorError(fmt.Errorf("根据角色ID获取角色信息失败:%s", err.Error()))
+			return helper.NewValidatorError(fmt.Errorf("根据角色ID获取角色信息失败:%s", err.Error()))
 		}
 		// 入库
 		err = ldapmgr.LdapUserSyncToDB(&accountModel.User{
@@ -85,8 +81,8 @@ func (mgr OpenLdap) SyncUsers(c *gin.Context, req interface{}) (data interface{}
 			UserDN:        staff.DN,
 		})
 		if err != nil {
-			return nil, helper.NewOperationError(fmt.Errorf("SyncOpenLdapUsers写入用户失败：%s", err.Error()))
+			return helper.NewOperationError(fmt.Errorf("SyncOpenLdapUsers写入用户失败：%s", err.Error()))
 		}
 	}
-	return nil, nil
+	return nil
 }

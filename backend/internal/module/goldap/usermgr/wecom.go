@@ -11,7 +11,6 @@ import (
 	"micro-net-hub/internal/server/helper"
 	"micro-net-hub/internal/tools"
 
-	"github.com/gin-gonic/gin"
 	"github.com/wenerme/go-wecom/wecom"
 )
 
@@ -34,43 +33,42 @@ func NewWeChat() WeChat {
 }
 
 // 通过企业微信获取部门信息
-func (mgr WeChat) SyncDepts(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
+func (mgr WeChat) SyncDepts() *helper.RspError {
 	// 1.获取所有部门
 	deptSource, err := mgr.GetAllDepts()
 	if err != nil {
-		return nil, helper.NewOperationError(fmt.Errorf("获取企业微信部门列表失败：%s", err.Error()))
+		return helper.NewOperationError(fmt.Errorf("获取企业微信部门列表失败：%s", err.Error()))
 	}
 	depts, err := userProcess.ConvertDeptData(config.Conf.WeCom.Flag, deptSource)
 	if err != nil {
-		return nil, helper.NewOperationError(fmt.Errorf("转换企业微信部门数据失败：%s", err.Error()))
+		return helper.NewOperationError(fmt.Errorf("转换企业微信部门数据失败：%s", err.Error()))
 	}
 
 	// 2.将远程数据转换成树
 	deptTree := userProcess.GroupListToTree(fmt.Sprintf("%s_1", config.Conf.WeCom.Flag), depts)
 
 	// 3.根据树进行创建
-	err = mgr.addDeptsRec(deptTree.Children)
+	return mgr.addDeptsRec(deptTree.Children)
 
-	return nil, err
 }
 
 // 根据现有数据库同步到的部门信息，开启用户同步
-func (mgr WeChat) SyncUsers(c *gin.Context, req interface{}) (data interface{}, rspError interface{}) {
+func (mgr WeChat) SyncUsers() *helper.RspError {
 	// 1.获取企业微信用户列表
 	staffSource, err := mgr.GetAllUsers()
 	if err != nil {
-		return nil, helper.NewOperationError(fmt.Errorf("获取企业微信用户列表失败：%s", err.Error()))
+		return helper.NewOperationError(fmt.Errorf("获取企业微信用户列表失败：%s", err.Error()))
 	}
 	staffs, err := userProcess.ConvertUserData(config.Conf.WeCom.Flag, staffSource)
 	if err != nil {
-		return nil, helper.NewOperationError(fmt.Errorf("转换企业微信用户数据失败：%s", err.Error()))
+		return helper.NewOperationError(fmt.Errorf("转换企业微信用户数据失败：%s", err.Error()))
 	}
 	// 2.遍历用户，开始写入
 	for _, staff := range staffs {
 		// 入库
 		err = mgr.AddUsers(staff)
 		if err != nil {
-			return nil, helper.NewOperationError(fmt.Errorf("SyncWeComUsers写入用户失败：%s", err.Error()))
+			return helper.NewOperationError(fmt.Errorf("SyncWeComUsers写入用户失败：%s", err.Error()))
 		}
 	}
 
@@ -81,7 +79,7 @@ func (mgr WeChat) SyncUsers(c *gin.Context, req interface{}) (data interface{}, 
 	var users = accountModel.NewUsers()
 	err = users.ListAll()
 	if err != nil {
-		return nil, helper.NewMySqlError(fmt.Errorf("获取用户列表失败：" + err.Error()))
+		return helper.NewMySqlError(fmt.Errorf("获取用户列表失败：" + err.Error()))
 	}
 	for _, user := range users {
 		if user.Source != config.Conf.WeCom.Flag {
@@ -103,20 +101,20 @@ func (mgr WeChat) SyncUsers(c *gin.Context, req interface{}) (data interface{}, 
 		user := new(accountModel.User)
 		err = user.Find(tools.H{"source_user_id": userTmp.SourceUserId, "status": 1})
 		if err != nil {
-			return nil, helper.NewMySqlError(fmt.Errorf("在MySQL查询用户失败: " + err.Error()))
+			return helper.NewMySqlError(fmt.Errorf("在MySQL查询用户失败: " + err.Error()))
 		}
 		// 先从ldap删除用户
 		err = ldapmgr.LdapUserDelete(user.UserDN)
 		if err != nil {
-			return nil, helper.NewLdapError(fmt.Errorf("在LDAP删除用户失败" + err.Error()))
+			return helper.NewLdapError(fmt.Errorf("在LDAP删除用户失败" + err.Error()))
 		}
 		// 然后更新MySQL中用户状态
 		err = user.ChangeStatus(2)
 		if err != nil {
-			return nil, helper.NewMySqlError(fmt.Errorf("在MySQL更新用户状态失败: " + err.Error()))
+			return helper.NewMySqlError(fmt.Errorf("在MySQL更新用户状态失败: " + err.Error()))
 		}
 	}
-	return nil, nil
+	return nil
 }
 
 // 官方文档： https://developer.work.weixin.qq.com/document/path/90208
@@ -196,7 +194,7 @@ func (mgr WeChat) GetAllUsers() (ret []map[string]interface{}, err error) {
 }
 
 // 添加部门
-func (mgr WeChat) addDeptsRec(depts []*accountModel.Group) error {
+func (mgr WeChat) addDeptsRec(depts []*accountModel.Group) *helper.RspError {
 	for _, dept := range depts {
 		err := mgr.AddDept(dept)
 		if err != nil {
@@ -213,7 +211,7 @@ func (mgr WeChat) addDeptsRec(depts []*accountModel.Group) error {
 }
 
 // AddGroup 添加部门数据
-func (mgr WeChat) AddDept(group *accountModel.Group) error {
+func (mgr WeChat) AddDept(group *accountModel.Group) *helper.RspError {
 	// 判断部门名称是否存在
 	parentGroup := new(accountModel.Group)
 	err := parentGroup.Find(tools.H{"source_dept_id": group.SourceDeptParentId})

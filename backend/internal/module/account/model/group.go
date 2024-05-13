@@ -192,24 +192,3 @@ func (gs *Groups) ListTree(req *Group, pageNum int, pageSize int) error {
 	err := db.Offset(pageReq.PageNum).Limit(pageReq.PageSize).Find(&gs).Error
 	return err
 }
-
-// SyncDingTalkDeptsReq 同步钉钉部门信息
-type SyncDingTalkDeptsReq struct {
-}
-
-// SyncWeComDeptsReq 同步企业微信部门信息
-type SyncWeComDeptsReq struct {
-}
-
-// SyncFeiShuDeptsReq 同步飞书部门信息
-type SyncFeiShuDeptsReq struct {
-}
-
-// SyncOpenLdapDeptsReq 同步原ldap部门信息
-type SyncOpenLdapDeptsReq struct {
-}
-
-// SyncOpenLdapDeptsReq 同步原ldap部门信息
-type SyncSqlGrooupsReq struct {
-	GroupIds []uint `json:"groupIds" validate:"required"`
-}

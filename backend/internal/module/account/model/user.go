@@ -541,25 +541,6 @@ type UserChangeUserStatusReq struct {
 type UserInfoReq struct {
 }
 
-// SyncDingUserReq 同步钉钉用户信息
-type SyncDingUserReq struct {
-}
-
-// SyncWeComUserReq 同步企业微信用户信息
-type SyncWeComUserReq struct {
-}
-
-// SyncFeiShuUserReq 同步飞书用户信息
-type SyncFeiShuUserReq struct {
-}
-
-// SyncOpenLdapUserReq 同步ldap用户信息
-type SyncOpenLdapUserReq struct {
-}
-type SyncSqlUserReq struct {
-	UserIds []uint `json:"userIds" validate:"required"`
-}
-
 // UserListReq 获取用户列表结构体
 type UserListReq struct {
 	Username     string `json:"username" form:"username"`

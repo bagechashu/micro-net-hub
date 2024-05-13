@@ -242,7 +242,7 @@ func LdapDeptSyncToDB(group *accountModel.Group) error {
 }
 
 // 添加 Ldap 部门数据 到数据库
-func LdapDeptsSyncToDBRec(depts []*accountModel.Group) error {
+func LdapDeptsSyncToDBRec(depts []*accountModel.Group) *helper.RspError {
 	for _, dept := range depts {
 		err := LdapDeptSyncToDB(dept)
 		if err != nil {

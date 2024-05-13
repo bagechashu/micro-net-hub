@@ -1,9 +1,8 @@
 package usermgr
 
 import (
+	"micro-net-hub/internal/server/helper"
 	"sync"
-
-	"github.com/gin-gonic/gin"
 )
 
 type UserMgrPlat interface {
@@ -17,8 +16,8 @@ type UserMgrPlat interface {
 	// GetLeaveUserIdsDateRange(pushDays uint) ([]string, error)
 	// // 修改密码
 	// GetUserDeptIds(udn string) (ret []string, err error)
-	SyncDepts(c *gin.Context, req interface{}) (data interface{}, rspError interface{})
-	SyncUsers(c *gin.Context, req interface{}) (data interface{}, rspError interface{})
+	SyncDepts() *helper.RspError
+	SyncUsers() *helper.RspError
 }
 
 var once sync.Once

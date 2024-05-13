@@ -17,14 +17,14 @@ func InitCron() {
 
 		//启动定时任务
 		_, err := c.AddFunc(config.Conf.Sync.DeptSyncTime, func() {
-			ding.SyncDepts(nil, nil)
+			ding.SyncDepts()
 		})
 		if err != nil {
 			global.Log.Errorf("启动同步部门的定时任务失败: %v", err)
 		}
 		//每天凌晨1点执行一次
 		_, err = c.AddFunc(config.Conf.Sync.UserSyncTime, func() {
-			ding.SyncUsers(nil, nil)
+			ding.SyncUsers()
 		})
 		if err != nil {
 			global.Log.Errorf("启动同步用户的定时任务失败: %v", err)
@@ -35,14 +35,14 @@ func InitCron() {
 		wechat := usermgr.NewWeChat()
 
 		_, err := c.AddFunc(config.Conf.Sync.DeptSyncTime, func() {
-			wechat.SyncDepts(nil, nil)
+			wechat.SyncDepts()
 		})
 		if err != nil {
 			global.Log.Errorf("启动同步部门的定时任务失败: %v", err)
 		}
 		//每天凌晨1点执行一次
 		_, err = c.AddFunc(config.Conf.Sync.UserSyncTime, func() {
-			wechat.SyncUsers(nil, nil)
+			wechat.SyncUsers()
 		})
 		if err != nil {
 			global.Log.Errorf("启动同步用户的定时任务失败: %v", err)
@@ -53,14 +53,14 @@ func InitCron() {
 		feishu := usermgr.NewFeiShu()
 
 		_, err := c.AddFunc(config.Conf.Sync.DeptSyncTime, func() {
-			feishu.SyncDepts(nil, nil)
+			feishu.SyncDepts()
 		})
 		if err != nil {
 			global.Log.Errorf("启动同步部门的定时任务失败: %v", err)
 		}
 		//每天凌晨1点执行一次
 		_, err = c.AddFunc(config.Conf.Sync.UserSyncTime, func() {
-			feishu.SyncUsers(nil, nil)
+			feishu.SyncUsers()
 		})
 		if err != nil {
 			global.Log.Errorf("启动同步用户的定时任务失败: %v", err)
