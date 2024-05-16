@@ -137,19 +137,19 @@
           label-width="120px"
         >
           <el-form-item label="类型">
-            <el-checkbox-group v-model="checked">
+            <el-checkbox-group v-model="fieldRelationChecked">
               <el-checkbox-button
-                v-for="city in cities"
-                :key="city"
-                :label="city"
-                @change="checkbox(city)"
+                v-for="type in fieldRelationTypes"
+                :key="type"
+                :label="type"
+                @change="fieldRelationCheck(type)"
               >
-                {{ city }}
+                {{ type }}
               </el-checkbox-button>
             </el-checkbox-group>
           </el-form-item>
 
-          <template v-if="checked === '用户字段动态关联'">
+          <template v-if="fieldRelationChecked == '用户字段动态关联'">
             <el-form-item label="类型标志">
               <el-select
                 v-model="userVal"
@@ -314,7 +314,7 @@
           :rules="dialogFormRules"
           label-width="120px"
         >
-          <template v-if="checked === '用户字段动态关联'">
+          <template v-if="fieldRelationChecked == '用户字段动态关联'">
             <el-form-item label="类型">
               <el-button type="primary">用户字段动态关联</el-button>
             </el-form-item>
@@ -472,7 +472,6 @@ import {
 } from "@/api/personnel/fieldRelation";
 import { Message } from "element-ui";
 
-const cityOptions = ["用户字段动态关联", "分组字段动态关联"];
 export default {
   name: "FieldRelation",
   components: {
@@ -516,8 +515,8 @@ export default {
       userVal: "",
       groupVal: "",
       updateId: "",
-      checked: ["用户字段动态关联"], // 新增数据默认选中
-      cities: cityOptions, // 新增默认选中
+      fieldRelationChecked: ["用户字段动态关联"], // 新增数据默认选中
+      fieldRelationTypes: ["用户字段动态关联", "分组字段动态关联"], // 新增默认选中
       // 查询参数
       params: {
         flag: "",
@@ -705,9 +704,9 @@ export default {
     this.getTableData();
   },
   methods: {
-    checkbox(city) {
-      this.checked = this.checked.includes(city) ? [city] : [];
-      this.value = this.city;
+    fieldRelationCheck(type) {
+      this.fieldRelationChecked = this.fieldRelationChecked.includes(type) ? [type] : [];
+      // this.value = this.type;
     },
     changeUser(e) {
       this.userVal = e;
@@ -761,7 +760,7 @@ export default {
 
     // 新增
     create() {
-      this.checked = ["用户字段动态关联"];
+      this.fieldRelationChecked = ["用户字段动态关联"];
       this.userVal = "";
       this.groupVal = "";
       this.dialogFormData = {};
@@ -795,7 +794,7 @@ export default {
 
       if (typeDialog === "user") {
         this.updateId = row.ID;
-        this.checked = ["用户字段动态关联"];
+        this.fieldRelationChecked = ["用户字段动态关联"];
 
         this.userVal = row.Flag;
         this.dialogFormData.username = username; // 用户名(通常为用户名拼音) name_pinyin
@@ -812,7 +811,7 @@ export default {
         this.dialogFormData.sourceUnionId = sourceUnionId; // 源用户唯一ID   unionid
       } else {
         this.updateId = row.ID;
-        this.checked = ["分组字段动态关联"];
+        this.fieldRelationChecked = ["分组字段动态关联"];
         this.groupVal = row.Flag;
         this.dialogFormData.groupName = groupName; // 分组名称（通常为分组名的拼音）
         this.dialogFormData.remark = remark; // 分组描述
@@ -828,7 +827,7 @@ export default {
     // 提交表单
     submitForm(e) {
       let flag, attributes;
-      if (this.checked[0] === "用户字段动态关联") {
+      if (this.fieldRelationChecked[0] === "用户字段动态关联") {
         if (this.userVal === "") {
           Message({
             message: "请选择类型标志",
