@@ -149,7 +149,7 @@
             </el-checkbox-group>
           </el-form-item>
 
-          <template v-if="fieldRelationChecked == '用户字段动态关联'">
+          <template v-if="fieldRelationChecked.length === 1 && fieldRelationChecked[0] === '用户字段动态关联'">
             <el-form-item label="类型标志">
               <el-select
                 v-model="userVal"
@@ -244,7 +244,7 @@
               />
             </el-form-item> -->
           </template>
-          <template v-else>
+          <template v-else-if="fieldRelationChecked.length === 1 && fieldRelationChecked[0] === '分组字段动态关联'">
             <el-form-item label="类型标志">
               <el-select
                 v-model="groupVal"
@@ -284,6 +284,9 @@
               />
             </el-form-item>
           </template>
+          <template v-else>
+            <el-form-item><b>↑ 请选择一种类型</b></el-form-item>
+          </template>
         </el-form>
         <div slot="footer" class="dialog-footer">
           <el-button size="mini" @click="cancelForm()">取 消</el-button>
@@ -314,7 +317,7 @@
           :rules="dialogFormRules"
           label-width="120px"
         >
-          <template v-if="fieldRelationChecked == '用户字段动态关联'">
+          <template v-if="fieldRelationChecked.length === 1 && fieldRelationChecked[0] === '用户字段动态关联'">
             <el-form-item label="类型">
               <el-button type="primary">用户字段动态关联</el-button>
             </el-form-item>
