@@ -450,7 +450,7 @@ CREATE TABLE `users` (
   `status` tinyint(1) DEFAULT '1' COMMENT '''状态:1在职, 2离职''',
   `creator` varchar(20) DEFAULT NULL COMMENT '''创建者''',
   `source` varchar(50) DEFAULT NULL COMMENT '''用户来源：dingTalk、wecom、feishu、ldap、platform''',
-  `department_id` varchar(100) NOT NULL COMMENT '''部门id''',
+  `department_ids` varchar(100) NOT NULL COMMENT '''部门id''',
   `source_user_id` varchar(100) NOT NULL COMMENT '''第三方用户id''',
   `source_union_id` varchar(100) NOT NULL COMMENT '''第三方唯一unionId''',
   `user_dn` varchar(255) NOT NULL COMMENT '''用户dn''',

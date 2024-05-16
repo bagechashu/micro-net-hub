@@ -21,7 +21,7 @@ func SyncDingTalkUsers(c *gin.Context) {
 	um := usermgr.NewDingTalk()
 	err := um.SyncUsers()
 	if err != nil {
-		helper.ErrV2(c, err)
+		helper.ErrV2(c, helper.ReloadErr(err))
 		return
 	}
 	helper.Success(c, nil)
@@ -36,7 +36,7 @@ func SyncDingTalkDepts(c *gin.Context) {
 	um := usermgr.NewDingTalk()
 	err := um.SyncDepts()
 	if err != nil {
-		helper.ErrV2(c, err)
+		helper.ErrV2(c, helper.ReloadErr(err))
 		return
 	}
 	helper.Success(c, nil)
@@ -51,7 +51,7 @@ func SyncWeComUsers(c *gin.Context) {
 	um := usermgr.NewWeChat()
 	err := um.SyncUsers()
 	if err != nil {
-		helper.ErrV2(c, err)
+		helper.ErrV2(c, helper.ReloadErr(err))
 		return
 	}
 	helper.Success(c, nil)
@@ -66,7 +66,7 @@ func SyncWeComDepts(c *gin.Context) {
 	um := usermgr.NewWeChat()
 	err := um.SyncDepts()
 	if err != nil {
-		helper.ErrV2(c, err)
+		helper.ErrV2(c, helper.ReloadErr(err))
 		return
 	}
 	helper.Success(c, nil)
@@ -81,7 +81,7 @@ func SyncFeiShuUsers(c *gin.Context) {
 	um := usermgr.NewFeiShu()
 	err := um.SyncUsers()
 	if err != nil {
-		helper.ErrV2(c, err)
+		helper.ErrV2(c, helper.ReloadErr(err))
 		return
 	}
 	helper.Success(c, nil)
@@ -96,7 +96,7 @@ func SyncFeiShuDepts(c *gin.Context) {
 	um := usermgr.NewFeiShu()
 	err := um.SyncDepts()
 	if err != nil {
-		helper.ErrV2(c, err)
+		helper.ErrV2(c, helper.ReloadErr(err))
 		return
 	}
 	helper.Success(c, nil)
@@ -107,7 +107,7 @@ func SyncOpenLdapUsers(c *gin.Context) {
 	um := usermgr.NewOpenLdap()
 	err := um.SyncUsers()
 	if err != nil {
-		helper.ErrV2(c, err)
+		helper.ErrV2(c, helper.ReloadErr(err))
 		return
 	}
 	helper.Success(c, nil)
@@ -118,7 +118,7 @@ func SyncOpenLdapDepts(c *gin.Context) {
 	um := usermgr.NewOpenLdap()
 	err := um.SyncDepts()
 	if err != nil {
-		helper.ErrV2(c, err)
+		helper.ErrV2(c, helper.ReloadErr(err))
 		return
 	}
 	helper.Success(c, nil)

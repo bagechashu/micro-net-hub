@@ -33,7 +33,7 @@ func NewFeiShu() FeiShu {
 }
 
 // 通过飞书获取部门信息
-func (mgr FeiShu) SyncDepts() *helper.RspError {
+func (mgr FeiShu) SyncDepts() error {
 	// 1.获取所有部门
 	deptSource, err := mgr.GetAllDepts()
 	if err != nil {
@@ -52,7 +52,7 @@ func (mgr FeiShu) SyncDepts() *helper.RspError {
 }
 
 // 根据现有数据库同步到的部门信息，开启用户同步
-func (mgr FeiShu) SyncUsers() *helper.RspError {
+func (mgr FeiShu) SyncUsers() error {
 	// 1.获取飞书用户列表
 	staffSource, err := mgr.GetAllUsers()
 	if err != nil {
@@ -328,7 +328,7 @@ func (mgr FeiShu) GetLeaveUserIds() ([]string, error) {
 }
 
 // 添加部门
-func (mgr FeiShu) addDeptsRec(depts []*accountModel.Group) *helper.RspError {
+func (mgr FeiShu) addDeptsRec(depts []*accountModel.Group) error {
 	for _, dept := range depts {
 		err := mgr.AddDept(dept)
 		if err != nil {
@@ -345,7 +345,7 @@ func (mgr FeiShu) addDeptsRec(depts []*accountModel.Group) *helper.RspError {
 }
 
 // AddGroup 添加部门数据
-func (mgr FeiShu) AddDept(group *accountModel.Group) *helper.RspError {
+func (mgr FeiShu) AddDept(group *accountModel.Group) error {
 	// 查询当前分组父ID在MySQL中的数据信息
 	parentGroup := new(accountModel.Group)
 	err := parentGroup.Find(tools.H{"source_dept_id": group.SourceDeptParentId})

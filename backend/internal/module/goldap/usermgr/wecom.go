@@ -33,7 +33,7 @@ func NewWeChat() WeChat {
 }
 
 // 通过企业微信获取部门信息
-func (mgr WeChat) SyncDepts() *helper.RspError {
+func (mgr WeChat) SyncDepts() error {
 	// 1.获取所有部门
 	deptSource, err := mgr.GetAllDepts()
 	if err != nil {
@@ -53,7 +53,7 @@ func (mgr WeChat) SyncDepts() *helper.RspError {
 }
 
 // 根据现有数据库同步到的部门信息，开启用户同步
-func (mgr WeChat) SyncUsers() *helper.RspError {
+func (mgr WeChat) SyncUsers() error {
 	// 1.获取企业微信用户列表
 	staffSource, err := mgr.GetAllUsers()
 	if err != nil {
@@ -194,7 +194,7 @@ func (mgr WeChat) GetAllUsers() (ret []map[string]interface{}, err error) {
 }
 
 // 添加部门
-func (mgr WeChat) addDeptsRec(depts []*accountModel.Group) *helper.RspError {
+func (mgr WeChat) addDeptsRec(depts []*accountModel.Group) error {
 	for _, dept := range depts {
 		err := mgr.AddDept(dept)
 		if err != nil {
@@ -211,7 +211,7 @@ func (mgr WeChat) addDeptsRec(depts []*accountModel.Group) *helper.RspError {
 }
 
 // AddGroup 添加部门数据
-func (mgr WeChat) AddDept(group *accountModel.Group) *helper.RspError {
+func (mgr WeChat) AddDept(group *accountModel.Group) error {
 	// 判断部门名称是否存在
 	parentGroup := new(accountModel.Group)
 	err := parentGroup.Find(tools.H{"source_dept_id": group.SourceDeptParentId})

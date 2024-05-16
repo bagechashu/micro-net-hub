@@ -38,7 +38,7 @@ func NewDingTalk() DingTalk {
 }
 
 // 通过钉钉获取部门信息
-func (mgr DingTalk) SyncDepts() *helper.RspError {
+func (mgr DingTalk) SyncDepts() error {
 	// 1.获取所有部门
 	deptSource, err := mgr.GetAllDepts()
 	if err != nil {
@@ -57,7 +57,7 @@ func (mgr DingTalk) SyncDepts() *helper.RspError {
 }
 
 // 根据现有数据库同步到的部门信息，开启用户同步
-func (mgr DingTalk) SyncUsers() *helper.RspError {
+func (mgr DingTalk) SyncUsers() error {
 	// 1.获取钉钉用户列表
 	staffSource, err := mgr.GetAllUsers()
 	if err != nil {
@@ -315,7 +315,7 @@ func (mgr DingTalk) GetLeaveUserIdsDateRange(pushDays uint) ([]string, error) {
 }
 
 // 添加部门
-func (mgr DingTalk) addDeptsRec(depts []*accountModel.Group) *helper.RspError {
+func (mgr DingTalk) addDeptsRec(depts []*accountModel.Group) error {
 	for _, dept := range depts {
 		err := mgr.AddDept(dept)
 		if err != nil {
@@ -332,7 +332,7 @@ func (mgr DingTalk) addDeptsRec(depts []*accountModel.Group) *helper.RspError {
 }
 
 // AddGroup 添加部门数据
-func (mgr DingTalk) AddDept(group *accountModel.Group) *helper.RspError {
+func (mgr DingTalk) AddDept(group *accountModel.Group) error {
 	parentGroup := new(accountModel.Group)
 	err := parentGroup.Find(tools.H{"source_dept_id": group.SourceDeptParentId}) // 查询当前分组父ID在MySQL中的数据信息
 	if err != nil {

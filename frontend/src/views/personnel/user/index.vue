@@ -441,9 +441,9 @@
               </el-form-item>
             </el-col>
             <el-col :span="24">
-              <el-form-item label="所属部门" prop="departmentId">
+              <el-form-item label="所属部门" prop="departmentIds">
                 <treeselect
-                  v-model="dialogFormData.departmentId"
+                  v-model="dialogFormData.departmentIds"
                   :options="departmentsOptions"
                   placeholder="请选择部门"
                   :normalizer="normalizer"
@@ -590,7 +590,7 @@ export default {
         position: "",
         postalAddress: "",
         departments: "",
-        departmentId: undefined,
+        departmentIds: undefined,
         notice: true
       },
 
@@ -662,7 +662,7 @@ export default {
           }
         ],
         status: [{ required: true, message: "请选择状态", trigger: "change" }],
-        departmentId: [
+        departmentIds: [
           { required: true, message: "请选择部门", trigger: "change" },
           {
             validator: (rule, value, callBack) => {
@@ -712,12 +712,12 @@ export default {
       try {
         const { data } = await getUsers(this.params);
         data.users.forEach((item) => {
-          const dataStrArr = item.departmentId.split(",");
+          const dataStrArr = item.departmentIds.split(",");
           const dataIntArr = [];
           dataStrArr.forEach((item) => {
             dataIntArr.push(+item);
           });
-          item.departmentId = dataIntArr;
+          item.departmentIds = dataIntArr;
         });
         this.tableData = data.users;
         this.total = data.total;
@@ -791,13 +791,13 @@ export default {
       this.dialogFormData.position = row.position;
       this.dialogFormData.postalAddress = row.postalAddress;
       this.dialogFormData.departments = row.departments;
-      this.dialogFormData.departmentId = row.departmentId;
+      this.dialogFormData.departmentIds = row.departmentIds;
       this.notice = false;
     },
 
     // 将 部门id 转换为 部门name
-    setDepartmentNameByDepartmentId() {
-      const ids = this.dialogFormData.departmentId;
+    setDepartmentNameByDepartmentIds() {
+      const ids = this.dialogFormData.departmentIds;
       if (!ids || !ids.length) return;
       const departments = [];
       // 深度优先遍函数
@@ -892,7 +892,7 @@ export default {
         if (valid) {
           this.submitLoading = true;
           // 在这里自动填充下部门字段
-          this.setDepartmentNameByDepartmentId();
+          this.setDepartmentNameByDepartmentIds();
           this.dialogFormDataCopy = { ...this.dialogFormData };
           if (this.dialogFormData.password !== "") {
             // 密码RSA加密处理
@@ -953,7 +953,7 @@ export default {
         postalAddress: "",
         departments: "",
         position: "",
-        departmentId: undefined,
+        departmentIds: undefined,
         notice: true
       };
     },

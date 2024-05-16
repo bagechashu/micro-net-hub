@@ -18,7 +18,7 @@ func NewOpenLdap() OpenLdap {
 }
 
 // 同步 ldap部门信息 到 数据库
-func (mgr OpenLdap) SyncDepts() *helper.RspError {
+func (mgr OpenLdap) SyncDepts() error {
 	// 1.获取所有部门
 	depts, err := ldapmgr.LdapDeptGetAll()
 	if err != nil {
@@ -42,7 +42,7 @@ func (mgr OpenLdap) SyncDepts() *helper.RspError {
 }
 
 // 同步 ldap用户信息 到 数据库
-func (mgr OpenLdap) SyncUsers() *helper.RspError {
+func (mgr OpenLdap) SyncUsers() error {
 	// 1.获取ldap用户列表
 	staffs, err := ldapmgr.LdapUserGetAll()
 	if err != nil {

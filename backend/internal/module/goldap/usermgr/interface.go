@@ -1,7 +1,6 @@
 package usermgr
 
 import (
-	"micro-net-hub/internal/server/helper"
 	"sync"
 )
 
@@ -16,8 +15,8 @@ type UserMgrPlat interface {
 	// GetLeaveUserIdsDateRange(pushDays uint) ([]string, error)
 	// // 修改密码
 	// GetUserDeptIds(udn string) (ret []string, err error)
-	SyncDepts() *helper.RspError
-	SyncUsers() *helper.RspError
+	SyncDepts() error
+	SyncUsers() error
 }
 
 var once sync.Once
