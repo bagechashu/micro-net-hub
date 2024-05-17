@@ -175,7 +175,7 @@
                 icon="el-icon-setting"
                 circle
                 type="info"
-                @click="addUp(scope.row)"
+                @click="handleGetUserOfGroup(scope.row)"
               />
             </el-tooltip>
             <el-tooltip content="编辑" effect="dark" placement="top">
@@ -207,7 +207,7 @@
               </el-popconfirm>
             </el-tooltip>
             <el-tooltip
-              v-if="scope.row.syncState == 2"
+              v-if="scope.row.syncState === 2"
               class="delete-popover"
               content="同步"
               effect="dark"
@@ -322,7 +322,104 @@
         </div>
       </el-dialog>
       <!-- 组用户管理 -->
-      <el-dialog title="组用户管理" :visible.sync="dialogUsersMgrVisible" />
+      <el-dialog title="组用户管理" :visible.sync="dialogUsersMgrVisible">
+        <el-form
+          size="mini"
+          :inline="true"
+          :model="userOfGroupParams"
+          class="demo-form-inline"
+        >
+          <el-form-item label="用户名">
+            <el-input
+              v-model.trim="userOfGroupParams.nickname"
+              style="width: 120px"
+              clearable
+              placeholder="支持模糊搜索"
+              @keyup.enter.native="getUsersOfGroupData()"
+              @clear="getUsersOfGroupData()"
+            />
+          </el-form-item>
+          <el-button-group>
+            <el-button
+              size="mini"
+              :loading="submitLoading"
+              icon="el-icon-search"
+              type="primary"
+              @click="getUsersOfGroupData()"
+            >搜索</el-button>
+            <el-button
+              size="mini"
+              :disabled="userOfGroupListMultipleSelection.length === 0"
+              :loading="submitLoading"
+              icon="el-icon-delete"
+              type="danger"
+              @click="handleGroupDelUser()"
+            >移除</el-button>
+          </el-button-group>
+        </el-form>
+        <el-form
+          size="mini"
+          :inline="true"
+          :model="groupAddUserParams"
+          class="demo-form-inline"
+        >
+          <el-form-item label="添加用户">
+            <el-select
+              v-model="groupAddUserList"
+              multiple
+              filterable
+              remote
+              reserve-keyword
+              placeholder="搜索用户"
+              :remote-method="getUsersNoInGroupData"
+              :loading="submitLoading"
+            >
+              <el-option
+                v-for="item in groupAddUserListOption"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
+          </el-form-item>
+          <el-button-group>
+            <el-button
+              size="mini"
+              :disabled="groupAddUserList.length === 0"
+              :loading="submitLoading"
+              icon="el-icon-delete"
+              type="primary"
+              @click="handleGroupAddUser()"
+            >添加</el-button>
+          </el-button-group>
+        </el-form>
+        <el-table
+          :data="userOfGroupList"
+          stripe
+          height="500"
+          style="width: 100%"
+          max-height="500"
+          :default-sort="{ prop: 'userName', order: 'ascending' }"
+          @selection-change="handleUserOfGroupListSelectionChange"
+        >
+          <el-table-column type="selection" />
+          <el-table-column type="expand">
+            <template slot-scope="props">
+              <el-form label-position="left" class="table-expand">
+                <el-form-item label="电话">
+                  <span>{{ props.row.mobile }}</span>
+                </el-form-item>
+                <el-form-item label="邮箱">
+                  <span>{{ props.row.mail }}</span>
+                </el-form-item>
+              </el-form>
+            </template>
+          </el-table-column>
+          <el-table-column prop="userName" label="用户" sortable />
+          <el-table-column prop="nickName" label="昵称" />
+          <el-table-column prop="introduction" label="简介" />
+        </el-table>
+      </el-dialog>
     </el-card>
   </div>
 </template>
@@ -339,11 +436,11 @@ import {
   syncWeComDeptsApi,
   syncFeiShuDeptsApi,
   syncOpenLdapDeptsApi,
-  syncSqlGroups
-  // userInGroup,
-  // userNoInGroup,
-  // groupAddUser,
-  // groupDelUser
+  syncSqlGroups,
+  userInGroup,
+  userNoInGroup,
+  groupAddUser,
+  groupDelUser
 } from "@/api/personnel/group";
 import { Message } from "element-ui";
 
@@ -374,7 +471,7 @@ export default {
         pageSize: 1000 // 平常百姓人家应该不会有这么多数据吧,后台限制最大单次获取1000条
       },
       // 表格数据
-      tableData: [],
+      groupTree: [],
       infoTableData: [],
       total: 0,
       loading: false,
@@ -438,10 +535,21 @@ export default {
       multipleSelection: [],
 
       dialogUsersMgrVisible: false,
-      UsersMgrParams: {
+      userOfGroupParams: {
         groupId: "",
         nickname: ""
       },
+      userOfGroupList: [],
+      userOfGroupListMultipleSelection: [],
+
+      groupAddUserParams: {
+        groupId: "",
+        nickname: ""
+      },
+      userNoInGroupList: [],
+      groupAddUserListOption: [],
+      groupAddUserList: [],
+
       renderFunc(h, option) {
         return (
           <span>
@@ -460,13 +568,13 @@ export default {
     };
   },
   created() {
-    this.getTableData();
+    this.getGroupTreeData();
   },
   methods: {
     // // 查询
     search() {
       // 初始化表格数据
-      this.infoTableData = JSON.parse(JSON.stringify(this.tableData));
+      this.infoTableData = JSON.parse(JSON.stringify(this.groupTree));
       this.infoTableData = this.deal(
         this.infoTableData,
         (node) =>
@@ -476,7 +584,7 @@ export default {
       );
     },
     resetData() {
-      this.infoTableData = JSON.parse(JSON.stringify(this.tableData));
+      this.infoTableData = JSON.parse(JSON.stringify(this.groupTree));
     },
     // 页面数据过滤
     deal(nodes, predicate) {
@@ -499,11 +607,11 @@ export default {
       return newChildren;
     },
     // 获取表格数据
-    async getTableData() {
+    async getGroupTreeData() {
       this.loading = true;
       try {
         const { data } = await getGroupTree(this.params);
-        this.tableData = data;
+        this.groupTree = data;
         this.infoTableData = JSON.parse(JSON.stringify(data));
         this.treeselectData = [
           { ID: 0, groupName: "顶级类目", children: data }
@@ -512,7 +620,124 @@ export default {
         this.loading = false;
       }
     },
-
+    // 用户管理
+    handleGetUserOfGroup(row) {
+      this.dialogUsersMgrVisible = true;
+      this.userOfGroupParams.groupId = row.ID;
+      this.userOfGroupParams.nickname = "";
+      this.groupAddUserParams.groupId = row.ID;
+      this.groupAddUserParams.nickname = "";
+      this.getUsersOfGroupData();
+    },
+    // 获取组内用户数据
+    async getUsersOfGroupData() {
+      this.submitLoading = true;
+      try {
+        const { data } = await userInGroup(this.userOfGroupParams);
+        this.userOfGroupList = data.userList;
+        // console.log(this.userOfGroupList);
+      } finally {
+        this.submitLoading = false;
+      }
+    },
+    handleUserOfGroupListSelectionChange(val) {
+      this.userOfGroupListMultipleSelection = val;
+    },
+    // 删除组用户
+    async handleGroupDelUser() {
+      this.$confirm("确定将用户移出该组?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(async(res) => {
+          this.loading = true;
+          const user = [];
+          this.userOfGroupListMultipleSelection.forEach((x) => {
+            user.push(x.userId);
+          });
+          try {
+            await groupDelUser({
+              groupId: Number(this.userOfGroupParams.groupId),
+              userIds: user
+            }).then((res) => {
+              if (res.code === 0) {
+                Message({
+                  showClose: true,
+                  message: "操作成功",
+                  type: "success"
+                });
+              }
+            });
+          } finally {
+            this.loading = false;
+          }
+          this.getUsersOfGroupData();
+        })
+        .catch(() => {
+          Message({
+            showClose: true,
+            type: "info",
+            message: "已取消删除"
+          });
+        });
+    },
+    // 获取非组内用户数据
+    async getUsersNoInGroupData(query) {
+      this.submitLoading = true;
+      this.groupAddUserParams.nickname = query;
+      try {
+        const { data } = await userNoInGroup(this.groupAddUserParams);
+        this.userNoInGroupList = data.userList;
+        // console.log(this.userNoInGroupList);
+        this.groupAddUserListOption = this.userNoInGroupList.map((item) => {
+          return {
+            label: item.userName,
+            value: item.userId
+          };
+        });
+        // console.log(this.groupAddUserListOption);
+      } finally {
+        this.submitLoading = false;
+      }
+    },
+    handleGroupAddUser(query) {
+      this.$confirm("确定添加用户到该组?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(async(res) => {
+          // console.log(this.groupAddUserList)
+          this.loading = true;
+          try {
+            await groupAddUser({
+              groupId: Number(this.groupAddUserParams.groupId),
+              userIds: this.groupAddUserList
+            }).then((res) => {
+              if (res.code === 0) {
+                Message({
+                  showClose: true,
+                  message: "操作成功",
+                  type: "success"
+                });
+              }
+            });
+          } finally {
+            this.loading = false;
+          }
+          this.userOfGroupParams.nickname = "";
+          this.groupAddUserList.nickname = [];
+          this.getUsersOfGroupData();
+        })
+        .catch(() => {
+          Message({
+            showClose: true,
+            type: "info",
+            message: "已取消删除"
+          });
+        });
+    },
     // 新增
     create() {
       this.dialogFormTitle = "新增分组";
@@ -527,12 +752,6 @@ export default {
       this.dialogFormTitle = "修改分组";
       this.dialogType = "update";
       this.dialogFormVisible = true;
-    },
-    // 穿梭框
-    addUp(row) {
-      this.dialogUsersMgrVisible = true;
-      this.transParams.groupId = row.ID;
-      this.transParams.nickname = "";
     },
 
     // 判断结果
@@ -565,7 +784,7 @@ export default {
             this.submitLoading = false;
           }
           this.resetForm();
-          this.getTableData();
+          this.getGroupTreeData();
         } else {
           Message({
             showClose: true,
@@ -612,7 +831,7 @@ export default {
           } finally {
             this.loading = false;
           }
-          this.getTableData();
+          this.getGroupTreeData();
         })
         .catch(() => {
           Message({
@@ -642,7 +861,7 @@ export default {
           } finally {
             this.loading = false;
           }
-          this.getTableData();
+          this.getGroupTreeData();
         })
         .catch(() => {
           Message({
@@ -668,7 +887,7 @@ export default {
       } finally {
         this.loading = false;
       }
-      this.getTableData();
+      this.getGroupTreeData();
     },
     // 单个同步
     async singleSync(Id) {
@@ -680,17 +899,17 @@ export default {
       } finally {
         this.loading = false;
       }
-      this.getTableData();
+      this.getGroupTreeData();
     },
 
     // 分页
     handleSizeChange(val) {
       this.params.pageSize = val;
-      this.getTableData();
+      this.getGroupTreeData();
     },
     handleCurrentChange(val) {
       this.params.pageNum = val;
-      this.getTableData();
+      this.getGroupTreeData();
     },
     // treeselect
     normalizer(node) {
@@ -708,7 +927,7 @@ export default {
       syncDingTalkDeptsApi().then((res) => {
         this.judgeResult(res);
         this.loading = false;
-        this.getTableData();
+        this.getGroupTreeData();
       });
     },
     syncWeComDepts() {
@@ -716,7 +935,7 @@ export default {
       syncWeComDeptsApi().then((res) => {
         this.judgeResult(res);
         this.loading = false;
-        this.getTableData();
+        this.getGroupTreeData();
       });
     },
     syncFeiShuDepts() {
@@ -724,7 +943,7 @@ export default {
       syncFeiShuDeptsApi().then((res) => {
         this.judgeResult(res);
         this.loading = false;
-        this.getTableData();
+        this.getGroupTreeData();
       });
     },
     syncOpenLdapDepts() {
@@ -732,7 +951,7 @@ export default {
       syncOpenLdapDeptsApi().then((res) => {
         this.judgeResult(res);
         this.loading = false;
-        this.getTableData();
+        this.getGroupTreeData();
       });
     }
   }
@@ -751,5 +970,17 @@ export default {
 .transfer-footer {
   margin-left: 20px;
   padding: 6px 5px;
+}
+
+.table-expand label {
+  display: inline-block;
+  width: 90px;
+  color: #99a9bf;
+}
+
+.table-expand .el-form-item {
+  margin-right: 0;
+  margin-bottom: 0;
+  width: 50%;
 }
 </style>
