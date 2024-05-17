@@ -41,7 +41,7 @@ export function groupDel(data) {
   });
 }
 // 在分组内的用户（已完成）
-export function useGroupList(params) {
+export function userInGroup(params) {
   return request({
     url: "/api/group/useringroup",
     method: "get",
@@ -49,7 +49,7 @@ export function useGroupList(params) {
   });
 }
 // 不再分组内的用户（已完成）
-export function useGroupRole(params) {
+export function userNoInGroup(params) {
   return request({
     url: "/api/group/usernoingroup",
     method: "get",
@@ -57,7 +57,7 @@ export function useGroupRole(params) {
   });
 }
 // 添加用户到分组（已完成）
-export function groupInfo(data) {
+export function groupAddUser(data) {
   return request({
     url: "/api/group/adduser",
     method: "post",
@@ -65,7 +65,7 @@ export function groupInfo(data) {
   });
 }
 // 将用户从分组移出（已完成）
-export function delGroup(data) {
+export function groupDelUser(data) {
   return request({
     url: "/api/group/removeuser",
     method: "post",
