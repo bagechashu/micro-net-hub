@@ -131,6 +131,30 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55" align="center" />
+        <el-table-column label="详情" width="55" type="expand">
+          <template slot-scope="props">
+            <el-form label-position="left" class="table-expand">
+              <el-form-item label="userDN">
+                <span>{{ props.row.userDn }}</span>
+              </el-form-item>
+              <el-form-item label="电话">
+                <span>{{ props.row.mobile }}</span>
+              </el-form-item>
+              <el-form-item label="邮箱">
+                <span>{{ props.row.mail }}</span>
+              </el-form-item>
+              <el-form-item label="工号">
+                <span>{{ props.row.jobNumber }}</span>
+              </el-form-item>
+              <el-form-item label="创建人">
+                <span>{{ props.row.creator }}</span>
+              </el-form-item>
+              <el-form-item label="创建人">
+                <span>{{ props.row.introduction }}</span>
+              </el-form-item>
+            </el-form>
+          </template>
+        </el-table-column>
         <el-table-column show-overflow-tooltip sortable label="用户名">
           <template slot-scope="scope">
             <div slot="reference" class="name-wrapper">
@@ -144,12 +168,7 @@
           prop="nickname"
           label="中文名"
         />
-        <el-table-column
-          show-overflow-tooltip
-          sortable
-          prop="givenName"
-          label="花名"
-        />
+        <el-table-column show-overflow-tooltip prop="givenName" label="花名" />
         <!-- 使用按钮方式展示，以后改成布尔参数比较合适 -->
         <el-table-column label="状态" align="center">
           <template slot-scope="scope">
@@ -169,24 +188,8 @@
         <el-table-column
           show-overflow-tooltip
           sortable
-          prop="mail"
-          label="邮箱"
-        />
-        <el-table-column
-          show-overflow-tooltip
-          sortable
-          prop="mobile"
-          label="手机号"
-        />
-        <el-table-column
-          show-overflow-tooltip
-          sortable
-          prop="jobNumber"
-          label="工号"
-        />
-        <el-table-column
-          show-overflow-tooltip
-          sortable
+          width="250px"
+          min-width="200px"
           prop="departments"
           label="部门"
         />
@@ -195,24 +198,6 @@
           sortable
           prop="position"
           label="职位"
-        />
-        <el-table-column
-          show-overflow-tooltip
-          sortable
-          prop="creator"
-          label="创建人"
-        />
-        <el-table-column
-          show-overflow-tooltip
-          sortable
-          prop="introduction"
-          label="说明"
-        />
-        <el-table-column
-          show-overflow-tooltip
-          sortable
-          prop="userDn"
-          label="DN"
         />
         <el-table-column
           show-overflow-tooltip
@@ -367,11 +352,7 @@
                   />
                 </span>
               </el-form-item>
-              <el-form-item
-                v-else
-                label="重置密码"
-                prop="password"
-              >
+              <el-form-item v-else label="重置密码" prop="password">
                 <el-input
                   v-model.trim="dialogFormData.password"
                   autocomplete="off"
@@ -483,7 +464,11 @@
           </el-row>
         </el-form>
         <div slot="footer" class="dialog-footer">
-          <el-switch v-model="notice" active-text="通知用户" style="margin-right: 10px;" />
+          <el-switch
+            v-model="notice"
+            active-text="通知用户"
+            style="margin-right: 10px"
+          />
           <el-button size="mini" @click="cancelForm()">取 消</el-button>
           <el-button
             size="mini"
@@ -1150,5 +1135,17 @@ export default {
   color: #889aa4;
   cursor: pointer;
   user-select: none;
+}
+
+.table-expand label {
+  display: inline-block;
+  width: 90px;
+  color: #99a9bf;
+}
+
+.table-expand .el-form-item {
+  margin-right: 0;
+  margin-bottom: 0;
+  width: 50%;
 }
 </style>
