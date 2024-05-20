@@ -323,76 +323,79 @@
       </el-dialog>
       <!-- 组用户管理 -->
       <el-dialog title="组用户管理" :visible.sync="dialogUsersMgrVisible">
-        <el-form
-          size="mini"
-          :inline="true"
-          :model="userOfGroupParams"
-          class="demo-form-inline"
-        >
-          <el-form-item label="用户名">
-            <el-input
-              v-model.trim="userOfGroupParams.nickname"
-              style="width: 120px"
-              clearable
-              placeholder="支持模糊搜索"
-              @keyup.enter.native="getUsersOfGroupData()"
-              @clear="getUsersOfGroupData()"
-            />
-          </el-form-item>
-          <el-button-group>
-            <el-button
+        <el-row>
+          <el-col :span="10">
+            <el-form
               size="mini"
-              :loading="submitLoading"
-              icon="el-icon-search"
-              type="primary"
-              @click="getUsersOfGroupData()"
-            >搜索</el-button>
-            <el-button
-              size="mini"
-              :disabled="userOfGroupListMultipleSelection.length === 0"
-              :loading="submitLoading"
-              icon="el-icon-delete"
-              type="danger"
-              @click="handleGroupDelUser()"
-            >移除</el-button>
-          </el-button-group>
-        </el-form>
-        <el-form
-          size="mini"
-          :inline="true"
-          :model="groupAddUserParams"
-          class="demo-form-inline"
-        >
-          <el-form-item label="添加用户">
-            <el-select
-              v-model="groupAddUserList"
-              multiple
-              filterable
-              remote
-              reserve-keyword
-              placeholder="搜索用户"
-              :remote-method="getUsersNoInGroupData"
-              :loading="submitLoading"
+              :inline="true"
+              :model="userOfGroupParams"
             >
-              <el-option
-                v-for="item in groupAddUserListOption"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-              />
-            </el-select>
-          </el-form-item>
-          <el-button-group>
-            <el-button
+              <el-form-item>
+                <el-input
+                  v-model.trim="userOfGroupParams.nickname"
+                  clearable
+                  placeholder="模糊搜索"
+                  @keyup.enter.native="getUsersOfGroupData()"
+                  @clear="getUsersOfGroupData()"
+                />
+              </el-form-item>
+              <el-button
+                size="mini"
+                :loading="submitLoading"
+                icon="el-icon-search"
+                type="primary"
+                @click="getUsersOfGroupData()"
+              >搜索</el-button>
+            </el-form></el-col>
+          <el-col :span="10">
+            <el-form
               size="mini"
-              :disabled="groupAddUserList.length === 0"
-              :loading="submitLoading"
-              icon="el-icon-delete"
-              type="primary"
-              @click="handleGroupAddUser()"
-            >添加</el-button>
-          </el-button-group>
-        </el-form>
+              :inline="true"
+              :model="groupAddUserParams"
+            >
+              <el-form-item>
+                <el-select
+                  v-model="groupAddUserList"
+                  multiple
+                  filterable
+                  remote
+                  reserve-keyword
+                  placeholder="模糊搜索"
+                  :remote-method="getUsersNoInGroupData"
+                  :loading="submitLoading"
+                >
+                  <el-option
+                    v-for="item in groupAddUserListOption"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  />
+                </el-select>
+              </el-form-item>
+              <el-button-group>
+                <el-button
+                  size="mini"
+                  :disabled="groupAddUserList.length === 0"
+                  :loading="submitLoading"
+                  icon="el-icon-delete"
+                  type="success"
+                  @click="handleGroupAddUser()"
+                >添加</el-button>
+              </el-button-group>
+            </el-form></el-col>
+          <el-col :span="4">
+            <el-form size="mini" class="flex-inline-form" :inline="true">
+              <el-button
+                size="mini"
+                :disabled="userOfGroupListMultipleSelection.length === 0"
+                :loading="submitLoading"
+                icon="el-icon-delete"
+                type="danger"
+                @click="handleGroupDelUser()"
+              >移除选中</el-button>
+            </el-form></el-col>
+        </el-row>
+
         <el-table
           :data="userOfGroupList"
           stripe
@@ -727,7 +730,8 @@ export default {
             this.loading = false;
           }
           this.userOfGroupParams.nickname = "";
-          this.groupAddUserList.nickname = [];
+          this.groupAddUserList = [];
+          this.groupAddUserParams.nickname = "";
           this.getUsersOfGroupData();
         })
         .catch(() => {
