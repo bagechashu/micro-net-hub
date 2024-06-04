@@ -26,6 +26,7 @@ type config struct {
 	RateLimit *RateLimitConfig `mapstructure:"rate-limit" json:"rateLimit"`
 	Ldap      *LdapConfig      `mapstructure:"ldap" json:"ldap"`
 	Radius    *RadiusConfig    `mapstructure:"radius" json:"radius"`
+	Dns       *DnsConfig       `mapstructure:"dns" json:"dns"`
 	Email     *EmailConfig     `mapstructure:"email" json:"email"`
 	Notice    *NoticeConfig    `mapstructure:"notice" json:"notice"`
 	Sync      *SyncConfig      `mapstructure:"sync" json:"sync"`
@@ -48,6 +49,9 @@ func InitConfig() {
 	viper.SetDefault("sync.ldap-sync-time", "0 */2 * * * *")
 	viper.SetDefault("radius.fail-times-before-block5min", 3)
 	viper.SetDefault("email.enable", false)
+	viper.SetDefault("dns.listen-addr", "0.0.0.0:53")
+	viper.SetDefault("dns.read-timeout-second", 5)
+	viper.SetDefault("dns.write-timeout-second", 5)
 
 	// 读取配置信息
 	err = viper.ReadInConfig()
@@ -168,6 +172,12 @@ type RadiusConfig struct {
 	ListenAddr               string `mapstructure:"listen-addr" json:"listenAddr"`
 	Secret                   string `mapstructure:"secret" json:"secret"`
 	GroupFilter              string `mapstructure:"group-filter" json:"groupFilter"`
+}
+
+type DnsConfig struct {
+	ListenAddr         string `mapstructure:"listen-addr" json:"listenAddr"`
+	ReadTimeoutSecond  int64  `mapstructure:"read-timeout-second" json:"readTimeoutSecond"`
+	WriteTimeoutSecond int64  `mapstructure:"write-timeout-second" json:"writeTimeoutSecond"`
 }
 
 type EmailConfig struct {

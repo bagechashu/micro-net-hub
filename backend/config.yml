@@ -152,6 +152,12 @@ radius:
   secret: "default-radius-secret"
   group-filter: ""
 
+dns:
+  # 默认的 DNS 服务器地址
+  listen-addr: 0.0.0.0:53
+  read-timeout-second: 5
+  write-timeout-second: 5
+
 sync:
   enable-sync: false # 是否开启定时同步 IM 的用户和组织
   is-update-syncd: false # 如果你不了解这个字段的含义，则不建议开启. 没有测试过. 当 IM 用户的邮箱，手机号，部门等信息更新之后，是否同步更新，默认为false.

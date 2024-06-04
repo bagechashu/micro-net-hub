@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"micro-net-hub/internal/config"
+	"micro-net-hub/internal/dnssrv"
 	"micro-net-hub/internal/global"
 	"micro-net-hub/internal/global/setup"
 	"micro-net-hub/internal/module/operationlog"
@@ -30,6 +31,7 @@ func main() {
 	// 初始化日志
 	setup.InitLogger()
 
+	global.Log.Infof("================= %v", config.Conf.Dns)
 	// 初始化数据库(mysql)
 	setup.InitDB()
 
@@ -64,6 +66,14 @@ func main() {
 
 	g.Go(func() error {
 		return radiussrv.Run()
+	})
+
+	g.Go(func() error {
+		return dnssrv.RunTcp()
+	})
+
+	g.Go(func() error {
+		return dnssrv.RunUdp()
 	})
 
 	if err := g.Wait(); err != nil {

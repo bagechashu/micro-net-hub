@@ -25,6 +25,8 @@ A tool for managing your OpenLDAP/Ocserv/Navigation at a private network.
 - https://github.com/bjdgyc/anylink
 - https://github.com/fivexl/golang-radius-server-ldap-with-mfa
 - https://github.com/lework/lenav
+- https://github.com/kenshinx/godns
+- https://github.com/snail2sky/coredns_mysql_extend.git 
 
 # TODO
 
