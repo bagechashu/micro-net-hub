@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"micro-net-hub/internal/global"
 	"micro-net-hub/internal/server/helper"
+	"time"
 
+	"github.com/patrickmn/go-cache"
 	"gorm.io/gorm"
 )
 
@@ -35,6 +37,12 @@ func (zr *DnsZone) Delete() error {
 }
 
 type DnsZones []*DnsZone
+
+var DnsZonesCache = cache.New(24*time.Hour, 48*time.Hour)
+
+func ClearDnsZonesCache() {
+	DnsZonesCache.Flush()
+}
 
 func (zrs *DnsZones) FindAll() error {
 	if err := global.DB.Find(&zrs).Error; err != nil {
@@ -91,6 +99,12 @@ func (dr *DnsRecord) Disable() error {
 }
 
 type DnsRecords []*DnsRecord
+
+var DnsRecordsCache = cache.New(24*time.Hour, 48*time.Hour)
+
+func ClearDnsRecordsCache() {
+	DnsRecordsCache.Flush()
+}
 
 func (drs *DnsRecords) FindAll() error {
 	if err := global.DB.Find(&drs).Error; err != nil {

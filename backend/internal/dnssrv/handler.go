@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/miekg/dns"
+	"github.com/patrickmn/go-cache"
 )
 
 func dnsHandler(w dns.ResponseWriter, r *dns.Msg) {
@@ -30,11 +31,7 @@ func dnsHandler(w dns.ResponseWriter, r *dns.Msg) {
 		}
 		// global.Log.Debugf("q.Name: %s; qZone: %s; qHost: %s", q.Name, queryZone, queryHost)
 
-		var dnsZones model.DnsZones
-		if err := dnsZones.FindAll(); err != nil {
-			global.Log.Errorf("Failed to fetch dns zone: %v", err)
-			return
-		}
+		dnsZones := getLocalZones()
 
 		if dz := findMatchingDnsZone(queryZone, dnsZones); dz != nil {
 			handleLocalQuery(q, m, dz, queryHost)
@@ -51,7 +48,7 @@ func dnsHandler(w dns.ResponseWriter, r *dns.Msg) {
 }
 
 func handleLocalQuery(q dns.Question, m *dns.Msg, dz *model.DnsZone, queryHost string) {
-	dnsRecords, err := queryDomain(dz.ID, queryHost)
+	dnsRecords, err := getLocalZoneRecords(dz.ID, queryHost)
 	if err != nil {
 		global.Log.Errorf("Query domain error: %v", err)
 		m.Rcode = dns.RcodeServerFailure
@@ -103,7 +100,27 @@ func handleForwardQuery(r *dns.Msg, m *dns.Msg) {
 	m.Extra = append(m.Extra, resp.Extra...)
 }
 
-func queryDomain(zone_id uint, host string) (dnsRecords model.DnsRecords, err error) {
+func getLocalZones() (dnsZones model.DnsZones) {
+	dzCacheKey := "ldz_all"
+	if cacheDzs, found := model.DnsZonesCache.Get(dzCacheKey); found {
+		return cacheDzs.(model.DnsZones)
+	}
+
+	if err := dnsZones.FindAll(); err != nil {
+		global.Log.Errorf("Failed to fetch dns zone: %v", err)
+		return
+	}
+
+	model.DnsZonesCache.Set(dzCacheKey, dnsZones, cache.DefaultExpiration)
+	return
+}
+
+func getLocalZoneRecords(zone_id uint, host string) (dnsRecords model.DnsRecords, err error) {
+	drCacheKey := fmt.Sprintf("ldr_%d_%s", zone_id, host)
+	if cacheDrs, found := model.DnsRecordsCache.Get(drCacheKey); found {
+		return cacheDrs.(model.DnsRecords), nil
+	}
+
 	filter := map[string]interface{}{
 		"zone_id": zone_id,
 		"host":    host,
@@ -112,6 +129,8 @@ func queryDomain(zone_id uint, host string) (dnsRecords model.DnsRecords, err er
 		global.Log.Errorf("Failed to fetch DNS records: %v", err)
 		return
 	}
+
+	model.DnsRecordsCache.Set(drCacheKey, dnsRecords, cache.DefaultExpiration)
 	return
 }
 
@@ -225,15 +244,11 @@ func recursiveARecord(m *dns.Msg, domain string) {
 	}
 	// global.Log.Debugf("recurisiveDomain: %s; qZone: %s; qHost: %s", domain, queryZone, queryHost)
 
-	var dnsZones model.DnsZones
-	if err := dnsZones.FindAll(); err != nil {
-		global.Log.Errorf("Failed to fetch dns zone: %v", err)
-		return
-	}
+	dnsZones := getLocalZones()
 
 	var dnsRecords model.DnsRecords
 	if dz := findMatchingDnsZone(queryZone, dnsZones); dz != nil {
-		dnsRecords, err = queryDomain(dz.ID, queryHost)
+		dnsRecords, err = getLocalZoneRecords(dz.ID, queryHost)
 		if err != nil {
 			global.Log.Errorf("Query domain error: %v", err)
 			m.Rcode = dns.RcodeServerFailure
