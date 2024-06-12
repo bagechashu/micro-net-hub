@@ -221,6 +221,7 @@ func handleATypeDnsRecord(m *dns.Msg, dr *model.DnsRecord, domain string) {
 	if dr.Type == "CNAME" {
 		buildDnsMessage(m, domain, dns.TypeToString[dns.TypeCNAME], dr.Value, dr.Ttl)
 		// 递归查询 A 记录
+		// TODO: 增加递归查询次数限制, 防止 DNS 放大攻击
 		recursiveARecord(m, dr.Value)
 	} else if dr.Type == "A" {
 		ip := net.ParseIP(dr.Value)
