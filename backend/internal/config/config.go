@@ -52,6 +52,7 @@ func InitConfig() {
 	viper.SetDefault("dns.listen-addr", "0.0.0.0:53")
 	viper.SetDefault("dns.read-timeout-second", 5)
 	viper.SetDefault("dns.write-timeout-second", 5)
+	viper.SetDefault("max-recursion-depth", 3)
 
 	// 读取配置信息
 	err = viper.ReadInConfig()
@@ -178,6 +179,7 @@ type DnsConfig struct {
 	ListenAddr         string `mapstructure:"listen-addr" json:"listenAddr"`
 	ReadTimeoutSecond  int64  `mapstructure:"read-timeout-second" json:"readTimeoutSecond"`
 	WriteTimeoutSecond int64  `mapstructure:"write-timeout-second" json:"writeTimeoutSecond"`
+	MaxRecursionDepth  int    `mapstructure:"max-recursion-depth" json:"maxRecursionDepth"`
 }
 
 type EmailConfig struct {

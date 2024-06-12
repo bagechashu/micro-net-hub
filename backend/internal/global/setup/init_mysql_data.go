@@ -25,7 +25,7 @@ func InitData() {
 	u := new(accountModel.User)
 	err := global.DB.First(u, gorm.Model{ID: 1}).Error
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
-		global.Log.Warnf("数据库中已存在用户数据，无需初始化数据!")
+		global.Log.Warnf("数据库中已存在用户数据，不进行初始化数据操作!")
 		return
 	}
 
