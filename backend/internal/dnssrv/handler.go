@@ -3,6 +3,7 @@ package dnssrv
 import (
 	"errors"
 	"fmt"
+	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
 	"micro-net-hub/internal/module/dns/model"
 	"net"
@@ -62,25 +63,12 @@ func handleLocalQuery(q dns.Question, m *dns.Msg, dz *model.DnsZone, queryHost s
 	for _, dr := range dnsRecords {
 		switch q.Qtype {
 		case dns.TypeA:
-			if dr.Type == "CNAME" {
-				processDnsRecord(m, dz, dr, dns.TypeCNAME)
-				recursiveARecord(m, dr.Value)
-			} else if dr.Type == "A" {
-				ip := net.ParseIP(dr.Value)
-				if ip == nil {
-					global.Log.Errorf("Failed to parse IP address: %s", dr.Value)
-					continue
-				}
-				processDnsRecord(m, dz, dr, dns.TypeA)
-			}
+			dn := genDomain(dz, dr)
+			handleATypeDnsRecord(m, dr, dn)
 		case dns.TypeCNAME:
-			if dr.Type == "CNAME" {
-				processDnsRecord(m, dz, dr, dns.TypeCNAME)
-			}
+			handleDnsRecord(m, dz, dr, dns.TypeCNAME)
 		case dns.TypeTXT:
-			if dr.Type == "TXT" {
-				processDnsRecord(m, dz, dr, dns.TypeTXT)
-			}
+			handleDnsRecord(m, dz, dr, dns.TypeTXT)
 		}
 	}
 }
@@ -90,7 +78,7 @@ func handleForwardQuery(r *dns.Msg, m *dns.Msg) {
 		Net:     "udp",
 		Timeout: 5 * time.Second,
 	}
-	resp, _, err := forwardClient.Exchange(r, "1.1.1.1:53")
+	resp, _, err := forwardClient.Exchange(r, config.Conf.Dns.ForwardAddr)
 	if err != nil {
 		global.Log.Errorf("Failed to forward DNS query %v", err)
 		return
@@ -169,6 +157,15 @@ func parseDomain(domain string) (zone string, host string, err error) {
 	return zone, host, nil
 }
 
+func genDomain(dz *model.DnsZone, dr *model.DnsRecord) (domain string) {
+	if dr.Host == "@" {
+		domain = dz.Name
+	} else {
+		domain = fmt.Sprintf("%s.%s", dr.Host, dz.Name)
+	}
+	return
+}
+
 func findMatchingDnsZone(queryZone string, dnsZones model.DnsZones) *model.DnsZone {
 	for _, dz := range dnsZones {
 		dz.Name = ensureFQDN(dz.Name)
@@ -180,15 +177,59 @@ func findMatchingDnsZone(queryZone string, dnsZones model.DnsZones) *model.DnsZo
 	return nil
 }
 
-// 处理DNS记录的函数，减少代码重复
-func processDnsRecord(m *dns.Msg, dz *model.DnsZone, dr *model.DnsRecord, recordType uint16) {
-	var dn string
-	if dr.Host == "@" {
-		dn = dz.Name
-	} else {
-		dn = fmt.Sprintf("%s.%s", dr.Host, dz.Name)
+// recursiveARecord 递归查询 A 记录
+func recursiveARecord(m *dns.Msg, domain string) {
+	queryZone, queryHost, err := parseDomain(domain)
+	if err != nil {
+		global.Log.Errorf("Failed to fetch dns zone: %v", err)
+		return
 	}
-	buildDnsMessage(m, dn, dns.TypeToString[recordType], dr.Value, dr.Ttl)
+	// global.Log.Debugf("recurisiveDomain: %s; qZone: %s; qHost: %s", domain, queryZone, queryHost)
+
+	dnsZones := getLocalZones()
+
+	var dnsRecords model.DnsRecords
+	if dz := findMatchingDnsZone(queryZone, dnsZones); dz != nil {
+		dnsRecords, err = getLocalZoneRecords(dz.ID, queryHost)
+		if err != nil {
+			global.Log.Errorf("Query domain error: %v", err)
+			m.Rcode = dns.RcodeServerFailure
+			return
+		}
+		if len(dnsRecords) == 0 {
+			m.Rcode = dns.RcodeNameError
+			return
+		}
+		for _, dr := range dnsRecords {
+			handleATypeDnsRecord(m, dr, domain)
+		}
+	} else {
+		r := new(dns.Msg)
+		r.SetQuestion(ensureFQDN(domain), dns.TypeA)
+		handleForwardQuery(r, m)
+	}
+}
+
+func handleDnsRecord(m *dns.Msg, dz *model.DnsZone, dr *model.DnsRecord, recordType uint16) {
+	if dr.Type == dns.TypeToString[recordType] {
+		dn := genDomain(dz, dr)
+		buildDnsMessage(m, dn, dns.TypeToString[recordType], dr.Value, dr.Ttl)
+	}
+}
+
+func handleATypeDnsRecord(m *dns.Msg, dr *model.DnsRecord, domain string) {
+	if dr.Type == "CNAME" {
+		buildDnsMessage(m, domain, dns.TypeToString[dns.TypeCNAME], dr.Value, dr.Ttl)
+		// 递归查询 A 记录
+		recursiveARecord(m, dr.Value)
+	} else if dr.Type == "A" {
+		ip := net.ParseIP(dr.Value)
+		if ip != nil {
+			buildDnsMessage(m, domain, dns.TypeToString[dns.TypeA], dr.Value, dr.Ttl)
+		} else {
+			global.Log.Errorf("Failed to parse IP address: %s", dr.Value)
+		}
+	}
 }
 
 func buildDnsMessage(m *dns.Msg, dname string, dtype string, drecord string, dttl uint32) {
@@ -232,44 +273,5 @@ func buildDnsMessage(m *dns.Msg, dname string, dtype string, drecord string, dtt
 		m.Answer = append(m.Answer, txtRR)
 	default:
 		global.Log.Warnf("Unsupported query type: %s", dtype)
-	}
-}
-
-// recursiveARecord 递归查询 A 记录
-func recursiveARecord(m *dns.Msg, domain string) {
-	queryZone, queryHost, err := parseDomain(domain)
-	if err != nil {
-		global.Log.Errorf("Failed to fetch dns zone: %v", err)
-		return
-	}
-	// global.Log.Debugf("recurisiveDomain: %s; qZone: %s; qHost: %s", domain, queryZone, queryHost)
-
-	dnsZones := getLocalZones()
-
-	var dnsRecords model.DnsRecords
-	if dz := findMatchingDnsZone(queryZone, dnsZones); dz != nil {
-		dnsRecords, err = getLocalZoneRecords(dz.ID, queryHost)
-		if err != nil {
-			global.Log.Errorf("Query domain error: %v", err)
-			m.Rcode = dns.RcodeServerFailure
-			return
-		}
-		if len(dnsRecords) == 0 {
-			m.Rcode = dns.RcodeNameError
-			return
-		}
-		for _, dr := range dnsRecords {
-			if dr.Type == "CNAME" {
-				buildDnsMessage(m, domain, dns.TypeToString[dns.TypeCNAME], dr.Value, dr.Ttl)
-				// 递归查询 A 记录
-				recursiveARecord(m, dr.Value)
-			} else if dr.Type == "A" {
-				buildDnsMessage(m, domain, dns.TypeToString[dns.TypeA], dr.Value, dr.Ttl)
-			}
-		}
-	} else {
-		r := new(dns.Msg)
-		r.SetQuestion(ensureFQDN(domain), dns.TypeA)
-		handleForwardQuery(r, m)
 	}
 }

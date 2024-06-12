@@ -114,7 +114,7 @@ func (drs *DnsRecords) FindAll() error {
 }
 
 func (drs *DnsRecords) Find(filter map[string]interface{}) error {
-	if err := global.DB.Debug().Table("dns_records").Where(filter).Find(&drs).Error; err != nil {
+	if err := global.DB.Table("dns_records").Where(filter).Find(&drs).Error; err != nil {
 		return helper.NewMySqlError(fmt.Errorf("获取 DnsRecord 失败: %w", err))
 	}
 	return nil
