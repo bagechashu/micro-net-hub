@@ -58,7 +58,7 @@ type DnsRecord struct {
 	Host   string `gorm:"type:varchar(64)" json:"host"`
 	Value  string `gorm:"type:varchar(64)" json:"value"`
 	Ttl    uint32 `gorm:"type:uint" json:"ttl"`
-	Status uint   `gorm:"type:uint" json:"status"`
+	Status uint8  `gorm:"type:uint" json:"status"`
 }
 
 func (dr *DnsRecord) Add() error {
