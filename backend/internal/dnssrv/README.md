@@ -5,5 +5,9 @@
 
 ## Introduce
 - only for intranet dns server
-- support A/CNAME record
+- support A/CNAME/TXT record
 - use MySQL database to store domain information
+
+## TODO
+- Use state to control whether queries can be made
+- implementation of dns records to add, delete, change and search
