@@ -58,10 +58,10 @@
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column
           show-overflow-tooltip
-          width="52"
           sortable
           prop="ID"
           label="序号"
+          width="80"
         />
         <el-table-column
           show-overflow-tooltip
@@ -84,7 +84,7 @@
             </el-form>
           </template>
         </el-table-column>
-        <el-table-column fixed="right" label="操作" align="center" width="120">
+        <el-table-column fixed="right" label="操作" align="center" width="150">
           <template #default="scope">
             <el-tooltip content="编辑" effect="dark" placement="top">
               <el-button

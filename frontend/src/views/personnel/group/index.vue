@@ -135,18 +135,21 @@
           sortable
           prop="groupType"
           label="类型"
+          width="80"
         />
         <el-table-column
           show-overflow-tooltip
           sortable
           prop="groupDn"
           label="DN"
+          width="500"
         />
         <el-table-column
           show-overflow-tooltip
           sortable
           prop="remark"
           label="描述"
+          width="320"
         />
         <el-table-column
           show-overflow-tooltip

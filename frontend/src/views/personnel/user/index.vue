@@ -130,8 +130,8 @@
         style="width: 100%"
         @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" width="55" align="left" />
-        <el-table-column label="详情" width="200" type="expand">
+        <el-table-column type="selection" width="55" align="center" />
+        <el-table-column label="详情" width="55" type="expand">
           <template slot-scope="props">
             <el-form label-position="left" class="table-expand">
               <el-form-item label="userDN">
@@ -152,32 +152,21 @@
               <el-form-item label="个人简介">
                 <span>{{ props.row.introduction }}</span>
               </el-form-item>
-              <el-form-item label="部门">
-                <template v-if="props.row.groups && props.row.groups.length">
-                  <br>
-                  <span v-for="(group, index) in props.row.groups" :key="group.ID">
-                    {{ group.groupDn }}
-                    <span v-if="index !== props.row.groups.length - 1"><br> </span> <!-- 添加逗号分隔，除了最后一个 -->
-                  </span>
-                </template>
-                <span v-else>
-                  无部门信息
-                </span>
-              </el-form-item>
             </el-form>
           </template>
         </el-table-column>
-        <el-table-column show-overflow-tooltip sortable label="用户名">
+        <el-table-column show-overflow-tooltip sortable label="用户名" width="120">
           <template slot-scope="scope">
             <div slot="reference" class="name-wrapper">
               <el-tag size="medium">{{ scope.row.username }}</el-tag>
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="状态" align="center">
+        <el-table-column label="状态" width="80" align="center">
           <template slot-scope="scope">
             <el-switch
               v-model="scope.row.status"
+              size="small"
               :active-value="1"
               :inactive-value="2"
               @change="userStateChanged(scope.row)"
@@ -189,8 +178,9 @@
           sortable
           prop="nickname"
           label="中文名"
+          width="120"
         />
-        <el-table-column show-overflow-tooltip prop="givenName" label="花名" />
+        <el-table-column show-overflow-tooltip prop="givenName" label="花名" width="120" />
         <!-- 使用按钮方式展示，以后改成布尔参数比较合适 -->
         <!-- <el-table-column show-overflow-tooltip sortable prop="status" label="状态" align="center">
           <template slot-scope="scope">
@@ -202,7 +192,21 @@
           sortable
           prop="position"
           label="职位"
+          width="120"
         />
+        <el-table-column show-overflow-tooltip label="部门" width="420">
+          <template slot-scope="scope">
+            <div v-if="scope.row.groups && scope.row.groups.length">
+              <span v-for="(group, index) in scope.row.groups" :key="group.ID">
+                {{ group.groupDn }}
+                <span v-if="index !== scope.row.groups.length - 1"><br> </span> <!-- 添加逗号分隔，除了最后一个 -->
+              </span>
+            </div>
+            <div v-else>
+              ---
+            </div>
+          </template>
+        </el-table-column>
         <el-table-column
           show-overflow-tooltip
           sortable
