@@ -268,7 +268,6 @@ func InitData() {
 			Mobile:        "18888888888",
 			Avatar:        "https://q1.qlogo.cn/g?b=qq&nk=10002&s=100",
 			PostalAddress: "default",
-			Departments:   "default",
 			Position:      "default",
 			Introduction:  "default",
 			Status:        1,

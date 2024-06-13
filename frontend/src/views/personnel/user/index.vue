@@ -130,8 +130,8 @@
         style="width: 100%"
         @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" width="55" align="center" />
-        <el-table-column label="详情" width="55" type="expand">
+        <el-table-column type="selection" width="55" align="left" />
+        <el-table-column label="详情" width="200" type="expand">
           <template slot-scope="props">
             <el-form label-position="left" class="table-expand">
               <el-form-item label="userDN">
@@ -149,8 +149,20 @@
               <el-form-item label="创建人">
                 <span>{{ props.row.creator }}</span>
               </el-form-item>
-              <el-form-item label="创建人">
+              <el-form-item label="个人简介">
                 <span>{{ props.row.introduction }}</span>
+              </el-form-item>
+              <el-form-item label="部门">
+                <template v-if="props.row.groups && props.row.groups.length">
+                  <br>
+                  <span v-for="(group, index) in props.row.groups" :key="group.ID">
+                    {{ group.groupDn }}
+                    <span v-if="index !== props.row.groups.length - 1"><br> </span> <!-- 添加逗号分隔，除了最后一个 -->
+                  </span>
+                </template>
+                <span v-else>
+                  无部门信息
+                </span>
               </el-form-item>
             </el-form>
           </template>
@@ -162,14 +174,6 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column
-          show-overflow-tooltip
-          sortable
-          prop="nickname"
-          label="中文名"
-        />
-        <el-table-column show-overflow-tooltip prop="givenName" label="花名" />
-        <!-- 使用按钮方式展示，以后改成布尔参数比较合适 -->
         <el-table-column label="状态" align="center">
           <template slot-scope="scope">
             <el-switch
@@ -180,19 +184,19 @@
             />
           </template>
         </el-table-column>
+        <el-table-column
+          show-overflow-tooltip
+          sortable
+          prop="nickname"
+          label="中文名"
+        />
+        <el-table-column show-overflow-tooltip prop="givenName" label="花名" />
+        <!-- 使用按钮方式展示，以后改成布尔参数比较合适 -->
         <!-- <el-table-column show-overflow-tooltip sortable prop="status" label="状态" align="center">
           <template slot-scope="scope">
             <el-tag size="small" :type="scope.row.status === 1 ? 'success':'danger'" disable-transitions>{{ scope.row.status === 1 ? '正常':'禁用' }}</el-tag>
           </template>
         </el-table-column> -->
-        <el-table-column
-          show-overflow-tooltip
-          sortable
-          width="250px"
-          min-width="200px"
-          prop="departments"
-          label="部门"
-        />
         <el-table-column
           show-overflow-tooltip
           sortable

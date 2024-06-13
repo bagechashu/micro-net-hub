@@ -377,11 +377,6 @@ func (mgr DingTalk) AddUsers(user *accountModel.User) error {
 		if err != nil {
 			return helper.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
 		}
-		var deptTmp string
-		for _, group := range gs {
-			deptTmp = deptTmp + group.GroupName + ","
-		}
-		user.Departments = strings.TrimRight(deptTmp, ",")
 
 		// 新增用户
 		err = userProcess.CommonAddUser(user, gs)
@@ -401,17 +396,13 @@ func (mgr DingTalk) AddUsers(user *accountModel.User) error {
 			if err != nil {
 				return helper.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
 			}
-			var deptTmp string
-			for _, group := range gs {
-				deptTmp = deptTmp + group.GroupName + ","
-			}
+
 			user.Model = oldData.Model
 			user.Roles = oldData.Roles
 			user.Creator = oldData.Creator
 			user.Source = oldData.Source
 			user.Password = oldData.Password
 			user.UserDN = oldData.UserDN
-			user.Departments = strings.TrimRight(deptTmp, ",")
 
 			// 用户信息的预置处理
 			if user.Nickname == "" {
@@ -428,9 +419,6 @@ func (mgr DingTalk) AddUsers(user *accountModel.User) error {
 			}
 			if user.JobNumber == "" {
 				user.JobNumber = oldData.JobNumber
-			}
-			if user.Departments == "" {
-				user.Departments = oldData.Departments
 			}
 			if user.Position == "" {
 				user.Position = oldData.Position

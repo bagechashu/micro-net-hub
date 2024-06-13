@@ -69,7 +69,7 @@ func (mgr OpenLdap) SyncUsers() error {
 			JobNumber:     staff.EmployeeNumber,
 			Mobile:        staff.Mobile,
 			PostalAddress: staff.PostalAddress,
-			Departments:   staff.BusinessCategory,
+			// Departments:   staff.BusinessCategory,
 			Position:      staff.DepartmentNumber,
 			Introduction:  staff.CN,
 			Creator:       "system",

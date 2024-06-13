@@ -150,9 +150,7 @@ func (mgr FeiShu) GetAllDepts() (ret []map[string]interface{}, err error) {
 		//使用dept-list来一个一个添加部门，开头为^的不添加子部门
 		isInDeptList := func(id string) bool {
 			for _, v := range config.Conf.FeiShu.DeptList {
-				if strings.HasPrefix(v, "^") {
-					v = v[1:]
-				}
+				v = strings.TrimPrefix(v, "^")
 				if id == v {
 					return true
 				}
@@ -391,11 +389,6 @@ func (mgr FeiShu) AddUsers(user *accountModel.User) error {
 		if err != nil {
 			return helper.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
 		}
-		var deptTmp string
-		for _, group := range gs {
-			deptTmp = deptTmp + group.GroupName + ","
-		}
-		user.Departments = strings.TrimRight(deptTmp, ",")
 
 		// 添加用户
 		err = userProcess.CommonAddUser(user, gs)
@@ -416,17 +409,13 @@ func (mgr FeiShu) AddUsers(user *accountModel.User) error {
 			if err != nil {
 				return helper.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
 			}
-			var deptTmp string
-			for _, group := range gs {
-				deptTmp = deptTmp + group.GroupName + ","
-			}
+
 			user.Model = oldData.Model
 			user.Roles = oldData.Roles
 			user.Creator = oldData.Creator
 			user.Source = oldData.Source
 			user.Password = oldData.Password
 			user.UserDN = oldData.UserDN
-			user.Departments = strings.TrimRight(deptTmp, ",")
 
 			// 用户信息的预置处理
 			if user.Nickname == "" {
@@ -443,9 +432,6 @@ func (mgr FeiShu) AddUsers(user *accountModel.User) error {
 			}
 			if user.JobNumber == "" {
 				user.JobNumber = oldData.JobNumber
-			}
-			if user.Departments == "" {
-				user.Departments = oldData.Departments
 			}
 			if user.Position == "" {
 				user.Position = oldData.Position

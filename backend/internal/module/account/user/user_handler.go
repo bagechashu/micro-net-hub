@@ -9,7 +9,6 @@ import (
 	totpModel "micro-net-hub/internal/module/totp/model"
 	"micro-net-hub/internal/server/helper"
 	"micro-net-hub/internal/tools"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/thoas/go-funk"
@@ -123,7 +122,6 @@ func Add(c *gin.Context) {
 		Mobile:        req.Mobile,
 		Avatar:        req.Avatar,
 		PostalAddress: req.PostalAddress,
-		Departments:   req.Departments,
 		Position:      req.Position,
 		Introduction:  req.Introduction,
 		Status:        req.Status,
@@ -276,15 +274,8 @@ func Update(c *gin.Context) {
 	}
 
 	// 过滤掉前端会选择到的 请选择部门信息 这个选项
-	var (
-		depts   string
-		deptids []uint
-	)
-	for _, v := range strings.Split(req.Departments, ",") {
-		if v != "请选择部门信息" {
-			depts += v + ","
-		}
-	}
+	var deptids []uint
+
 	for _, j := range req.DepartmentIds {
 		if j != 0 {
 			deptids = append(deptids, j)
@@ -302,7 +293,6 @@ func Update(c *gin.Context) {
 		Mobile:        req.Mobile,
 		Avatar:        req.Avatar,
 		PostalAddress: req.PostalAddress,
-		Departments:   depts,
 		Position:      req.Position,
 		Introduction:  req.Introduction,
 		Creator:       ctxUser.Username,

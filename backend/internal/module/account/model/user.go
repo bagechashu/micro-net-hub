@@ -50,7 +50,6 @@ type User struct {
 	SourceUnionId string         `gorm:"type:varchar(100);not null;comment:'第三方唯一unionId'" json:"sourceUnionId"`            // 第三方唯一unionId
 	UserDN        string         `gorm:"type:varchar(255);not null;comment:'用户dn'" json:"userDn"`                           // 用户在ldap的dn
 	SyncState     uint           `gorm:"type:tinyint(1);default:1;comment:'同步状态:1已同步, 2未同步'" json:"syncState"`              // 数据到ldap的同步状态
-	Departments   string         `gorm:"type:varchar(512);comment:'部门'" json:"departments"`                                 // 部门
 	DepartmentIds string         `gorm:"type:varchar(100);not null;comment:'部门id'" json:"departmentIds"`                    // 部门id
 }
 
@@ -123,9 +122,6 @@ func (u *User) CheckAttrVacancies() {
 	}
 	if u.JobNumber == "" {
 		u.JobNumber = "0000"
-	}
-	if u.Departments == "" {
-		u.Departments = "all"
 	}
 	if u.Position == "" {
 		u.Position = "Default Position"
@@ -309,7 +305,7 @@ func (us *Users) List(req *User, pageNum int, pageSize int) error {
 	}
 
 	pageReq := tools.NewPageOption(pageNum, pageSize)
-	err := db.Offset(pageReq.PageNum).Limit(pageReq.PageSize).Preload("Roles").Find(&us).Error
+	err := db.Offset(pageReq.PageNum).Limit(pageReq.PageSize).Preload("Roles").Preload("Groups").Find(&us).Error
 	return err
 }
 

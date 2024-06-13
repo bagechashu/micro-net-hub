@@ -518,7 +518,6 @@ func AddUser(c *gin.Context) {
 		newData := oldData
 		// 添加新增的分组ID与部门
 		newData.DepartmentIds = oldData.DepartmentIds + "," + strconv.Itoa(int(req.GroupID))
-		newData.Departments = oldData.Departments + "," + group.GroupName
 		err = newData.Update()
 		if err != nil {
 			helper.ErrV2(c, helper.NewOperationError(fmt.Errorf("处理用户的部门数据失败:"+err.Error())))
@@ -562,7 +561,7 @@ func RemoveUser(c *gin.Context) {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取分组失败: %s", err.Error())))
 		return
 	}
-
+	// 检查 GroupDN 是否为 ou 类型
 	if group.GroupDN[:3] == "ou=" {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("ou类型的分组内没有用户")))
 		return
@@ -593,14 +592,7 @@ func RemoveUser(c *gin.Context) {
 		}
 		newData := oldData
 
-		var newDepts []string
 		var newDeptIds []string
-		// 删掉移除的分组名字
-		for _, v := range strings.Split(oldData.Departments, ",") {
-			if v != group.GroupName {
-				newDepts = append(newDepts, v)
-			}
-		}
 		// 删掉移除的分组id
 		for _, v := range strings.Split(oldData.DepartmentIds, ",") {
 			if v != strconv.Itoa(int(req.GroupID)) {
@@ -608,7 +600,6 @@ func RemoveUser(c *gin.Context) {
 			}
 		}
 
-		newData.Departments = strings.Join(newDepts, ",")
 		newData.DepartmentIds = strings.Join(newDeptIds, ",")
 		err = newData.Update()
 		if err != nil {
