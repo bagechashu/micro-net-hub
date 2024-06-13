@@ -509,17 +509,16 @@ func AddUser(c *gin.Context) {
 	}
 
 	for _, user := range users {
-		oldData := new(model.User)
-		err = oldData.Find(tools.H{"id": user.ID})
+		u := new(model.User)
+		err = u.Find(tools.H{"id": user.ID})
 		if err != nil {
 			helper.ErrV2(c, helper.NewMySqlError(err))
 			return
 		}
 
-		newData := oldData
 		// 添加新增的分组ID与部门
-		newData.DepartmentIds = oldData.DepartmentIds + "," + strconv.Itoa(int(req.GroupID))
-		err = newData.Update()
+		u.DepartmentIds = u.DepartmentIds + "," + strconv.Itoa(int(req.GroupID))
+		err = u.Update()
 		if err != nil {
 			helper.ErrV2(c, helper.NewOperationError(fmt.Errorf("处理用户的部门数据失败:"+err.Error())))
 			return
@@ -585,24 +584,23 @@ func RemoveUser(c *gin.Context) {
 	}
 
 	for _, user := range users {
-		oldData := new(model.User)
-		err = oldData.Find(tools.H{"id": user.ID})
+		u := new(model.User)
+		err = u.Find(tools.H{"id": user.ID})
 		if err != nil {
 			helper.ErrV2(c, helper.NewMySqlError(err))
 			return
 		}
-		newData := oldData
 
-		var newDeptIds []string
+		var deptIds []string
 		// 删掉移除的分组id
-		for _, v := range strings.Split(oldData.DepartmentIds, ",") {
+		for _, v := range strings.Split(u.DepartmentIds, ",") {
 			if v != strconv.Itoa(int(req.GroupID)) {
-				newDeptIds = append(newDeptIds, v)
+				deptIds = append(deptIds, v)
 			}
 		}
 
-		newData.DepartmentIds = strings.Join(newDeptIds, ",")
-		err = newData.Update()
+		u.DepartmentIds = strings.Join(deptIds, ",")
+		err = u.Update()
 		if err != nil {
 			helper.ErrV2(c, helper.NewOperationError(fmt.Errorf("处理用户的部门数据失败:"+err.Error())))
 			return
