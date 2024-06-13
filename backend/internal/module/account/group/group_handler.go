@@ -515,6 +515,7 @@ func AddUser(c *gin.Context) {
 			helper.ErrV2(c, helper.NewMySqlError(err))
 			return
 		}
+
 		newData := oldData
 		// 添加新增的分组ID与部门
 		newData.DepartmentIds = oldData.DepartmentIds + "," + strconv.Itoa(int(req.GroupID))

@@ -50,7 +50,7 @@ type User struct {
 	SourceUnionId string         `gorm:"type:varchar(100);not null;comment:'第三方唯一unionId'" json:"sourceUnionId"`            // 第三方唯一unionId
 	UserDN        string         `gorm:"type:varchar(255);not null;comment:'用户dn'" json:"userDn"`                           // 用户在ldap的dn
 	SyncState     uint           `gorm:"type:tinyint(1);default:1;comment:'同步状态:1已同步, 2未同步'" json:"syncState"`              // 数据到ldap的同步状态
-	DepartmentIds string         `gorm:"type:varchar(100);not null;comment:'部门id'" json:"departmentIds"`                    // 部门id
+	DepartmentIds string         `gorm:"type:varchar(100);comment:'部门id'" json:"departmentIds"`                             // 部门id
 }
 
 func (u *User) SetUserName(userName string) {
@@ -143,19 +143,31 @@ func (u *User) Update() error {
 	if u.Password != "" {
 		u.Password = tools.NewGenPasswd(u.Password)
 	}
-	err := global.DB.Model(u).Updates(u).Error
+
+	tx := global.DB.Begin()
+	err := tx.Model(u).Updates(u).Error
 	if err != nil {
+		tx.Rollback()
 		return err
 	}
-	err = global.DB.Model(u).Association("Roles").Replace(u.Roles)
-
-	// 如果更新成功就更新用户信息缓存
-	if err == nil {
-		userDb := &User{}
-		global.DB.Where("username = ?", u.Username).Preload("Roles").First(&userDb)
-		UserInfoCache.Set(u.Username, *userDb, cache.DefaultExpiration)
+	// FIX: 临时修改 DepartmentIds 空值不更新的问题
+	err = tx.Model(u).Select("DepartmentIds").Updates(u).Error
+	if err != nil {
+		tx.Rollback()
+		return err
 	}
-	return err
+	err = tx.Model(u).Association("Roles").Replace(u.Roles)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	tx.Commit()
+
+	userDb := &User{}
+	global.DB.Where("username = ?", u.Username).Preload("Roles").First(&userDb)
+	UserInfoCache.Set(u.Username, *userDb, cache.DefaultExpiration)
+
+	return nil
 }
 
 // ChangePwd 更新密码

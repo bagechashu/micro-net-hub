@@ -61,7 +61,6 @@ func LdapUserAdd(user *accountModel.User) error {
 
 // Update 更新资源
 func LdapUserUpdate(oldusername string, user *accountModel.User) error {
-	global.Log.Debugf("更新用户：%+v", user.Position)
 	modify := ldap.NewModifyRequest(user.UserDN, nil)
 	modify.Replace("cn", []string{user.Username})
 	modify.Replace("sn", []string{oldusername})

@@ -149,6 +149,7 @@ func InitData() {
 			Component: "/personnel/user/index",
 			Sort:      11,
 			ParentId:  userMgrGID,
+			NoCache:   1,
 			Roles:     roles[:1],
 			Creator:   "System",
 		},

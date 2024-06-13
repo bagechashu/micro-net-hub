@@ -346,7 +346,7 @@
                   v-model.trim="dialogFormData.password"
                   autocomplete="off"
                   :type="passwordType"
-                  placeholder="密码"
+                  placeholder="不填则随机生成"
                 />
                 <span class="show-pwd" @click="showPwd">
                   <svg-icon
@@ -361,7 +361,7 @@
                   v-model.trim="dialogFormData.password"
                   autocomplete="off"
                   :type="passwordType"
-                  placeholder="不填不会重置"
+                  placeholder="不填不重置"
                 />
                 <span class="show-pwd" @click="showPwd">
                   <svg-icon
@@ -652,16 +652,16 @@ export default {
         ],
         status: [{ required: true, message: "请选择状态", trigger: "change" }],
         departmentIds: [
-          { required: true, message: "请选择部门", trigger: "change" },
-          {
-            validator: (rule, value, callBack) => {
-              if (value < 1) {
-                callBack("请选择有效的部门");
-              } else {
-                callBack();
-              }
-            }
-          }
+          { required: false, message: "请选择部门", trigger: "blur" }
+          // {
+          //   validator: (rule, value, callBack) => {
+          //     if (value < 1) {
+          //       callBack("请选择有效的部门");
+          //     } else {
+          //       callBack();
+          //     }
+          //   }
+          // }
         ],
         introduction: [
           { required: false, message: "说明", trigger: "blur" },
