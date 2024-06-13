@@ -133,14 +133,14 @@
 </template>
 
 <script>
-import IconSelect from '@/components/IconSelect'
-import Treeselect from '@riophae/vue-treeselect'
-import '@riophae/vue-treeselect/dist/vue-treeselect.css'
-import { getMenuTree, createMenu, updateMenuById, batchDeleteMenuByIds } from '@/api/system/menu'
-import { Message } from 'element-ui'
+import IconSelect from "@/components/IconSelect";
+import Treeselect from "@riophae/vue-treeselect";
+import "@riophae/vue-treeselect/dist/vue-treeselect.css";
+import { getMenuTree, createMenu, updateMenuById, batchDeleteMenuByIds } from "@/api/system/menu";
+import { Message } from "element-ui";
 
 export default {
-  name: 'Menu',
+  name: "Menu",
   components: {
     IconSelect,
     Treeselect
@@ -153,25 +153,25 @@ export default {
 
       // 上级目录数据
       treeselectData: [],
-      treeselectValue: 0,
+      treeselectValue: undefined,
 
       // dialog对话框
       submitLoading: false,
-      dialogFormTitle: '',
-      dialogType: '',
+      dialogFormTitle: "",
+      dialogType: "",
       dialogFormVisible: false,
       dialogFormData: {
-        ID: '',
-        title: '',
-        name: '',
-        icon: '',
-        path: '',
-        component: 'Layout',
-        redirect: '',
+        ID: "",
+        title: "",
+        name: "",
+        icon: "",
+        path: "",
+        component: "Layout",
+        redirect: "",
         sort: 999,
-        status: '否',
-        hidden: '否',
-        noCache: '是',
+        status: "否",
+        hidden: "否",
+        noCache: "是",
         alwaysShow: 2,
         breadcrumb: 1,
         // activeMenu: '',
@@ -179,31 +179,31 @@ export default {
       },
       dialogFormRules: {
         title: [
-          { required: true, message: '请输入标题', trigger: 'blur' },
-          { min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur' }
+          { required: true, message: "请输入标题", trigger: "blur" },
+          { min: 1, max: 50, message: "长度在 1 到 50 个字符", trigger: "blur" }
         ],
         name: [
-          { required: true, message: '请输入名称', trigger: 'blur' },
-          { min: 1, max: 100, message: '长度在 1 到 100 个字符', trigger: 'blur' }
+          { required: true, message: "请输入名称", trigger: "blur" },
+          { min: 1, max: 100, message: "长度在 1 到 100 个字符", trigger: "blur" }
         ],
         path: [
-          { required: true, message: '请输入访问路径', trigger: 'blur' },
-          { min: 1, max: 100, message: '长度在 1 到 100 个字符', trigger: 'blur' }
+          { required: true, message: "请输入访问路径", trigger: "blur" },
+          { min: 1, max: 100, message: "长度在 1 到 100 个字符", trigger: "blur" }
         ],
         component: [
-          { required: false, message: '请输入组件路径', trigger: 'blur' },
-          { min: 0, max: 100, message: '长度在 0 到 100 个字符', trigger: 'blur' }
+          { required: false, message: "请输入组件路径", trigger: "blur" },
+          { min: 0, max: 100, message: "长度在 0 到 100 个字符", trigger: "blur" }
         ],
         redirect: [
-          { required: false, message: '请输入重定向', trigger: 'blur' },
-          { min: 0, max: 100, message: '长度在 0 到 100 个字符', trigger: 'blur' }
+          { required: false, message: "请输入重定向", trigger: "blur" },
+          { min: 0, max: 100, message: "长度在 0 到 100 个字符", trigger: "blur" }
         ],
         // activeMenu: [
         //   { required: false, message: '请输入高亮菜单', trigger: 'blur' },
         //   { min: 0, max: 100, message: '长度在 0 到 100 个字符', trigger: 'blur' }
         // ],
         parentId: [
-          { required: true, message: '请选择上级目录', trigger: 'change' }
+          { required: true, message: "请选择上级目录", trigger: "change" }
         ]
 
       },
@@ -212,184 +212,189 @@ export default {
       popoverVisible: false,
       // 表格多选
       multipleSelection: []
-    }
+    };
   },
   created() {
-    this.getTableData()
+    this.getTableData();
   },
   methods: {
     // 获取表格数据
     async getTableData() {
-      this.loading = true
+      this.loading = true;
       try {
-        const { data } = await getMenuTree()
+        const { data } = await getMenuTree();
 
-        this.tableData = data
-        this.treeselectData = [{ ID: 0, title: '顶级类目', children: data }]
+        this.tableData = data;
+        this.treeselectData = [{ ID: 0, title: "顶级类目", children: data }];
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
     // 新增
     create() {
-      this.dialogFormTitle = '新增菜单'
-      this.dialogType = 'create'
-      this.dialogFormVisible = true
+      this.dialogFormTitle = "新增菜单";
+      this.dialogType = "create";
+      this.dialogFormVisible = true;
     },
 
     // 修改
     update(row) {
-      this.dialogFormData.ID = row.ID
-      this.dialogFormData.title = row.title
-      this.dialogFormData.name = row.name
-      this.dialogFormData.icon = row.icon
-      this.dialogFormData.path = row.path
-      this.dialogFormData.component = row.component
-      this.dialogFormData.redirect = row.redirect
-      this.dialogFormData.sort = row.sort
-      this.dialogFormData.status = row.status === 1 ? '否' : '是'
-      this.dialogFormData.hidden = row.hidden === 1 ? '是' : '否'
-      this.dialogFormData.noCache = row.noCache === 1 ? '否' : '是'
+      this.dialogFormData.ID = row.ID;
+      this.dialogFormData.title = row.title;
+      this.dialogFormData.name = row.name;
+      this.dialogFormData.icon = row.icon;
+      this.dialogFormData.path = row.path;
+      this.dialogFormData.component = row.component;
+      this.dialogFormData.redirect = row.redirect;
+      this.dialogFormData.sort = row.sort;
+      this.dialogFormData.status = row.status === 1 ? "否" : "是";
+      this.dialogFormData.hidden = row.hidden === 1 ? "是" : "否";
+      this.dialogFormData.noCache = row.noCache === 1 ? "否" : "是";
       // this.dialogFormData.activeMenu = row.activeMenu
-      this.dialogFormData.parentId = row.parentId
+      this.dialogFormData.parentId = row.parentId;
 
-      this.dialogFormTitle = '修改菜单'
-      this.dialogType = 'update'
-      this.dialogFormVisible = true
+      this.dialogFormTitle = "修改菜单";
+      this.dialogType = "update";
+      this.dialogFormVisible = true;
     },
 
     // 判断结果
-    judgeResult(res){
-      if (res.code==0){
-          Message({
-            showClose: true,
-            message: "操作成功",
-            type: 'success'
-          })
-        }
+    judgeResult(res) {
+      if (res.code === 0) {
+        Message({
+          showClose: true,
+          message: "操作成功",
+          type: "success"
+        });
+      }
     },
 
     // 提交表单
     submitForm() {
-      this.$refs['dialogForm'].validate(async valid => {
+      this.$refs["dialogForm"].validate(async valid => {
         if (valid) {
-          this.submitLoading = true
+          this.submitLoading = true;
           if (this.dialogFormData.ID === this.dialogFormData.parentId) {
             return Message({
               showClose: true,
-              message: '不能选择自身作为自己的上级目录',
-              type: 'error'
-            })
+              message: "不能选择自身作为自己的上级目录",
+              type: "error"
+            });
           }
-          if (this.dialogFormData.component === '') {
-            this.dialogFormData.component = 'Layout'
-          }
-          this.dialogFormData.status = this.dialogFormData.status === '是' ? 2 : 1
-          this.dialogFormData.hidden = this.dialogFormData.hidden === '是' ? 1 : 2
-          this.dialogFormData.noCache = this.dialogFormData.noCache === '是' ? 2 : 1
-          const dialogFormDataCopy = { ...this.dialogFormData, parentId: this.treeselectValue }
+
+          // 处理表单项
+          this.dialogFormData.component = this.dialogFormData.component || "Layout";
+          this.dialogFormData.status = this.dialogFormData.status === "是" ? 2 : 1;
+          this.dialogFormData.hidden = this.dialogFormData.hidden === "是" ? 1 : 2;
+          this.dialogFormData.noCache = this.dialogFormData.noCache === "是" ? 2 : 1;
+
+          // 创建副本逻辑
+          const dialogFormDataCopy = typeof this.treeselectValue !== "undefined"
+            ? { ...this.dialogFormData, parentId: this.treeselectValue }
+            : this.dialogFormData;
+
           try {
-            if (this.dialogType === 'create') {
+            if (this.dialogType === "create") {
               await createMenu(dialogFormDataCopy).then(res => {
-                this.judgeResult(res)
-              })
+                this.judgeResult(res);
+              });
             } else {
               await updateMenuById(dialogFormDataCopy).then(res => {
-                this.judgeResult(res)
-              })
+                this.judgeResult(res);
+              });
             }
           } finally {
-            this.submitLoading = false
+            this.submitLoading = false;
           }
-          this.resetForm()
-          this.getTableData()
+          this.resetForm();
+          this.getTableData();
         } else {
           Message({
             showClose: true,
-            message: '表单校验失败',
-            type: 'error'
-          })
-          return false
+            message: "表单校验失败",
+            type: "error"
+          });
+          return false;
         }
-      })
+      });
     },
 
     // 提交表单
     cancelForm() {
-      this.resetForm()
+      this.resetForm();
     },
 
     resetForm() {
-      this.dialogFormVisible = false
-      this.$refs['dialogForm'].resetFields()
+      this.dialogFormVisible = false;
+      this.$refs["dialogForm"].resetFields();
       this.dialogFormData = {
-        title: '',
-        name: '',
-        icon: '',
-        path: '',
-        component: 'Layout',
-        redirect: '',
+        title: "",
+        name: "",
+        icon: "",
+        path: "",
+        component: "Layout",
+        redirect: "",
         sort: 999,
-        status: '否',
-        hidden: '否',
-        noCache: '是',
+        status: "否",
+        hidden: "否",
+        noCache: "是",
         alwaysShow: 2,
         breadcrumb: 1,
         // activeMenu: '',
         parentId: 0
-      }
+      };
     },
 
     // 批量删除
     batchDelete() {
-      this.$confirm('此操作将永久删除, 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
+      this.$confirm("此操作将永久删除, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
       }).then(async res => {
-        this.loading = true
-        const menuIds = []
+        this.loading = true;
+        const menuIds = [];
         this.multipleSelection.forEach(x => {
-          menuIds.push(x.ID)
-        })
+          menuIds.push(x.ID);
+        });
         try {
           await batchDeleteMenuByIds({ menuIds: menuIds }).then(res => {
-            this.judgeResult(res)
-          })
+            this.judgeResult(res);
+          });
         } finally {
-          this.loading = false
+          this.loading = false;
         }
-        this.getTableData()
+        this.getTableData();
       }).catch(() => {
         Message({
-          type: 'info',
-          message: '已取消删除'
-        })
-      })
+          type: "info",
+          message: "已取消删除"
+        });
+      });
     },
 
     // 表格多选
     handleSelectionChange(val) {
-      this.multipleSelection = val
+      this.multipleSelection = val;
     },
 
     // 单个删除
     async singleDelete(Id) {
-      this.loading = true
+      this.loading = true;
       try {
         await batchDeleteMenuByIds({ menuIds: [Id] }).then(res => {
-          this.judgeResult(res)
-        })
+          this.judgeResult(res);
+        });
       } finally {
-        this.loading = false
+        this.loading = false;
       }
-      this.getTableData()
+      this.getTableData();
     },
 
     // 选中图标
     selected(name) {
-      this.dialogFormData.icon = name
+      this.dialogFormData.icon = name;
     },
 
     // treeselect
@@ -398,14 +403,14 @@ export default {
         id: node.ID,
         label: node.title,
         children: node.children
-      }
+      };
     },
     treeselectInput(value) {
-      this.treeselectValue = value
+      this.treeselectValue = value;
     }
 
   }
-}
+};
 </script>
 
 <style scoped>
