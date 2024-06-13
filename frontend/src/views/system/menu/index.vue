@@ -261,7 +261,7 @@ export default {
 
     // 判断结果
     judgeResult(res) {
-      if (res.code === 0) {
+      if (res.code === 0 || res.code === 200) {
         Message({
           showClose: true,
           message: "操作成功",
@@ -295,15 +295,11 @@ export default {
             : this.dialogFormData;
 
           try {
-            if (this.dialogType === "create") {
-              await createMenu(dialogFormDataCopy).then(res => {
-                this.judgeResult(res);
-              });
-            } else {
-              await updateMenuById(dialogFormDataCopy).then(res => {
-                this.judgeResult(res);
-              });
-            }
+            const res = this.dialogType === "create"
+              ? await createMenu(dialogFormDataCopy)
+              : await updateMenuById(dialogFormDataCopy);
+
+            this.judgeResult(res);
           } finally {
             this.submitLoading = false;
           }
