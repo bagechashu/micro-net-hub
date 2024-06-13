@@ -118,7 +118,7 @@ func Add(c *gin.Context) {
 		Creator:    ctxUser.Username,
 	}
 	if menu.Exist(tools.H{"name": req.Name}) {
-		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("菜单名称已存在: %s", err.Error())))
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("菜单名称已存在: %s", req.Name)))
 		return
 	}
 	err = menu.Add()
@@ -160,7 +160,7 @@ func Update(c *gin.Context) {
 	oldMenu := new(accountModel.Menu)
 	filter := tools.H{"id": int(req.ID)}
 	if !oldMenu.Exist(filter) {
-		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("该ID对应的记录不存在: %s", err.Error())))
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("该ID对应的记录不存在: %d", req.ID)))
 		return
 	}
 
