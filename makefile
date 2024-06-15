@@ -32,7 +32,7 @@ fe:
 	@echo "===== compile webui... ====="
 	cd $(WEB_SRC_DIR) && npm run build:prod
 
-# make dockerimage TAG=v0.1.3
+# make dockerimage TAG=v0.2.2
 dockerimage:
 	@echo "===== build docker image... ====="
 	docker build -t micro-net-hub:$(TAG) .
