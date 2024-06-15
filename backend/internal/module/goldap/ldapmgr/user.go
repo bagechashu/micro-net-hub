@@ -27,7 +27,7 @@ type LdapUser struct {
 	EmployeeNumber   string   `json:"employeeNumber"`   // 员工工号
 	GivenName        string   `json:"givenName"`        // 给定名字，如果公司有花名，可以用这个字段
 	PostalAddress    string   `json:"postalAddress"`    // 家庭住址
-	DepartmentIds    []string `json:"department_ids"`
+	DepartmentDns    []string `json:"department_dns"`
 }
 
 // 创建资源
@@ -208,8 +208,8 @@ func LdapUserListUserDN() (users []*accountModel.User, err error) {
 	return
 }
 
-// GetAllUsers 获取所有员工信息
-func LdapUserGetAll() (ret []*LdapUser, err error) {
+// GetAllUsers 获取所有员工信息 V2
+func LdapUserGetAllV2() (ret []*LdapUser, err error) {
 	// Construct query request
 	searchRequest := ldap.NewSearchRequest(
 		config.Conf.Ldap.BaseDN,                                     // This is basedn, we will start searching from this node.
@@ -238,11 +238,11 @@ func LdapUserGetAll() (ret []*LdapUser, err error) {
 				continue
 			}
 			name := strings.Split(strings.Split(v.DN, ",")[0], "=")[1]
-			deptIds, err := LdapUserGetDeptIds(v.DN)
+			// 获取部门DN
+			deptDns, err := LdapUserGetDeptDns(v.DN)
 			if err != nil {
 				return ret, err
 			}
-			// TODO: 调试 LdapUser 中 DepartmentIds 和 User 中 DepartmentIds 的关系
 			ret = append(ret, &LdapUser{
 				Name:             name,
 				DN:               v.DN,
@@ -257,15 +257,15 @@ func LdapUserGetAll() (ret []*LdapUser, err error) {
 				EmployeeNumber:   v.GetAttributeValue("employeeNumber"),
 				GivenName:        v.GetAttributeValue("givenName"),
 				PostalAddress:    v.GetAttributeValue("postalAddress"),
-				DepartmentIds:    deptIds,
+				DepartmentDns:    deptDns,
 			})
 		}
 	}
 	return
 }
 
-// GetUserDeptIds 获取用户所在的部门
-func LdapUserGetDeptIds(udn string) (ret []string, err error) {
+// GetUserDeptDns 获取用户所在的部门 DN
+func LdapUserGetDeptDns(udn string) (groupDns []string, err error) {
 	// Construct query request
 	searchRequest := ldap.NewSearchRequest(
 		config.Conf.Ldap.BaseDN,                                     // This is basedn, we will start searching from this node.
@@ -285,18 +285,16 @@ func LdapUserGetDeptIds(udn string) (ret []string, err error) {
 	// Search through ldap built-in search
 	sr, err := conn.Search(searchRequest)
 	if err != nil {
-		return ret, err
+		return nil, err
 	}
-	// Refers to the entry that returns data. If it is greater than 0, the interface returns normally.
-	if len(sr.Entries) > 0 {
-		for _, v := range sr.Entries {
-			ret = append(ret, strings.Split(strings.Split(v.DN, ",")[0], "=")[1])
-		}
+	for _, v := range sr.Entries {
+		groupDns = append(groupDns, v.DN)
 	}
-	return ret, nil
+
+	return groupDns, nil
 }
 
-// / 添加 Ldap 用户数据 到数据库
+// 添加 Ldap 用户数据 到数据库
 func LdapUserSyncToDB(user *accountModel.User) error {
 	// 根据 user_dn 查询用户,不存在则创建
 	if !user.Exist(tools.H{"user_dn": user.UserDN}) {

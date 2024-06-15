@@ -98,16 +98,28 @@ func GroupCount() (int64, error) {
 
 // DeptIdsToGroupIds 将企业IM部门id转换为MySQL分组id
 func DeptIdsToGroupIds(ids []string) (groupIds []uint, err error) {
-	var tempGroups []Group
-	err = global.DB.Model(&Group{}).Where("source_dept_id IN (?)", ids).Find(&tempGroups).Error
+	var gs []Group
+	err = global.DB.Model(&Group{}).Where("source_dept_id IN (?)", ids).Find(&gs).Error
 	if err != nil {
 		return nil, err
 	}
-	var tempGroupIds []uint
-	for _, g := range tempGroups {
-		tempGroupIds = append(tempGroupIds, g.ID)
+	for _, g := range gs {
+		groupIds = append(groupIds, g.ID)
 	}
-	return tempGroupIds, nil
+	return groupIds, nil
+}
+
+// DeptDnsToGroupIds 将企业IM部门 DN 转换为MySQL分组id
+func DeptDnsToGroupIds(dns []string) (groupIds []uint, err error) {
+	var gs []Group
+	err = global.DB.Model(&Group{}).Where("group_dn IN (?)", dns).Find(&gs).Error
+	if err != nil {
+		return nil, err
+	}
+	for _, g := range gs {
+		groupIds = append(groupIds, g.ID)
+	}
+	return groupIds, nil
 }
 
 type Groups []*Group

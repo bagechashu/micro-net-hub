@@ -44,13 +44,13 @@ func (mgr OpenLdap) SyncDepts() error {
 // 同步 ldap用户信息 到 数据库
 func (mgr OpenLdap) SyncUsers() error {
 	// 1.获取ldap用户列表
-	staffs, err := ldapmgr.LdapUserGetAll()
+	staffs, err := ldapmgr.LdapUserGetAllV2()
 	if err != nil {
 		return helper.NewOperationError(fmt.Errorf("获取ldap用户列表失败：%s", err.Error()))
 	}
 	// 2.遍历用户，开始写入
 	for _, staff := range staffs {
-		groupIds, err := accountModel.DeptIdsToGroupIds(staff.DepartmentIds)
+		groupIds, err := accountModel.DeptDnsToGroupIds(staff.DepartmentDns)
 		if err != nil {
 			return helper.NewMySqlError(fmt.Errorf("将部门ids转换为内部部门id失败：%s", err.Error()))
 		}
