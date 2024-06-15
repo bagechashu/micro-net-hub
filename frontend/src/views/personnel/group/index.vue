@@ -325,14 +325,10 @@
         </div>
       </el-dialog>
       <!-- 组用户管理 -->
-      <el-dialog title="组用户管理" :visible.sync="dialogUsersMgrVisible">
+      <el-dialog :title="dialogUsersMgrTitle" :visible.sync="dialogUsersMgrVisible">
         <el-row>
           <el-col :span="10">
-            <el-form
-              size="mini"
-              :inline="true"
-              :model="userOfGroupParams"
-            >
+            <el-form size="mini" :inline="true" :model="userOfGroupParams">
               <el-form-item>
                 <el-input
                   v-model.trim="userOfGroupParams.nickname"
@@ -351,11 +347,7 @@
               >搜索</el-button>
             </el-form></el-col>
           <el-col :span="10">
-            <el-form
-              size="mini"
-              :inline="true"
-              :model="groupAddUserParams"
-            >
+            <el-form size="mini" :inline="true" :model="groupAddUserParams">
               <el-form-item>
                 <el-select
                   v-model="groupAddUserList"
@@ -541,6 +533,7 @@ export default {
       multipleSelection: [],
 
       dialogUsersMgrVisible: false,
+      dialogUsersMgrTitle: "",
       userOfGroupParams: {
         groupId: "",
         nickname: ""
@@ -629,6 +622,7 @@ export default {
     // 用户管理
     handleGetUserOfGroup(row) {
       this.dialogUsersMgrVisible = true;
+      this.dialogUsersMgrTitle = `${row.groupName} 组用户管理`;
       this.userOfGroupParams.groupId = row.ID;
       this.userOfGroupParams.nickname = "";
       this.groupAddUserParams.groupId = row.ID;
