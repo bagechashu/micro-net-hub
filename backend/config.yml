@@ -157,6 +157,7 @@ dns:
   listen-addr: 0.0.0.0:53
   read-timeout-second: 5
   write-timeout-second: 5
+  max-recursion-depth: 5
   forward-addr: 1.1.1.1:53
 
 sync:
