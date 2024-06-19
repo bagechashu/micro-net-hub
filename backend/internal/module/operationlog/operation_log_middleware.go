@@ -9,7 +9,6 @@ import (
 	accountModel "micro-net-hub/internal/module/account/model"
 	apiMgrModel "micro-net-hub/internal/module/apimgr/model"
 	"micro-net-hub/internal/module/operationlog/model"
-	"micro-net-hub/internal/tools"
 
 	"github.com/gin-gonic/gin"
 )
@@ -55,7 +54,7 @@ func OperationLogMiddleware() gin.HandlerFunc {
 
 		// 检查接口并获取其描述
 		api := new(apiMgrModel.Api)
-		_ = apiMgrModel.Find(tools.H{"path": path, "method": method}, api)
+		_ = apiMgrModel.Find(map[string]interface{}{"path": path, "method": method}, api)
 
 		operationLog := model.OperationLog{
 			Username:   username,

@@ -38,7 +38,7 @@ func Add(c *gin.Context) {
 		return
 	}
 
-	if model.Exist(tools.H{"flag": req.Flag}) {
+	if model.Exist(map[string]interface{}{"flag": req.Flag}) {
 		helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("对应平台的动态字段关系已存在，请勿重复添加")))
 		return
 	}
@@ -79,7 +79,7 @@ func Update(c *gin.Context) {
 		return
 	}
 
-	filter := tools.H{"flag": req.Flag}
+	filter := map[string]interface{}{"flag": req.Flag}
 
 	if !model.Exist(filter) {
 		helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("对应平台的动态字段关系不存在")))
@@ -128,7 +128,7 @@ func Delete(c *gin.Context) {
 	}
 
 	for _, id := range req.FieldRelationIds {
-		filter := tools.H{"id": int(id)}
+		filter := map[string]interface{}{"id": int(id)}
 		if !model.Exist(filter) {
 			helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("动态字段关系不存在")))
 			return

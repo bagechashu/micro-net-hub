@@ -138,7 +138,7 @@ func SyncSqlUsers(c *gin.Context) {
 
 	// 1.获取所有用户
 	for _, id := range req.UserIds {
-		filter := tools.H{"id": int(id)}
+		filter := map[string]interface{}{"id": int(id)}
 		var u accountModel.User
 		if !u.Exist(filter) {
 			helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("有用户不存在")))
@@ -198,7 +198,7 @@ func SyncSqlGroups(c *gin.Context) {
 
 	// 1.获取所有分组
 	for _, id := range req.GroupIds {
-		filter := tools.H{"id": int(id)}
+		filter := map[string]interface{}{"id": int(id)}
 		var g accountModel.Group
 		if !g.Exist(filter) {
 			helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("有分组不存在")))

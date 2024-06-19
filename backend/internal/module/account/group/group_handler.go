@@ -10,8 +10,6 @@ import (
 	"strconv"
 	"strings"
 
-	"micro-net-hub/internal/tools"
-
 	"micro-net-hub/internal/module/account/current"
 	"micro-net-hub/internal/module/account/model"
 	"micro-net-hub/internal/module/goldap/ldapmgr"
@@ -139,7 +137,7 @@ func UserInGroup(c *gin.Context) {
 		return
 	}
 
-	filter := tools.H{"id": req.GroupID}
+	filter := map[string]interface{}{"id": req.GroupID}
 	var g model.Group
 	if !g.Exist(filter) {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("分组不存在")))
@@ -192,7 +190,7 @@ func UserNoInGroup(c *gin.Context) {
 		return
 	}
 
-	filter := tools.H{"id": req.GroupID}
+	filter := map[string]interface{}{"id": req.GroupID}
 
 	var g model.Group
 	if !g.Exist(filter) {
@@ -286,7 +284,7 @@ func Add(c *gin.Context) {
 		group.GroupDN = fmt.Sprintf("%s=%s,%s", req.GroupType, req.GroupName, config.Conf.Ldap.BaseDN)
 	} else {
 		parentGroup := new(model.Group)
-		err := parentGroup.Find(tools.H{"id": req.ParentId})
+		err := parentGroup.Find(map[string]interface{}{"id": req.ParentId})
 		if err != nil {
 			helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取父级组信息失败")))
 			return
@@ -298,7 +296,7 @@ func Add(c *gin.Context) {
 
 	// 根据 group_dn 判断分组是否已存在
 	var g model.Group
-	if g.Exist(tools.H{"group_dn": group.GroupDN}) {
+	if g.Exist(map[string]interface{}{"group_dn": group.GroupDN}) {
 		helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("该分组对应DN已存在")))
 		return
 	}
@@ -319,7 +317,7 @@ func Add(c *gin.Context) {
 
 	// 默认创建分组之后，需要将admin添加到分组中
 	adminInfo := new(model.User)
-	err = adminInfo.Find(tools.H{"id": 1})
+	err = adminInfo.Find(map[string]interface{}{"id": 1})
 	if err != nil {
 		helper.ErrV2(c, helper.NewMySqlError(err))
 		return
@@ -349,7 +347,7 @@ func Update(c *gin.Context) {
 		return
 	}
 
-	filter := tools.H{"id": int(req.ID)}
+	filter := map[string]interface{}{"id": int(req.ID)}
 	var g model.Group
 	if !g.Exist(filter) {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("分组不存在")))
@@ -410,7 +408,7 @@ func Delete(c *gin.Context) {
 	}
 
 	for _, id := range req.GroupIds {
-		filter := tools.H{"id": int(id)}
+		filter := map[string]interface{}{"id": int(id)}
 		var g model.Group
 		if !g.Exist(filter) {
 			helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("有分组不存在")))
@@ -427,7 +425,7 @@ func Delete(c *gin.Context) {
 
 	for _, g := range gs {
 		// 判断存在子分组，不允许删除
-		filter := tools.H{"parent_id": int(g.ID)}
+		filter := map[string]interface{}{"parent_id": int(g.ID)}
 		if g.Exist(filter) {
 			helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("存在子分组，请先删除子分组，再执行该分组的删除操作！")))
 			return
@@ -465,7 +463,7 @@ func AddUser(c *gin.Context) {
 		return
 	}
 
-	filter := tools.H{"id": req.GroupID}
+	filter := map[string]interface{}{"id": req.GroupID}
 
 	var g model.Group
 	if !g.Exist(filter) {
@@ -510,7 +508,7 @@ func AddUser(c *gin.Context) {
 
 	for _, user := range users {
 		u := new(model.User)
-		err = u.Find(tools.H{"id": user.ID})
+		err = u.Find(map[string]interface{}{"id": user.ID})
 		if err != nil {
 			helper.ErrV2(c, helper.NewMySqlError(err))
 			return
@@ -541,7 +539,7 @@ func RemoveUser(c *gin.Context) {
 		return
 	}
 
-	filter := tools.H{"id": req.GroupID}
+	filter := map[string]interface{}{"id": req.GroupID}
 	var g model.Group
 	if !g.Exist(filter) {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("分组不存在")))
@@ -585,7 +583,7 @@ func RemoveUser(c *gin.Context) {
 
 	for _, user := range users {
 		u := new(model.User)
-		err = u.Find(tools.H{"id": user.ID})
+		err = u.Find(map[string]interface{}{"id": user.ID})
 		if err != nil {
 			helper.ErrV2(c, helper.NewMySqlError(err))
 			return

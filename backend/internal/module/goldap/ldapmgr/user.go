@@ -297,7 +297,7 @@ func LdapUserGetDeptDns(udn string) (groupDns []string, err error) {
 // 添加 Ldap 用户数据 到数据库
 func LdapUserSyncToDB(user *accountModel.User) error {
 	// 根据 user_dn 查询用户,不存在则创建
-	if !user.Exist(tools.H{"user_dn": user.UserDN}) {
+	if !user.Exist(map[string]interface{}{"user_dn": user.UserDN}) {
 		user.CheckAttrVacancies()
 		// 先将用户添加到MySQL
 		err := user.Add()

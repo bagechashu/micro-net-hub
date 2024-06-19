@@ -9,7 +9,6 @@ import (
 	"micro-net-hub/internal/global"
 	accountModel "micro-net-hub/internal/module/account/model"
 	"micro-net-hub/internal/server/helper"
-	"micro-net-hub/internal/tools"
 
 	ldap "github.com/go-ldap/ldap/v3"
 )
@@ -213,7 +212,7 @@ func LdapDeptGetParentGroupID(group *accountModel.Group) (id uint, err error) {
 		group.SourceDeptParentId = "wecom_1"
 	}
 	parentGroup := new(accountModel.Group)
-	err = parentGroup.Find(tools.H{"source_dept_id": group.SourceDeptParentId})
+	err = parentGroup.Find(map[string]interface{}{"source_dept_id": group.SourceDeptParentId})
 	if err != nil {
 		return id, helper.NewMySqlError(fmt.Errorf("查询父级部门失败：%s,%s", err.Error(), group.GroupName))
 	}
@@ -223,7 +222,7 @@ func LdapDeptGetParentGroupID(group *accountModel.Group) (id uint, err error) {
 // 添加 Ldap 部门数据 到数据库
 func LdapDeptSyncToDB(group *accountModel.Group) error {
 	// 判断部门名称是否存在,此处使用ldap中的唯一值dn,以免出现数据同步不全的问题
-	if !group.Exist(tools.H{"group_dn": group.GroupDN}) {
+	if !group.Exist(map[string]interface{}{"group_dn": group.GroupDN}) {
 		// 此时的 group 已经附带了Build后动态关联好的字段，接下来将一些确定性的其他字段值添加上，就可以创建这个分组了
 		group.Creator = "system"
 		group.GroupType = strings.Split(strings.Split(group.GroupDN, ",")[0], "=")[0]

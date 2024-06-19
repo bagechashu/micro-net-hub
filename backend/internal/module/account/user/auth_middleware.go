@@ -39,7 +39,7 @@ func InitAuthMiddleware() (*jwt.GinJWTMiddleware, error) {
 
 // 有效载荷处理
 func payloadFunc(data interface{}) jwt.MapClaims {
-	if v, ok := data.(tools.H); ok {
+	if v, ok := data.(map[string]interface{}); ok {
 		var user model.User
 		// 将用户json转为结构体
 		tools.JsonI2Struct(v["user"], &user)
@@ -55,7 +55,7 @@ func payloadFunc(data interface{}) jwt.MapClaims {
 func identityHandler(c *gin.Context) interface{} {
 	claims := jwt.ExtractClaims(c)
 	// 此处返回值类型map[string]interface{}与payloadFunc和authorizator的data类型必须一致, 否则会导致授权失败还不容易找到原因
-	return tools.H{
+	return map[string]interface{}{
 		"IdentityKey": claims[jwt.IdentityKey],
 		"user":        claims["user"],
 	}
@@ -92,14 +92,14 @@ func login(c *gin.Context) (interface{}, error) {
 		return nil, err
 	}
 	// 将用户以json格式写入, payloadFunc/authorizator会使用到
-	return tools.H{
+	return map[string]interface{}{
 		"user": tools.Struct2Json(userLogined),
 	}, nil
 }
 
 // 用户登录校验成功处理
 func authorizator(data interface{}, c *gin.Context) bool {
-	if v, ok := data.(tools.H); ok {
+	if v, ok := data.(map[string]interface{}); ok {
 		userStr := v["user"].(string)
 		var user model.User
 		// 将用户json转为结构体

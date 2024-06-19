@@ -33,7 +33,7 @@ func CommonAddGroup(group *accountModel.Group) error {
 
 	// 默认创建分组之后，需要将admin添加到分组中
 	adminInfo := new(accountModel.User)
-	err = adminInfo.Find(tools.H{"id": 1})
+	err = adminInfo.Find(map[string]interface{}{"id": 1})
 	if err != nil {
 		return err
 	}
@@ -184,7 +184,7 @@ func buildGroupData(flag string, remoteData map[string]interface{}) (*accountMod
 	}
 
 	oldData := new(fieldRelationModel.FieldRelation)
-	err = fieldRelationModel.Find(tools.H{"flag": flag + "_group"}, oldData)
+	err = fieldRelationModel.Find(map[string]interface{}{"flag": flag + "_group"}, oldData)
 	if err != nil {
 		return nil, helper.NewMySqlError(err)
 	}
@@ -236,7 +236,7 @@ func buildUserData(flag string, remoteData map[string]interface{}) (*accountMode
 	}
 
 	fieldRelationSource := new(fieldRelationModel.FieldRelation)
-	err = fieldRelationModel.Find(tools.H{"flag": flag + "_user"}, fieldRelationSource)
+	err = fieldRelationModel.Find(map[string]interface{}{"flag": flag + "_user"}, fieldRelationSource)
 	if err != nil {
 		return nil, helper.NewMySqlError(err)
 	}
@@ -307,7 +307,7 @@ func generateMobile() string {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	randNum := r.Intn(99999999) + 10000000000
 	var u accountModel.User
-	if u.Exist(tools.H{"mobile": randNum}) {
+	if u.Exist(map[string]interface{}{"mobile": randNum}) {
 		generateMobile()
 	}
 	return fmt.Sprintf("%v", randNum)

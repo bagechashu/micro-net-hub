@@ -11,7 +11,6 @@ import (
 	"micro-net-hub/internal/module/account/model"
 	apiMgrModel "micro-net-hub/internal/module/apimgr/model"
 	"micro-net-hub/internal/server/helper"
-	"micro-net-hub/internal/tools"
 )
 
 // RoleListReq 列表结构体
@@ -110,7 +109,7 @@ func RoleAdd(c *gin.Context) {
 		Sort:    req.Sort,
 		Creator: ctxUser.Username,
 	}
-	if role.Exist(tools.H{"name": req.Name}) {
+	if role.Exist(map[string]interface{}{"name": req.Name}) {
 		helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("该角色名已存在")))
 		return
 	}
@@ -177,7 +176,7 @@ func RoleUpdate(c *gin.Context) {
 		helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("不能把角色等级更新得比当前用户的等级高或相同")))
 		return
 	}
-	filter := tools.H{"id": req.ID}
+	filter := map[string]interface{}{"id": req.ID}
 	oldData := new(model.Role)
 	if !oldData.Exist(filter) {
 		helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("该角色名不存在")))
@@ -339,7 +338,7 @@ func RoleGetApiList(c *gin.Context) {
 	}
 
 	role := new(model.Role)
-	err = role.Find(tools.H{"id": req.RoleID})
+	err = role.Find(map[string]interface{}{"id": req.RoleID})
 	if err != nil {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取资源失败: "+err.Error())))
 		return

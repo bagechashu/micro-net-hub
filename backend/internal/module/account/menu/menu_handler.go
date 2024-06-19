@@ -9,7 +9,6 @@ import (
 
 	"micro-net-hub/internal/module/account/current"
 	accountModel "micro-net-hub/internal/module/account/model"
-	"micro-net-hub/internal/tools"
 )
 
 // GetTree 菜单树
@@ -39,7 +38,7 @@ func GetAccessTree(c *gin.Context) {
 	}
 
 	// 校验
-	filter := tools.H{"id": req.ID}
+	filter := map[string]interface{}{"id": req.ID}
 	var u accountModel.User
 	if !u.Exist(filter) {
 		helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("该用户不存在")))
@@ -117,7 +116,7 @@ func Add(c *gin.Context) {
 		ParentId:   req.ParentId,
 		Creator:    ctxUser.Username,
 	}
-	if menu.Exist(tools.H{"name": req.Name}) {
+	if menu.Exist(map[string]interface{}{"name": req.Name}) {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("菜单名称已存在: %s", req.Name)))
 		return
 	}
@@ -158,7 +157,7 @@ func Update(c *gin.Context) {
 	}
 
 	oldMenu := new(accountModel.Menu)
-	filter := tools.H{"id": int(req.ID)}
+	filter := map[string]interface{}{"id": int(req.ID)}
 	if !oldMenu.Exist(filter) {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("该ID对应的记录不存在: %d", req.ID)))
 		return
@@ -212,7 +211,7 @@ func Delete(c *gin.Context) {
 	}
 
 	for _, id := range req.MenuIds {
-		filter := tools.H{"id": int(id)}
+		filter := map[string]interface{}{"id": int(id)}
 		var menu = new(accountModel.Menu)
 		if !menu.Exist(filter) {
 			helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("menu ID: %d 对应的记录不存在", menu.ID)))

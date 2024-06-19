@@ -246,7 +246,7 @@ func (u *User) ChangeStatus(status uint) error {
 func (u *User) Login() (*User, error) {
 	// 根据用户名获取用户(正常状态:用户状态正常)
 	var userRight User
-	err := userRight.Find(tools.H{"username": u.Username})
+	err := userRight.Find(map[string]interface{}{"username": u.Username})
 	if err != nil {
 		return nil, errors.New("用户不存在")
 	}
@@ -341,7 +341,7 @@ func DeleteUsersById(ids []uint) error {
 	var us = NewUsers()
 	for _, id := range ids {
 		// 根据ID获取用户
-		filter := tools.H{"id": id}
+		filter := map[string]interface{}{"id": id}
 
 		user := new(User)
 		err := user.Find(filter)

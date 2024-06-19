@@ -44,19 +44,19 @@ func Add(c *gin.Context) {
 	}
 
 	var u model.User
-	if u.Exist(tools.H{"username": req.Username}) {
+	if u.Exist(map[string]interface{}{"username": req.Username}) {
 		helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("用户名已存在,请勿重复添加")))
 		return
 	}
-	// if u.Exist(tools.H{"mobile": r.Mobile}) {
+	// if u.Exist(map[string]interface{}{"mobile": r.Mobile}) {
 	// 	helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("手机号已存在,请勿重复添加")))
 	// 	return
 	// }
-	// if u.Exist(tools.H{"job_number": r.JobNumber}) {
+	// if u.Exist(map[string]interface{}{"job_number": r.JobNumber}) {
 	// 	helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("工号已存在,请勿重复添加")))
 	// 	return
 	// }
-	if u.Exist(tools.H{"mail": req.Mail}) {
+	if u.Exist(map[string]interface{}{"mail": req.Mail}) {
 		helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("邮箱已存在,请勿重复添加")))
 		return
 	}
@@ -153,7 +153,7 @@ func Add(c *gin.Context) {
 
 	if req.Notice {
 		var nu model.User
-		if nu.Find(tools.H{"username": req.Username}) != nil {
+		if nu.Find(map[string]interface{}{"username": req.Username}) != nil {
 			helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("系统通知用户账号信息失败, 请手工通知")))
 			return
 		}
@@ -201,7 +201,7 @@ func Update(c *gin.Context) {
 	}
 
 	var u model.User
-	if !u.Exist(tools.H{"id": req.ID}) {
+	if !u.Exist(map[string]interface{}{"id": req.ID}) {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("该记录不存在")))
 		return
 	}
@@ -267,7 +267,7 @@ func Update(c *gin.Context) {
 
 	// 先获取用户信息
 	oldData := new(model.User)
-	err = oldData.Find(tools.H{"id": req.ID})
+	err = oldData.Find(map[string]interface{}{"id": req.ID})
 	if err != nil {
 		helper.ErrV2(c, helper.NewMySqlError(err))
 		return
@@ -329,7 +329,7 @@ func Update(c *gin.Context) {
 
 	if req.Notice {
 		var nu model.User
-		if nu.Find(tools.H{"username": req.Username}) != nil {
+		if nu.Find(map[string]interface{}{"username": req.Username}) != nil {
 			helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("系统通知用户账号信息失败, 请手工通知")))
 			return
 		}
@@ -432,7 +432,7 @@ func Delete(c *gin.Context) {
 	}
 
 	for _, id := range req.UserIds {
-		filter := tools.H{"id": int(id)}
+		filter := map[string]interface{}{"id": int(id)}
 		var u model.User
 		if !u.Exist(filter) {
 			helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("有用户不存在")))
@@ -627,7 +627,7 @@ func ChangeUserStatus(c *gin.Context) {
 	}
 
 	// 校验工作
-	filter := tools.H{"id": req.ID}
+	filter := map[string]interface{}{"id": req.ID}
 	var u model.User
 	if !u.Exist(filter) {
 		helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("该用户不存在")))

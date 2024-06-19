@@ -6,9 +6,6 @@ import (
 	"github.com/mozillazg/go-pinyin"
 )
 
-// H is a shortcut for map[string]interface{}
-type H map[string]interface{}
-
 func ConvertToPinYin(src string) (dst string) {
 	args := pinyin.NewArgs()
 	args.Fallback = func(r rune, args pinyin.Args) []string {

@@ -9,7 +9,6 @@ import (
 	"fmt"
 
 	"micro-net-hub/internal/server/helper"
-	"micro-net-hub/internal/tools"
 
 	"github.com/thoas/go-funk"
 )
@@ -169,7 +168,7 @@ func Update(c *gin.Context) {
 		return
 	}
 
-	filter := tools.H{"id": int(req.ID)}
+	filter := map[string]interface{}{"id": int(req.ID)}
 	if !model.Exist(filter) {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("接口不存在")))
 		return
@@ -219,7 +218,7 @@ func Delete(c *gin.Context) {
 	}
 
 	for _, id := range req.ApiIds {
-		filter := tools.H{"id": int(id)}
+		filter := map[string]interface{}{"id": int(id)}
 		if !model.Exist(filter) {
 			helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("接口不存在")))
 			return

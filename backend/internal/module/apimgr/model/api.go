@@ -126,7 +126,7 @@ func Delete(ids []uint) error {
 	for _, id := range ids {
 		// 根据ID获取用户
 		api := new(Api)
-		err := Find(tools.H{"id": id}, api)
+		err := Find(map[string]interface{}{"id": id}, api)
 		if err != nil {
 			return fmt.Errorf("根据ID获取接口信息失败: %v", err)
 		}

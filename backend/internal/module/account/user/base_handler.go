@@ -28,7 +28,7 @@ func SendCode(c *gin.Context) {
 
 	// 判断邮箱是否正确
 	user := new(accountModel.User)
-	err = user.Find(tools.H{"mail": req.Mail})
+	err = user.Find(map[string]interface{}{"mail": req.Mail})
 	if err != nil {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("通过邮箱查询用户失败"+err.Error())))
 		return
@@ -68,7 +68,7 @@ func ForgetPwd(c *gin.Context) {
 
 	// 判断邮箱是否正确
 	var u accountModel.User
-	if !u.Exist(tools.H{"mail": req.Mail}) {
+	if !u.Exist(map[string]interface{}{"mail": req.Mail}) {
 		helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("邮箱不存在,请检查邮箱是否正确")))
 		return
 	}
@@ -85,7 +85,7 @@ func ForgetPwd(c *gin.Context) {
 	}
 
 	user := new(accountModel.User)
-	err = user.Find(tools.H{"mail": req.Mail})
+	err = user.Find(map[string]interface{}{"mail": req.Mail})
 	if err != nil {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("通过邮箱查询用户失败"+err.Error())))
 		return

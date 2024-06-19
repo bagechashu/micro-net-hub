@@ -80,12 +80,12 @@ func (mgr FeiShu) SyncUsers() error {
 	for _, uid := range userIds {
 		var u accountModel.User
 		if u.Exist(
-			tools.H{
+			map[string]interface{}{
 				"status":          1, //只处理1在职的
 				"source_union_id": fmt.Sprintf("%s_%s", config.Conf.FeiShu.Flag, uid),
 			}) {
 			user := new(accountModel.User)
-			err = user.Find(tools.H{"source_union_id": fmt.Sprintf("%s_%s", config.Conf.FeiShu.Flag, uid)})
+			err = user.Find(map[string]interface{}{"source_union_id": fmt.Sprintf("%s_%s", config.Conf.FeiShu.Flag, uid)})
 			if err != nil {
 				return helper.NewMySqlError(fmt.Errorf("在MySQL查询用户失败: " + err.Error()))
 			}
@@ -346,7 +346,7 @@ func (mgr FeiShu) addDeptsRec(depts []*accountModel.Group) error {
 func (mgr FeiShu) AddDept(group *accountModel.Group) error {
 	// 查询当前分组父ID在MySQL中的数据信息
 	parentGroup := new(accountModel.Group)
-	err := parentGroup.Find(tools.H{"source_dept_id": group.SourceDeptParentId})
+	err := parentGroup.Find(map[string]interface{}{"source_dept_id": group.SourceDeptParentId})
 	if err != nil {
 		return helper.NewMySqlError(fmt.Errorf("查询父级部门失败：%s", err.Error()))
 	}
@@ -358,7 +358,7 @@ func (mgr FeiShu) AddDept(group *accountModel.Group) error {
 	group.Source = config.Conf.FeiShu.Flag
 	group.GroupDN = fmt.Sprintf("cn=%s,%s", group.GroupName, parentGroup.GroupDN)
 
-	if !group.Exist(tools.H{"group_dn": group.GroupDN}) {
+	if !group.Exist(map[string]interface{}{"group_dn": group.GroupDN}) {
 		err = userProcess.CommonAddGroup(group)
 		if err != nil {
 			return helper.NewOperationError(fmt.Errorf("添加部门: %s, 失败: %s", group.GroupName, err.Error()))
@@ -383,7 +383,7 @@ func (mgr FeiShu) AddUsers(user *accountModel.User) error {
 
 	// 根据 user_dn 查询用户,不存在则创建
 	var gs = accountModel.NewGroups()
-	if !user.Exist(tools.H{"user_dn": user.UserDN}) {
+	if !user.Exist(map[string]interface{}{"user_dn": user.UserDN}) {
 		// 获取用户将要添加的分组
 		err := gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentIds, ","))
 		if err != nil {
@@ -400,7 +400,7 @@ func (mgr FeiShu) AddUsers(user *accountModel.User) error {
 		if config.Conf.Sync.IsUpdateSyncd {
 			// 先获取用户信息
 			oldData := new(accountModel.User)
-			err = oldData.Find(tools.H{"user_dn": user.UserDN})
+			err = oldData.Find(map[string]interface{}{"user_dn": user.UserDN})
 			if err != nil {
 				return err
 			}
