@@ -32,7 +32,6 @@ A tool for managing your OpenLDAP/Ocserv/Navigation at a private network.
 
 - Config Center
 - VPN Manager
-- CoreDns Manager
 - Cron Manager
 
 # Architechture
@@ -72,6 +71,8 @@ flowchart LR
 
     radius[[Micro-Net-Hub<br>RadiusService:1812/udp]]
     radius --> TOTPModule
+
+    embdns[[Micro-Net-Hub<br>DnsService:53/udp,tcp]]
 
     UserManager ---> GoLDAPAdmin
   end

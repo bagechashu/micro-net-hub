@@ -46,7 +46,7 @@ mysql:
   # 数据库名
   database: micro_net_hub
   # 主机地址
-  host: mysql
+  host: localhost
   # 端口
   port: 3306
   # 连接字符串参数
@@ -125,7 +125,7 @@ notice:
 # ldap 配置
 ldap:
   # ldap服务器地址, TODO: ldaps that use private SSL need adapt
-  url: ldap://openldap:389
+  url: ldap://localhost:389
   # ladp最大连接数设置
   max-conn: 10
   # ldap服务器基础DN
@@ -150,8 +150,15 @@ radius:
   fail-times-before-block5min: 5
   listen-addr: "0.0.0.0:1812"
   secret: "default-radius-secret"
-  # TODO: radius LDAP group filter
   group-filter: ""
+
+dns:
+  # 默认的 DNS 服务器地址
+  listen-addr: 0.0.0.0:53
+  read-timeout-second: 5
+  write-timeout-second: 5
+  max-recursion-depth: 5
+  forward-addr: 1.1.1.1:53
 
 sync:
   enable-sync: false # 是否开启定时同步 IM 的用户和组织
