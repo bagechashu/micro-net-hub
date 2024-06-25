@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/miekg/dns"
-	"github.com/patrickmn/go-cache"
 )
 
 func dnsHandler(w dns.ResponseWriter, r *dns.Msg) {
@@ -89,9 +88,8 @@ func handleForwardQuery(r *dns.Msg, m *dns.Msg) {
 }
 
 func getLocalZones() (dnsZones model.DnsZones) {
-	dzCacheKey := "ldz_all"
-	if cacheDzs, found := model.DnsZonesCache.Get(dzCacheKey); found {
-		return cacheDzs.(model.DnsZones)
+	if dnsZones = model.CacheDnsZonesGet(); dnsZones != nil {
+		return
 	}
 
 	if err := dnsZones.FindAll(); err != nil {
@@ -99,14 +97,13 @@ func getLocalZones() (dnsZones model.DnsZones) {
 		return
 	}
 
-	model.DnsZonesCache.Set(dzCacheKey, dnsZones, cache.DefaultExpiration)
+	model.CacheDnsZonesSet(dnsZones)
 	return
 }
 
 func getLocalZoneRecords(zone_id uint, host string) (dnsRecords model.DnsRecords, err error) {
-	drCacheKey := fmt.Sprintf("ldr_%d_%s", zone_id, host)
-	if cacheDrs, found := model.DnsRecordsCache.Get(drCacheKey); found {
-		return cacheDrs.(model.DnsRecords), nil
+	if dnsRecords = model.CacheDnsRecordGet(zone_id, host); dnsRecords != nil {
+		return
 	}
 
 	filter := map[string]interface{}{
@@ -118,7 +115,7 @@ func getLocalZoneRecords(zone_id uint, host string) (dnsRecords model.DnsRecords
 		return
 	}
 
-	model.DnsRecordsCache.Set(drCacheKey, dnsRecords, cache.DefaultExpiration)
+	model.CacheDnsRecordSet(zone_id, host, dnsRecords)
 	return
 }
 

@@ -11,6 +11,7 @@ import (
 	"micro-net-hub/internal/module/account/user"
 	"micro-net-hub/internal/module/apimgr"
 	"micro-net-hub/internal/module/dashboard"
+	"micro-net-hub/internal/module/dns"
 	fieldrelation "micro-net-hub/internal/module/goldap/field_relation"
 	"micro-net-hub/internal/module/goldap/sync"
 	"micro-net-hub/internal/module/operationlog"
@@ -68,9 +69,14 @@ func InitRoutes(r *gin.Engine) {
 		fieldrelation.InitGoldapFieldRelationRoutes(apiGroup, authMiddleware) // 注册字段关联路由, jwt认证中间件,casbin鉴权中间件
 	}
 
-	// SiteNav module routess
+	// SiteNav module routes
 	{
 		sitenav.InitSiteNavRoutes(apiGroup, authMiddleware)
+	}
+
+	// Dns Manager module routes
+	{
+		dns.InitDnsMgrRoutes(apiGroup, authMiddleware)
 	}
 
 	global.Log.Info("初始化路由完成！")
