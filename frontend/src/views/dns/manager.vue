@@ -23,8 +23,8 @@
           >添加 Zone</el-button>
         </el-form-item>
       </el-form>
-
       <el-tabs
+        v-if="dnsData.length > 0"
         v-model="dnsZoneActiveTab"
         type="border-card"
         closable
@@ -138,7 +138,7 @@
           </template>
         </el-tab-pane>
       </el-tabs>
-
+      <el-empty v-else description="暂无数据" />
       <el-dialog
         :title="dnsRecordFormTitle"
         :visible.sync="dnsRecordFormVisible"
@@ -298,7 +298,7 @@ export default {
 
         // console.log(`dnsZoneActiveTab type: ${typeof(this.dnsZoneActiveTab)}, value: ${this.dnsZoneActiveTab}`);
         // default dnsZoneActiveTab type: string, value: 0
-        if (this.dnsZoneActiveTab === "0" || this.dnsZoneActiveTab === "") {
+        if ((this.dnsZoneActiveTab === "0" || this.dnsZoneActiveTab === "") && this.dnsData.length > 0) {
           this.dnsZoneActiveTab = this.dnsData[0].name;
         }
       } finally {
