@@ -12,7 +12,7 @@ import (
 
 type DnsZone struct {
 	gorm.Model
-	Name       string       `gorm:"type:varchar(64)" json:"name"`
+	Name       string       `gorm:"type:varchar(64);not null;unique" json:"name"`
 	DnsRecords []*DnsRecord `gorm:"foreignKey:ZoneID;references:ID" json:"records"`
 	Creator    string       `gorm:"type:varchar(20);comment:'创建人'" json:"creator" form:"creator"`
 }
@@ -101,11 +101,11 @@ func (dzs *DnsZones) FindWithRecords() error {
 
 type DnsRecord struct {
 	gorm.Model
-	ZoneID  uint   `gorm:"type:uint" json:"zone_id"`
-	Type    string `gorm:"type:varchar(64)" json:"type"`
-	Host    string `gorm:"type:varchar(64)" json:"host"`
-	Value   string `gorm:"type:varchar(64)" json:"value"`
-	Ttl     uint32 `gorm:"type:uint" json:"ttl"`
+	ZoneID  uint   `gorm:"type:uint;not null" json:"zone_id"`
+	Type    string `gorm:"type:varchar(64);not null" json:"type"`
+	Host    string `gorm:"type:varchar(64);not null" json:"host"`
+	Value   string `gorm:"type:varchar(64);not null" json:"value"`
+	Ttl     uint32 `gorm:"type:uint;not null" json:"ttl"`
 	Creator string `gorm:"type:varchar(20);comment:'创建人'" json:"creator" form:"creator"`
 }
 
