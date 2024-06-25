@@ -21,7 +21,8 @@
         @click="resetSearch"
       >重置</el-button>
     </div>
-    <NavSub :data="data" />
+    <NavSub v-if="data.length > 0" :data="data" />
+    <el-empty v-else description="暂无数据" />
   </div>
 </template>
 
@@ -39,7 +40,7 @@ export default {
       isCollapsed: false,
       search: "",
       searchStatus: false,
-      data: null,
+      data: [],
       sourceData: "",
       serarchNum: 0
     };

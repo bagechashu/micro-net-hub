@@ -31,6 +31,7 @@
       </el-form>
 
       <el-tabs
+        v-if="navData.length > 0"
         v-model="navGroupActiveTab"
         type="border-card"
         closable
@@ -144,6 +145,7 @@
           </template>
         </el-tab-pane>
       </el-tabs>
+      <el-empty v-else description="暂无数据" />
 
       <el-dialog :title="navSiteFormTitle" :visible.sync="navSiteFormVisible">
         <el-form
@@ -351,7 +353,7 @@ export default {
 
         // console.log(`navGroupActiveTab type: ${typeof(this.navGroupActiveTab)}, value: ${this.navGroupActiveTab}`);
         // default navGroupActiveTab type: string, value: 0
-        if (this.navGroupActiveTab === "0" || this.navGroupActiveTab === "") {
+        if ((this.navGroupActiveTab === "0" || this.navGroupActiveTab === "") && this.navData.length > 0) {
           this.navGroupActiveTab = this.navData[0].name;
         }
       } finally {
