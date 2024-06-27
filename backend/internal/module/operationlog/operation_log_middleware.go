@@ -34,11 +34,12 @@ func OperationLogMiddleware() gin.HandlerFunc {
 		// 请求方式
 		method := c.Request.Method
 
-		// TODO: 通过参数配置是否记录 GET 和 嵌入UI 日志
-		// 过滤写入数据库的日志
-		if method == "GET" {
+		// 不审计 UI 访问
+		if strings.HasPrefix(c.FullPath(), "/ui") {
 			return
-		} else if strings.HasPrefix(c.FullPath(), "/ui") {
+		}
+		// 审计 GET 日志, 默认不审计
+		if method == "GET" && !config.Conf.Logs.AuditGetRequests {
 			return
 		}
 

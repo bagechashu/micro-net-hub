@@ -54,6 +54,7 @@ func InitConfig() {
 	viper.SetDefault("dns.write-timeout-second", 5)
 	viper.SetDefault("dns.max-recursion-depth", 5)
 	viper.SetDefault("dns.forward-addr", "1.1.1.1:53")
+	viper.SetDefault("logs.audit-get-requests", true)
 
 	// 读取配置信息
 	err = viper.ReadInConfig()
@@ -117,12 +118,13 @@ type SystemConfig struct {
 }
 
 type LogsConfig struct {
-	Level      zapcore.Level `mapstructure:"level" json:"level"`
-	Path       string        `mapstructure:"path" json:"path"`
-	MaxSize    int           `mapstructure:"max-size" json:"maxSize"`
-	MaxBackups int           `mapstructure:"max-backups" json:"maxBackups"`
-	MaxAge     int           `mapstructure:"max-age" json:"maxAge"`
-	Compress   bool          `mapstructure:"compress" json:"compress"`
+	Level            zapcore.Level `mapstructure:"level" json:"level"`
+	Path             string        `mapstructure:"path" json:"path"`
+	MaxSize          int           `mapstructure:"max-size" json:"maxSize"`
+	MaxBackups       int           `mapstructure:"max-backups" json:"maxBackups"`
+	MaxAge           int           `mapstructure:"max-age" json:"maxAge"`
+	Compress         bool          `mapstructure:"compress" json:"compress"`
+	AuditGetRequests bool          `mapstructure:"audit-get-requests" json:"auditGetRequests"`
 }
 
 type Database struct {

@@ -24,20 +24,21 @@
 
       <el-table v-loading="loading" :data="tableData" border stripe style="width: 100%" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center" />
-        <el-table-column show-overflow-tooltip sortable prop="username" label="请求人" />
-        <el-table-column show-overflow-tooltip sortable prop="ip" label="IP地址" />
+        <el-table-column show-overflow-tooltip sortable prop="username" label="请求人" width="100" />
+        <el-table-column show-overflow-tooltip sortable prop="ip" label="IP地址" width="120" />
+        <el-table-column show-overflow-tooltip sortable prop="method" label="请求方法" width="105" />
         <el-table-column show-overflow-tooltip sortable prop="path" label="请求路径" />
-        <el-table-column show-overflow-tooltip sortable prop="status" label="请求状态" align="center">
+        <el-table-column show-overflow-tooltip sortable prop="status" label="请求状态" width="105" align="center">
           <template slot-scope="scope">
             <el-tag size="small" :type="scope.row.status | statusTagFilter" disable-transitions>{{ scope.row.status }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column show-overflow-tooltip sortable prop="startTime" label="发起时间">
+        <el-table-column show-overflow-tooltip sortable prop="startTime" label="发起时间" width="300">
           <!-- <template slot-scope="scope">
             {{ parseGoTime(scope.row.startTime) }}
           </template> -->
         </el-table-column>
-        <el-table-column show-overflow-tooltip sortable prop="timeCost" label="请求耗时(ms)" align="center">
+        <el-table-column show-overflow-tooltip sortable prop="timeCost" label="耗时(ms)" width="105" align="center">
           <template slot-scope="scope">
             <el-tag size="small" :type="scope.row.timeCost | timeCostTagFilter" disable-transitions>{{ scope.row.timeCost }}</el-tag>
           </template>
@@ -70,37 +71,37 @@
 </template>
 
 <script>
-import { getOperationLogs, batchDeleteOperationLogByIds } from '@/api/log/operationLog'
-import { parseGoTime } from '@/utils/index'
-import { Message } from 'element-ui'
+import { getOperationLogs, batchDeleteOperationLogByIds } from "@/api/log/operationLog";
+import { parseGoTime } from "@/utils/index";
+import { Message } from "element-ui";
 
 export default {
-  name: 'OperationLog',
+  name: "OperationLog",
   filters: {
     statusTagFilter(val) {
       if (val === 200) {
-        return 'success'
+        return "success";
       } else if (val === 400) {
-        return 'warning'
+        return "warning";
       } else if (val === 401) {
-        return 'danger'
+        return "danger";
       } else if (val === 403) {
-        return 'danger'
+        return "danger";
       } else if (val === 500) {
-        return 'danger'
+        return "danger";
       } else {
-        return 'info'
+        return "info";
       }
     },
     timeCostTagFilter(val) {
       if (val <= 200) {
-        return 'success'
+        return "success";
       } else if (val > 200 && val <= 1000) {
-        return ''
+        return "";
       } else if (val > 1000 && val <= 2000) {
-        return 'warning'
+        return "warning";
       } else {
-        return 'danger'
+        return "danger";
       }
     }
   },
@@ -108,10 +109,10 @@ export default {
     return {
       // 查询参数
       params: {
-        username: '',
-        ip: '',
-        path: '',
-        status: '',
+        username: "",
+        ip: "",
+        path: "",
+        status: "",
         pageNum: 1,
         pageSize: 10
       },
@@ -124,100 +125,100 @@ export default {
       popoverVisible: false,
       // 表格多选
       multipleSelection: []
-    }
+    };
   },
   created() {
-    this.getTableData()
+    this.getTableData();
   },
   methods: {
     parseGoTime,
     // 查询
     search() {
-      this.params.pageNum = 1
-      this.getTableData()
+      this.params.pageNum = 1;
+      this.getTableData();
     },
 
     // 获取表格数据
     async getTableData() {
-      this.loading = true
+      this.loading = true;
       try {
-        const { data } = await getOperationLogs(this.params)
-        this.tableData = data.logs
-        this.total = data.total
+        const { data } = await getOperationLogs(this.params);
+        this.tableData = data.logs;
+        this.total = data.total;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
     // 判断结果
-    judgeResult(res){
-      if (res.code==0){
-          Message({
-            showClose: true,
-            message: "操作成功",
-            type: 'success'
-          })
-        }
+    judgeResult(res) {
+      if (res.code === 200 || res.code === 0) {
+        Message({
+          showClose: true,
+          message: "操作成功",
+          type: "success"
+        });
+      }
     },
 
     // 批量删除
     batchDelete() {
-      this.$confirm('此操作将永久删除, 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
+      this.$confirm("此操作将永久删除, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
       }).then(async res => {
-        this.loading = true
-        const operationLogIds = []
+        this.loading = true;
+        const operationLogIds = [];
         this.multipleSelection.forEach(x => {
-          operationLogIds.push(x.ID)
-        })
+          operationLogIds.push(x.ID);
+        });
         try {
-          await batchDeleteOperationLogByIds({ operationLogIds: operationLogIds }).then(res =>{
-            this.judgeResult(res)
-          })
+          await batchDeleteOperationLogByIds({ operationLogIds: operationLogIds }).then(res => {
+            this.judgeResult(res);
+          });
         } finally {
-          this.loading = false
+          this.loading = false;
         }
-        this.getTableData()
+        this.getTableData();
       }).catch(() => {
         Message({
           showClose: true,
-          type: 'info',
-          message: '已取消删除'
-        })
-      })
+          type: "info",
+          message: "已取消删除"
+        });
+      });
     },
 
     // 表格多选
     handleSelectionChange(val) {
-      this.multipleSelection = val
+      this.multipleSelection = val;
     },
 
     // 单个删除
     async singleDelete(Id) {
-      this.loading = true
+      this.loading = true;
       try {
-        await batchDeleteOperationLogByIds({ operationLogIds: [Id] }).then(res =>{
-          this.judgeResult(res)
-        })
+        await batchDeleteOperationLogByIds({ operationLogIds: [Id] }).then(res => {
+          this.judgeResult(res);
+        });
       } finally {
-        this.loading = false
+        this.loading = false;
       }
-      this.getTableData()
+      this.getTableData();
     },
 
     // 分页
     handleSizeChange(val) {
-      this.params.pageSize = val
-      this.getTableData()
+      this.params.pageSize = val;
+      this.getTableData();
     },
     handleCurrentChange(val) {
-      this.params.pageNum = val
-      this.getTableData()
+      this.params.pageNum = val;
+      this.getTableData();
     }
   }
-}
+};
 </script>
 
 <style scoped>
