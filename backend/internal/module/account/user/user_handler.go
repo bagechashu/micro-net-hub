@@ -23,13 +23,12 @@ type UserAddReq struct {
 	Mail          string `json:"mail" validate:"required,min=0,max=100"`
 	JobNumber     string `json:"jobNumber" validate:"min=0,max=20"`
 	PostalAddress string `json:"postalAddress" validate:"min=0,max=255"`
-	Departments   string `json:"departments" validate:"min=0,max=512"`
 	Position      string `json:"position" validate:"min=0,max=128"`
 	Mobile        string `json:"mobile" validate:"checkMobile"`
 	Avatar        string `json:"avatar"`
 	Introduction  string `json:"introduction" validate:"min=0,max=255"`
 	Status        uint   `json:"status" validate:"oneof=1 2"`
-	DepartmentIds []uint `json:"departmentIds" validate:"required"`
+	GroupIds      []uint `json:"groupIds" validate:"required"`
 	Source        string `json:"source" validate:"min=0,max=50"`
 	RoleIds       []uint `json:"roleIds" validate:"required"`
 	Notice        bool   `json:"notice" validate:"omitempty"`
@@ -126,7 +125,6 @@ func Add(c *gin.Context) {
 		Introduction:  req.Introduction,
 		Status:        req.Status,
 		Creator:       ctxUser.Username,
-		DepartmentIds: tools.SliceToString(req.DepartmentIds, ","),
 		Source:        req.Source,
 		Roles:         roles,
 		UserDN:        fmt.Sprintf("uid=%s,%s", req.Username, config.Conf.Ldap.UserDN),
@@ -139,13 +137,13 @@ func Add(c *gin.Context) {
 	// 获取用户将要添加的分组
 
 	var gs = model.NewGroups()
-	err = gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentIds, ","))
+	err = gs.GetGroupsByIds(req.GroupIds)
 	if err != nil {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败: "+err.Error())))
 		return
 	}
-
-	err = CommonAddUser(&user, gs)
+	user.Groups = gs
+	err = CommonAddUser(&user)
 	if err != nil {
 		helper.ErrV2(c, helper.NewOperationError(fmt.Errorf("添加用户失败: "+err.Error())))
 		return
@@ -181,12 +179,11 @@ type UserUpdateReq struct {
 	Mail          string `json:"mail" validate:"min=0,max=100"`
 	JobNumber     string `json:"jobNumber" validate:"min=0,max=20"`
 	PostalAddress string `json:"postalAddress" validate:"min=0,max=255"`
-	Departments   string `json:"departments" validate:"min=0,max=512"`
 	Position      string `json:"position" validate:"min=0,max=128"`
 	Mobile        string `json:"mobile" validate:"checkMobile"`
 	Avatar        string `json:"avatar"`
 	Introduction  string `json:"introduction" validate:"min=0,max=255"`
-	DepartmentIds []uint `json:"departmentIds" validate:"required"`
+	GroupIds      []uint `json:"groupIds" validate:"required"`
 	Source        string `json:"source" validate:"min=0,max=50"`
 	RoleIds       []uint `json:"roleIds" validate:"required"`
 	Notice        bool   `json:"notice" validate:"omitempty"`
@@ -273,15 +270,6 @@ func Update(c *gin.Context) {
 		return
 	}
 
-	// 过滤掉前端会选择到的 请选择部门信息 这个选项
-	var deptids []uint
-
-	for _, j := range req.DepartmentIds {
-		if j != 0 {
-			deptids = append(deptids, j)
-		}
-	}
-
 	// 拼装新的用户信息
 	user := model.User{
 		Model:         oldData.Model,
@@ -296,7 +284,6 @@ func Update(c *gin.Context) {
 		Position:      req.Position,
 		Introduction:  req.Introduction,
 		Creator:       ctxUser.Username,
-		DepartmentIds: tools.SliceToString(deptids, ","),
 		Source:        oldData.Source,
 		Roles:         roles,
 		UserDN:        oldData.UserDN,
@@ -319,7 +306,7 @@ func Update(c *gin.Context) {
 		req.Password = "The password has not been updated. Please continue using your current password."
 	}
 
-	if err = CommonUpdateUser(oldData, &user, req.DepartmentIds); err != nil {
+	if err = CommonUpdateUser(oldData, &user, req.GroupIds); err != nil {
 		helper.ErrV2(c, helper.NewOperationError(fmt.Errorf("更新用户失败: "+err.Error())))
 		return
 	}
@@ -349,15 +336,12 @@ func Update(c *gin.Context) {
 
 // UserListReq 获取用户列表结构体
 type UserListReq struct {
-	Username      string `json:"username" form:"username"`
-	Mobile        string `json:"mobile" form:"mobile" `
-	Nickname      string `json:"nickname" form:"nickname"`
-	GivenName     string `json:"givenName" form:"givenName"`
-	DepartmentIds []uint `json:"departmentIds" form:"departmentIds"`
-	Status        uint   `json:"status" form:"status" `
-	SyncState     uint   `json:"syncState" form:"syncState" `
-	PageNum       int    `json:"pageNum" form:"pageNum"`
-	PageSize      int    `json:"pageSize" form:"pageSize"`
+	Username  string `json:"username" form:"username"`
+	Nickname  string `json:"nickname" form:"nickname"`
+	Status    uint   `json:"status" form:"status" `
+	SyncState uint   `json:"syncState" form:"syncState" `
+	PageNum   int    `json:"pageNum" form:"pageNum"`
+	PageSize  int    `json:"pageSize" form:"pageSize"`
 }
 
 type UserListRsp struct {
@@ -376,13 +360,10 @@ func List(c *gin.Context) {
 	var users = model.NewUsers()
 	err = users.List(
 		&model.User{
-			Username:      req.Username,
-			Mobile:        req.Mobile,
-			Nickname:      req.Nickname,
-			GivenName:     req.GivenName,
-			DepartmentIds: tools.SliceToString(req.DepartmentIds, ","),
-			Status:        req.Status,
-			SyncState:     req.SyncState,
+			Username:  req.Username,
+			Nickname:  req.Nickname,
+			Status:    req.Status,
+			SyncState: req.SyncState,
 		},
 		req.PageNum,
 		req.PageSize,
@@ -398,13 +379,10 @@ func List(c *gin.Context) {
 	}
 	count, err := model.UserListCount(
 		&model.User{
-			Username:      req.Username,
-			Mobile:        req.Mobile,
-			Nickname:      req.Nickname,
-			GivenName:     req.GivenName,
-			DepartmentIds: tools.SliceToString(req.DepartmentIds, ","),
-			Status:        req.Status,
-			SyncState:     req.SyncState,
+			Username:  req.Username,
+			Nickname:  req.Nickname,
+			Status:    req.Status,
+			SyncState: req.SyncState,
 		},
 	)
 	if err != nil {

@@ -222,7 +222,7 @@ func InitData() {
 		},
 		{
 			Name:      "DnsManager",
-			Title:     "DnsManager",
+			Title:     "Dns配置",
 			Icon:      "list",
 			Path:      "dnsmgr",
 			Component: "/dns/manager",
@@ -919,30 +919,30 @@ func InitData() {
 	}
 
 	// 6.写入分组
-	groups := []accountModel.Group{
-		{
-			Model:              gorm.Model{ID: 1},
-			GroupName:          "root",
-			Remark:             "Base",
-			Creator:            "system",
-			GroupType:          "",
-			ParentId:           0,
-			SourceDeptId:       "0",
-			Source:             "openldap",
-			SourceDeptParentId: "0",
-			GroupDN:            config.Conf.Ldap.BaseDN,
-		},
-	}
+	groups := []accountModel.Group{}
+	// groups = append(groups, accountModel.Group{
+	// 	{
+	// 		Model:              gorm.Model{ID: 1},
+	// 		GroupName:          "root",
+	// 		Remark:             "Base",
+	// 		Creator:            "system",
+	// 		GroupType:          "",
+	// 		ParentId:           0,
+	// 		SourceDeptId:       "0",
+	// 		Source:             "openldap",
+	// 		SourceDeptParentId: "0",
+	// 		GroupDN:            config.Conf.Ldap.BaseDN,
+	// 	},
+	// }
 
 	if config.Conf.DingTalk != nil && config.Conf.DingTalk.Flag != "" {
 		groups = append(groups, accountModel.Group{
-			Model:              gorm.Model{ID: 2},
 			GroupName:          config.Conf.DingTalk.Flag,
 			Remark:             config.Conf.DingTalk.Flag,
 			Creator:            "system",
 			GroupType:          "ou",
-			ParentId:           1,
-			SourceDeptId:       fmt.Sprintf("%s_%d", config.Conf.DingTalk.Flag, 1),
+			ParentId:           0,
+			SourceDeptId:       fmt.Sprintf("%s_%d", config.Conf.DingTalk.Flag, 0),
 			Source:             config.Conf.DingTalk.Flag,
 			SourceDeptParentId: fmt.Sprintf("%s_%d", config.Conf.DingTalk.Flag, 0),
 			GroupDN:            fmt.Sprintf("ou=%s,%s", config.Conf.DingTalk.Flag+"root", config.Conf.Ldap.BaseDN),
@@ -951,13 +951,12 @@ func InitData() {
 
 	if config.Conf.WeCom != nil && config.Conf.WeCom.Flag != "" {
 		groups = append(groups, accountModel.Group{
-			Model:              gorm.Model{ID: 3},
 			GroupName:          config.Conf.WeCom.Flag,
 			Remark:             config.Conf.WeCom.Flag,
 			Creator:            "system",
 			GroupType:          "ou",
-			ParentId:           1,
-			SourceDeptId:       fmt.Sprintf("%s_%d", config.Conf.WeCom.Flag, 1),
+			ParentId:           0,
+			SourceDeptId:       fmt.Sprintf("%s_%d", config.Conf.WeCom.Flag, 0),
 			Source:             config.Conf.WeCom.Flag,
 			SourceDeptParentId: fmt.Sprintf("%s_%d", config.Conf.WeCom.Flag, 0),
 			GroupDN:            fmt.Sprintf("ou=%s,%s", config.Conf.WeCom.Flag+"root", config.Conf.Ldap.BaseDN),
@@ -966,12 +965,11 @@ func InitData() {
 
 	if config.Conf.FeiShu != nil && config.Conf.FeiShu.Flag != "" {
 		groups = append(groups, accountModel.Group{
-			Model:              gorm.Model{ID: 4},
 			GroupName:          config.Conf.FeiShu.Flag,
 			Remark:             config.Conf.FeiShu.Flag,
 			Creator:            "system",
 			GroupType:          "ou",
-			ParentId:           1,
+			ParentId:           0,
 			SourceDeptId:       fmt.Sprintf("%s_%d", config.Conf.FeiShu.Flag, 0),
 			Source:             config.Conf.FeiShu.Flag,
 			SourceDeptParentId: fmt.Sprintf("%s_%d", config.Conf.FeiShu.Flag, 0),

@@ -96,30 +96,22 @@ func GroupCount() (int64, error) {
 	return count, err
 }
 
-// DeptIdsToGroupIds 将企业IM部门id转换为MySQL分组id
-func DeptIdsToGroupIds(ids []string) (groupIds []uint, err error) {
-	var gs []Group
-	err = global.DB.Model(&Group{}).Where("source_dept_id IN (?)", ids).Find(&gs).Error
+// LdapDeptIdsToGroups 将 三方账号系统 部门id 转换为MySQL分组id
+func ThirdPartDeptIdsToGroups(ids []string) (groups []*Group, err error) {
+	err = global.DB.Model(&Group{}).Where("source_dept_id IN (?)", ids).Find(&groups).Error
 	if err != nil {
 		return nil, err
 	}
-	for _, g := range gs {
-		groupIds = append(groupIds, g.ID)
-	}
-	return groupIds, nil
+	return
 }
 
-// DeptDnsToGroupIds 将企业IM部门 DN 转换为MySQL分组id
-func DeptDnsToGroupIds(dns []string) (groupIds []uint, err error) {
-	var gs []Group
-	err = global.DB.Model(&Group{}).Where("group_dn IN (?)", dns).Find(&gs).Error
+// LdapDeptDnsToGroups 将 Ldap DN 转换为MySQL分组id
+func LdapDeptDnsToGroups(dns []string) (groups []*Group, err error) {
+	err = global.DB.Model(&Group{}).Where("group_dn IN (?)", dns).Find(&groups).Error
 	if err != nil {
 		return nil, err
 	}
-	for _, g := range gs {
-		groupIds = append(groupIds, g.ID)
-	}
-	return groupIds, nil
+	return
 }
 
 type Groups []*Group

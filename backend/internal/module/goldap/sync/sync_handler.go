@@ -7,7 +7,6 @@ import (
 	"micro-net-hub/internal/module/goldap/ldapmgr"
 	"micro-net-hub/internal/module/goldap/usermgr"
 	"micro-net-hub/internal/server/helper"
-	"micro-net-hub/internal/tools"
 
 	"github.com/gin-gonic/gin"
 )
@@ -158,14 +157,7 @@ func SyncSqlUsers(c *gin.Context) {
 			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("SyncUser向LDAP同步用户失败："+err.Error())))
 			return
 		}
-		// 获取用户将要添加的分组
-		var gs = accountModel.NewGroups()
-		err := gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentIds, ","))
-		if err != nil {
-			helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败"+err.Error())))
-			return
-		}
-		for _, group := range gs {
+		for _, group := range user.Groups {
 			//根据选择的部门，添加到部门内
 			err = ldapmgr.LdapDeptAddUserToGroup(group.GroupDN, user.UserDN)
 			if err != nil {

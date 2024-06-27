@@ -50,7 +50,6 @@ type User struct {
 	SourceUnionId string         `gorm:"type:varchar(100);not null;comment:'第三方唯一unionId'" json:"sourceUnionId"`            // 第三方唯一unionId
 	UserDN        string         `gorm:"type:varchar(255);not null;comment:'用户dn'" json:"userDn"`                           // 用户在ldap的dn
 	SyncState     uint           `gorm:"type:tinyint(1);default:1;comment:'同步状态:1已同步, 2未同步'" json:"syncState"`              // 数据到ldap的同步状态
-	DepartmentIds string         `gorm:"type:varchar(100);comment:'部门id'" json:"departmentIds"`                             // 部门id
 }
 
 func (u *User) SetUserName(userName string) {
@@ -200,7 +199,7 @@ func (u *User) Exist(filter map[string]interface{}) bool {
 
 // Find 获取单个资源
 func (u *User) Find(filter map[string]interface{}) error {
-	return global.DB.Where(filter).Preload("Roles").Preload("Totp").First(&u).Error
+	return global.DB.Where(filter).Preload("Groups").Preload("Roles").Preload("Totp").First(&u).Error
 }
 
 // Find 获取同名用户已入库的序号最大的用户信息
@@ -299,10 +298,6 @@ func (us *Users) List(req *User, pageNum int, pageSize int) error {
 	if mobile != "" {
 		db = db.Where("mobile LIKE ?", fmt.Sprintf("%%%s%%", mobile))
 	}
-	departmentIds := tools.StringToSlice(req.DepartmentIds, ",")
-	if len(departmentIds) > 0 {
-		db = db.Where("department_id IN (?)", departmentIds)
-	}
 	givenName := strings.TrimSpace(req.GivenName)
 	if givenName != "" {
 		db = db.Where("given_name LIKE ?", fmt.Sprintf("%%%s%%", givenName))
@@ -331,7 +326,7 @@ func (us *Users) ListAll() (err error) {
 // GetUserByIds 根据用户ID获取用户角色排序最小值
 func (us *Users) GetUserByIds(ids []uint) error {
 	// 根据用户ID获取用户信息
-	err := global.DB.Where("id IN (?)", ids).Preload("Roles").Find(&us).Error
+	err := global.DB.Where("id IN (?)", ids).Preload("Groups").Preload("Roles").Find(&us).Error
 	return err
 }
 
@@ -417,10 +412,6 @@ func UserListCount(req *User) (int64, error) {
 	mobile := strings.TrimSpace(req.Mobile)
 	if mobile != "" {
 		db = db.Where("mobile LIKE ?", fmt.Sprintf("%%%s%%", mobile))
-	}
-	departmentIds := tools.StringToSlice(req.DepartmentIds, ",")
-	if len(departmentIds) > 0 {
-		db = db.Where("department_id IN (?)", departmentIds)
 	}
 	givenName := strings.TrimSpace(req.GivenName)
 	if givenName != "" {

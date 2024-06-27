@@ -430,10 +430,10 @@
               </el-form-item>
             </el-col>
             <el-col :span="24">
-              <el-form-item label="所属部门" prop="departmentIds">
+              <el-form-item label="所属部门" prop="groupIds">
                 <treeselect
-                  v-model="dialogFormData.departmentIds"
-                  :options="departmentsOptions"
+                  v-model="dialogFormData.groupIds"
+                  :options="groupsOptions"
                   placeholder="请选择部门"
                   :normalizer="normalizer"
                   value-consists-of="ALL"
@@ -541,7 +541,6 @@ export default {
         nickname: "",
         status: "",
         syncState: "",
-        mobile: "",
         pageNum: 1,
         pageSize: 10
       },
@@ -555,7 +554,7 @@ export default {
       // 角色
       roles: [],
       // 部门信息
-      departmentsOptions: [],
+      groupsOptions: [],
 
       passwordType: "password",
 
@@ -582,8 +581,7 @@ export default {
         jobNumber: "",
         position: "",
         postalAddress: "",
-        departments: "",
-        departmentIds: undefined,
+        groupIds: undefined,
         notice: true
       },
 
@@ -655,7 +653,7 @@ export default {
           }
         ],
         status: [{ required: true, message: "请选择状态", trigger: "change" }],
-        departmentIds: [
+        groupIds: [
           { required: false, message: "请选择部门", trigger: "blur" }
           // {
           //   validator: (rule, value, callBack) => {
@@ -705,12 +703,11 @@ export default {
       try {
         const { data } = await getUsers(this.params);
         data.users.forEach((item) => {
-          const dataStrArr = item.departmentIds.split(",");
           const dataIntArr = [];
-          dataStrArr.forEach((item) => {
-            dataIntArr.push(+item);
+          item.groups.forEach((g) => {
+            dataIntArr.push(+g.ID);
           });
-          item.departmentIds = dataIntArr;
+          item.groupIds = dataIntArr;
         });
         this.tableData = data.users;
         this.total = data.total;
@@ -727,7 +724,7 @@ export default {
           pageSize: 1000 // 平常百姓人家应该不会有这么多数据吧
         };
         const { data } = await getGroupTree(checkParams);
-        this.departmentsOptions = [
+        this.groupsOptions = [
           {
             ID: 0,
             groupName: "请选择部门信息",
@@ -783,32 +780,8 @@ export default {
       this.dialogFormData.jobNumber = row.jobNumber;
       this.dialogFormData.position = row.position;
       this.dialogFormData.postalAddress = row.postalAddress;
-      this.dialogFormData.departments = row.departments;
-      this.dialogFormData.departmentIds = row.departmentIds;
+      this.dialogFormData.groupIds = row.groupIds;
       this.notice = false;
-    },
-
-    // 将 部门id 转换为 部门name
-    setDepartmentNameByDepartmentIds() {
-      const ids = this.dialogFormData.departmentIds;
-      if (!ids || !ids.length) return;
-      const departments = [];
-      // 深度优先遍函数
-      const dfs = (node, cb) => {
-        if (!node) return;
-        cb(node);
-        if (node.children && node.children.length) {
-          node.children.forEach((item) => {
-            dfs(item, cb);
-          });
-        }
-      };
-      dfs(this.departmentsOptions[0], (node) => {
-        if (ids.includes(node.ID)) {
-          departments.push(node.groupName);
-        }
-      });
-      this.dialogFormData.departments = departments.join(",");
     },
 
     // 判断结果
@@ -884,8 +857,6 @@ export default {
       this.$refs["dialogForm"].validate(async(valid) => {
         if (valid) {
           this.submitLoading = true;
-          // 在这里自动填充下部门字段
-          this.setDepartmentNameByDepartmentIds();
           this.dialogFormDataCopy = { ...this.dialogFormData };
           if (this.dialogFormData.password !== "") {
             // 密码RSA加密处理
@@ -944,9 +915,8 @@ export default {
         roleIds: [],
         jobNumber: "",
         postalAddress: "",
-        departments: "",
         position: "",
-        departmentIds: undefined,
+        groupIds: undefined,
         notice: true
       };
     },

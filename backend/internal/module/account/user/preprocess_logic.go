@@ -65,7 +65,7 @@ func CommonUpdateGroup(oldGroup, newGroup *accountModel.Group) error {
 }
 
 // CommonAddUser 标准创建用户
-func CommonAddUser(user *accountModel.User, groups []*accountModel.Group) error {
+func CommonAddUser(user *accountModel.User) error {
 	user.CheckAttrVacancies()
 	// 先将用户添加到MySQL
 	err := user.Add()
@@ -79,26 +79,21 @@ func CommonAddUser(user *accountModel.User, groups []*accountModel.Group) error 
 	}
 
 	// 处理用户归属的组
-	for _, group := range groups {
+	for _, group := range user.Groups {
 		if group.GroupDN[:3] == "ou=" {
 			continue
-		}
-		// 先将用户和部门信息维护到MySQL
-		err := group.AddUserToGroup(user)
-		if err != nil {
-			return helper.NewMySqlError(fmt.Errorf("向MySQL添加用户到分组关系失败：" + err.Error()))
 		}
 		//根据选择的部门，添加到部门内
 		err = ldapmgr.LdapDeptAddUserToGroup(group.GroupDN, user.UserDN)
 		if err != nil {
-			return helper.NewMySqlError(fmt.Errorf("向Ldap添加用户到分组关系失败：" + err.Error()))
+			return helper.NewLdapError(fmt.Errorf("向Ldap添加用户到分组关系失败：" + err.Error()))
 		}
 	}
 	return nil
 }
 
 // CommonUpdateUser 标准更新用户
-func CommonUpdateUser(oldUser, newUser *accountModel.User, groupId []uint) error {
+func CommonUpdateUser(oldUser, newUser *accountModel.User, groupIds []uint) error {
 	// 更新用户
 	if !config.Conf.Ldap.UserNameModify {
 		newUser.Username = oldUser.Username
@@ -117,8 +112,11 @@ func CommonUpdateUser(oldUser, newUser *accountModel.User, groupId []uint) error
 	}
 
 	//判断部门信息是否有变化有变化则更新相应的数据库
-	oldDeptIds := tools.StringToSlice(oldUser.DepartmentIds, ",")
-	addDeptIds, removeDeptIds := tools.ArrUintCmp(oldDeptIds, groupId)
+	var oldDeptIds []uint
+	for _, group := range oldUser.Groups {
+		oldDeptIds = append(oldDeptIds, group.ID)
+	}
+	addDeptIds, removeDeptIds := tools.ArrUintCmp(oldDeptIds, groupIds)
 
 	// 先处理添加的部门
 	var addGroups = accountModel.NewGroups()
@@ -212,7 +210,7 @@ func buildGroupData(flag string, remoteData map[string]interface{}) (*accountMod
 // ConvertUserData 将用户信息转成本地结构体
 func ConvertUserData(flag string, remoteData []map[string]interface{}) (users []*accountModel.User, err error) {
 	for _, staff := range remoteData {
-		groupIds, err := accountModel.DeptIdsToGroupIds(staff["department_ids"].([]string))
+		gs, err := accountModel.ThirdPartDeptIdsToGroups(staff["department_ids"].([]string))
 		if err != nil {
 			return nil, helper.NewMySqlError(fmt.Errorf("将部门ids转换为内部部门id失败：%s", err.Error()))
 		}
@@ -221,7 +219,7 @@ func ConvertUserData(flag string, remoteData []map[string]interface{}) (users []
 			return nil, err
 		}
 		if user != nil {
-			user.DepartmentIds = tools.SliceToString(groupIds, ",")
+			user.Groups = gs
 			users = append(users, user)
 		}
 	}

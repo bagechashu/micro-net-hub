@@ -11,6 +11,7 @@ import (
 	"micro-net-hub/internal/server/helper"
 
 	ldap "github.com/go-ldap/ldap/v3"
+	"gorm.io/gorm"
 )
 
 type LdapDept struct {
@@ -205,16 +206,18 @@ func LdapDeptGetAll() (ret []*LdapDept, err error) {
 func LdapDeptGetParentGroupID(group *accountModel.Group) (id uint, err error) {
 	switch group.SourceDeptParentId {
 	case "dingtalkroot":
-		group.SourceDeptParentId = "dingtalk_1"
+		group.SourceDeptParentId = "dingtalk_0"
 	case "feishuroot":
 		group.SourceDeptParentId = "feishu_0"
 	case "wecomroot":
-		group.SourceDeptParentId = "wecom_1"
+		group.SourceDeptParentId = "wecom_0"
 	}
 	parentGroup := new(accountModel.Group)
 	err = parentGroup.Find(map[string]interface{}{"source_dept_id": group.SourceDeptParentId})
-	if err != nil {
-		return id, helper.NewMySqlError(fmt.Errorf("查询父级部门失败：%s,%s", err.Error(), group.GroupName))
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return 0, nil
+	} else if err != nil {
+		return 0, helper.NewMySqlError(fmt.Errorf("查询父级部门失败：%w, 部门名称:%s", err, group.GroupName))
 	}
 	return parentGroup.ID, nil
 }

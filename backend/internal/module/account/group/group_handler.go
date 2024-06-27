@@ -7,7 +7,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"strconv"
 	"strings"
 
 	"micro-net-hub/internal/module/account/current"
@@ -506,23 +505,6 @@ func AddUser(c *gin.Context) {
 		}
 	}
 
-	for _, user := range users {
-		u := new(model.User)
-		err = u.Find(map[string]interface{}{"id": user.ID})
-		if err != nil {
-			helper.ErrV2(c, helper.NewMySqlError(err))
-			return
-		}
-
-		// 添加新增的分组ID与部门
-		u.DepartmentIds = u.DepartmentIds + "," + strconv.Itoa(int(req.GroupID))
-		err = u.Update()
-		if err != nil {
-			helper.ErrV2(c, helper.NewOperationError(fmt.Errorf("处理用户的部门数据失败:"+err.Error())))
-			return
-		}
-	}
-
 	helper.Success(c, nil)
 }
 
@@ -579,30 +561,6 @@ func RemoveUser(c *gin.Context) {
 	if err != nil {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("将用户从MySQL移除失败: %s", err.Error())))
 		return
-	}
-
-	for _, user := range users {
-		u := new(model.User)
-		err = u.Find(map[string]interface{}{"id": user.ID})
-		if err != nil {
-			helper.ErrV2(c, helper.NewMySqlError(err))
-			return
-		}
-
-		var deptIds []string
-		// 删掉移除的分组id
-		for _, v := range strings.Split(u.DepartmentIds, ",") {
-			if v != strconv.Itoa(int(req.GroupID)) {
-				deptIds = append(deptIds, v)
-			}
-		}
-
-		u.DepartmentIds = strings.Join(deptIds, ",")
-		err = u.Update()
-		if err != nil {
-			helper.ErrV2(c, helper.NewOperationError(fmt.Errorf("处理用户的部门数据失败:"+err.Error())))
-			return
-		}
 	}
 
 	helper.Success(c, nil)

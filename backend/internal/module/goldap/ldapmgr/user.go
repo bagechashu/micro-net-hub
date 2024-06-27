@@ -304,25 +304,6 @@ func LdapUserSyncToDB(user *accountModel.User) error {
 		if err != nil {
 			return helper.NewMySqlError(fmt.Errorf("向MySQL创建用户失败：" + err.Error()))
 		}
-
-		// 获取用户将要添加的分组
-
-		var gs = accountModel.NewGroups()
-		err = gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentIds, ","))
-		if err != nil {
-			return helper.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
-		}
-		for _, group := range gs {
-			if group.GroupDN[:3] == "ou=" {
-				continue
-			}
-			// 先将用户和部门信息维护到MySQL
-			err := group.AddUserToGroup(user)
-			if err != nil {
-				return helper.NewMySqlError(fmt.Errorf("向MySQL添加用户到分组关系失败：" + err.Error()))
-			}
-		}
-		return nil
 	}
 	return nil
 }

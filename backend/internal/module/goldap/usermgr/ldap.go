@@ -7,8 +7,6 @@ import (
 	"micro-net-hub/internal/module/account/user"
 	"micro-net-hub/internal/module/goldap/ldapmgr"
 	"micro-net-hub/internal/server/helper"
-
-	"micro-net-hub/internal/tools"
 )
 
 type OpenLdap struct{}
@@ -50,7 +48,7 @@ func (mgr OpenLdap) SyncUsers() error {
 	}
 	// 2.遍历用户，开始写入
 	for _, staff := range staffs {
-		groupIds, err := accountModel.DeptDnsToGroupIds(staff.DepartmentDns)
+		gs, err := accountModel.LdapDeptDnsToGroups(staff.DepartmentDns)
 		if err != nil {
 			return helper.NewMySqlError(fmt.Errorf("将部门ids转换为内部部门id失败：%s", err.Error()))
 		}
@@ -69,16 +67,15 @@ func (mgr OpenLdap) SyncUsers() error {
 			JobNumber:     staff.EmployeeNumber,
 			Mobile:        staff.Mobile,
 			PostalAddress: staff.PostalAddress,
-			// Departments:   staff.BusinessCategory,
 			Position:      staff.DepartmentNumber,
 			Introduction:  staff.CN,
 			Creator:       "system",
 			Source:        "openldap",
-			DepartmentIds: tools.SliceToString(groupIds, ","),
 			SourceUserId:  staff.Name,
 			SourceUnionId: staff.Name,
 			Roles:         roles,
 			UserDN:        staff.DN,
+			Groups:        gs,
 		})
 		if err != nil {
 			return helper.NewOperationError(fmt.Errorf("SyncOpenLdapUsers写入用户失败：%s", err.Error()))

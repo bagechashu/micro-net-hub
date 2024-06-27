@@ -250,16 +250,9 @@ func (mgr WeChat) AddUsers(user *accountModel.User) error {
 	user.UserDN = fmt.Sprintf("uid=%s,%s", user.Username, config.Conf.Ldap.UserDN)
 
 	// 根据 user_dn 查询用户,不存在则创建
-	var gs = accountModel.NewGroups()
 	if !user.Exist(map[string]interface{}{"user_dn": user.UserDN}) {
-		// 获取用户将要添加的分组
-		err := gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentIds, ","))
-		if err != nil {
-			return helper.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
-		}
-
 		// 创建用户
-		err = userProcess.CommonAddUser(user, gs)
+		err = userProcess.CommonAddUser(user)
 		if err != nil {
 			return helper.NewOperationError(fmt.Errorf("添加用户: %s, 失败: %s", user.Username, err.Error()))
 		}
@@ -271,11 +264,6 @@ func (mgr WeChat) AddUsers(user *accountModel.User) error {
 			err = oldData.Find(map[string]interface{}{"user_dn": user.UserDN})
 			if err != nil {
 				return err
-			}
-			// 获取用户将要添加的分组
-			err := gs.GetGroupsByIds(tools.StringToSlice(user.DepartmentIds, ","))
-			if err != nil {
-				return helper.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败" + err.Error()))
 			}
 
 			user.Model = oldData.Model
@@ -310,7 +298,11 @@ func (mgr WeChat) AddUsers(user *accountModel.User) error {
 			if user.Mobile == "" {
 				user.Mobile = oldData.Mobile
 			}
-			if err = userProcess.CommonUpdateUser(oldData, user, tools.StringToSlice(user.DepartmentIds, ",")); err != nil {
+			var groupIds []uint
+			for _, group := range user.Groups {
+				groupIds = append(groupIds, group.ID)
+			}
+			if err = userProcess.CommonUpdateUser(oldData, user, groupIds); err != nil {
 				return err
 			}
 		}
