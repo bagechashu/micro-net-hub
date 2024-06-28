@@ -157,11 +157,7 @@ func RoleUpdate(c *gin.Context) {
 	// 根据path中的角色ID获取该角色信息
 	roles := model.NewRoles()
 	err = roles.GetRolesByIds([]uint{req.ID})
-	if err != nil {
-		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取角色信息失败: %s", err.Error())))
-		return
-	}
-	if len(roles) == 0 {
+	if err != nil || len(roles) == 0 {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取角色信息失败: %s", err.Error())))
 		return
 	}
@@ -202,7 +198,11 @@ func RoleUpdate(c *gin.Context) {
 	// 如果更新成功，且更新了角色的keyword, 则更新casbin中policy
 	if req.Keyword != roles[0].Keyword {
 		// 获取policy
-		rolePolicies := global.CasbinEnforcer.GetFilteredPolicy(0, roles[0].Keyword)
+		rolePolicies, err := global.CasbinEnforcer.GetFilteredPolicy(0, roles[0].Keyword)
+		if err != nil {
+			helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("更新角色失败: %s", err.Error())))
+			return
+		}
 		if len(rolePolicies) == 0 {
 			helper.Success(c, nil)
 			return
@@ -234,7 +234,7 @@ func RoleUpdate(c *gin.Context) {
 			helper.ErrV2(c, helper.NewOperationError(fmt.Errorf("更新角色成功，但角色关键字关联的权限接口更新失败")))
 			return
 		}
-		err := global.CasbinEnforcer.LoadPolicy()
+		err = global.CasbinEnforcer.LoadPolicy()
 		if err != nil {
 			helper.ErrV2(c, helper.NewOperationError(fmt.Errorf("更新角色成功，但角色关键字关联角色的权限接口策略加载失败")))
 			return
@@ -344,7 +344,11 @@ func RoleGetApiList(c *gin.Context) {
 		return
 	}
 
-	policies := global.CasbinEnforcer.GetFilteredPolicy(0, role.Keyword)
+	policies, err := global.CasbinEnforcer.GetFilteredPolicy(0, role.Keyword)
+	if err != nil {
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取角色权限接口失败: %s", err.Error())))
+		return
+	}
 
 	apis, err := apiMgrModel.ListAll()
 	if err != nil {
@@ -515,7 +519,11 @@ func RoleUpdateApis(c *gin.Context) {
 	ctxRoles := ctxUser.Roles
 	ctxRolesPolicies := make([][]string, 0)
 	for _, role := range ctxRoles {
-		policy := global.CasbinEnforcer.GetFilteredPolicy(0, role.Keyword)
+		policy, err := global.CasbinEnforcer.GetFilteredPolicy(0, role.Keyword)
+		if err != nil {
+			helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取当前用户的可访问接口列表失败: "+err.Error())))
+			return
+		}
 		ctxRolesPolicies = append(ctxRolesPolicies, policy...)
 	}
 	// 得到path中的角色ID对应角色能够设置的权限接口集合

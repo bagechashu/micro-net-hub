@@ -25,7 +25,7 @@ func GetCurrentUserMinRoleSort(c *gin.Context) (uint, accountModel.User, error) 
 		currentRoleSorts = append(currentRoleSorts, int(role.Sort))
 	}
 	// 当前用户角色排序最小值（最高等级角色）
-	currentRoleSortMin := uint(funk.MinInt(currentRoleSorts).(int))
+	currentRoleSortMin := uint(funk.MinInt(currentRoleSorts))
 
 	return currentRoleSortMin, ctxUser, nil
 }

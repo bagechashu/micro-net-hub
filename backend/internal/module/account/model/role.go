@@ -76,7 +76,10 @@ func UpdateRoleApis(roleKeyword string, reqRolePolicies [][]string) error {
 	if err != nil {
 		return errors.New("角色的权限接口策略加载失败")
 	}
-	rmPolicies := global.CasbinEnforcer.GetFilteredPolicy(0, roleKeyword)
+	rmPolicies, err := global.CasbinEnforcer.GetFilteredPolicy(0, roleKeyword)
+	if err != nil {
+		return errors.New("角色的权限接口策略加载失败")
+	}
 	if len(rmPolicies) > 0 {
 		isRemoved, _ := global.CasbinEnforcer.RemovePolicies(rmPolicies)
 		if !isRemoved {
@@ -132,7 +135,10 @@ func (rs *Roles) Delete() error {
 
 		// 删除成功就删除casbin policy
 		roleKeyword := r.Keyword
-		policies := global.CasbinEnforcer.GetFilteredPolicy(0, roleKeyword)
+		policies, err := global.CasbinEnforcer.GetFilteredPolicy(0, roleKeyword)
+		if err != nil {
+			return errors.New("角色的权限接口策略加载失败")
+		}
 		if len(policies) > 0 {
 			isRemoved, _ := global.CasbinEnforcer.RemovePolicies(policies)
 			if !isRemoved {

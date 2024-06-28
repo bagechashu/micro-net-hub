@@ -383,7 +383,7 @@ func GetUserMinRoleSortsByIds(ids []uint) ([]int, error) {
 		for _, role := range roles {
 			roleSortList = append(roleSortList, int(role.Sort))
 		}
-		roleMinSort := funk.MinInt(roleSortList).(int)
+		roleMinSort := funk.MinInt(roleSortList)
 		roleMinSortList = append(roleMinSortList, roleMinSort)
 	}
 	return roleMinSortList, nil

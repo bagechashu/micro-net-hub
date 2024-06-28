@@ -79,7 +79,10 @@ func Update(api *Api) error {
 	}
 	// 更新了method和path就更新casbin中policy
 	if oldApi.Path != api.Path || oldApi.Method != api.Method {
-		policies := global.CasbinEnforcer.GetFilteredPolicy(1, oldApi.Path, oldApi.Method)
+		policies, err := global.CasbinEnforcer.GetFilteredPolicy(1, oldApi.Path, oldApi.Method)
+		if err != nil {
+			return errors.New("更新权限接口失败")
+		}
 		// 接口在casbin的policy中存在才进行操作
 		if len(policies) > 0 {
 			// 先删除
@@ -137,7 +140,10 @@ func Delete(ids []uint) error {
 	// 如果删除成功，删除casbin中policy
 	if err == nil {
 		for _, api := range apis {
-			policies := global.CasbinEnforcer.GetFilteredPolicy(1, api.Path, api.Method)
+			policies, err := global.CasbinEnforcer.GetFilteredPolicy(1, api.Path, api.Method)
+			if err != nil {
+				return errors.New("删除权限接口失败")
+			}
 			if len(policies) > 0 {
 				isRemoved, _ := global.CasbinEnforcer.RemovePolicies(policies)
 				if !isRemoved {

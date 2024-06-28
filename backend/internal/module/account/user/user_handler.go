@@ -101,7 +101,7 @@ func Add(c *gin.Context) {
 		reqRoleSorts = append(reqRoleSorts, int(role.Sort))
 	}
 	// 前端传来用户角色排序最小值（最高等级角色）
-	reqRoleSortMin := uint(funk.MinInt(reqRoleSorts).(int))
+	reqRoleSortMin := uint(funk.MinInt(reqRoleSorts))
 
 	// 如果登录用户的角色ID为1，亦即为管理员，则直接放行，保障管理员拥有最大权限
 	if currentRoleSortMin != 1 {
@@ -234,9 +234,9 @@ func Update(c *gin.Context) {
 	}
 
 	// 当前登陆用户角色排序最小值（最高等级角色）
-	currentRoleSortMin := funk.MinInt(currentRoleSorts).(int)
+	currentRoleSortMin := funk.MinInt(currentRoleSorts)
 	// 前端传来用户角色排序最小值（最高等级角色）
-	reqRoleSortMin := funk.MinInt(reqRoleSorts).(int)
+	reqRoleSortMin := funk.MinInt(reqRoleSorts)
 
 	// 如果登录用户的角色ID为1，亦即为管理员，则直接放行，保障管理员拥有最大权限
 	if currentRoleSortMin != 1 {
