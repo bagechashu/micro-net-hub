@@ -430,7 +430,7 @@ func RoleUpdateMenus(c *gin.Context) {
 	reqMenus := make([]*model.Menu, 0)
 
 	// (非管理员)不能把角色的权限菜单设置的比当前用户所拥有的权限菜单多
-	if minSort != 1 {
+	if minSort != model.AdminRoleID {
 		for _, id := range req.MenuIds {
 			if !funk.Contains(ctxUserMenusIds, id) {
 				helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("无权设置ID为%d的菜单", id)))

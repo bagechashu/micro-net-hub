@@ -32,7 +32,7 @@ func InitData() {
 	// 1.写入角色数据
 	roles := []*accountModel.Role{
 		{
-			Model:   gorm.Model{ID: 1},
+			Model:   gorm.Model{ID: accountModel.AdminRoleID},
 			Name:    "Admins",
 			Keyword: "admin",
 			Remark:  "",
