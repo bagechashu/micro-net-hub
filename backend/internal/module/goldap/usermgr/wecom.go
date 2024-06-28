@@ -109,7 +109,7 @@ func (mgr WeChat) SyncUsers() error {
 			return helper.NewLdapError(fmt.Errorf("在LDAP删除用户失败" + err.Error()))
 		}
 		// 然后更新MySQL中用户状态
-		err = user.ChangeStatus(2)
+		err = user.ChangeStatus(accountModel.UserDisabled, accountModel.UserSyncUnNormal)
 		if err != nil {
 			return helper.NewMySqlError(fmt.Errorf("在MySQL更新用户状态失败: " + err.Error()))
 		}

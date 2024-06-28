@@ -27,6 +27,20 @@ func ClearUserInfoCache() {
 	UserInfoCache.Flush()
 }
 
+type UserStatus uint
+
+const (
+	UserNormal   UserStatus = iota + 1 // 1 正常
+	UserDisabled                       // 2 禁用
+)
+
+type UserSyncStatus uint
+
+const (
+	UserSyncNormal   UserSyncStatus = iota + 1 // 1 已同步
+	UserSyncUnNormal                           // 2 未同步
+)
+
 type User struct {
 	gorm.Model
 	Username      string         `gorm:"type:varchar(50);not null;unique;comment:'用户名'" json:"username"` // 用户名
@@ -40,7 +54,7 @@ type User struct {
 	PostalAddress string         `gorm:"type:varchar(255);comment:'地址'" json:"postalAddress"`            // 地址
 	Position      string         `gorm:"type:varchar(128);comment:'职位'" json:"position"`                 //  职位
 	Introduction  string         `gorm:"type:varchar(255);comment:'个人简介'" json:"introduction"`           // 个人简介
-	Status        uint           `gorm:"type:tinyint(1);default:1;comment:'状态:1在职, 2离职'" json:"status"`  // 状态
+	Status        UserStatus     `gorm:"type:tinyint(1);default:1;comment:'状态:1在职, 2离职'" json:"status"`  // 状态
 	Creator       string         `gorm:"type:varchar(20);comment:'创建者'" json:"creator"`                  // 创建者
 	Groups        []*Group       `gorm:"many2many:group_users;comment:'用户组/部门'" json:"groups"`
 	Roles         []*Role        `gorm:"many2many:user_roles" json:"roles"` // 角色
@@ -49,7 +63,7 @@ type User struct {
 	SourceUserId  string         `gorm:"type:varchar(100);not null;comment:'第三方用户id'" json:"sourceUserId"`                  // 第三方用户id
 	SourceUnionId string         `gorm:"type:varchar(100);not null;comment:'第三方唯一unionId'" json:"sourceUnionId"`            // 第三方唯一unionId
 	UserDN        string         `gorm:"type:varchar(255);not null;comment:'用户dn'" json:"userDn"`                           // 用户在ldap的dn
-	SyncState     uint           `gorm:"type:tinyint(1);default:1;comment:'同步状态:1已同步, 2未同步'" json:"syncState"`              // 数据到ldap的同步状态
+	SyncState     UserSyncStatus `gorm:"type:tinyint(1);default:1;comment:'同步状态:1已同步, 2未同步'" json:"syncState"`              // 数据到ldap的同步状态
 }
 
 func (u *User) SetUserName(userName string) {
@@ -237,8 +251,8 @@ func (u *User) GetUserById(id uint) error {
 }
 
 // ChangeStatus 更新用户的启用状态 和 ldap 同步状态
-func (u *User) ChangeStatus(status uint) error {
-	return global.DB.Model(&User{}).Where("id = ?", u.ID).UpdateColumns(User{Status: status, SyncState: status}).Error
+func (u *User) ChangeStatus(status UserStatus, syncStatus UserSyncStatus) error {
+	return global.DB.Model(&User{}).Where("id = ?", u.ID).UpdateColumns(User{Status: status, SyncState: syncStatus}).Error
 }
 
 // Login 登录

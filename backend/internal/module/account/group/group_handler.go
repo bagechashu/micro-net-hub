@@ -16,11 +16,11 @@ import (
 
 // GroupListReq 获取资源列表结构体
 type GroupListReq struct {
-	GroupName string `json:"groupName" form:"groupName"`
-	Remark    string `json:"remark" form:"remark"`
-	PageNum   int    `json:"pageNum" form:"pageNum"`
-	PageSize  int    `json:"pageSize" form:"pageSize"`
-	SyncState uint   `json:"syncState" form:"syncState"`
+	GroupName string                `json:"groupName" form:"groupName"`
+	Remark    string                `json:"remark" form:"remark"`
+	PageNum   int                   `json:"pageNum" form:"pageNum"`
+	PageSize  int                   `json:"pageSize" form:"pageSize"`
+	SyncState model.GroupSyncStatus `json:"syncState" form:"syncState"`
 }
 
 type GroupListRsp struct {

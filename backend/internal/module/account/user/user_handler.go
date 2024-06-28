@@ -16,22 +16,22 @@ import (
 
 // UserAddReq 创建资源结构体
 type UserAddReq struct {
-	Username      string `json:"username" validate:"required,min=2,max=50"`
-	Password      string `json:"password"`
-	Nickname      string `json:"nickname" validate:"required,min=0,max=50"`
-	GivenName     string `json:"givenName" validate:"min=0,max=50"`
-	Mail          string `json:"mail" validate:"required,min=0,max=100"`
-	JobNumber     string `json:"jobNumber" validate:"min=0,max=20"`
-	PostalAddress string `json:"postalAddress" validate:"min=0,max=255"`
-	Position      string `json:"position" validate:"min=0,max=128"`
-	Mobile        string `json:"mobile" validate:"checkMobile"`
-	Avatar        string `json:"avatar"`
-	Introduction  string `json:"introduction" validate:"min=0,max=255"`
-	Status        uint   `json:"status" validate:"oneof=1 2"`
-	GroupIds      []uint `json:"groupIds" validate:"required"`
-	Source        string `json:"source" validate:"min=0,max=50"`
-	RoleIds       []uint `json:"roleIds" validate:"required"`
-	Notice        bool   `json:"notice" validate:"omitempty"`
+	Username      string           `json:"username" validate:"required,min=2,max=50"`
+	Password      string           `json:"password"`
+	Nickname      string           `json:"nickname" validate:"required,min=0,max=50"`
+	GivenName     string           `json:"givenName" validate:"min=0,max=50"`
+	Mail          string           `json:"mail" validate:"required,min=0,max=100"`
+	JobNumber     string           `json:"jobNumber" validate:"min=0,max=20"`
+	PostalAddress string           `json:"postalAddress" validate:"min=0,max=255"`
+	Position      string           `json:"position" validate:"min=0,max=128"`
+	Mobile        string           `json:"mobile" validate:"checkMobile"`
+	Avatar        string           `json:"avatar"`
+	Introduction  string           `json:"introduction" validate:"min=0,max=255"`
+	Status        model.UserStatus `json:"status" validate:"oneof=1 2"`
+	GroupIds      []uint           `json:"groupIds" validate:"required"`
+	Source        string           `json:"source" validate:"min=0,max=50"`
+	RoleIds       []uint           `json:"roleIds" validate:"required"`
+	Notice        bool             `json:"notice" validate:"omitempty"`
 }
 
 // Add 添加记录
@@ -336,12 +336,12 @@ func Update(c *gin.Context) {
 
 // UserListReq 获取用户列表结构体
 type UserListReq struct {
-	Username  string `json:"username" form:"username"`
-	Nickname  string `json:"nickname" form:"nickname"`
-	Status    uint   `json:"status" form:"status" `
-	SyncState uint   `json:"syncState" form:"syncState" `
-	PageNum   int    `json:"pageNum" form:"pageNum"`
-	PageSize  int    `json:"pageSize" form:"pageSize"`
+	Username  string               `json:"username" form:"username"`
+	Nickname  string               `json:"nickname" form:"nickname"`
+	Status    model.UserStatus     `json:"status" form:"status" `
+	SyncState model.UserSyncStatus `json:"syncState" form:"syncState" `
+	PageNum   int                  `json:"pageNum" form:"pageNum"`
+	PageSize  int                  `json:"pageSize" form:"pageSize"`
 }
 
 type UserListRsp struct {
@@ -592,8 +592,8 @@ func ChangePwd(c *gin.Context) {
 
 // UserChangeUserStatusReq 修改用户状态结构体
 type UserChangeUserStatusReq struct {
-	ID     uint `json:"id" validate:"required"`
-	Status uint `json:"status" validate:"oneof=1 2"`
+	ID     uint             `json:"id" validate:"required"`
+	Status model.UserStatus `json:"status" validate:"oneof=1 2"`
 }
 
 // ChangeUserStatus 修改用户状态
@@ -640,23 +640,26 @@ func ChangeUserStatus(c *gin.Context) {
 	}
 
 	var statusDesc string
-	if req.Status == 2 {
+	var syncStat model.UserSyncStatus
+	if req.Status == model.UserDisabled {
 		err = ldapmgr.LdapUserDelete(user.UserDN)
 		if err != nil {
 			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("在LDAP删除用户失败"+err.Error())))
 			return
 		}
 		statusDesc = "deactivated"
-	} else if req.Status == 1 {
+		syncStat = model.UserSyncUnNormal
+	} else if req.Status == model.UserNormal {
 		err = ldapmgr.LdapUserAdd(user)
 		if err != nil {
 			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("在LDAP添加用户失败"+err.Error())))
 			return
 		}
 		statusDesc = "actived"
+		syncStat = model.UserSyncNormal
 	}
 
-	err = user.ChangeStatus(req.Status)
+	err = user.ChangeStatus(req.Status, syncStat)
 	if err != nil {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("在MySQL更新用户状态失败: "+err.Error())))
 		return

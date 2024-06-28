@@ -165,7 +165,7 @@ func SyncSqlUsers(c *gin.Context) {
 				return
 			}
 		}
-		err = user.ChangeStatus(1)
+		err = user.ChangeStatus(accountModel.UserNormal, accountModel.UserSyncNormal)
 		if err != nil {
 			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("用户同步完毕之后更新状态失败："+err.Error())))
 			return
@@ -277,7 +277,7 @@ func SearchUserDiff() (err error) {
 		if user.UserDN == config.Conf.Ldap.AdminDN {
 			continue
 		}
-		err = user.ChangeStatus(2)
+		err = user.ChangeStatus(accountModel.UserDisabled, accountModel.UserSyncUnNormal)
 	}
 	return
 }

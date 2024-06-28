@@ -15,11 +15,11 @@ import (
 
 // RoleListReq 列表结构体
 type RoleListReq struct {
-	Name     string `json:"name" form:"name"`
-	Keyword  string `json:"keyword" form:"keyword"`
-	Status   uint   `json:"status" form:"status"`
-	PageNum  int    `json:"pageNum" form:"pageNum"`
-	PageSize int    `json:"pageSize" form:"pageSize"`
+	Name     string           `json:"name" form:"name"`
+	Keyword  string           `json:"keyword" form:"keyword"`
+	Status   model.RoleStatus `json:"status" form:"status"`
+	PageNum  int              `json:"pageNum" form:"pageNum"`
+	PageSize int              `json:"pageSize" form:"pageSize"`
 }
 
 type RoleListRsp struct {
@@ -70,11 +70,11 @@ func RoleList(c *gin.Context) {
 
 // RoleAddReq 添加资源结构体
 type RoleAddReq struct {
-	Name    string `json:"name" validate:"required,min=1,max=20"`
-	Keyword string `json:"keyword" validate:"required,min=1,max=20"`
-	Remark  string `json:"remark" validate:"min=0,max=100"`
-	Status  uint   `json:"status" validate:"oneof=1 2"`
-	Sort    uint   `json:"sort" validate:"gte=1,lte=999"`
+	Name    string           `json:"name" validate:"required,min=1,max=20"`
+	Keyword string           `json:"keyword" validate:"required,min=1,max=20"`
+	Remark  string           `json:"remark" validate:"min=0,max=100"`
+	Status  model.RoleStatus `json:"status" validate:"oneof=1 2"`
+	Sort    uint             `json:"sort" validate:"gte=1,lte=999"`
 }
 
 // Add 新建
@@ -125,12 +125,12 @@ func RoleAdd(c *gin.Context) {
 
 // RoleUpdateReq 更新资源结构体
 type RoleUpdateReq struct {
-	ID      uint   `json:"id" validate:"required"`
-	Name    string `json:"name" validate:"required,min=1,max=20"`
-	Keyword string `json:"keyword" validate:"required,min=1,max=20"`
-	Remark  string `json:"remark" validate:"min=0,max=100"`
-	Status  uint   `json:"status" validate:"oneof=1 2"`
-	Sort    uint   `json:"sort" validate:"gte=1,lte=999"`
+	ID      uint             `json:"id" validate:"required"`
+	Name    string           `json:"name" validate:"required,min=1,max=20"`
+	Keyword string           `json:"keyword" validate:"required,min=1,max=20"`
+	Remark  string           `json:"remark" validate:"min=0,max=100"`
+	Status  model.RoleStatus `json:"status" validate:"oneof=1 2"`
+	Sort    uint             `json:"sort" validate:"gte=1,lte=999"`
 }
 
 // Update 更新记录
