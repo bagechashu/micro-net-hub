@@ -46,7 +46,7 @@
               <el-button size="mini" icon="el-icon-key" circle type="warning" @click="updatePermission(scope.row.ID)" />
             </el-tooltip>
             <el-tooltip content="删除" effect="dark" placement="top">
-              <el-popconfirm style="margin-left:10px" title="确定删除吗？" @onConfirm="singleDelete(scope.row.ID)">
+              <el-popconfirm style="margin-left:10px" title="确定删除吗？" @confirm="singleDelete(scope.row.ID)">
                 <el-button slot="reference" size="mini" icon="el-icon-delete" circle type="danger" />
               </el-popconfirm>
             </el-tooltip>
@@ -135,20 +135,20 @@
 </template>
 
 <script>
-import { getRoles, createRole, updateRoleById, batchDeleteRoleByIds, getRoleMenusById, getRoleApisById, updateRoleMenusById, updateRoleApisById } from '@/api/system/role'
-import { getMenuTree } from '@/api/system/menu'
-import { getApiTree } from '@/api/system/api'
-import { Message } from 'element-ui'
+import { getRoles, createRole, updateRoleById, batchDeleteRoleByIds, getRoleMenusById, getRoleApisById, updateRoleMenusById, updateRoleApisById } from "@/api/system/role";
+import { getMenuTree } from "@/api/system/menu";
+import { getApiTree } from "@/api/system/api";
+import { Message } from "element-ui";
 
 export default {
-  name: 'Role',
+  name: "Role",
   data() {
     return {
       // 查询参数
       params: {
-        name: '',
-        keyword: '',
-        status: '',
+        name: "",
+        keyword: "",
+        status: "",
         pageNum: 1,
         pageSize: 10
       },
@@ -159,32 +159,32 @@ export default {
 
       // dialog对话框
       submitLoading: false,
-      dialogFormTitle: '',
-      dialogType: '',
+      dialogFormTitle: "",
+      dialogType: "",
       dialogFormVisible: false,
       dialogFormData: {
-        ID: '',
-        name: '',
-        keyword: '',
+        ID: "",
+        name: "",
+        keyword: "",
         status: 1,
         sort: 999,
-        remark: ''
+        remark: ""
       },
       dialogFormRules: {
         name: [
-          { required: true, message: '请输入角色名称', trigger: 'blur' },
-          { min: 1, max: 20, message: '长度在 1 到 20 个字符', trigger: 'blur' }
+          { required: true, message: "请输入角色名称", trigger: "blur" },
+          { min: 1, max: 20, message: "长度在 1 到 20 个字符", trigger: "blur" }
         ],
         keyword: [
-          { required: true, message: '请输入关键字', trigger: 'blur' },
-          { min: 1, max: 20, message: '长度在 1 到 20 个字符', trigger: 'blur' }
+          { required: true, message: "请输入关键字", trigger: "blur" },
+          { min: 1, max: 20, message: "长度在 1 到 20 个字符", trigger: "blur" }
         ],
         status: [
-          { required: true, message: '请选择角色状态', trigger: 'change' }
+          { required: true, message: "请选择角色状态", trigger: "change" }
         ],
         remark: [
-          { required: false, message: '说明', trigger: 'blur' },
-          { min: 0, max: 100, message: '长度在 0 到 100 个字符', trigger: 'blur' }
+          { required: false, message: "说明", trigger: "blur" },
+          { min: 0, max: 100, message: "长度在 0 到 100 个字符", trigger: "blur" }
         ]
       },
 
@@ -203,278 +203,277 @@ export default {
 
       // 被修改权限的角色ID
       roleId: 0
-    }
+    };
   },
   created() {
-    this.getTableData()
-    this.getMenuTree()
-    this.getApiTree()
+    this.getTableData();
+    this.getMenuTree();
+    this.getApiTree();
   },
   methods: {
     // 查询
     search() {
-      this.params.pageNum = 1
-      this.getTableData()
+      this.params.pageNum = 1;
+      this.getTableData();
     },
 
     // 获取表格数据
     async getTableData() {
-      this.loading = true
+      this.loading = true;
       try {
-        const { data } = await getRoles(this.params)
-        this.tableData = data.roles
-        this.total = data.total
+        const { data } = await getRoles(this.params);
+        this.tableData = data.roles;
+        this.total = data.total;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
     // 新增
     create() {
-      this.dialogFormTitle = '新增角色'
-      this.dialogType = 'create'
-      this.dialogFormVisible = true
+      this.dialogFormTitle = "新增角色";
+      this.dialogType = "create";
+      this.dialogFormVisible = true;
     },
 
     // 修改
     update(row) {
-      this.dialogFormData.ID = row.ID
-      this.dialogFormData.name = row.name
-      this.dialogFormData.keyword = row.keyword
-      this.dialogFormData.sort = row.sort
-      this.dialogFormData.status = row.status
-      this.dialogFormData.remark = row.remark
+      this.dialogFormData.ID = row.ID;
+      this.dialogFormData.name = row.name;
+      this.dialogFormData.keyword = row.keyword;
+      this.dialogFormData.sort = row.sort;
+      this.dialogFormData.status = row.status;
+      this.dialogFormData.remark = row.remark;
 
-      this.dialogFormTitle = '修改角色'
-      this.dialogType = 'update'
-      this.dialogFormVisible = true
+      this.dialogFormTitle = "修改角色";
+      this.dialogType = "update";
+      this.dialogFormVisible = true;
     },
 
     // 判断结果
-    judgeResult(res){
-      if (res.code==0){
-          Message({
-            showClose: true,
-            message: "操作成功",
-            type: 'success'
-          })
-        }
+    judgeResult(res) {
+      if (res.code === 200 || res.code === 0) {
+        Message({
+          showClose: true,
+          message: "操作成功",
+          type: "success"
+        });
+      }
     },
 
     // 提交表单
     submitForm() {
-      this.$refs['dialogForm'].validate(async valid => {
+      this.$refs["dialogForm"].validate(async valid => {
         if (valid) {
-          this.submitLoading = true
+          this.submitLoading = true;
           try {
-            if (this.dialogType === 'create') {
+            if (this.dialogType === "create") {
               await createRole(this.dialogFormData).then(res => {
-                this.judgeResult(res)
-              })
+                this.judgeResult(res);
+              });
             } else {
               await updateRoleById(this.dialogFormData).then(res => {
-                this.judgeResult(res)
-              })
+                this.judgeResult(res);
+              });
             }
           } finally {
-            this.submitLoading = false
+            this.submitLoading = false;
           }
-          this.resetForm()
-          this.getTableData()
+          this.resetForm();
+          this.getTableData();
         }
-      })
+      });
     },
 
     // 取消表单提交
     cancelForm() {
-      this.resetForm()
+      this.resetForm();
     },
 
     // 重置表单
     resetForm() {
-      this.dialogFormVisible = false
-      this.$refs['dialogForm'].resetFields()
+      this.dialogFormVisible = false;
+      this.$refs["dialogForm"].resetFields();
       this.dialogFormData = {
-        name: '',
-        keyword: '',
+        name: "",
+        keyword: "",
         status: 1,
         sort: 999,
-        remark: ''
-      }
+        remark: ""
+      };
     },
 
     // 批量删除
     batchDelete() {
-      this.$confirm('此操作将永久删除, 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
+      this.$confirm("此操作将永久删除, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
       }).then(async res => {
-        this.loading = true
-        const roleIds = []
+        this.loading = true;
+        const roleIds = [];
         this.multipleSelection.forEach(x => {
-          roleIds.push(x.ID)
-        })
+          roleIds.push(x.ID);
+        });
         try {
           await batchDeleteRoleByIds({ roleIds: roleIds }).then(res => {
-            this.judgeResult(res)
-          })
+            this.judgeResult(res);
+          });
         } finally {
-          this.loading = false
+          this.loading = false;
         }
-        this.getTableData()
+        this.getTableData();
       }).catch(() => {
         Message({
-          type: 'info',
-          message: '已取消删除'
-        })
-      })
+          type: "info",
+          message: "已取消删除"
+        });
+      });
     },
 
     // 表格多选
     handleSelectionChange(val) {
-      this.multipleSelection = val
+      this.multipleSelection = val;
     },
 
     // 单个删除
     async singleDelete(id) {
-      this.loading = true
+      this.loading = true;
       try {
         await batchDeleteRoleByIds({ roleIds: [id] }).then(res => {
-          this.judgeResult(res)
-        })
-      }
-      finally {
-        this.loading = false
+          this.judgeResult(res);
+        });
+      } finally {
+        this.loading = false;
       }
     },
 
     // 修改权限按钮
     async updatePermission(roleId) {
-      this.roleId = roleId
-      this.permsDialogVisible = true
-      this.getMenuTree()
-      this.getApiTree()
-      this.getRoleMenusById(roleId)
-      this.getRoleApisById(roleId)
+      this.roleId = roleId;
+      this.permsDialogVisible = true;
+      this.getMenuTree();
+      this.getApiTree();
+      this.getRoleMenusById(roleId);
+      this.getRoleApisById(roleId);
     },
 
     // 获取菜单树
     async getMenuTree() {
-      this.menuTreeLoading = true
+      this.menuTreeLoading = true;
       try {
-        const { data } = await getMenuTree()
-        this.menuTree = data
+        const { data } = await getMenuTree();
+        this.menuTree = data;
       } finally {
-        this.menuTreeLoading = false
+        this.menuTreeLoading = false;
       }
     },
 
     // 获取接口树
     async getApiTree() {
-      this.apiTreeLoading = true
+      this.apiTreeLoading = true;
       try {
-        const { data } = await getApiTree()
-        this.apiTree = data
+        const { data } = await getApiTree();
+        this.apiTree = data;
       } finally {
-        this.apiTreeLoading = false
+        this.apiTreeLoading = false;
       }
     },
 
     // 获取角色的权限菜单
     async getRoleMenusById(roleId) {
-      this.permissionLoading = true
-      let rseData = []
-      const params = {}
-      params.roleId = roleId
+      this.permissionLoading = true;
+      let rseData = [];
+      const params = {};
+      params.roleId = roleId;
       try {
-        const { data } = await getRoleMenusById(params)
-        rseData = data
+        const { data } = await getRoleMenusById(params);
+        rseData = data;
       } finally {
-        this.permissionLoading = false
+        this.permissionLoading = false;
       }
 
-      const menus = rseData
-      const ids = []
-      menus.forEach(x => { ids.push(x.ID) })
-      this.defaultCheckedRoleMenu = ids
-      this.$refs.roleMenuTree.setCheckedKeys(this.defaultCheckedRoleMenu)
+      const menus = rseData;
+      const ids = [];
+      menus.forEach(x => { ids.push(x.ID); });
+      this.defaultCheckedRoleMenu = ids;
+      this.$refs.roleMenuTree.setCheckedKeys(this.defaultCheckedRoleMenu);
     },
 
     // 获取角色的权限接口
     async getRoleApisById(roleId) {
-      this.permissionLoading = true
-      let resData = []
-      const params = {}
-      params.roleId = roleId
+      this.permissionLoading = true;
+      let resData = [];
+      const params = {};
+      params.roleId = roleId;
       try {
-        const { data } = await getRoleApisById(params)
-        resData = data
+        const { data } = await getRoleApisById(params);
+        resData = data;
       } finally {
-        this.permissionLoading = false
+        this.permissionLoading = false;
       }
 
-      const apis = resData
-      const ids = []
-      apis.forEach(x => { ids.push(x.ID) })
-      this.defaultCheckedRoleApi = ids
-      this.$refs.roleApiTree.setCheckedKeys(this.defaultCheckedRoleApi)
+      const apis = resData;
+      const ids = [];
+      apis.forEach(x => { ids.push(x.ID); });
+      this.defaultCheckedRoleApi = ids;
+      this.$refs.roleApiTree.setCheckedKeys(this.defaultCheckedRoleApi);
     },
 
     // 修改角色菜单
     async updateRoleMenusById() {
-      this.permissionLoading = true
-      let ids = this.$refs.roleMenuTree.getCheckedKeys()
-      const idsHalf = this.$refs.roleMenuTree.getHalfCheckedKeys()
-      ids = ids.concat(idsHalf)
-      ids = [...new Set(ids)]
+      this.permissionLoading = true;
+      let ids = this.$refs.roleMenuTree.getCheckedKeys();
+      const idsHalf = this.$refs.roleMenuTree.getHalfCheckedKeys();
+      ids = ids.concat(idsHalf);
+      ids = [...new Set(ids)];
       try {
-        await updateRoleMenusById({ roleId: this.roleId, menuIds: ids }).then(res =>{
-          this.judgeResult(res)
-        })
+        await updateRoleMenusById({ roleId: this.roleId, menuIds: ids }).then(res => {
+          this.judgeResult(res);
+        });
       } finally {
-        this.permissionLoading = false
+        this.permissionLoading = false;
       }
 
-      this.permsDialogVisible = false
+      this.permsDialogVisible = false;
     },
 
     // 修改角色接口
     async updateRoleApisById() {
-      this.permissionLoading = true
-      const ids = this.$refs.roleApiTree.getCheckedKeys(true)
+      this.permissionLoading = true;
+      const ids = this.$refs.roleApiTree.getCheckedKeys(true);
       try {
-        await updateRoleApisById({ roleId: this.roleId, apiIds: ids }).then(res =>{
-          this.judgeResult(res)
-        })
+        await updateRoleApisById({ roleId: this.roleId, apiIds: ids }).then(res => {
+          this.judgeResult(res);
+        });
       } finally {
-        this.permissionLoading = false
+        this.permissionLoading = false;
       }
-      this.permsDialogVisible = false
+      this.permsDialogVisible = false;
     },
 
     // 确定修改角色权限
     submitPermissionForm() {
-      this.updateRoleMenusById()
-      this.updateRoleApisById()
+      this.updateRoleMenusById();
+      this.updateRoleApisById();
     },
 
     // 取消修改角色权限
     cancelPermissionForm() {
-      this.permsDialogVisible = false
+      this.permsDialogVisible = false;
     },
 
     // 分页
     handleSizeChange(val) {
-      this.params.pageSize = val
-      this.getTableData()
+      this.params.pageSize = val;
+      this.getTableData();
     },
     handleCurrentChange(val) {
-      this.params.pageNum = val
-      this.getTableData()
+      this.params.pageNum = val;
+      this.getTableData();
     }
   }
-}
+};
 </script>
 
 <style scoped >

@@ -48,7 +48,7 @@
               <el-button size="mini" icon="el-icon-edit" circle type="primary" @click="update(scope.row)" />
             </el-tooltip>
             <el-tooltip class="delete-popover" content="删除" effect="dark" placement="top">
-              <el-popconfirm title="确定删除吗？" @onConfirm="singleDelete(scope.row.ID)">
+              <el-popconfirm title="确定删除吗？" @confirm="singleDelete(scope.row.ID)">
                 <el-button slot="reference" size="mini" icon="el-icon-delete" circle type="danger" />
               </el-popconfirm>
             </el-tooltip>
@@ -100,25 +100,25 @@
 </template>
 
 <script>
-import { getApis, createApi, updateApiById, batchDeleteApiByIds } from '@/api/system/api'
-import { Message } from 'element-ui'
+import { getApis, createApi, updateApiById, batchDeleteApiByIds } from "@/api/system/api";
+import { Message } from "element-ui";
 
 export default {
-  name: 'Api',
+  name: "Api",
   filters: {
     methodTagFilter(val) {
-      if (val === 'GET') {
-        return ''
-      } else if (val === 'POST') {
-        return 'success'
-      } else if (val === 'PUT') {
-        return 'info'
-      } else if (val === 'PATCH') {
-        return 'warning'
-      } else if (val === 'DELETE') {
-        return 'danger'
+      if (val === "GET") {
+        return "";
+      } else if (val === "POST") {
+        return "success";
+      } else if (val === "PUT") {
+        return "info";
+      } else if (val === "PATCH") {
+        return "warning";
+      } else if (val === "DELETE") {
+        return "danger";
       } else {
-        return 'info'
+        return "info";
       }
     }
   },
@@ -126,10 +126,10 @@ export default {
     return {
       // 查询参数
       params: {
-        path: '',
-        method: '',
-        category: '',
-        creator: '',
+        path: "",
+        method: "",
+        category: "",
+        creator: "",
         pageNum: 1,
         pageSize: 10
       },
@@ -140,31 +140,31 @@ export default {
 
       // dialog对话框
       submitLoading: false,
-      dialogFormTitle: '',
-      dialogType: '',
+      dialogFormTitle: "",
+      dialogType: "",
       dialogFormVisible: false,
       dialogFormData: {
-        ID: '',
-        path: '',
-        category: '',
-        method: '',
-        remark: ''
+        ID: "",
+        path: "",
+        category: "",
+        method: "",
+        remark: ""
       },
       dialogFormRules: {
         path: [
-          { required: true, message: '请输入访问路径', trigger: 'blur' },
-          { min: 1, max: 100, message: '长度在 1 到 100 个字符', trigger: 'blur' }
+          { required: true, message: "请输入访问路径", trigger: "blur" },
+          { min: 1, max: 100, message: "长度在 1 到 100 个字符", trigger: "blur" }
         ],
         category: [
-          { required: true, message: '请输入所属类别', trigger: 'blur' },
-          { min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur' }
+          { required: true, message: "请输入所属类别", trigger: "blur" },
+          { min: 1, max: 50, message: "长度在 1 到 50 个字符", trigger: "blur" }
         ],
         method: [
-          { required: true, message: '请选择请求方式', trigger: 'change' }
+          { required: true, message: "请选择请求方式", trigger: "change" }
         ],
         remark: [
-          { required: false, message: '说明', trigger: 'blur' },
-          { min: 0, max: 100, message: '长度在 0 到 100 个字符', trigger: 'blur' }
+          { required: false, message: "说明", trigger: "blur" },
+          { min: 0, max: 100, message: "长度在 0 到 100 个字符", trigger: "blur" }
         ]
       },
 
@@ -172,167 +172,167 @@ export default {
       popoverVisible: false,
       // 表格多选
       multipleSelection: []
-    }
+    };
   },
   created() {
-    this.getTableData()
+    this.getTableData();
   },
   methods: {
     // 查询
     search() {
-      this.params.pageNum = 1
-      this.getTableData()
+      this.params.pageNum = 1;
+      this.getTableData();
     },
 
     // 获取表格数据
     async getTableData() {
-      this.loading = true
+      this.loading = true;
       try {
-        const { data } = await getApis(this.params)
-        this.tableData = data.apis
-        this.total = data.total
+        const { data } = await getApis(this.params);
+        this.tableData = data.apis;
+        this.total = data.total;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
     // 新增
     create() {
-      this.dialogFormTitle = '新增接口'
-      this.dialogType = 'create'
-      this.dialogFormVisible = true
+      this.dialogFormTitle = "新增接口";
+      this.dialogType = "create";
+      this.dialogFormVisible = true;
     },
 
     // 修改
     update(row) {
-      this.dialogFormData.ID = row.ID
-      this.dialogFormData.path = row.path
-      this.dialogFormData.category = row.category
-      this.dialogFormData.method = row.method
-      this.dialogFormData.remark = row.remark
+      this.dialogFormData.ID = row.ID;
+      this.dialogFormData.path = row.path;
+      this.dialogFormData.category = row.category;
+      this.dialogFormData.method = row.method;
+      this.dialogFormData.remark = row.remark;
 
-      this.dialogFormTitle = '修改接口'
-      this.dialogType = 'update'
-      this.dialogFormVisible = true
+      this.dialogFormTitle = "修改接口";
+      this.dialogType = "update";
+      this.dialogFormVisible = true;
     },
 
     // 判断结果
-    judgeResult(res){
-      if (res.code==0){
-          Message({
-            showClose: true,
-            message: "操作成功",
-            type: 'success'
-          })
-        }
+    judgeResult(res) {
+      if (res.code === 200 || res.code === 0) {
+        Message({
+          showClose: true,
+          message: "操作成功",
+          type: "success"
+        });
+      }
     },
 
     // 提交表单
     submitForm() {
-      this.$refs['dialogForm'].validate(async valid => {
+      this.$refs["dialogForm"].validate(async valid => {
         if (valid) {
-          this.submitLoading = true
+          this.submitLoading = true;
           try {
-            if (this.dialogType === 'create') {
-              await createApi(this.dialogFormData).then(res =>{
-                this.judgeResult(res)
-              })
+            if (this.dialogType === "create") {
+              await createApi(this.dialogFormData).then(res => {
+                this.judgeResult(res);
+              });
             } else {
-              await updateApiById(this.dialogFormData).then(res =>{
-                this.judgeResult(res)
-              })
+              await updateApiById(this.dialogFormData).then(res => {
+                this.judgeResult(res);
+              });
             }
           } finally {
-            this.submitLoading = false
+            this.submitLoading = false;
           }
-          this.resetForm()
-          this.getTableData()
+          this.resetForm();
+          this.getTableData();
         } else {
           Message({
             showClose: true,
-            message: '表单校验失败',
-            type: 'warn'
-          })
-          return false
+            message: "表单校验失败",
+            type: "warn"
+          });
+          return false;
         }
-      })
+      });
     },
 
     // 提交表单
     cancelForm() {
-      this.resetForm()
+      this.resetForm();
     },
 
     resetForm() {
-      this.dialogFormVisible = false
-      this.$refs['dialogForm'].resetFields()
+      this.dialogFormVisible = false;
+      this.$refs["dialogForm"].resetFields();
       this.dialogFormData = {
-        ID: '',
-        path: '',
-        category: '',
-        method: '',
-        remark: ''
-      }
+        ID: "",
+        path: "",
+        category: "",
+        method: "",
+        remark: ""
+      };
     },
 
     // 批量删除
     batchDelete() {
-      this.$confirm('此操作将永久删除, 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
+      this.$confirm("此操作将永久删除, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
       }).then(async res => {
-        this.loading = true
-        const apiIds = []
+        this.loading = true;
+        const apiIds = [];
         this.multipleSelection.forEach(x => {
-          apiIds.push(x.ID)
-        })
+          apiIds.push(x.ID);
+        });
         try {
-          await batchDeleteApiByIds({ apiIds: apiIds }).then(res =>{
-            this.judgeResult(res)
-          })
+          await batchDeleteApiByIds({ apiIds: apiIds }).then(res => {
+            this.judgeResult(res);
+          });
         } finally {
-          this.loading = false
+          this.loading = false;
         }
-        this.getTableData()
+        this.getTableData();
       }).catch(() => {
         Message({
           showClose: true,
-          type: 'info',
-          message: '已取消删除'
-        })
-      })
+          type: "info",
+          message: "已取消删除"
+        });
+      });
     },
 
     // 表格多选
     handleSelectionChange(val) {
-      this.multipleSelection = val
+      this.multipleSelection = val;
     },
 
     // 单个删除
     async singleDelete(Id) {
-      this.loading = true
+      this.loading = true;
       try {
-        await batchDeleteApiByIds({ apiIds: [Id] }).then(res =>{
-          this.judgeResult(res)
-        })
+        await batchDeleteApiByIds({ apiIds: [Id] }).then(res => {
+          this.judgeResult(res);
+        });
       } finally {
-        this.loading = false
+        this.loading = false;
       }
-      this.getTableData()
+      this.getTableData();
     },
 
     // 分页
     handleSizeChange(val) {
-      this.params.pageSize = val
-      this.getTableData()
+      this.params.pageSize = val;
+      this.getTableData();
     },
     handleCurrentChange(val) {
-      this.params.pageNum = val
-      this.getTableData()
+      this.params.pageNum = val;
+      this.getTableData();
     }
   }
-}
+};
 </script>
 
 <style scoped>

@@ -29,7 +29,7 @@
               <el-col :xs="8" :sm="10" :md="8" :lg="8" :xl="8">
                 <el-popconfirm
                   title="确定重置吗？"
-                  @onConfirm="resetTotpSecret"
+                  @confirm="resetTotpSecret"
                 >
                   <el-button
                     slot="reference"

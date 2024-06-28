@@ -238,7 +238,7 @@
             >
               <el-popconfirm
                 title="确定删除吗？"
-                @onConfirm="singleDelete(scope.row.ID)"
+                @confirm="singleDelete(scope.row.ID)"
               >
                 <el-button
                   slot="reference"
@@ -258,7 +258,7 @@
             >
               <el-popconfirm
                 title="确定同步吗？"
-                @onConfirm="singleSync(scope.row.ID)"
+                @confirm="singleSync(scope.row.ID)"
               >
                 <el-button
                   slot="reference"

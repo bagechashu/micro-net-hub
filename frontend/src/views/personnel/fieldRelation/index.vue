@@ -103,7 +103,7 @@
             >
               <el-popconfirm
                 title="确定删除吗？"
-                @onConfirm="singleDelete(scope.row.ID)"
+                @confirm="singleDelete(scope.row.ID)"
               >
                 <el-button
                   slot="reference"
