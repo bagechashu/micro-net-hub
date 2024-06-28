@@ -7,7 +7,6 @@ import (
 
 	"micro-net-hub/internal/config"
 	accountModel "micro-net-hub/internal/module/account/model"
-	apiMgrModel "micro-net-hub/internal/module/apimgr/model"
 	"micro-net-hub/internal/module/operationlog/model"
 
 	"github.com/gin-gonic/gin"
@@ -54,8 +53,8 @@ func OperationLogMiddleware() gin.HandlerFunc {
 		}
 
 		// 检查接口并获取其描述
-		api := new(apiMgrModel.Api)
-		_ = apiMgrModel.Find(map[string]interface{}{"path": path, "method": method}, api)
+		// api := new(apiMgrModel.Api)
+		// _ = apiMgrModel.Find(map[string]interface{}{"path": path, "method": method}, api)
 
 		operationLog := model.OperationLog{
 			Username:   username,
@@ -63,11 +62,11 @@ func OperationLogMiddleware() gin.HandlerFunc {
 			IpLocation: "",
 			Method:     method,
 			Path:       path,
-			Remark:     api.Remark,
-			Status:     c.Writer.Status(),
-			StartTime:  fmt.Sprintf("%v", startTime),
-			TimeCost:   timeCost,
-			UserAgent:  c.Request.UserAgent(),
+			// Remark:     api.Remark,
+			Status:    c.Writer.Status(),
+			StartTime: fmt.Sprintf("%v", startTime),
+			TimeCost:  timeCost,
+			UserAgent: c.Request.UserAgent(),
 		}
 
 		// 最好是将日志发送到rabbitmq或者kafka中

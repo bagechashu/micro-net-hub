@@ -11,7 +11,7 @@
         <el-divider direction="vertical" />
         <span>Powered by </span>
         <span>
-          Golang/OpenLdap/Ocserv
+          Golang/OpenLdap
         </span>
         <el-divider direction="vertical" />
         <span>LICENSE </span>
