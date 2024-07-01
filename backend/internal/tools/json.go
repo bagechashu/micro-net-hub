@@ -1,9 +1,12 @@
 package tools
 
 import (
-	"encoding/json"
 	"fmt"
+
+	jsoniter "github.com/json-iterator/go"
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 // 结构体转为json
 func Struct2Json(obj interface{}) string {

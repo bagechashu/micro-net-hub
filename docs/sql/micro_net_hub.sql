@@ -427,7 +427,7 @@ CREATE TABLE `roles` (
 
 LOCK TABLES `roles` WRITE;
 /*!40000 ALTER TABLE `roles` DISABLE KEYS */;
-INSERT INTO `roles` VALUES (1,'2024-06-25 14:22:44.270','2024-06-25 14:22:44.270',NULL,'Admins','admin','',1,1,'System'),(2,'2024-06-25 14:22:44.270','2024-06-25 14:22:44.270',NULL,'Users','user','',1,3,'System'),(3,'2024-06-25 14:22:44.270','2024-06-25 14:22:44.270',NULL,'Guests','guest','',1,5,'System');
+INSERT INTO `roles` VALUES (1,'2024-06-25 14:22:44.270','2024-06-25 14:22:44.270',NULL,'SuperAdmin','superadmin','',1,1,'System'),(2,'2024-06-25 14:22:44.270','2024-06-25 14:22:44.270',NULL,'Users','user','',1,3,'System'),(3,'2024-06-25 14:22:44.270','2024-06-25 14:22:44.270',NULL,'Guests','guest','',1,5,'System');
 /*!40000 ALTER TABLE `roles` ENABLE KEYS */;
 UNLOCK TABLES;
 

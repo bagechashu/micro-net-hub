@@ -5,6 +5,7 @@ import (
 
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
+	"micro-net-hub/internal/module/account/auth"
 	"micro-net-hub/internal/module/account/group"
 	"micro-net-hub/internal/module/account/menu"
 	"micro-net-hub/internal/module/account/role"
@@ -24,7 +25,7 @@ import (
 // 初始化
 func InitRoutes(r *gin.Engine) {
 	// 初始化JWT认证中间件
-	authMiddleware, err := user.InitAuthMiddleware()
+	authMiddleware, err := auth.InitAuthMiddleware()
 	if err != nil {
 		global.Log.Panicf("初始化JWT中间件失败：%v", err)
 		panic(fmt.Sprintf("初始化JWT中间件失败：%v", err))

@@ -17,7 +17,7 @@ const (
 	RoleDisabled                       // 2 禁用
 )
 
-const AdminRoleID = 1
+const SuperAdminRoleID = 1
 
 type Role struct {
 	gorm.Model

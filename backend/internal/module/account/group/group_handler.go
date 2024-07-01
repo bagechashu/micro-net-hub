@@ -9,7 +9,7 @@ import (
 
 	"strings"
 
-	"micro-net-hub/internal/module/account/current"
+	"micro-net-hub/internal/module/account/auth"
 	"micro-net-hub/internal/module/account/model"
 	"micro-net-hub/internal/module/goldap/ldapmgr"
 )
@@ -262,7 +262,7 @@ func Add(c *gin.Context) {
 	}
 
 	// 获取当前用户
-	ctxUser, err := current.GetCurrentLoginUser(c)
+	ctxUser, err := auth.GetCtxLoginUser(c)
 	if err != nil {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取当前登陆用户信息失败")))
 		return
@@ -354,7 +354,7 @@ func Update(c *gin.Context) {
 	}
 
 	// 获取当前登陆用户
-	ctxUser, err := current.GetCurrentLoginUser(c)
+	ctxUser, err := auth.GetCtxLoginUser(c)
 	if err != nil {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取当前登陆用户失败")))
 		return

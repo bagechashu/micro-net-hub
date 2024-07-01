@@ -7,7 +7,7 @@ import (
 	"github.com/thoas/go-funk"
 
 	"micro-net-hub/internal/global"
-	"micro-net-hub/internal/module/account/current"
+	"micro-net-hub/internal/module/account/auth"
 	"micro-net-hub/internal/module/account/model"
 	apiMgrModel "micro-net-hub/internal/module/apimgr/model"
 	"micro-net-hub/internal/server/helper"
@@ -86,7 +86,7 @@ func RoleAdd(c *gin.Context) {
 	}
 
 	// 获取当前用户最高角色等级
-	minSort, ctxUser, err := current.GetCurrentUserMinRoleSort(c)
+	minSort, ctxUser, err := auth.GetCtxLoginUserMinRole(c)
 	if err != nil {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取当前用户最高角色等级失败: %s", err.Error())))
 		return
@@ -142,7 +142,7 @@ func RoleUpdate(c *gin.Context) {
 	}
 
 	// 当前用户角色排序最小值（最高等级角色）以及当前用户
-	minSort, ctxUser, err := current.GetCurrentUserMinRoleSort(c)
+	minSort, ctxUser, err := auth.GetCtxLoginUserMinRole(c)
 	if err != nil {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取当前用户最高角色等级失败: %s", err.Error())))
 		return
@@ -246,7 +246,7 @@ func RoleUpdate(c *gin.Context) {
 	// 1.可以帮助用户更新拥有该角色的用户信息缓存,使用下面方法
 	// err = ur.UpdateUserInfoCacheByRoleId(uint(roleId))
 	// 2.直接清理缓存，让活跃的用户自己重新缓存最新用户信息
-	model.ClearUserInfoCache()
+	model.CacheUserInfoClear()
 
 	helper.Success(c, nil)
 }
@@ -265,7 +265,7 @@ func RoleDelete(c *gin.Context) {
 	}
 
 	// 获取当前登陆用户最高等级角色
-	minSort, _, err := current.GetCurrentUserMinRoleSort(c)
+	minSort, _, err := auth.GetCtxLoginUserMinRole(c)
 	if err != nil {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取当前用户最高角色等级失败: %s", err.Error())))
 		return
@@ -299,7 +299,7 @@ func RoleDelete(c *gin.Context) {
 	}
 
 	// 删除角色成功直接清理缓存，让活跃的用户自己重新缓存最新用户信息
-	model.ClearUserInfoCache()
+	model.CacheUserInfoClear()
 	helper.Success(c, nil)
 }
 
@@ -397,7 +397,7 @@ func RoleUpdateMenus(c *gin.Context) {
 	}
 
 	// 当前用户角色排序最小值（最高等级角色）以及当前用户
-	minSort, ctxUser, err := current.GetCurrentUserMinRoleSort(c)
+	minSort, ctxUser, err := auth.GetCtxLoginUserMinRole(c)
 	if err != nil {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取当前用户最高角色等级失败: %s", err.Error())))
 		return
@@ -430,7 +430,7 @@ func RoleUpdateMenus(c *gin.Context) {
 	reqMenus := make([]*model.Menu, 0)
 
 	// (非管理员)不能把角色的权限菜单设置的比当前用户所拥有的权限菜单多
-	if minSort != model.AdminRoleID {
+	if minSort != model.SuperAdminRoleID {
 		for _, id := range req.MenuIds {
 			if !funk.Contains(ctxUserMenusIds, id) {
 				helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("无权设置ID为%d的菜单", id)))
@@ -501,7 +501,7 @@ func RoleUpdateApis(c *gin.Context) {
 	}
 
 	// 当前用户角色排序最小值（最高等级角色）以及当前用户
-	minSort, ctxUser, err := current.GetCurrentUserMinRoleSort(c)
+	minSort, ctxUser, err := auth.GetCtxLoginUserMinRole(c)
 	if err != nil {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取当前用户最高角色等级失败: %s", err.Error())))
 		return

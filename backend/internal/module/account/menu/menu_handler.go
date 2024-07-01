@@ -7,7 +7,7 @@ import (
 
 	"fmt"
 
-	"micro-net-hub/internal/module/account/current"
+	"micro-net-hub/internal/module/account/auth"
 	accountModel "micro-net-hub/internal/module/account/model"
 )
 
@@ -93,7 +93,7 @@ func Add(c *gin.Context) {
 	}
 
 	// 获取当前用户
-	ctxUser, err := current.GetCurrentLoginUser(c)
+	ctxUser, err := auth.GetCtxLoginUser(c)
 	if err != nil {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取当前登陆用户信息失败: %s", err.Error())))
 		return
@@ -164,7 +164,7 @@ func Update(c *gin.Context) {
 	}
 
 	// 获取当前登陆用户
-	ctxUser, err := current.GetCurrentLoginUser(c)
+	ctxUser, err := auth.GetCtxLoginUser(c)
 	if err != nil {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取当前登陆用户失败: %s", err.Error())))
 	}

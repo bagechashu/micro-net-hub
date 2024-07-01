@@ -3,7 +3,7 @@ package user
 import (
 	"fmt"
 	"micro-net-hub/internal/config"
-	"micro-net-hub/internal/module/account/current"
+	"micro-net-hub/internal/module/account/auth"
 	"micro-net-hub/internal/module/account/model"
 	"micro-net-hub/internal/module/goldap/ldapmgr"
 	totpModel "micro-net-hub/internal/module/totp/model"
@@ -78,7 +78,7 @@ func Add(c *gin.Context) {
 	}
 
 	// 当前登陆用户角色排序最小值（最高等级角色）以及当前登陆的用户
-	currentRoleSortMin, ctxUser, err := current.GetCurrentUserMinRoleSort(c)
+	currentRoleSortMin, ctxUser, err := auth.GetCtxLoginUserMinRole(c)
 	if err != nil {
 		helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("获取当前登陆用户角色排序最小值失败")))
 		return
@@ -204,7 +204,7 @@ func Update(c *gin.Context) {
 	}
 
 	// 获取当前登陆用户
-	ctxUser, err := current.GetCurrentLoginUser(c)
+	ctxUser, err := auth.GetCtxLoginUser(c)
 	if err != nil {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取当前登陆用户失败")))
 		return
@@ -312,7 +312,7 @@ func Update(c *gin.Context) {
 	}
 
 	// flush user info cache
-	model.ClearUserInfoCache()
+	model.CacheUserInfoClear()
 
 	if req.Notice {
 		var nu model.User
@@ -426,7 +426,7 @@ func Delete(c *gin.Context) {
 	}
 
 	// 获取当前登陆用户角色排序最小值（最高等级角色）以及当前用户
-	minSort, ctxUser, err := current.GetCurrentUserMinRoleSort(c)
+	minSort, ctxUser, err := auth.GetCtxLoginUserMinRole(c)
 	if err != nil {
 		helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("获取当前登陆用户角色排序最小值失败")))
 		return
@@ -470,7 +470,7 @@ func Delete(c *gin.Context) {
 	}
 
 	// flush user info cache
-	model.ClearUserInfoCache()
+	model.CacheUserInfoClear()
 
 	if config.Conf.Notice.DefaultNoticeSwitch {
 		// Notifications to users by role's keyword
@@ -510,7 +510,7 @@ func ReSetTotpSecret(c *gin.Context) {
 		return
 	}
 	// 获取当前用户
-	user, err := current.GetCurrentLoginUser(c)
+	user, err := auth.GetCtxLoginUser(c)
 	if err != nil {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取当前登陆用户失败")))
 		return
@@ -556,7 +556,7 @@ func ChangePwd(c *gin.Context) {
 	req.OldPassword = string(decodeOldPassword)
 	req.NewPassword = string(decodeNewPassword)
 	// 获取当前用户
-	user, err := current.GetCurrentLoginUser(c)
+	user, err := auth.GetCtxLoginUser(c)
 	if err != nil {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取当前登陆用户失败")))
 		return
@@ -628,7 +628,7 @@ func ChangeUserStatus(c *gin.Context) {
 	}
 	// 获取当前登录用户，只有管理员才能够将用户状态改变
 	// 获取当前登陆用户角色排序最小值（最高等级角色）以及当前用户
-	minSort, _, err := current.GetCurrentUserMinRoleSort(c)
+	minSort, _, err := auth.GetCtxLoginUserMinRole(c)
 	if err != nil {
 		helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("获取当前登陆用户角色排序最小值失败")))
 		return
@@ -690,7 +690,7 @@ func ChangeUserStatus(c *gin.Context) {
 
 // GetUserInfo 获取当前登录用户信息
 func GetUserInfo(c *gin.Context) {
-	user, err := current.GetCurrentLoginUser(c)
+	user, err := auth.GetCtxLoginUser(c)
 	if err != nil {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取当前用户信息失败: "+err.Error())))
 		return

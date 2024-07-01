@@ -6,7 +6,7 @@ import (
 
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
-	"micro-net-hub/internal/module/account/current"
+	"micro-net-hub/internal/module/account/auth"
 	"micro-net-hub/internal/server/helper"
 
 	"github.com/gin-gonic/gin"
@@ -17,7 +17,7 @@ var checkLock sync.Mutex
 // Casbin中间件, 基于RBAC的权限访问控制模型
 func CasbinMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ctxuser, err := current.GetCurrentLoginUser(c)
+		ctxuser, err := auth.GetCtxLoginUser(c)
 		if err != nil {
 			helper.Response(c, 401, 401, nil, "用户未登录")
 			c.Abort()

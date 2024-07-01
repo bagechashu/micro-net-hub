@@ -70,10 +70,10 @@ jwt:
   realm: test jwt
   # 服务端密钥
   key: secret key
-  # token过期时间, 小时
-  timeout: 2
+  # token过期时间, 分钟
+  timeout-min: 10
   # 刷新token最大过期时间, 小时
-  max-refresh: 2
+  max-refresh-min: 10
 
 # 令牌桶限流配置
 rate-limit:

@@ -22,8 +22,30 @@ import (
 // 当前用户信息缓存，避免频繁获取数据库
 var UserInfoCache = cache.New(24*time.Hour, 48*time.Hour)
 
-// ClearUserInfoCache 清理所有用户信息缓存
-func ClearUserInfoCache() {
+func cacheUserInfoKeygen(uid uint, username string) string {
+	return fmt.Sprintf("u_%d_%s", uid, username)
+}
+func CacheUserInfoGet(uid uint, username string) *User {
+	key := cacheUserInfoKeygen(uid, username)
+	if cache, found := UserInfoCache.Get(key); found {
+		return cache.(*User)
+	}
+	return nil
+}
+
+func CacheUserInfoSet(uid uint, username string, userInfo *User) {
+	key := cacheUserInfoKeygen(uid, username)
+	UserInfoCache.Set(key, userInfo, cache.DefaultExpiration)
+}
+
+func CacheUserInfoDel(uid uint, username string) {
+	key := cacheUserInfoKeygen(uid, username)
+	if _, found := UserInfoCache.Get(key); found {
+		UserInfoCache.Delete(key)
+	}
+}
+
+func CacheUserInfoClear() {
 	UserInfoCache.Flush()
 }
 
