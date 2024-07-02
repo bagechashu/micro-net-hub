@@ -1,7 +1,6 @@
 import axios from "axios";
 import { MessageBox, Message } from "element-ui";
 import store from "@/store";
-// import router from '@/router'
 import { getToken } from "@/utils/auth";
 import router from "@/router";
 
@@ -59,22 +58,19 @@ service.interceptors.response.use(
   error => {
     if (error.response.status === 401) {
       if (error.response.data.message.indexOf("JWT认证失败") !== -1) {
-        MessageBox.confirm(
+        MessageBox.alert(
           "登录失败, 或登录状态过期, 请重新登录.",
           "登录状态已失效",
           {
-            confirmButtonText: "强行刷新",
-            cancelButtonText: "重新登录",
-            type: "warning"
+            confirmButtonText: " 确定",
+            type: "warning",
+            callback: action => {
+              store.dispatch("user/logout").then(() => {
+                router.push("/");
+              });
+            }
           }
-        ).then(() => {
-          // store.dispatch('user/removeToken').then(() => {
-          //   location.reload()
-          // })
-          store.dispatch("user/logout").then(() => {
-            location.reload();
-          });
-        });
+        );
       } else {
         Message({
           showClose: true,
