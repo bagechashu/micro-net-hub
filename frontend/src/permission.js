@@ -30,7 +30,7 @@ router.beforeEach(async(to, from, next) => {
           router.addRoutes(accessRoutes);
           next({ ...to, replace: true });
         } catch (error) {
-          await store.dispatch("user/resetToken");
+          await store.dispatch("user/removeToken");
           Message.error(`获取用户信息失败: ${error || "未知错误"}`);
           next(`/`);
           NProgress.done();
