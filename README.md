@@ -1,7 +1,7 @@
 <!-- @format -->
 ![](docs/logo/micro-net-hub.png)
 
-A tool for managing your OpenLDAP/Ocserv/Navigation at a private network.
+A tool for managing your OpenLDAP/DNS/Navigation at a private network.
 
 # How to install Micro-Net-Hub
 
@@ -31,7 +31,6 @@ A tool for managing your OpenLDAP/Ocserv/Navigation at a private network.
 # TODO
 
 - Config Center
-- VPN Manager
 - Cron Manager
 
 # Architechture
