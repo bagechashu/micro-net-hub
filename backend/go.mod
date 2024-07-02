@@ -3,7 +3,6 @@ module micro-net-hub
 go 1.21
 
 require (
-	github.com/appleboy/gin-jwt/v2 v2.9.2
 	github.com/casbin/casbin/v2 v2.97.0
 	github.com/casbin/gorm-adapter/v3 v3.25.0
 	github.com/fsnotify/fsnotify v1.7.0
@@ -26,6 +25,7 @@ require (
 )
 
 require (
+	github.com/appleboy/gin-jwt/v2 v2.9.2
 	github.com/chyroc/lark v0.0.113
 	github.com/go-mail/mail v2.3.1+incompatible
 	github.com/miekg/dns v1.1.61

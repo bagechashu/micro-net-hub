@@ -331,7 +331,7 @@ func InitData() {
 			Creator:  "System",
 		},
 		{
-			Method:   "POST",
+			Method:   "GET",
 			Path:     "/base/refreshToken",
 			Category: "base",
 			Remark:   "刷新JWT令牌",

@@ -1,6 +1,6 @@
 import Cookies from "js-cookie";
 
-const TokenKey = "token";
+const TokenKey = "jwt-token";
 
 export function getToken() {
   return Cookies.get(TokenKey);

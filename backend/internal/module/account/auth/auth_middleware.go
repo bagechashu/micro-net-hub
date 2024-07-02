@@ -20,8 +20,8 @@ func InitAuthMiddleware() (*jwt.GinJWTMiddleware, error) {
 	authMiddleware, err := jwt.New(&jwt.GinJWTMiddleware{
 		Realm:           config.Conf.Jwt.Realm,                                      // jwt标识
 		Key:             []byte(config.Conf.Jwt.Key),                                // 服务端密钥
-		Timeout:         time.Minute * time.Duration(config.Conf.Jwt.TimeoutMin),    // token过期时间
-		MaxRefresh:      time.Minute * time.Duration(config.Conf.Jwt.MaxRefreshMin), // token最大刷新时间(RefreshToken过期时间=Timeout+MaxRefresh)
+		Timeout:         time.Minute * time.Duration(config.Conf.Jwt.TimeoutMin),    // token过期时间. 当前时间大于 exp, 小于 exp+MaxRefresh,可以刷新token.
+		MaxRefresh:      time.Minute * time.Duration(config.Conf.Jwt.MaxRefreshMin), // token最大刷新时间. 当前时间大于 exp+MaxRefresh, 不可用此 token 刷新.
 		PayloadFunc:     payloadFunc,                                                // 有效载荷处理
 		IdentityHandler: identityHandler,                                            // 解析Claims
 		Authenticator:   authenticator,                                              // 校验token的正确性, 处理登录逻辑
@@ -32,12 +32,20 @@ func InitAuthMiddleware() (*jwt.GinJWTMiddleware, error) {
 		RefreshResponse: refreshResponse,                                            // 刷新token后的响应
 		TokenLookup:     "header: Authorization, query: token, cookie: jwt",         // 自动在这几个地方寻找请求中的token
 		TokenHeadName:   "Bearer",                                                   // header名称
-		TimeFunc:        time.Now().UTC,
+		TimeFunc:        utcTime,                                                    // UTC 时间戳
 	})
 	return authMiddleware, err
 }
 
 const customClaimsName string = "ukey"
+
+// utcTime 获取UTC时间
+// **important**: 不能使用time.Now().UTC 作为获取 UTC 时间的函数.
+// time.Now()会返回一个固定的时间，
+// time.Now().UTC 虽然符合 TimeFunc 类型要求, 但是作为 "func 类型", 获取到的时间戳都是和第一次 time.Now().UTC 相同.
+func utcTime() time.Time {
+	return time.Now().UTC()
+}
 
 // 有效载荷处理
 func payloadFunc(data interface{}) jwt.MapClaims {
