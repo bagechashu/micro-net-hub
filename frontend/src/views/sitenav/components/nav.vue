@@ -11,40 +11,42 @@
         :xl="2"
         class="site-card"
       >
-        <el-popover placement="right-start" width="200" trigger="hover">
-          <el-button-group class="vertical">
-            <el-button
-              size="small"
-              icon="el-icon-position"
-              @click="jumpLink(item.link)"
-            >跳转</el-button>
-            <el-button
-              v-if="item.doc"
-              size="small"
-              icon="el-icon-document"
-              @click="jumpLink(item.doc)"
-            >相关文档</el-button>
-            <el-button
-              size="small"
-              icon="el-icon-copy-document"
-              class="clip-btn"
-              @click="copyLink(item.link)"
-            >
-              拷贝网址</el-button>
-            <el-button
-              size="small"
-              icon="el-icon-star-on"
-              @click="addBookmarks(item.link, item.name)"
-            >加入书签</el-button>
-          </el-button-group>
-          <el-card slot="reference" shadow="never">
-            <span><img v-lazy="item.icon" class="icon" alt=""></span>
-            <span>{{ item.name }}</span>
-            <p />
-            <div class="desc">{{ item.desc }}</div>
-            <div class="desclink">{{ item.link }}</div>
-          </el-card>
-        </el-popover>
+        <div @click="jumpLink(item.link)">
+          <el-popover placement="right-start" width="200" trigger="hover">
+            <el-button-group class="vertical">
+              <el-button
+                size="small"
+                icon="el-icon-position"
+                @click="jumpLink(item.link)"
+              >跳转</el-button>
+              <el-button
+                v-if="item.doc"
+                size="small"
+                icon="el-icon-document"
+                @click="jumpLink(item.doc)"
+              >相关文档</el-button>
+              <el-button
+                size="small"
+                icon="el-icon-copy-document"
+                class="clip-btn"
+                @click="copyLink(item.link)"
+              >
+                拷贝网址</el-button>
+              <el-button
+                size="small"
+                icon="el-icon-star-on"
+                @click="addBookmarks(item.link, item.name)"
+              >加入书签</el-button>
+            </el-button-group>
+            <el-card slot="reference" shadow="never">
+              <span><img v-lazy="item.icon" class="icon" alt=""></span>
+              <span>{{ item.name }}</span>
+              <p />
+              <div class="desc">{{ item.desc }}</div>
+              <div class="desclink">{{ item.link }}</div>
+            </el-card>
+          </el-popover>
+        </div>
       </el-col>
     </el-row>
   </div>
