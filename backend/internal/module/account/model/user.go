@@ -283,12 +283,12 @@ func (u *User) Login() (*User, error) {
 	var userRight User
 	err := userRight.Find(map[string]interface{}{"username": u.Username})
 	if err != nil {
-		return nil, errors.New("用户不存在")
+		return nil, errors.New("用户名或密码错误")
 	}
 	// 判断用户的状态
 	userStatus := userRight.Status
 	if userStatus != 1 {
-		return nil, errors.New("用户被禁用")
+		return nil, errors.New("用户名或密码错误")
 	}
 
 	// 判断用户拥有的所有角色的状态,全部角色都被禁用则不能登录
@@ -307,7 +307,7 @@ func (u *User) Login() (*User, error) {
 	}
 
 	if tools.NewParsePasswd(userRight.Password) != u.Password {
-		return nil, errors.New("密码错误")
+		return nil, errors.New("用户名或密码错误")
 	}
 	return &userRight, nil
 }

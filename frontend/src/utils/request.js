@@ -57,10 +57,10 @@ service.interceptors.response.use(
   },
   error => {
     if (error.response.status === 401) {
-      if (error.response.data.message.indexOf("JWT认证失败") !== -1) {
+      if (error.response.data.message.includes("Token is expired")) {
         MessageBox.alert(
-          "登录失败, 或登录状态过期, 请重新登录.",
-          "登录状态已失效",
+          "登录状态过期, 请重新登录.",
+          "登录状态过期",
           {
             confirmButtonText: " 确定",
             type: "warning",
