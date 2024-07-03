@@ -239,7 +239,7 @@ func Update(c *gin.Context) {
 	reqRoleSortMin := funk.MinInt(reqRoleSorts)
 
 	// 如果登录用户的角色ID为1，亦即为管理员，则直接放行，保障管理员拥有最大权限
-	if currentRoleSortMin != 1 {
+	if currentRoleSortMin != model.SuperAdminRoleID {
 		// 判断是更新自己还是更新别人,如果操作的ID与登陆用户的ID一致，则说明操作的是自己
 		if int(req.ID) == int(ctxUser.ID) {
 			// 不能更改自己的角色
@@ -302,8 +302,6 @@ func Update(c *gin.Context) {
 			return
 		}
 		user.Password = req.Password
-	} else {
-		req.Password = "The password has not been updated. Please continue using your current password."
 	}
 
 	if err = CommonUpdateUser(oldData, &user, req.GroupIds); err != nil {

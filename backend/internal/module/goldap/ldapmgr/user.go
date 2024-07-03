@@ -85,6 +85,11 @@ func LdapUserUpdate(oldusername string, user *accountModel.User) error {
 	if err != nil {
 		return err
 	}
+
+	if user.Password != "" {
+		LdapUserChangePwd(user.UserDN, "", user.Password)
+	}
+
 	if config.Conf.Ldap.UserNameModify && oldusername != user.Username {
 		modifyDn := ldap.NewModifyDNRequest(fmt.Sprintf("uid=%s,%s", oldusername, config.Conf.Ldap.UserDN), fmt.Sprintf("uid=%s", user.Username), true, "")
 		return conn.ModifyDN(modifyDn)
