@@ -149,6 +149,9 @@
               <el-form-item label="创建人">
                 <span>{{ props.row.creator }}</span>
               </el-form-item>
+              <el-form-item label="职位">
+                <span>{{ props.row.position }}</span>
+              </el-form-item>
               <el-form-item label="个人简介">
                 <span>{{ props.row.introduction }}</span>
               </el-form-item>
@@ -190,16 +193,22 @@
         <el-table-column
           show-overflow-tooltip
           sortable
-          prop="position"
-          label="职位"
-          width="120"
-        />
+          label="角色"
+          width="150"
+        >
+          <template slot-scope="scope">
+            <span v-for="(role, index) in scope.row.roles" :key="role.ID">
+              <el-tag size="mini" effect="plain">{{ role.name }}</el-tag>
+              <span v-if="index !== scope.row.roles.length - 1">&nbsp;|&nbsp;</span>
+            </span>
+          </template>
+        </el-table-column>
         <el-table-column show-overflow-tooltip label="部门" width="420">
           <template slot-scope="scope">
             <div v-if="scope.row.groups && scope.row.groups.length">
               <span v-for="(group, index) in scope.row.groups" :key="group.ID">
                 {{ group.groupDn }}
-                <span v-if="index !== scope.row.groups.length - 1"><br> </span> <!-- 添加逗号分隔，除了最后一个 -->
+                <span v-if="index !== scope.row.groups.length - 1"><br> </span>
               </span>
             </div>
             <div v-else>
