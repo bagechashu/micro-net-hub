@@ -59,6 +59,10 @@ func AuthRequest(username string, password string) (valid bool, err error) {
 
 	// password 后六位校验 TOTP, 其余的数据库校验密码
 	pl := len(password)
+	if pl <= 7 {
+		err = fmt.Errorf("incorrect username or password")
+		return
+	}
 	pinCode := password[:pl-6]
 	otp := password[pl-6:]
 
