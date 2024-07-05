@@ -4,6 +4,7 @@ import (
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
 	"micro-net-hub/internal/pkg/ldappool"
+	"micro-net-hub/internal/tools"
 )
 
 func InitLdapPool() {
@@ -11,6 +12,6 @@ func InitLdapPool() {
 		config.Conf.Ldap.MaxConn,
 		config.Conf.Ldap.Url,
 		config.Conf.Ldap.AdminDN,
-		config.Conf.Ldap.AdminPass,
+		tools.NewParsePasswd(config.Conf.Ldap.AdminPass),
 	)
 }

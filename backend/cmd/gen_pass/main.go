@@ -1,14 +1,33 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/tools"
 )
 
 func main() {
-	// 加载配置文件到全局配置结构体
+	var encode bool
+	var decode bool
+	var pass string
+	flag.BoolVar(&encode, "encode", false, "encode password")
+	flag.BoolVar(&decode, "decode", false, "decode password")
+	flag.StringVar(&pass, "pass", "", "encoded password")
+	flag.Parse()
+
 	config.InitConfig()
-	fmt.Printf("admin passwd encrypted string: %s", tools.NewGenPasswd(config.Conf.Ldap.AdminPass))
+
+	if !encode && !decode && pass == "" {
+		fmt.Println("[-h] to get Usage.")
+		return
+	}
+	if encode {
+		fmt.Printf("Password Encoded: %s", tools.NewGenPasswd(pass))
+		return
+	}
+	if decode {
+		fmt.Printf("Password Decoded: %s", tools.NewParsePasswd(pass))
+		return
+	}
 }

@@ -134,8 +134,8 @@ ldap:
   base-dn: "dc=example,dc=com"
   # ldap管理员DN
   admin-dn: "cn=admin,dc=example,dc=com"
-  # ldap管理员密码
-  admin-pass: "admin_pass"
+  # ldap管理员密码, go run cmd/gen_pass/main.go -encode -pass admin_pass
+  admin-pass: "KRedEx1ed2QAtUpgOQP8f1adxh3VYe4aHnIAarJfyae1d4hWX1uTi9rXvi8RA6UF17JgfYrH1LSFUUCZa3jIeggDCdpzUTkNxqFXvDvVSDbpcSxe0i7GnTH3H3mdVxCS1NgGggHvWAp+EfJBNhk8m0A8o9ZE1bw9miHmLu1nNm8="
   # ldap用户OU
   user-dn: "ou=people,dc=example,dc=com"
   # ldap用户初始默认密码
