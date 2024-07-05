@@ -148,8 +148,9 @@ ldap:
   default-email-suffix: "example.com"
 
 radius:
-  # 验证失败多次后, 禁止登录 5 分钟. (默认为 3 次)
-  fail-times-before-block5min: 5
+  # 验证失败多次后, 禁止登录 5 分钟.
+  # (默认为 9 次, 但是因为radius client单次请求如果失败,会多尝试2次, 所以如果密码错误3 次, 就会被禁止登录)
+  fail-times-before-block5min: 9
   listen-addr: "0.0.0.0:1812"
   secret: "default-radius-secret"
   group-filter: ""

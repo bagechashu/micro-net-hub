@@ -47,7 +47,7 @@ func InitConfig() {
 
 	// 在读取配置文件前设置默认值
 	viper.SetDefault("sync.ldap-sync-time", "0 */2 * * * *")
-	viper.SetDefault("radius.fail-times-before-block5min", 3)
+	viper.SetDefault("radius.fail-times-before-block5min", 9)
 	viper.SetDefault("email.enable", false)
 	viper.SetDefault("dns.listen-addr", "0.0.0.0:53")
 	viper.SetDefault("dns.read-timeout-second", 5)

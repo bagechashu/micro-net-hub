@@ -37,8 +37,9 @@ func CheckTotp(secret string, totp string) (valid bool) {
 	code := GetGoogleTotp(secretKey)
 	if totp == code {
 		valid = true
+	} else {
+		global.Log.Debugf("google-code: %v, user-input-totp: %v", code, totp)
 	}
-	global.Log.Debugf("secret: %v, google-code: %v, user-input-totp: %v", secret, code, totp)
 	return
 }
 
