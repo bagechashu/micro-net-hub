@@ -31,7 +31,7 @@ func main() {
 	// 初始化日志
 	setup.InitLogger()
 
-	global.Log.Infof("================= %v", config.Conf.Dns)
+	// global.Log.Debugf("%+v", config.Conf)
 	// 初始化数据库(mysql)
 	setup.InitDB()
 

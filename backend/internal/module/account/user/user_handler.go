@@ -323,6 +323,9 @@ func Update(c *gin.Context) {
 			helper.ErrV2(c, helper.NewOperationError(fmt.Errorf("系统通知用户账号信息失败, 请手工通知")))
 			return
 		}
+		if req.Password == "" {
+			req.Password = "Use the original password"
+		}
 		if err := tools.SendUserInfo([]string{nu.Mail}, nu.Username, req.Password, qrRawPngBase64); err != nil {
 			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("邮件发送用户账号更新信息失败, 请手工通知"+err.Error())))
 			return

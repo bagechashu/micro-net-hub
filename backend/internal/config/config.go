@@ -18,21 +18,21 @@ import (
 var Conf = new(config)
 
 type config struct {
-	System    *SystemConfig    `mapstructure:"system" json:"system"`
-	Logs      *LogsConfig      `mapstructure:"logs" json:"logs"`
-	Database  *Database        `mapstructure:"database" json:"database"`
-	Mysql     *MysqlConfig     `mapstructure:"mysql" json:"mysql"`
-	Jwt       *JwtConfig       `mapstructure:"jwt" json:"jwt"`
-	RateLimit *RateLimitConfig `mapstructure:"rate-limit" json:"rateLimit"`
-	Ldap      *LdapConfig      `mapstructure:"ldap" json:"ldap"`
-	Radius    *RadiusConfig    `mapstructure:"radius" json:"radius"`
-	Dns       *DnsConfig       `mapstructure:"dns" json:"dns"`
-	Email     *EmailConfig     `mapstructure:"email" json:"email"`
-	Notice    *NoticeConfig    `mapstructure:"notice" json:"notice"`
-	Sync      *SyncConfig      `mapstructure:"sync" json:"sync"`
-	DingTalk  *DingTalkConfig  `mapstructure:"dingtalk" json:"dingTalk"`
-	WeCom     *WeComConfig     `mapstructure:"wecom" json:"weCom"`
-	FeiShu    *FeiShuConfig    `mapstructure:"feishu" json:"feiShu"`
+	System    *System    `mapstructure:"system" json:"system"`
+	Logs      *Logs      `mapstructure:"logs" json:"logs"`
+	Database  *Database  `mapstructure:"database" json:"database"`
+	Mysql     *Mysql     `mapstructure:"mysql" json:"mysql"`
+	Jwt       *Jwt       `mapstructure:"jwt" json:"jwt"`
+	RateLimit *RateLimit `mapstructure:"rate-limit" json:"rateLimit"`
+	Ldap      *Ldap      `mapstructure:"ldap" json:"ldap"`
+	Radius    *Radius    `mapstructure:"radius" json:"radius"`
+	Dns       *Dns       `mapstructure:"dns" json:"dns"`
+	Email     *Email     `mapstructure:"email" json:"email"`
+	Notice    *Notice    `mapstructure:"notice" json:"notice"`
+	Sync      *Sync      `mapstructure:"sync" json:"sync"`
+	DingTalk  *DingTalk  `mapstructure:"dingtalk" json:"dingTalk"`
+	WeCom     *WeCom     `mapstructure:"wecom" json:"weCom"`
+	FeiShu    *FeiShu    `mapstructure:"feishu" json:"feiShu"`
 }
 
 // 设置读取配置信息
@@ -61,6 +61,9 @@ func InitConfig() {
 	if err != nil {
 		panic(fmt.Errorf("读取配置文件失败:%s", err))
 	}
+
+	// FIXME: 读取环境变量, 覆盖配置文件中的变量. 当前不生效.
+	viper.AutomaticEnv()
 
 	// 将读取的配置信息保存至全局变量Conf
 	if err := viper.Unmarshal(Conf); err != nil {
@@ -102,7 +105,7 @@ func RSAReadKeyFromFile(filename string) []byte {
 	return b
 }
 
-type SystemConfig struct {
+type System struct {
 	Mode            string        `mapstructure:"mode" json:"mode"`
 	UrlPathPrefix   string        `mapstructure:"url-path-prefix" json:"urlPathPrefix"`
 	Host            string        `mapstructure:"host" json:"host"`
@@ -117,7 +120,7 @@ type SystemConfig struct {
 	RSAPrivateBytes []byte        `mapstructure:"-" json:"-"`
 }
 
-type LogsConfig struct {
+type Logs struct {
 	Level            zapcore.Level `mapstructure:"level" json:"level"`
 	Path             string        `mapstructure:"path" json:"path"`
 	MaxSize          int           `mapstructure:"max-size" json:"maxSize"`
@@ -132,7 +135,7 @@ type Database struct {
 	Source string `mapstructure:"source" json:"source"`
 }
 
-type MysqlConfig struct {
+type Mysql struct {
 	Username    string `mapstructure:"username" json:"username"`
 	Password    string `mapstructure:"password" json:"password"`
 	Database    string `mapstructure:"database" json:"database"`
@@ -146,19 +149,19 @@ type MysqlConfig struct {
 	Collation   string `mapstructure:"collation" json:"collation"`
 }
 
-type JwtConfig struct {
+type Jwt struct {
 	Realm         string `mapstructure:"realm" json:"realm"`
 	Key           string `mapstructure:"key" json:"key"`
 	TimeoutMin    int    `mapstructure:"timeout-min" json:"timeoutMin"`
 	MaxRefreshMin int    `mapstructure:"max-refresh-min" json:"maxRefreshMin"`
 }
 
-type RateLimitConfig struct {
+type RateLimit struct {
 	FillInterval int64 `mapstructure:"fill-interval" json:"fillInterval"`
 	Capacity     int64 `mapstructure:"capacity" json:"capacity"`
 }
 
-type LdapConfig struct {
+type Ldap struct {
 	Url                string `mapstructure:"url" json:"url"`
 	MaxConn            int    `mapstructure:"max-conn" json:"maxConn"`
 	BaseDN             string `mapstructure:"base-dn" json:"baseDN"`
@@ -171,14 +174,14 @@ type LdapConfig struct {
 	DefaultEmailSuffix string `mapstructure:"default-email-suffix" json:"defaultEmailSuffix"`
 }
 
-type RadiusConfig struct {
+type Radius struct {
 	FailTimesBeforeBlock5min int    `mapstructure:"fail-times-before-block5min" json:"failTimesBeforeBlock5min"`
 	ListenAddr               string `mapstructure:"listen-addr" json:"listenAddr"`
 	Secret                   string `mapstructure:"secret" json:"secret"`
 	GroupFilter              string `mapstructure:"group-filter" json:"groupFilter"`
 }
 
-type DnsConfig struct {
+type Dns struct {
 	ListenAddr         string `mapstructure:"listen-addr" json:"listenAddr"`
 	ReadTimeoutSecond  int64  `mapstructure:"read-timeout-second" json:"readTimeoutSecond"`
 	WriteTimeoutSecond int64  `mapstructure:"write-timeout-second" json:"writeTimeoutSecond"`
@@ -186,7 +189,7 @@ type DnsConfig struct {
 	ForwardAddr        string `mapstructure:"forward-addr" json:"forwardAddr"`
 }
 
-type EmailConfig struct {
+type Email struct {
 	Enable bool   `mapstructure:"enable" json:"enable"`
 	Host   string `mapstructure:"host" json:"host"`
 	Port   int    `mapstructure:"port" json:"port"`
@@ -194,7 +197,7 @@ type EmailConfig struct {
 	Pass   string `mapstructure:"pass" json:"pass"`
 }
 
-type NoticeConfig struct {
+type Notice struct {
 	ProjectName              string `mapstructure:"project-name" json:"projectName"`
 	ServiceDomain            string `mapstructure:"service-domain" json:"serviceDomain"`
 	VPNServer                string `mapstructure:"vpn-server" json:"vpnServer"`
@@ -204,7 +207,7 @@ type NoticeConfig struct {
 	FooterHTML               string `mapstructure:"footer-html" json:"footerHTML"`
 }
 
-type SyncConfig struct {
+type Sync struct {
 	EnableSync    bool   `mapstructure:"enable-sync" json:"enableSync"`
 	IsUpdateSyncd bool   `mapstructure:"is-update-syncd" json:"isUpdateSyncd"`
 	UserSyncTime  string `mapstructure:"user-sync-time" json:"userSyncTime"`
@@ -212,7 +215,7 @@ type SyncConfig struct {
 	LdapSyncTime  string `mapstructure:"ldap-sync-time" json:"ldapSyncTime"`
 }
 
-type DingTalkConfig struct {
+type DingTalk struct {
 	AppKey      string   `mapstructure:"app-key" json:"appKey"`
 	AppSecret   string   `mapstructure:"app-secret" json:"appSecret"`
 	AgentId     string   `mapstructure:"agent-id" json:"agentId"`
@@ -222,14 +225,14 @@ type DingTalkConfig struct {
 	ULeaveRange uint     `mapstructure:"user-leave-range" json:"userLevelRange"`
 }
 
-type WeComConfig struct {
+type WeCom struct {
 	Flag       string `mapstructure:"flag" json:"flag"`
 	CorpID     string `mapstructure:"corp-id" json:"corpId"`
 	AgentID    int    `mapstructure:"agent-id" json:"agentId"`
 	CorpSecret string `mapstructure:"corp-secret" json:"corpSecret"`
 }
 
-type FeiShuConfig struct {
+type FeiShu struct {
 	Flag      string   `mapstructure:"flag" json:"flag"`
 	AppID     string   `mapstructure:"app-id" json:"appId"`
 	AppSecret string   `mapstructure:"app-secret" json:"appSecret"`
