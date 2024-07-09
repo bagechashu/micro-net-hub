@@ -147,6 +147,10 @@ ldap:
   # 默认邮箱后缀
   default-email-suffix: "example.com"
 
+ldap-server:
+  # 默认的 Ldap 服务器地址
+  listen-addr: 0.0.0.0:1389
+  
 radius:
   # 验证失败多次后, 禁止登录 5 分钟.
   # (默认为 9 次, 但是因为radius client单次请求如果失败,会多尝试2次, 所以如果密码错误3 次, 就会被禁止登录)

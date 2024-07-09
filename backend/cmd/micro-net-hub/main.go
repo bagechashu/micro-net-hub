@@ -9,6 +9,7 @@ import (
 	"micro-net-hub/internal/dnssrv"
 	"micro-net-hub/internal/global"
 	"micro-net-hub/internal/global/setup"
+	"micro-net-hub/internal/ldapsrv"
 	"micro-net-hub/internal/module/operationlog"
 	operationLogModel "micro-net-hub/internal/module/operationlog/model"
 	"micro-net-hub/internal/radiussrv"
@@ -62,6 +63,10 @@ func main() {
 	g, _ := errgroup.WithContext(ctx)
 	g.Go(func() error {
 		return server.Run()
+	})
+
+	g.Go(func() error {
+		return ldapsrv.Run()
 	})
 
 	g.Go(func() error {

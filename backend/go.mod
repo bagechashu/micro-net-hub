@@ -57,6 +57,7 @@ require (
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.8 // indirect
 	github.com/lib/pq v1.10.9 // indirect
+	github.com/merlinz01/ldapserver v0.0.15 // indirect
 	github.com/microsoft/go-mssqldb v1.7.2 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
