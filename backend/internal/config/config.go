@@ -51,6 +51,7 @@ func InitConfig() {
 	viper.SetDefault("radius.fail-times-before-block5min", 9)
 	viper.SetDefault("email.enable", false)
 	viper.SetDefault("ldap-server.listen-addr", "0.0.0.0:1389")
+	viper.SetDefault("ldap-server.totp-enable", true)
 	viper.SetDefault("dns.listen-addr", "0.0.0.0:53")
 	viper.SetDefault("dns.read-timeout-second", 5)
 	viper.SetDefault("dns.write-timeout-second", 5)
@@ -179,6 +180,8 @@ type Ldap struct {
 type LdapServer struct {
 	ListenAddr string `mapstructure:"listen-addr" json:"listenAddr"`
 	// TlsEnable  bool   `mapstructure:"tls-enable" json:"tlsEnable"`
+	BindDNRoleKeyword string `mapstructure:"binddn-role-keyword" json:"bindDNRoleKeyword"`
+	TotpEnable        bool   `mapstructure:"totp-enable" json:"totpEnable"`
 }
 
 type Radius struct {

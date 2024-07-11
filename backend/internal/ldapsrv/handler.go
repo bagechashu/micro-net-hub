@@ -2,12 +2,17 @@ package ldapsrv
 
 import (
 	"fmt"
-	"log"
+	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
+	"micro-net-hub/internal/tools"
 	"sync"
 	"time"
 
+	"micro-net-hub/internal/module/account/model"
+	totpModel "micro-net-hub/internal/module/totp/model"
+
 	"github.com/merlinz01/ldapserver"
+	"gorm.io/gorm"
 )
 
 type LdapSrvHandler struct {
@@ -16,15 +21,58 @@ type LdapSrvHandler struct {
 	abandonmentLock sync.Mutex
 }
 
-var theOnlyAuthorizedUser = ldapserver.MustParseDN("cn=admin,dc=example,dc=com")
-
+// checkPassword:
+// 普通用户使用 "密码+totp" 校验
+// 用于三方软件 bind 的账户, 仅使用 "密码" 校验.
 func (ls *LdapSrvHandler) checkPassword(dn ldapserver.DN, password string) bool {
-	if dn.Equal(theOnlyAuthorizedUser) {
-		return password == "123456"
+	u, err := getUserInfo(dn)
+	if err != nil {
+		global.Log.Errorf("ldap DN [%v] get user info error: %v", dn, err)
+		return false
+	}
+
+	pwd := tools.NewParsePasswd(u.Password)
+	// totp 验证开关
+	if !config.Conf.LdapServer.TotpEnable {
+		return pwd == password
+	}
+	for _, r := range u.Roles {
+		if r.Keyword == config.Conf.LdapServer.BindDNRoleKeyword {
+			return pwd == password
+		}
+	}
+	pwd = pwd + totpModel.GetGoogleTotp(u.Totp.Secret)
+	return pwd == password
+}
+
+func checkBindRuleUser(auth ldapserver.DN) bool {
+	u, err := getUserInfo(auth)
+	if err != nil {
+		return false
+	}
+	for _, r := range u.Roles {
+		if r.Keyword == config.Conf.LdapServer.BindDNRoleKeyword {
+			return true
+		}
 	}
 	return false
 }
 
+func getUserInfo(dn ldapserver.DN) (*model.User, error) {
+	uc := model.CacheUserDNGet(dn.String())
+	if uc != nil {
+		return uc, nil
+	}
+
+	var u model.User
+	err := u.Find(map[string]interface{}{"user_dn": dn.String()})
+	if err != nil {
+		return nil, err
+	}
+	global.Log.Debugf("UserInfo get from cache: %+v", u)
+	model.CacheUserDNSet(dn.String(), &u)
+	return &u, nil
+}
 func getAuth(conn *ldapserver.Conn) ldapserver.DN {
 	var auth ldapserver.DN
 	if conn.Authentication != nil {
@@ -36,7 +84,7 @@ func getAuth(conn *ldapserver.Conn) ldapserver.DN {
 	if len(auth) == 0 {
 		auth = nil
 	}
-	global.Log.Debug("Currently authenticated as:", auth)
+	// global.Log.Debug("ldapserver auth dn:", auth)
 	return auth
 }
 
@@ -49,18 +97,10 @@ func (ls *LdapSrvHandler) Abandon(conn *ldapserver.Conn, msg *ldapserver.Message
 	ls.abandonmentLock.Unlock()
 }
 func (ls *LdapSrvHandler) Bind(conn *ldapserver.Conn, msg *ldapserver.Message, req *ldapserver.BindRequest) {
-	global.Log.Debug("Bind request")
 	res := &ldapserver.BindResult{}
-	// if !conn.IsTLS() {
-	// 	global.Log.Debug("Rejecting Bind on non-TLS connection")
-	// 	res.ResultCode = ldapserver.ResultConfidentialityRequired
-	// 	res.DiagnosticMessage = "TLS is required for the Bind operation"
-	// 	conn.SendResult(msg.MessageID, nil, ldapserver.TypeBindResponseOp, res)
-	// 	return
-	// }
 	dn, err := ldapserver.ParseDN(req.Name)
 	if err != nil {
-		global.Log.Debug("Error parsing DN:", err)
+		global.Log.Errorf("Error parsing DN: %s", err)
 		res.ResultCode = ldapserver.ResultInvalidDNSyntax
 		res.DiagnosticMessage = "the provided DN is invalid"
 		conn.SendResult(msg.MessageID, nil, ldapserver.TypeBindResponseOp, res)
@@ -69,144 +109,109 @@ func (ls *LdapSrvHandler) Bind(conn *ldapserver.Conn, msg *ldapserver.Message, r
 	start := time.Now()
 	switch req.AuthType {
 	case ldapserver.AuthenticationTypeSimple:
-		log.Printf("Simple authentication from %s for \"%s\"\n", conn.RemoteAddr(), req.Name)
 		if ls.checkPassword(dn, req.Credentials.(string)) {
-			log.Printf("Successful Bind from %s for \"%s\"\n", conn.RemoteAddr(), dn)
 			conn.Authentication = dn
 			res.ResultCode = ldapserver.ResultSuccess
 		} else {
-			log.Printf("Invalid credentials from %s for \"%s\"\n", conn.RemoteAddr(), dn)
+			global.Log.Errorf("Invalid credentials from %s for \"%s\"", conn.RemoteAddr(), dn)
 			conn.Authentication = nil
 			res.ResultCode = ldapserver.ResultInvalidCredentials
 		}
 	case ldapserver.AuthenticationTypeSASL:
-		creds := req.Credentials.(*ldapserver.SASLCredentials)
-		log.Printf("SASL authentication from %s for \"%s\" using mechanism %s", conn.RemoteAddr(), dn, creds.Mechanism)
-		switch creds.Mechanism {
-		case "CRAM-MD5":
-			// Put verification code in here
-			log.Printf("CRAM-MD5 authentication from %s for \"%s\"\n", conn.RemoteAddr(), dn)
-			conn.Authentication = nil
-			res.ResultCode = ldapserver.ResultAuthMethodNotSupported
-			res.DiagnosticMessage = "the CRAM-MD5 authentication method is not supported"
-		default:
-			log.Printf("Unsupported SASL mechanism from %s for \"%s\"\n", conn.RemoteAddr(), dn)
-			conn.Authentication = nil
-			res.ResultCode = ldapserver.ResultAuthMethodNotSupported
-			res.DiagnosticMessage = "the SASL authentication method requested is not supported"
-		}
+		global.Log.Errorf("Unsupported SASL mechanism from %s for \"%s\"", conn.RemoteAddr(), dn)
+		conn.Authentication = nil
+		res.ResultCode = ldapserver.ResultAuthMethodNotSupported
+		res.DiagnosticMessage = "the SASL authentication method requested is not supported"
 	default:
-		log.Printf("Unsupported authentication method from %s for \"%s\"\n", conn.RemoteAddr(), dn)
+		global.Log.Errorf("Unsupported authentication method from %s for \"%s\"", conn.RemoteAddr(), dn)
 		res.ResultCode = ldapserver.ResultAuthMethodNotSupported
 		res.DiagnosticMessage = "the authentication method requested is not supported by this server"
 	}
 	// Make sure the response takes at least a second in order to prevent timing attacks
 	sofar := time.Since(start)
-	if sofar < time.Second {
-		time.Sleep(time.Second - sofar)
+	if sofar < 500*time.Millisecond {
+		time.Sleep(500*time.Millisecond - sofar)
 	}
 	conn.SendResult(msg.MessageID, nil, ldapserver.TypeBindResponseOp, res)
 }
 
-func (ls *LdapSrvHandler) Compare(conn *ldapserver.Conn, msg *ldapserver.Message, req *ldapserver.CompareRequest) {
-	global.Log.Debug("Compare request")
-	// Allow cancellation
-	ls.abandonment[msg.MessageID] = false
-	defer func() {
-		ls.abandonmentLock.Lock()
-		delete(ls.abandonment, msg.MessageID)
-		ls.abandonmentLock.Unlock()
-	}()
-	auth := getAuth(conn)
-	if !auth.Equal(theOnlyAuthorizedUser) {
-		global.Log.Debug("Not an authorized connection!", auth)
-		conn.SendResult(msg.MessageID, nil, ldapserver.TypeCompareResponseOp,
-			ldapserver.ResultInsufficientAccessRights.AsResult(
-				"the connection is not authorized to perform the requested operation"))
-		return
-	}
-	// Pretend to take a while
-	time.Sleep(time.Second * 2)
-	global.Log.Debug("Compare DN:", req.Object)
-	global.Log.Debug("  Attribute:", req.Attribute)
-	global.Log.Debug("  Value:", req.Value)
-	if ls.abandonment[msg.MessageID] {
-		global.Log.Debug("Abandoning compare request")
-		return
-	}
-	conn.SendResult(msg.MessageID, nil, ldapserver.TypeCompareResponseOp,
-		ldapserver.ResultCompareTrue.AsResult(""))
-}
-
 func (ls *LdapSrvHandler) Search(conn *ldapserver.Conn, msg *ldapserver.Message, req *ldapserver.SearchRequest) {
-	global.Log.Debug("Search request")
-	// Allow cancellation
+	ls.abandonmentLock.Lock()
 	ls.abandonment[msg.MessageID] = false
 	defer func() {
-		ls.abandonmentLock.Lock()
 		delete(ls.abandonment, msg.MessageID)
 		ls.abandonmentLock.Unlock()
 	}()
 
 	auth := getAuth(conn)
-	if !auth.Equal(theOnlyAuthorizedUser) {
+	if !checkBindRuleUser(auth) {
 		global.Log.Debug("Not an authorized connection!", auth)
 		conn.SendResult(msg.MessageID, nil, ldapserver.TypeModifyResponseOp,
 			ldapserver.ResultInsufficientAccessRights.AsResult(
 				"the connection is not authorized to perform the requested operation"))
 		return
 	}
-	global.Log.Debug("Base object:", req.BaseObject)
-	switch req.Scope {
-	case ldapserver.SearchScopeBaseObject:
-		global.Log.Debug("Scope: base object")
-	case ldapserver.SearchScopeSingleLevel:
-		global.Log.Debug("Scope: single level")
-	case ldapserver.SearchScopeWholeSubtree:
-		global.Log.Debug("Scope: whole subtree")
-	}
-	switch req.DerefAliases {
-	case ldapserver.AliasDerefNever:
-		global.Log.Debug("Never deref aliases")
-	case ldapserver.AliasDerefFindingBaseObj:
-		global.Log.Debug("Deref aliases finding base object")
-	case ldapserver.AliasDerefInSearching:
-		global.Log.Debug("Deref aliases in searching")
-	case ldapserver.AliasDerefAlways:
-		global.Log.Debug("Always deref aliases")
-	}
-	global.Log.Debug("Size limit:", req.SizeLimit)
-	global.Log.Debug("Time limit:", req.TimeLimit)
-	global.Log.Debug("Types only:", req.TypesOnly)
-	global.Log.Debug("Filter:", req.Filter)
-	global.Log.Debug("Attributes:", req.Attributes)
 
-	// Return some entries
-	for i := 0; i < 5; i++ {
-		if ls.abandonment[msg.MessageID] {
-			global.Log.Debug("Abandoning search request after", i, "requests")
+	if ls.abandonment[msg.MessageID] {
+		return
+	}
+
+	query, err := parseLdapQuery(req.Filter.String())
+	if err != nil {
+		global.Log.Errorf("parseLdapQuery error: %s", err)
+	}
+
+	if query.MemberOf != "" {
+		find, err := model.UserExistsInGroup(query.Uid, query.MemberOf)
+		if err != nil {
+			conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultOperationsError.AsResult(err.Error()))
 			return
 		}
-		// Pretend to take a while
-		// time.Sleep(time.Second * 1)
-		entry := &ldapserver.SearchResultEntry{
-			ObjectName: fmt.Sprintf("uid=jdoe%d,%s", i, req.BaseObject),
-			Attributes: []ldapserver.Attribute{
-				{Description: "uid", Values: []string{fmt.Sprintf("jdoe%d", i)}},
-				{Description: "givenname", Values: []string{fmt.Sprintf("John %d", i)}},
-				{Description: "sn", Values: []string{"Doe"}},
-			},
+		if !find {
+			conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultNoSuchObject.AsResult(""))
+			return
 		}
-		global.Log.Debug("Sending entry", i)
-		conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultEntryOp, entry)
 	}
+	udn := ldapserver.MustParseDN(fmt.Sprintf("uid=%s,ou=%s,%s", query.Uid, query.ObjectClass, req.BaseObject))
+	u, err := getUserInfo(udn)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultNoSuchObject.AsResult(""))
+			return
+		}
+		global.Log.Errorf("ldap DN [%v] get user info error: %v", udn, err)
+		conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultOperationsError.AsResult(""))
+		return
+	}
+	// global.Log.Debugf("ldapserver search result user: %+v", u)
+	entry := &ldapserver.SearchResultEntry{
+		ObjectName: u.UserDN,
+		Attributes: []ldapserver.Attribute{
+			{Description: "objectClass", Values: []string{"inetOrgPerson"}},
+			{Description: "uid", Values: []string{query.Uid}},
+			{Description: "cn", Values: []string{query.Uid}},
+			{Description: "sn", Values: []string{query.Uid}},
+			{Description: "displayName", Values: []string{u.Nickname}},
+			{Description: "givenName", Values: []string{u.GivenName}},
+			{Description: "mail", Values: []string{u.Mail}},
+			{Description: "mobile", Values: []string{u.Mobile}},
+		},
+	}
+	conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultEntryOp, entry)
+	conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultSuccess.AsResult(""))
+}
 
-	conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp,
-		ldapserver.ResultSuccess.AsResult(""))
+func (ls *LdapSrvHandler) Compare(conn *ldapserver.Conn, msg *ldapserver.Message, req *ldapserver.CompareRequest) {
+	global.Log.Debug("Compare request")
+	res := &ldapserver.Result{
+		ResultCode: ldapserver.ResultOperationsError,
+	}
+	conn.SendResult(msg.MessageID, nil, ldapserver.TypeCompareResponseOp, res)
 }
 
 // below method is not implemented
 func (ls *LdapSrvHandler) Add(conn *ldapserver.Conn, msg *ldapserver.Message, req *ldapserver.AddRequest) {
+	global.Log.Debug("Add request")
 	res := &ldapserver.Result{
 		ResultCode: ldapserver.ResultOperationsError,
 	}
@@ -214,6 +219,7 @@ func (ls *LdapSrvHandler) Add(conn *ldapserver.Conn, msg *ldapserver.Message, re
 }
 
 func (ls *LdapSrvHandler) Delete(conn *ldapserver.Conn, msg *ldapserver.Message, dn string) {
+	global.Log.Debug("Delete request")
 	res := &ldapserver.Result{
 		ResultCode: ldapserver.ResultOperationsError,
 	}
@@ -221,6 +227,7 @@ func (ls *LdapSrvHandler) Delete(conn *ldapserver.Conn, msg *ldapserver.Message,
 }
 
 func (ls *LdapSrvHandler) Modify(conn *ldapserver.Conn, msg *ldapserver.Message, req *ldapserver.ModifyRequest) {
+	global.Log.Debug("Modify request")
 	res := &ldapserver.Result{
 		ResultCode: ldapserver.ResultOperationsError,
 	}
@@ -228,6 +235,7 @@ func (ls *LdapSrvHandler) Modify(conn *ldapserver.Conn, msg *ldapserver.Message,
 }
 
 func (ls *LdapSrvHandler) ModifyDN(conn *ldapserver.Conn, msg *ldapserver.Message, req *ldapserver.ModifyDNRequest) {
+	global.Log.Debug("ModifyDN request")
 	res := &ldapserver.Result{
 		ResultCode: ldapserver.ResultOperationsError,
 	}
@@ -235,6 +243,7 @@ func (ls *LdapSrvHandler) ModifyDN(conn *ldapserver.Conn, msg *ldapserver.Messag
 }
 
 func (ls *LdapSrvHandler) Extended(conn *ldapserver.Conn, msg *ldapserver.Message, req *ldapserver.ExtendedRequest) {
+	global.Log.Debug("Extended request")
 	res := &ldapserver.Result{
 		ResultCode: ldapserver.ResultOperationsError,
 	}

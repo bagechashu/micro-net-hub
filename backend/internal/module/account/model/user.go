@@ -19,6 +19,39 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+// TODO: cache 优化, 加锁
+// 当前用户信息缓存，避免频繁获取数据库
+var UserDNCache = cache.New(24*time.Hour, 48*time.Hour)
+
+func cacheUserDNKeygen(dn string) string {
+	s := strings.Replace(dn, ",", "_", -1)
+	s = strings.Replace(s, "=", "-", -1)
+	return s
+}
+func CacheUserDNGet(dn string) *User {
+	key := cacheUserDNKeygen(dn)
+	if cache, found := UserDNCache.Get(key); found {
+		return cache.(*User)
+	}
+	return nil
+}
+
+func CacheUserDNSet(dn string, userInfo *User) {
+	key := cacheUserDNKeygen(dn)
+	UserDNCache.Set(key, userInfo, cache.DefaultExpiration)
+}
+
+func CacheUserDNDel(dn string) {
+	key := cacheUserDNKeygen(dn)
+	if _, found := UserDNCache.Get(key); found {
+		UserDNCache.Delete(key)
+	}
+}
+
+func CacheUserDNClear() {
+	UserDNCache.Flush()
+}
+
 // 当前用户信息缓存，避免频繁获取数据库
 var UserInfoCache = cache.New(24*time.Hour, 48*time.Hour)
 
@@ -236,6 +269,26 @@ func (u *User) Exist(filter map[string]interface{}) bool {
 // Find 获取单个资源
 func (u *User) Find(filter map[string]interface{}) error {
 	return global.DB.Where(filter).Preload("Groups").Preload("Roles").Preload("Totp").First(&u).Error
+}
+
+// UserExistsInGroup checks if a user exists in a specific group.
+func UserExistsInGroup(username, groupDN string) (bool, error) {
+	var count int64
+	err := global.DB.Model(&User{}). // Specify the model to avoid loading unnecessary data
+						Joins("INNER JOIN group_users ON users.id = group_users.user_id").
+						Joins("INNER JOIN groups ON group_users.group_id = groups.id").
+						Where("users.username = ? AND groups.group_dn = ?", username, groupDN).
+						Count(&count).Error // Use Count to get the number of records matching the criteria
+
+	if err != nil {
+		// Check for specific errors like connection issues or syntax errors
+		if err == gorm.ErrRecordNotFound {
+			return false, nil // No records found is not an error but a valid result
+		}
+		return false, err // Return the error to the caller for further handling
+	}
+
+	return count > 0, nil // If count is greater than 0, the user exists in the group
 }
 
 // Find 获取同名用户已入库的序号最大的用户信息

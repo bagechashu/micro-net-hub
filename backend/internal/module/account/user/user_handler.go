@@ -309,8 +309,9 @@ func Update(c *gin.Context) {
 		return
 	}
 
-	// flush user info cache
-	model.CacheUserInfoClear()
+	// 删除缓存
+	model.CacheUserInfoDel(oldData.ID, oldData.Username)
+	model.CacheUserDNDel(oldData.UserDN)
 
 	if req.Notice {
 		var nu model.User
@@ -470,8 +471,9 @@ func Delete(c *gin.Context) {
 		return
 	}
 
-	// flush user info cache
+	// 删除缓存
 	model.CacheUserInfoClear()
+	model.CacheUserDNClear()
 
 	if config.Conf.Notice.DefaultNoticeSwitch {
 		// Notifications to users by role's keyword
@@ -524,6 +526,10 @@ func ReSetTotpSecret(c *gin.Context) {
 
 	user.Totp.ReSetTotpSecret()
 	qrCodeStr := user.GetQrcodestr()
+
+	// 删除缓存
+	model.CacheUserInfoDel(user.ID, user.Username)
+	model.CacheUserDNDel(user.UserDN)
 
 	helper.Success(c, qrCodeStr)
 }
@@ -587,6 +593,10 @@ func ChangePwd(c *gin.Context) {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("在MySQL更新密码失败: "+err.Error())))
 		return
 	}
+
+	// 删除缓存
+	model.CacheUserInfoDel(user.ID, user.Username)
+	model.CacheUserDNDel(user.UserDN)
 
 	helper.Success(c, nil)
 }
@@ -665,6 +675,10 @@ func ChangeUserStatus(c *gin.Context) {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("在MySQL更新用户状态失败: "+err.Error())))
 		return
 	}
+
+	// 删除缓存
+	model.CacheUserInfoDel(user.ID, user.Username)
+	model.CacheUserDNDel(user.UserDN)
 
 	if config.Conf.Notice.DefaultNoticeSwitch {
 		// Notifications to users by role's keyword

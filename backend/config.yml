@@ -150,6 +150,8 @@ ldap:
 ldap-server:
   # 默认的 Ldap 服务器地址
   listen-addr: 0.0.0.0:1389
+  binddn-role-keyword: superadmin
+  totp-enable: true
   
 radius:
   # 验证失败多次后, 禁止登录 5 分钟.

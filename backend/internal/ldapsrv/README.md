@@ -1,11 +1,16 @@
 ## Introduction
 - Exclusively designed for internal network LDAP servers.
-- Incorporates functionalities for binding, searching, and filtering.
-- User authentication need both static passwords and TOTP (Time-based One-Time Password) mechanisms.
+- User authentication can choose "passwords" or "password+TOTP" mechanisms.
+- Only users with the role same as "BindDNRoleKeyword" setting can be used as the service account bind DN.
+- Incorporates functionalities for "BIND", "SEARCH". 
+    - Search filter support rules eg:
+        - (&(objectClass=person)(uid=xiaoxue)(memberOf:=cn=group01,dc=example,dc=com))
+        - (&(objectClass=person)(uid=xiaoxue))
 
-## LDAP command
+## Usage
 
 ```
-ldapsearch -LLL -w password -x -H ldap://127.0.0.1:1389 -D "cn=admin,dc=example,dc=com" -b "dc=example,dc=com" "(groupOfUniqueNames=employees)" 
+ldapsearch -LLL -W -x -H ldap://127.0.0.1:1389 -D "cn=admin,dc=example,dc=com" -b "dc=example,dc=com" "(&(objectClass=person)(uid=xiaoxue)(memberOf:=cn=group01,dc=example,dc=com))" 
+ldapsearch -LLL -w admin_pass -x -H ldap://127.0.0.1:1389 -D "cn=admin,dc=example,dc=com" -b "dc=example,dc=com" "(&(objectClass=person)(uid=xiaoxue)(memberOf:=cn=group01,dc=example,dc=com))" 
 
 ```

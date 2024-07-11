@@ -29,12 +29,7 @@ func (t *Totp) ReSetTotpSecret() {
 
 func CheckTotp(secret string, totp string) (valid bool) {
 	valid = false
-	secretUpper := strings.ToUpper(secret)
-	secretKey, err := tools.Base32Decode(secretUpper)
-	if err != nil {
-		return
-	}
-	code := GetGoogleTotp(secretKey)
+	code := GetGoogleTotp(secret)
 	if totp == code {
 		valid = true
 	} else {
@@ -43,8 +38,13 @@ func CheckTotp(secret string, totp string) (valid bool) {
 	return
 }
 
-func GetGoogleTotp(key []byte) string {
-	hash := tools.HmacSha1Hash(key, tools.Int64ToBytes(time.Now().Unix()/30))
+func GetGoogleTotp(secret string) string {
+	secretUpper := strings.ToUpper(secret)
+	secretKey, err := tools.Base32Decode(secretUpper)
+	if err != nil {
+		return ""
+	}
+	hash := tools.HmacSha1Hash(secretKey, tools.Int64ToBytes(time.Now().Unix()/30))
 	offset := hash[len(hash)-1] & 0x0F
 	hashParts := hash[offset : offset+4]
 	hashParts[0] = hashParts[0] & 0x7F
