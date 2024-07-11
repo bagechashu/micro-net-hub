@@ -25,7 +25,7 @@ all: fe be dockerimage
 
 be:
 	@echo "===== compile $(GOOS) $(GOARCH)... ====="
-	cd $(SERVICE_SRC_DIR) && env GOOS=$(GOOS) GOARCH=$(GOARCH) $(GO_BUILD) -o $(BIN_DIR)/$(APP_NAME) $(GO_SRC)
+	cd $(SERVICE_SRC_DIR) && env GOOS=$(GOOS) GOARCH=$(GOARCH) $(GO_BUILD) -o $(BIN_DIR)/$(APP_NAME) -trimpath $(GO_SRC)
 	@echo "target: $(BIN_DIR)/$(APP_NAME)"
 
 fe:

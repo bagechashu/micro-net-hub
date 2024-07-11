@@ -2,12 +2,17 @@
 
 # Install micro-net-hub/LDAP/Ocserv by docker-compose
 
+> centos7.9 test success
+> ubuntu22.04 test failed
+
 ```shell
 
 git clone https://github.com/bagechashu/micro-net-hub.git
 
 cd micro-net-hub/docs/docker-compose/all-in-one
 docker-compose up -d
+
+# Notice: openldap will start successfully until more than 5min later. check the log to get the detail.
 
 ```
 

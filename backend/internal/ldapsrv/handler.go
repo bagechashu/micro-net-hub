@@ -69,7 +69,7 @@ func getUserInfo(dn ldapserver.DN) (*model.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	global.Log.Debugf("UserInfo get from cache: %+v", u)
+	global.Log.Debugf("ldapserver get UserInfo from database: %+v", u.UserDN)
 	model.CacheUserDNSet(dn.String(), &u)
 	return &u, nil
 }
