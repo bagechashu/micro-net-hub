@@ -61,7 +61,7 @@ services:
     depends_on:
       - mysql
       - openldap
-    image: xianleeti/micro-net-hub:v0.2.8
+    image: xianleeti/micro-net-hub:v0.3.0
     container_name: "micro-net-hub"
     restart: always
     volumes:
@@ -73,6 +73,9 @@ services:
     ports:
       - 9000:9000
       - 1812:1812/udp
+      - 53:53
+      - 53:53/udp
+      - 1389:1389
     networks:
       - micro-net-hub-net
 
