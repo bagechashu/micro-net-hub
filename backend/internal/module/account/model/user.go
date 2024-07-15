@@ -19,60 +19,27 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-// TODO: cache 优化, 加锁
-// 当前用户信息缓存，避免频繁获取数据库
-var UserDNCache = cache.New(24*time.Hour, 48*time.Hour)
-
-func cacheUserDNKeygen(dn string) string {
-	s := strings.Replace(dn, ",", "_", -1)
-	s = strings.Replace(s, "=", "-", -1)
-	return s
-}
-func CacheUserDNGet(dn string) *User {
-	key := cacheUserDNKeygen(dn)
-	if cache, found := UserDNCache.Get(key); found {
-		return cache.(*User)
-	}
-	return nil
-}
-
-func CacheUserDNSet(dn string, userInfo *User) {
-	key := cacheUserDNKeygen(dn)
-	UserDNCache.Set(key, userInfo, cache.DefaultExpiration)
-}
-
-func CacheUserDNDel(dn string) {
-	key := cacheUserDNKeygen(dn)
-	if _, found := UserDNCache.Get(key); found {
-		UserDNCache.Delete(key)
-	}
-}
-
-func CacheUserDNClear() {
-	UserDNCache.Flush()
-}
-
 // 当前用户信息缓存，避免频繁获取数据库
 var UserInfoCache = cache.New(24*time.Hour, 48*time.Hour)
 
-func cacheUserInfoKeygen(uid uint, username string) string {
-	return fmt.Sprintf("u_%d_%s", uid, username)
+func cacheUserInfoKeygen(username string) string {
+	return fmt.Sprintf("u_%s", username)
 }
-func CacheUserInfoGet(uid uint, username string) *User {
-	key := cacheUserInfoKeygen(uid, username)
+func CacheUserInfoGet(username string) *User {
+	key := cacheUserInfoKeygen(username)
 	if cache, found := UserInfoCache.Get(key); found {
 		return cache.(*User)
 	}
 	return nil
 }
 
-func CacheUserInfoSet(uid uint, username string, userInfo *User) {
-	key := cacheUserInfoKeygen(uid, username)
+func CacheUserInfoSet(username string, userInfo *User) {
+	key := cacheUserInfoKeygen(username)
 	UserInfoCache.Set(key, userInfo, cache.DefaultExpiration)
 }
 
-func CacheUserInfoDel(uid uint, username string) {
-	key := cacheUserInfoKeygen(uid, username)
+func CacheUserInfoDel(username string) {
+	key := cacheUserInfoKeygen(username)
 	if _, found := UserInfoCache.Get(key); found {
 		UserInfoCache.Delete(key)
 	}

@@ -1,7 +1,6 @@
 package ldapsrv
 
 import (
-	"fmt"
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
 	"micro-net-hub/internal/tools"
@@ -25,9 +24,13 @@ type LdapSrvHandler struct {
 // 普通用户使用 "密码+totp" 校验
 // 用于三方软件 bind 的账户, 仅使用 "密码" 校验.
 func (ls *LdapSrvHandler) checkPassword(dn ldapserver.DN, password string) bool {
-	u, err := getUserInfo(dn)
+	d, err := ParseLdapDN(dn)
 	if err != nil {
-		global.Log.Errorf("ldap DN [%v] get user info error: %v", dn, err)
+		return false
+	}
+
+	u, err := getUserInfo(d.Rdn)
+	if err != nil {
 		return false
 	}
 
@@ -46,7 +49,11 @@ func (ls *LdapSrvHandler) checkPassword(dn ldapserver.DN, password string) bool 
 }
 
 func checkBindRuleUser(auth ldapserver.DN) bool {
-	u, err := getUserInfo(auth)
+	d, err := ParseLdapDN(auth)
+	if err != nil {
+		return false
+	}
+	u, err := getUserInfo(d.Rdn)
 	if err != nil {
 		return false
 	}
@@ -58,21 +65,22 @@ func checkBindRuleUser(auth ldapserver.DN) bool {
 	return false
 }
 
-func getUserInfo(dn ldapserver.DN) (*model.User, error) {
-	uc := model.CacheUserDNGet(dn.String())
+func getUserInfo(username string) (*model.User, error) {
+	uc := model.CacheUserInfoGet(username)
 	if uc != nil {
 		return uc, nil
 	}
 
 	var u model.User
-	err := u.Find(map[string]interface{}{"user_dn": dn.String()})
+	err := u.Find(map[string]interface{}{"username": username})
 	if err != nil {
 		return nil, err
 	}
-	global.Log.Debugf("ldapserver get UserInfo from database: %+v", u.UserDN)
-	model.CacheUserDNSet(dn.String(), &u)
+	global.Log.Debugf("ldapserver get UserInfo from database: %+v", username)
+	model.CacheUserInfoSet(username, &u)
 	return &u, nil
 }
+
 func getAuth(conn *ldapserver.Conn) ldapserver.DN {
 	var auth ldapserver.DN
 	if conn.Authentication != nil {
@@ -97,6 +105,9 @@ func (ls *LdapSrvHandler) Abandon(conn *ldapserver.Conn, msg *ldapserver.Message
 	ls.abandonmentLock.Unlock()
 }
 func (ls *LdapSrvHandler) Bind(conn *ldapserver.Conn, msg *ldapserver.Message, req *ldapserver.BindRequest) {
+
+	global.Log.Debugf("LDAP Bind Req: %+v", req)
+
 	res := &ldapserver.BindResult{}
 	dn, err := ldapserver.ParseDN(req.Name)
 	if err != nil {
@@ -135,7 +146,12 @@ func (ls *LdapSrvHandler) Bind(conn *ldapserver.Conn, msg *ldapserver.Message, r
 	conn.SendResult(msg.MessageID, nil, ldapserver.TypeBindResponseOp, res)
 }
 
+// TODO: &{BaseObject: Scope:0 DerefAliases:0 SizeLimit:0 TimeLimit:0 TypesOnly:false Filter:(objectClass=*) Attributes:[altServer namingContexts supportedCapabilities supportedControl supportedExtension supportedFeatures supportedLdapVersion supportedSASLMechanisms]}
+
 func (ls *LdapSrvHandler) Search(conn *ldapserver.Conn, msg *ldapserver.Message, req *ldapserver.SearchRequest) {
+
+	global.Log.Debugf("LDAP Search Req: %+v", req)
+
 	ls.abandonmentLock.Lock()
 	ls.abandonment[msg.MessageID] = false
 	defer func() {
@@ -149,6 +165,7 @@ func (ls *LdapSrvHandler) Search(conn *ldapserver.Conn, msg *ldapserver.Message,
 		conn.SendResult(msg.MessageID, nil, ldapserver.TypeModifyResponseOp,
 			ldapserver.ResultInsufficientAccessRights.AsResult(
 				"the connection is not authorized to perform the requested operation"))
+		conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultNoSuchObject.AsResult(""))
 		return
 	}
 
@@ -156,9 +173,31 @@ func (ls *LdapSrvHandler) Search(conn *ldapserver.Conn, msg *ldapserver.Message,
 		return
 	}
 
-	query, err := parseLdapQuery(req.Filter.String())
+	if req.BaseObject != "" && req.BaseObject != config.Conf.LdapServer.BaseDN {
+		d, err := ParseLdapDN(ldapserver.MustParseDN(req.BaseObject))
+		if err != nil {
+			global.Log.Errorf("parse req BaseObject to LdapDN error: %s", err)
+			conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultNoSuchObject.AsResult(""))
+			return
+		}
+		if d.Rdn == "" {
+			conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultSuccess.AsResult(""))
+			return
+		}
+
+		genEntry(conn, msg, d.Rdn)
+		return
+
+	}
+	query, err := ParseLdapQuery(req.Filter.String())
 	if err != nil {
 		global.Log.Errorf("parseLdapQuery error: %s", err)
+		conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultNoSuchObject.AsResult(""))
+		return
+	}
+	if query.Uid == "" {
+		conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultSuccess.AsResult(""))
+		return
 	}
 
 	if query.MemberOf != "" {
@@ -172,14 +211,17 @@ func (ls *LdapSrvHandler) Search(conn *ldapserver.Conn, msg *ldapserver.Message,
 			return
 		}
 	}
-	udn := ldapserver.MustParseDN(fmt.Sprintf("uid=%s,ou=%s,%s", query.Uid, query.ObjectClass, req.BaseObject))
-	u, err := getUserInfo(udn)
+	genEntry(conn, msg, query.Uid)
+}
+
+func genEntry(conn *ldapserver.Conn, msg *ldapserver.Message, username string) {
+	u, err := getUserInfo(username)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultNoSuchObject.AsResult(""))
 			return
 		}
-		global.Log.Errorf("ldap DN [%v] get user info error: %v", udn, err)
+		global.Log.Errorf("ldap search [%v] get user info error: %v", username, err)
 		conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultOperationsError.AsResult(""))
 		return
 	}
@@ -188,19 +230,21 @@ func (ls *LdapSrvHandler) Search(conn *ldapserver.Conn, msg *ldapserver.Message,
 		ObjectName: u.UserDN,
 		Attributes: []ldapserver.Attribute{
 			{Description: "objectClass", Values: []string{"inetOrgPerson"}},
-			{Description: "uid", Values: []string{query.Uid}},
-			{Description: "cn", Values: []string{query.Uid}},
-			{Description: "sn", Values: []string{query.Uid}},
+			{Description: "uid", Values: []string{username}},
+			{Description: "userid", Values: []string{username}},
+			{Description: "cn", Values: []string{username}},
+			{Description: "sn", Values: []string{username}},
 			{Description: "displayName", Values: []string{u.Nickname}},
 			{Description: "givenName", Values: []string{u.GivenName}},
 			{Description: "mail", Values: []string{u.Mail}},
+			{Description: "email", Values: []string{u.Mail}},
 			{Description: "mobile", Values: []string{u.Mobile}},
 		},
 	}
+
 	conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultEntryOp, entry)
 	conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultSuccess.AsResult(""))
 }
-
 func (ls *LdapSrvHandler) Compare(conn *ldapserver.Conn, msg *ldapserver.Message, req *ldapserver.CompareRequest) {
 	global.Log.Debug("Compare request")
 	res := &ldapserver.Result{

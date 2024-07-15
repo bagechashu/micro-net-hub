@@ -6,7 +6,7 @@ system:
   url-path-prefix: api
   # 程序监听IP和端口
   host: "0.0.0.0"
-  port: 9000
+  port: 8013
   read-timeout: 5
   # write-timeout 除了被用于 gin 的写超时外, 还用于 email dial 的写超时.
   write-timeout: 10
@@ -150,8 +150,9 @@ ldap:
 ldap-server:
   # 默认的 Ldap 服务器地址
   listen-addr: 0.0.0.0:1389
+  base-dn: "dc=example,dc=com"
   binddn-role-keyword: superadmin
-  totp-enable: true
+  totp-enable: false
   
 radius:
   # 验证失败多次后, 禁止登录 5 分钟.

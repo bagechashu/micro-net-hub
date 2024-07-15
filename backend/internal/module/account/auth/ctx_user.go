@@ -24,7 +24,7 @@ func GetCtxLoginUser(c *gin.Context) (model.User, error) {
 	}
 
 	// 使用明确命名提高可读性，同时减少全局状态的直接依赖
-	userCache := model.CacheUserInfoGet(userInfo.ID, userInfo.Username)
+	userCache := model.CacheUserInfoGet(userInfo.Username)
 	if userCache != nil {
 		// global.Log.Debug("userCache:", userCache)
 		return *userCache, nil
@@ -38,7 +38,7 @@ func GetCtxLoginUser(c *gin.Context) (model.User, error) {
 	}
 
 	// 更新缓存中的用户信息
-	model.CacheUserInfoSet(userInfo.ID, userInfo.Username, &dbUser)
+	model.CacheUserInfoSet(userInfo.Username, &dbUser)
 
 	return dbUser, nil
 }

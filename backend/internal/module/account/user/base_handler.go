@@ -105,8 +105,7 @@ func ForgetPwd(c *gin.Context) {
 	}
 
 	// 删除缓存
-	accountModel.CacheUserInfoDel(user.ID, user.Username)
-	accountModel.CacheUserDNDel(user.UserDN)
+	accountModel.CacheUserInfoDel(user.Username)
 
 	if !config.Conf.Email.Enable {
 		helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("邮件通知功能未启用, 请联系管理员")))
