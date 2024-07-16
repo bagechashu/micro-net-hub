@@ -150,6 +150,8 @@ ldap:
 ldap-server:
   # 默认的 Ldap 服务器地址
   listen-addr: 0.0.0.0:1389
+  listen-addr-with-totp-verify: 0.0.0.0:1390
+  base-dn: "dc=example,dc=com"
   binddn-role-keyword: superadmin
   totp-enable: true
 

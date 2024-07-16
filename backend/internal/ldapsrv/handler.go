@@ -18,6 +18,7 @@ type LdapSrvHandler struct {
 	ldapserver.BaseHandler
 	abandonment     map[ldapserver.MessageID]bool
 	abandonmentLock sync.Mutex
+	totpEnable      bool
 }
 
 // checkPassword:
@@ -36,7 +37,7 @@ func (ls *LdapSrvHandler) checkPassword(dn ldapserver.DN, password string) bool 
 
 	pwd := tools.NewParsePasswd(u.Password)
 	// totp 验证开关
-	if !config.Conf.LdapServer.TotpEnable {
+	if !ls.totpEnable {
 		return pwd == password
 	}
 	for _, r := range u.Roles {

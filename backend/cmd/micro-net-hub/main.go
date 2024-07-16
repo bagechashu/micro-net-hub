@@ -69,6 +69,12 @@ func main() {
 		return ldapsrv.Run()
 	})
 
+	if config.Conf.LdapServer.TotpEnable {
+		g.Go(func() error {
+			return ldapsrv.RunWithTotpVerify()
+		})
+	}
+
 	g.Go(func() error {
 		return radiussrv.Run()
 	})

@@ -178,7 +178,8 @@ type Ldap struct {
 }
 
 type LdapServer struct {
-	ListenAddr string `mapstructure:"listen-addr" json:"listenAddr"`
+	ListenAddr               string `mapstructure:"listen-addr" json:"listenAddr"`
+	ListenAddrWithTotpVerify string `mapstructure:"listen-addr-with-totp-verify" json:"listenAddrWithTotpVerify"`
 	// TlsEnable  bool   `mapstructure:"tls-enable" json:"tlsEnable"`
 	BaseDN            string `mapstructure:"base-dn" json:"baseDN"`
 	BindDNRoleKeyword string `mapstructure:"binddn-role-keyword" json:"bindDNRoleKeyword"`
