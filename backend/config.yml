@@ -148,11 +148,14 @@ ldap:
   default-email-suffix: "example.com"
 
 ldap-server:
-  # 默认的 Ldap 服务器地址
+  # 默认的 Ldap 服务监听
   listen-addr: 0.0.0.0:1389
+  # 默认的 使用 "密码+TOTP" 验证的 Ldap 服务监听
   listen-addr-with-totp-verify: 0.0.0.0:1390
   base-dn: "dc=example,dc=com"
+  # 绑定账号角色关键字
   binddn-role-keyword: superadmin
+  # 是否开启监听 "密码+TOTP" 验证的 Ldap 服务监听
   totp-enable: true
   
 radius:
