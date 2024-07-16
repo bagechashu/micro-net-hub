@@ -193,7 +193,7 @@ func (ls *LdapSrvHandler) Search(conn *ldapserver.Conn, msg *ldapserver.Message,
 			return
 		}
 
-		entry, err := genEntry2(d.Rdn)
+		entry, err := genEntry(d.Rdn)
 		if err != nil {
 			if err == gorm.ErrRecordNotFound {
 				conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultNoSuchObject.AsResult(""))
@@ -231,7 +231,7 @@ func (ls *LdapSrvHandler) Search(conn *ldapserver.Conn, msg *ldapserver.Message,
 		}
 	}
 
-	entry, err := genEntry2(query.Uid)
+	entry, err := genEntry(query.Uid)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultNoSuchObject.AsResult(""))
@@ -245,39 +245,7 @@ func (ls *LdapSrvHandler) Search(conn *ldapserver.Conn, msg *ldapserver.Message,
 	conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultSuccess.AsResult(""))
 }
 
-func genEntry(conn *ldapserver.Conn, msg *ldapserver.Message, username string) {
-	u, err := getUserInfo(username)
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultNoSuchObject.AsResult(""))
-			return
-		}
-		global.Log.Errorf("ldap search [%v] get user info error: %v", username, err)
-		conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultOperationsError.AsResult(""))
-		return
-	}
-	// global.Log.Debugf("ldapserver search result user: %+v", u)
-	entry := &ldapserver.SearchResultEntry{
-		ObjectName: u.UserDN,
-		Attributes: []ldapserver.Attribute{
-			{Description: "objectClass", Values: []string{"inetOrgPerson"}},
-			{Description: "uid", Values: []string{username}},
-			{Description: "userid", Values: []string{username}},
-			{Description: "cn", Values: []string{username}},
-			{Description: "sn", Values: []string{username}},
-			{Description: "displayName", Values: []string{u.Nickname}},
-			{Description: "givenName", Values: []string{u.GivenName}},
-			{Description: "mail", Values: []string{u.Mail}},
-			{Description: "email", Values: []string{u.Mail}},
-			{Description: "mobile", Values: []string{u.Mobile}},
-		},
-	}
-
-	conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultEntryOp, entry)
-	conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultSuccess.AsResult(""))
-}
-
-func genEntry2(username string) (entry *ldapserver.SearchResultEntry, err error) {
+func genEntry(username string) (entry *ldapserver.SearchResultEntry, err error) {
 	u, err := getUserInfo(username)
 	if err != nil {
 		return
