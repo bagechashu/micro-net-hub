@@ -89,6 +89,7 @@ const actions = {
       logout(state.token).then(() => {
         commit("SET_TOKEN", "");
         commit("SET_ROLES", []);
+        commit("SET_NAME", "");
         removeToken();
         resetRouter();
 
@@ -117,6 +118,7 @@ const actions = {
     return new Promise(resolve => {
       commit("SET_TOKEN", "");
       commit("SET_ROLES", []);
+      commit("SET_NAME", "");
       removeToken();
       resolve();
     });
