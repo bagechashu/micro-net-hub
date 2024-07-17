@@ -515,6 +515,7 @@ import {
   syncOpenLdapUsersApi,
   syncSqlUsers
 } from "@/api/personnel/user";
+import { validatePasswordCanEnpty } from "@/utils/validate";
 import { getRoles } from "@/api/system/role";
 import { getGroupTree } from "@/api/personnel/group";
 import { Message } from "element-ui";
@@ -609,17 +610,7 @@ export default {
           }
         ],
         password: [
-          {
-            required: false,
-            message: "请输入密码",
-            trigger: "blur"
-          },
-          {
-            min: 6,
-            max: 30,
-            message: "长度在 6 到 30 个字符",
-            trigger: "blur"
-          }
+          { required: false, validator: validatePasswordCanEnpty, trigger: "blur" }
         ],
         mail: [
           {

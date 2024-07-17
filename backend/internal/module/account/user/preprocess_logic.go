@@ -67,6 +67,10 @@ func CommonUpdateGroup(oldGroup, newGroup *accountModel.Group) error {
 // CommonAddUser 标准创建用户
 func CommonAddUser(user *accountModel.User) error {
 	user.CheckAttrVacancies()
+	if complex := tools.CheckPasswordComplexity(user.Password); !complex {
+		return tools.ErrPasswordNotComplex
+	}
+
 	// 先将用户添加到MySQL
 	err := user.Add()
 	if err != nil {
@@ -100,6 +104,12 @@ func CommonUpdateUser(oldUser, newUser *accountModel.User, groupIds []uint) erro
 	}
 
 	newUser.CheckAttrVacancies()
+
+	if newUser.Password != "" {
+		if complex := tools.CheckPasswordComplexity(newUser.Password); !complex {
+			return tools.ErrPasswordNotComplex
+		}
+	}
 
 	err := ldapmgr.LdapUserUpdate(oldUser.Username, newUser)
 	if err != nil {

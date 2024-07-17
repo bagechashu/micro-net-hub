@@ -69,10 +69,6 @@ func Add(c *gin.Context) {
 			return
 		}
 		req.Password = string(decodeData)
-		if len(req.Password) < 6 {
-			helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("密码长度至少为6位")))
-			return
-		}
 	} else {
 		req.Password = tools.GeneratePassword(8)
 	}
@@ -296,12 +292,7 @@ func Update(c *gin.Context) {
 			helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("密码解密失败")))
 			return
 		}
-		req.Password = string(decodeData)
-		if len(req.Password) < 6 {
-			helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("密码长度至少为6位")))
-			return
-		}
-		user.Password = req.Password
+		user.Password = string(decodeData)
 	}
 
 	if err = CommonUpdateUser(oldData, &user, req.GroupIds); err != nil {
@@ -323,10 +314,10 @@ func Update(c *gin.Context) {
 			helper.ErrV2(c, helper.NewOperationError(fmt.Errorf("系统通知用户账号信息失败, 请手工通知")))
 			return
 		}
-		if req.Password == "" {
-			req.Password = "Use the original password"
+		if user.Password == "" {
+			user.Password = "Use the original password"
 		}
-		if err := tools.SendUserInfo([]string{nu.Mail}, nu.Username, req.Password, qrRawPngBase64); err != nil {
+		if err := tools.SendUserInfo([]string{nu.Mail}, nu.Username, user.Password, qrRawPngBase64); err != nil {
 			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("邮件发送用户账号更新信息失败, 请手工通知"+err.Error())))
 			return
 		}
@@ -559,6 +550,12 @@ func ChangePwd(c *gin.Context) {
 	}
 	req.OldPassword = string(decodeOldPassword)
 	req.NewPassword = string(decodeNewPassword)
+
+	if complex := tools.CheckPasswordComplexity(req.NewPassword); !complex {
+		helper.ErrV2(c, helper.NewValidatorError(tools.ErrPasswordNotComplex))
+		return
+	}
+
 	// 获取当前用户
 	user, err := auth.GetCtxLoginUser(c)
 	if err != nil {

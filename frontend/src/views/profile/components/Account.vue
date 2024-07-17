@@ -71,6 +71,7 @@
 
 <script>
 import { changePwd } from "@/api/system/user";
+import { validatePassword } from "@/utils/validate";
 import store from "@/store";
 import JSEncrypt from "jsencrypt";
 import { Message } from "element-ui";
@@ -106,13 +107,7 @@ export default {
           }
         ],
         newPassword: [
-          { required: true, message: "请输入新密码", trigger: "blur" },
-          {
-            min: 6,
-            max: 30,
-            message: "长度在 6 到 30 个字符",
-            trigger: "blur"
-          }
+          { required: true, validator: validatePassword, trigger: "blur" }
         ],
         confirmPassword: [
           { required: true, validator: confirmPass, trigger: "blur" }
@@ -145,28 +140,28 @@ export default {
           this.dialogFormDataCopy.confirmPassword = confirmPasswd;
 
           this.submitLoading = true;
-          const { code, msg } = await changePwd(this.dialogFormDataCopy);
-
-          this.submitLoading = false;
-          if (code !== 200) {
-            return Message({
+          const { code } = await changePwd(this.dialogFormDataCopy);
+          if (code === 200 || code === 0) {
+            Message({
               showClose: true,
-              message: msg,
+              message: "密码修改成功，请重新登录",
+              type: "success"
+            });
+            this.resetForm();
+            // 重新登录
+            setTimeout(() => {
+              store.dispatch("user/logout").then(() => {
+                location.reload(); // 为了重新实例化vue-router对象 避免bug
+              });
+            }, 1500);
+          } else {
+            Message({
+              showClose: true,
+              message: "密码修改失败",
               type: "error"
             });
           }
-          this.resetForm();
-          Message({
-            showClose: true,
-            message: "密码修改成功，请重新登录",
-            type: "success"
-          });
-          // 重新登录
-          setTimeout(() => {
-            store.dispatch("user/logout").then(() => {
-              location.reload(); // 为了重新实例化vue-router对象 避免bug
-            });
-          }, 1500);
+          this.submitLoading = false;
         } else {
           this.$message({
             showClose: true,

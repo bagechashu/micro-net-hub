@@ -366,7 +366,7 @@ func (mgr DingTalk) AddUsers(user *accountModel.User) error {
 	user.Roles = roles
 	user.Creator = "system"
 	user.Source = config.Conf.DingTalk.Flag
-	user.Password = config.Conf.Ldap.UserInitPassword
+	user.Password = tools.NewParsePasswd(config.Conf.Ldap.UserInitPassword)
 	user.UserDN = fmt.Sprintf("uid=%s,%s", user.Username, config.Conf.Ldap.UserDN)
 
 	// 根据 user_dn 查询用户,不存在则创建

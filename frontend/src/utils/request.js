@@ -74,7 +74,7 @@ service.interceptors.response.use(
       } else {
         Message({
           showClose: true,
-          message: error.response.data.message,
+          message: error.response.msg || error.response.data.message || error.message,
           type: "error",
           duration: 5 * 1000
         });
@@ -85,7 +85,7 @@ service.interceptors.response.use(
     } else {
       Message({
         showClose: true,
-        message: error.response.data.message || error.message,
+        message: error.response.msg || error.response.data.message || error.message,
         type: "error",
         duration: 5 * 1000
       });

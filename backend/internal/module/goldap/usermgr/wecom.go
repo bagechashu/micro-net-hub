@@ -245,7 +245,7 @@ func (mgr WeChat) AddUsers(user *accountModel.User) error {
 	}
 	user.Creator = "system"
 	user.Roles = roles
-	user.Password = config.Conf.Ldap.UserInitPassword
+	user.Password = tools.NewParsePasswd(config.Conf.Ldap.UserInitPassword)
 	user.Source = config.Conf.WeCom.Flag
 	user.UserDN = fmt.Sprintf("uid=%s,%s", user.Username, config.Conf.Ldap.UserDN)
 

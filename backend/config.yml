@@ -138,8 +138,8 @@ ldap:
   admin-pass: "KRedEx1ed2QAtUpgOQP8f1adxh3VYe4aHnIAarJfyae1d4hWX1uTi9rXvi8RA6UF17JgfYrH1LSFUUCZa3jIeggDCdpzUTkNxqFXvDvVSDbpcSxe0i7GnTH3H3mdVxCS1NgGggHvWAp+EfJBNhk8m0A8o9ZE1bw9miHmLu1nNm8="
   # ldap用户OU
   user-dn: "ou=people,dc=example,dc=com"
-  # ldap用户初始默认密码
-  user-init-password: "ldap-init-passwd"
+  # ldap用户初始默认密码, go run cmd/gen_pass/main.go -encode -pass Ldap-init-passwd
+  user-init-password: "bMJkvFrRdARtcn/nCReJ1vNa+OBiBucyJiZjHj8HJCIis1P1W2ClXA49V9PfDBYUVMNpN9niZs0MFBCSzfpHivg0T8FAGJeIRAcLiIybEFxZ1r+AuoxyrpW92KEUF81CUf3E60o9gNKhIzS6mHC0j0fd8cYSMW0FPcVByY8hOgY="
   # 是否允许更改分组DN
   group-name-modify: false
   # 是否允许更改用户DN
