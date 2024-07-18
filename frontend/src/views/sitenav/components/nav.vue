@@ -8,7 +8,7 @@
         :sm="8"
         :md="6"
         :lg="4"
-        :xl="2"
+        :xl="4"
         class="site-card"
       >
         <div @click="jumpLink(item.link)">
