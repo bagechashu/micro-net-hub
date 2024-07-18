@@ -49,7 +49,16 @@ func TestParseLdapQuery(t *testing.T) {
 				Uid:         "",
 				ObjectClass: "*",
 			},
-			wantError: true,
+			wantError: false,
+		},
+		{
+			query: "(|(objectClass=organizationalUnit)(objectClass=groupOfUniqueNames))",
+			want: &ldapsrv.Query{
+				MemberOf:    "",
+				Uid:         "",
+				ObjectClass: "organizationalUnit|groupOfUniqueNames",
+			},
+			wantError: false,
 		},
 		{
 			query:     "invalid_query",

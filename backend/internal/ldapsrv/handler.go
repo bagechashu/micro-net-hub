@@ -4,6 +4,7 @@ import (
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
 	"micro-net-hub/internal/tools"
+	"strings"
 	"sync"
 	"time"
 
@@ -83,6 +84,13 @@ func getUserInfo(username string) (*model.User, error) {
 	return &u, nil
 }
 
+func getGroupInfo(groupname string) (*model.Group, error) {
+	return nil, nil
+}
+
+func getGroupsInfo() ([]*model.Group, error) {
+	return nil, nil
+}
 func getAuth(conn *ldapserver.Conn) ldapserver.DN {
 	var auth ldapserver.DN
 	if conn.Authentication != nil {
@@ -189,8 +197,31 @@ func (ls *LdapSrvHandler) Search(conn *ldapserver.Conn, msg *ldapserver.Message,
 		return
 	}
 
+	// parse ldap search request
+	query, err := ParseLdapQuery(req.Filter.String())
+	if err != nil {
+		global.Log.Errorf("parseLdapQuery error: %s", err)
+		conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultNoSuchObject.AsResult(""))
+		return
+	}
+
+	ocs := strings.Split(query.ObjectClass, "|")
+	for _, oc := range ocs {
+		switch oc {
+		case "inetOrgPerson":
+			searchUser(conn, msg, req, query)
+		case "groupOfUniqueNames", "groupOfNames", "organizationalUnit":
+			searchGroup(conn, msg, req, query)
+		default:
+			searchUser(conn, msg, req, query)
+		}
+	}
+}
+
+func searchUser(conn *ldapserver.Conn, msg *ldapserver.Message, req *ldapserver.SearchRequest, query *Query) {
 	var user string
 	var group string
+
 	// adapt "gitlab" ldap search request:
 	// if request is "gitlab" Req, it cat get "user" from the BaseObject DN.
 	// if request is normal Req, "user" is empty.
@@ -210,13 +241,6 @@ func (ls *LdapSrvHandler) Search(conn *ldapserver.Conn, msg *ldapserver.Message,
 		if d.Rdn != "" {
 			user = d.Rdn
 		}
-	}
-
-	query, err := ParseLdapQuery(req.Filter.String())
-	if err != nil {
-		global.Log.Errorf("parseLdapQuery error: %s", err)
-		conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultNoSuchObject.AsResult(""))
-		return
 	}
 
 	// adapt "normal" ldap search request
@@ -257,7 +281,7 @@ func (ls *LdapSrvHandler) Search(conn *ldapserver.Conn, msg *ldapserver.Message,
 	}
 
 	// generate entry of user
-	entry, err := genEntry(user)
+	entry, err := genUserEntry(user)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultNoSuchObject.AsResult(""))
@@ -271,7 +295,7 @@ func (ls *LdapSrvHandler) Search(conn *ldapserver.Conn, msg *ldapserver.Message,
 	conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultSuccess.AsResult(""))
 }
 
-func genEntry(username string) (entry *ldapserver.SearchResultEntry, err error) {
+func genUserEntry(username string) (entry *ldapserver.SearchResultEntry, err error) {
 	u, err := getUserInfo(username)
 	if err != nil {
 		return
@@ -291,6 +315,94 @@ func genEntry(username string) (entry *ldapserver.SearchResultEntry, err error) 
 			{Description: "email", Values: []string{u.Mail}},
 			{Description: "mobile", Values: []string{u.Mobile}},
 		},
+	}
+	return
+}
+
+func searchGroup(conn *ldapserver.Conn, msg *ldapserver.Message, req *ldapserver.SearchRequest, query *Query) {
+	var group string
+
+	// adapt "harbor" ldap search request:
+	// SRCH base="cn=t1,ou=allhands,dc=example,dc=com" scope=2 deref=0 filter="(&(objectClass=groupOfUniqueNames)(cn=*))"
+	if req.BaseObject != "" && req.BaseObject != config.Conf.LdapServer.BaseDN {
+		bodn, err := ldapserver.ParseDN(req.BaseObject)
+		if err != nil {
+			global.Log.Errorf("Error parsing DN: %s", req.BaseObject)
+			conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultNoSuchObject.AsResult(""))
+			return
+		}
+		d, err := ParseLdapDN(bodn)
+		if err != nil {
+			global.Log.Errorf("parse req BaseObject to LdapDN error: %s", err)
+			conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultNoSuchObject.AsResult(""))
+			return
+		}
+		if d.Rdn != "" {
+			group = d.Rdn
+		}
+	}
+
+	// if group is not empty, response the entry that queryed.
+	// if group is empty, response all group entrys.
+	if group != "" {
+		entry, err := genGroupEntry(group)
+		if err != nil {
+			if err == gorm.ErrRecordNotFound {
+				conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultNoSuchObject.AsResult(""))
+				return
+			}
+			conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultOperationsError.AsResult(""))
+			return
+		}
+		conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultEntryOp, entry)
+		conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultSuccess.AsResult(""))
+	}
+
+	entrys, err := genGroupEntrys()
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultNoSuchObject.AsResult(""))
+			return
+		}
+		conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultOperationsError.AsResult(""))
+		return
+	}
+	for _, entry := range entrys {
+		conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultEntryOp, entry)
+	}
+	conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultSuccess.AsResult(""))
+}
+
+func genGroupEntry(groupname string) (entry *ldapserver.SearchResultEntry, err error) {
+	g, err := getGroupInfo(groupname)
+	if err != nil {
+		return
+	}
+
+	entry = &ldapserver.SearchResultEntry{
+		ObjectName: g.GroupDN,
+		Attributes: []ldapserver.Attribute{
+			{Description: "cn", Values: []string{g.GroupName}},
+			{Description: "description", Values: []string{g.Remark}},
+		},
+	}
+	return
+}
+
+func genGroupEntrys() (entrys []*ldapserver.SearchResultEntry, err error) {
+	gs, err := getGroupsInfo()
+	if err != nil {
+		return
+	}
+
+	for _, g := range gs {
+		entrys = append(entrys, &ldapserver.SearchResultEntry{
+			ObjectName: g.GroupDN,
+			Attributes: []ldapserver.Attribute{
+				{Description: "cn", Values: []string{g.GroupName}},
+				{Description: "description", Values: []string{g.Remark}},
+			},
+		})
 	}
 	return
 }
