@@ -8,6 +8,30 @@ import (
 	"github.com/merlinz01/ldapserver"
 )
 
+type Attributes struct {
+	MemberOf string
+}
+
+func parseLdapAttributes(attributes []string) *Attributes {
+	if len(attributes) == 0 {
+		return nil
+	}
+	attr := &Attributes{}
+	for _, attribute := range attributes {
+		if strings.Contains(attribute, "=") {
+			parts := strings.SplitN(attribute, "=", 2)
+			key := strings.TrimSuffix(parts[0], ":")
+			switch key {
+			case "memberOf":
+				attr.MemberOf = parts[1]
+			default:
+				return nil
+			}
+		}
+	}
+	return attr
+}
+
 type Query struct {
 	MemberOf    string
 	Uid         string
@@ -16,7 +40,7 @@ type Query struct {
 
 // TODO: https://www.rfc-editor.org/rfc/rfc4515.html
 // Now, only implement the following filter:
-// 1. (&(objectClass=person)(uid=xiaoxue)(memberOf:=cn=employees,dc=example,dc=com))
+// 1. (&(objectClass=objectClass)(uid=xiaoxue)(memberOf:=cn=employees,dc=example,dc=com))
 // 2. (&(uid=test02)(memberOf:=cn=t1,ou=allhands,dc=example,dc=com))
 // x. (memberOf:=cn=t1,ou=allhands,dc=example,dc=com)
 // x. (objectClass=*)
@@ -33,6 +57,7 @@ func ParseLdapQuery(query string) (*Query, error) {
 
 	q.MemberOf = queryMap["memberOf"]
 	q.Uid = queryMap["uid"]
+	// objectClass 当前还没有在实际检索中使用到
 	q.ObjectClass = queryMap["objectClass"]
 	return q, nil
 }
@@ -113,13 +138,10 @@ func ParseLdapDN(dn ldapserver.DN) (*DN, error) {
 	if err != nil {
 		return nil, err
 	}
-	if dnMap["uid"] == "" && dnMap["cn"] == "" {
-		return nil, fmt.Errorf("failed to parse LDAP DN: %s", dnMap)
-	}
 	d := &DN{}
 	if dnMap["uid"] != "" {
 		d.Rdn = dnMap["uid"]
-	} else {
+	} else if dnMap["cn"] != "" {
 		d.Rdn = dnMap["cn"]
 	}
 	d.Ou = dnMap["ou"]

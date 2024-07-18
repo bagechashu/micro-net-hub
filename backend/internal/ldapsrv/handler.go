@@ -26,7 +26,7 @@ type LdapSrvHandler struct {
 // 用于三方软件 bind 的账户, 仅使用 "密码" 校验.
 func (ls *LdapSrvHandler) checkPassword(dn ldapserver.DN, password string) bool {
 	d, err := ParseLdapDN(dn)
-	if err != nil {
+	if err != nil || d.Rdn == "" {
 		return false
 	}
 
@@ -51,7 +51,7 @@ func (ls *LdapSrvHandler) checkPassword(dn ldapserver.DN, password string) bool 
 
 func checkBindRuleUser(auth ldapserver.DN) bool {
 	d, err := ParseLdapDN(auth)
-	if err != nil {
+	if err != nil || d.Rdn == "" {
 		return false
 	}
 	u, err := getUserInfo(d.Rdn)
@@ -147,15 +147,23 @@ func (ls *LdapSrvHandler) Bind(conn *ldapserver.Conn, msg *ldapserver.Message, r
 	conn.SendResult(msg.MessageID, nil, ldapserver.TypeBindResponseOp, res)
 }
 
-// TODO: &{BaseObject: Scope:0 DerefAliases:0 SizeLimit:0 TimeLimit:0 TypesOnly:false Filter:(objectClass=*) Attributes:[altServer namingContexts supportedCapabilities supportedControl supportedExtension supportedFeatures supportedLdapVersion supportedSASLMechanisms]}
-//
-// LdapSrvHandler Search method
-// Below Search Req can response successfully.
+// ### TODO: search req NOT supported: ###
+// [normal Wildcards search]
+// &{BaseObject: Scope:0 DerefAliases:0 SizeLimit:0 TimeLimit:0 TypesOnly:false Filter:(objectClass=*) Attributes:[altServer namingContexts supportedCapabilities supportedControl supportedExtension supportedFeatures supportedLdapVersion supportedSASLMechanisms]}
+// [nexus user mapping]:
+// x &{BaseObject:ou=people,dc=example,dc=com Scope:2 DerefAliases:3 SizeLimit:20 TimeLimit:0 TypesOnly:false Filter:(&(objectClass=inetOrgPerson)(uid=*)) Attributes:[uid cn mail labeledUri memberOf:=cn=t1,ou=allhands,dc=example,dc=com]}
+
+// ### search req supported: ###
 // [normal search]:
-// &{BaseObject:dc=example,dc=com Scope:2 DerefAliases:0 SizeLimit:1 TimeLimit:0 TypesOnly:false Filter:(&(uid=test21)(memberOf:=cn=t1,ou=allhands,dc=example,dc=com)) Attributes:[]}
-// &{BaseObject:dc=example,dc=com Scope:2 DerefAliases:0 SizeLimit:0 TimeLimit:3 TypesOnly:false Filter:(&(objectClass=people)(uid=test01)(memberOf:=cn=t1,ou=allhands,dc=example,dc=com)) Attributes:[]}
+// √ &{BaseObject:dc=example,dc=com Scope:2 DerefAliases:0 SizeLimit:1 TimeLimit:0 TypesOnly:false Filter:(&(uid=test21)(memberOf:=cn=t1,ou=allhands,dc=example,dc=com)) Attributes:[]}
+// √ &{BaseObject:dc=example,dc=com Scope:2 DerefAliases:0 SizeLimit:0 TimeLimit:3 TypesOnly:false Filter:(&(objectClass=inetOrgPerson)(uid=test01)(memberOf:=cn=t1,ou=allhands,dc=example,dc=com)) Attributes:[]}
 // [gitlab]:
-// &{BaseObject:uid=test01,ou=people,dc=example,dc=com Scope:0 DerefAliases:0 SizeLimit:0 TimeLimit:0 TypesOnly:false Filter:(memberOf:=cn=t1,ou=allhands,dc=example,dc=com) Attributes:[dn uid cn mail email userPrincipalName sAMAccountName userid]}
+// √ &{BaseObject:uid=test01,ou=people,dc=example,dc=com Scope:0 DerefAliases:0 SizeLimit:0 TimeLimit:0 TypesOnly:false Filter:(memberOf:=cn=t1,ou=allhands,dc=example,dc=com) Attributes:[dn uid cn mail email userPrincipalName sAMAccountName userid]}
+// [nexus]:
+// √ &{BaseObject:dc=example,dc=com Scope:2 DerefAliases:3 SizeLimit:1 TimeLimit:0 TypesOnly:false Filter:(&(objectClass=inetOrgPerson)(uid=test01)) Attributes:[uid cn mail labeledUri memberOf:=cn=t1,ou=allhands,dc=example,dc=com]}
+// √ &{BaseObject:ou=people,dc=example,dc=com Scope:2 DerefAliases:3 SizeLimit:1 TimeLimit:0 TypesOnly:false Filter:(&(objectClass=inetOrgPerson)(uid=test01)) Attributes:[uid cn mail labeledUri memberOf:=cn=t1,ou=allhands,dc=example,dc=com]}
+
+// LdapSrvHandler Search method
 func (ls *LdapSrvHandler) Search(conn *ldapserver.Conn, msg *ldapserver.Message, req *ldapserver.SearchRequest) {
 
 	global.Log.Debugf("LDAP Search Req: %+v", req)
@@ -181,47 +189,63 @@ func (ls *LdapSrvHandler) Search(conn *ldapserver.Conn, msg *ldapserver.Message,
 		return
 	}
 
-	// adapt "gitlab" ldap search request
+	var user string
+	var group string
+	// adapt "gitlab" ldap search request:
+	// if request is "gitlab" Req, it cat get "user" from the BaseObject DN.
+	// if request is normal Req, "user" is empty.
 	if req.BaseObject != "" && req.BaseObject != config.Conf.LdapServer.BaseDN {
-		d, err := ParseLdapDN(ldapserver.MustParseDN(req.BaseObject))
+		bodn, err := ldapserver.ParseDN(req.BaseObject)
+		if err != nil {
+			global.Log.Errorf("Error parsing DN: %s", req.BaseObject)
+			conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultNoSuchObject.AsResult(""))
+			return
+		}
+		d, err := ParseLdapDN(bodn)
 		if err != nil {
 			global.Log.Errorf("parse req BaseObject to LdapDN error: %s", err)
 			conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultNoSuchObject.AsResult(""))
 			return
 		}
-		if d.Rdn == "" {
-			conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultSuccess.AsResult(""))
-			return
+		if d.Rdn != "" {
+			user = d.Rdn
 		}
-
-		entry, err := genEntry(d.Rdn)
-		if err != nil {
-			if err == gorm.ErrRecordNotFound {
-				conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultNoSuchObject.AsResult(""))
-				return
-			}
-			conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultOperationsError.AsResult(""))
-			return
-		}
-
-		conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultEntryOp, entry)
-		conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultSuccess.AsResult(""))
-		return
 	}
-	// adapt "normal" ldap search request
+
 	query, err := ParseLdapQuery(req.Filter.String())
 	if err != nil {
 		global.Log.Errorf("parseLdapQuery error: %s", err)
 		conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultNoSuchObject.AsResult(""))
 		return
 	}
-	if query.Uid == "" {
-		conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultSuccess.AsResult(""))
-		return
+
+	// adapt "normal" ldap search request
+	if user == "" {
+		if query.Uid != "" {
+			user = query.Uid
+		} else {
+			conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultSuccess.AsResult(""))
+			return
+		}
+
 	}
 
 	if query.MemberOf != "" {
-		find, err := model.UserExistsInGroup(query.Uid, query.MemberOf)
+		group = query.MemberOf
+	} else {
+		// adapt "Nexus" Dynamic groups filter:
+		// "Nexus" Dynamic groups filter set "memeberOf" at Attributes.
+		// So we need to get "memberOf" from Attributes.
+		attr := parseLdapAttributes(req.Attributes)
+		if attr.MemberOf != "" {
+			group = attr.MemberOf
+		}
+	}
+
+	// adapt Search with group filter:
+	// if group is not empty, we need to check if user is in group.
+	if group != "" {
+		find, err := model.UserExistsInGroup(user, group)
 		if err != nil {
 			conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultOperationsError.AsResult(err.Error()))
 			return
@@ -232,7 +256,8 @@ func (ls *LdapSrvHandler) Search(conn *ldapserver.Conn, msg *ldapserver.Message,
 		}
 	}
 
-	entry, err := genEntry(query.Uid)
+	// generate entry of user
+	entry, err := genEntry(user)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultNoSuchObject.AsResult(""))

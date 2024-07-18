@@ -25,11 +25,11 @@ func TestParseLdapQuery(t *testing.T) {
 		wantError bool
 	}{
 		{
-			query: "(&(objectClass=person)(uid=user01)(memberOf:=cn=employees,dc=example,dc=com))",
+			query: "(&(objectClass=objectClass)(uid=user01)(memberOf:=cn=employees,dc=example,dc=com))",
 			want: &ldapsrv.Query{
 				MemberOf:    "cn=employees,dc=example,dc=com",
 				Uid:         "user01",
-				ObjectClass: "person",
+				ObjectClass: "objectClass",
 			},
 			wantError: false,
 		},
