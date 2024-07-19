@@ -46,6 +46,7 @@ const GroupOfUniqueNamesFields = "cn"
 // 2. (&(uid=test02)(memberOf:=cn=t1,ou=allhands,dc=example,dc=com))
 // 3. (memberOf:=cn=t1,ou=allhands,dc=example,dc=com)
 // 4. (|(objectClass=organizationalUnit)(objectClass=groupOfUniqueNames))
+// 5. (&(objectclass=groupOfUniqueNames)(cn=*))
 // x. (objectClass=*)
 func ParseLdapQuery(query string) (*Query, error) {
 	queryMap, err := parseLdapQueryToMap(query)
@@ -58,9 +59,14 @@ func ParseLdapQuery(query string) (*Query, error) {
 
 	q := &Query{}
 
-	q.MemberOf = queryMap["memberOf"]
-	q.Uid = queryMap["uid"]
-	q.ObjectClass = queryMap["objectClass"]
+	q.ObjectClass = queryMap["objectclass"]
+	q.MemberOf = queryMap["memberof"]
+
+	if val, ok := queryMap["uid"]; ok {
+		q.Uid = val
+	} else if val, ok := queryMap["cn"]; ok {
+		q.Uid = val
+	}
 	return q, nil
 }
 
@@ -84,7 +90,7 @@ func parseLdapQueryToMap(query string) (map[string]string, error) {
 				return nil, fmt.Errorf("invalid query format: %s", trimmedPart)
 			}
 
-			key := strings.TrimSpace(equalParts[0])
+			key := strings.ToLower(strings.TrimSpace(equalParts[0]))
 			value := strings.TrimSpace(equalParts[1])
 
 			// 移除键末尾的冒号，如果存在的话, eg: memeberOf:=cn=employees,dc=example,dc=com
@@ -112,7 +118,7 @@ func parseLdapQueryToMap(query string) (map[string]string, error) {
 				return nil, fmt.Errorf("invalid query format: %s", trimmedPart)
 			}
 
-			key := strings.TrimSpace(equalParts[0])
+			key := strings.ToLower(strings.TrimSpace(equalParts[0]))
 			value := strings.TrimSpace(equalParts[1])
 
 			// 移除键末尾的冒号，如果存在的话, eg: memeberOf:=cn=employees,dc=example,dc=com
@@ -130,13 +136,14 @@ func parseLdapQueryToMap(query string) (map[string]string, error) {
 				builder.WriteString(value)
 				result[key] = builder.String()
 			} else {
+				key = strings.ToLower(key)
 				result[key] = value
 			}
 		}
 	} else {
 		equalParts := strings.SplitN(query, "=", 2)
 		if len(equalParts) == 2 {
-			key := strings.TrimSpace(equalParts[0])
+			key := strings.ToLower(strings.TrimSpace(equalParts[0]))
 			value := strings.TrimSpace(equalParts[1])
 
 			// 移除键末尾的冒号，如果存在的话, eg: memeberOf:=cn=employees,dc=example,dc=com

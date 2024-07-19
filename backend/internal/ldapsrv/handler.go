@@ -181,6 +181,8 @@ func (ls *LdapSrvHandler) Bind(conn *ldapserver.Conn, msg *ldapserver.Message, r
 // [nexus]:
 // √ &{BaseObject:dc=example,dc=com Scope:2 DerefAliases:3 SizeLimit:1 TimeLimit:0 TypesOnly:false Filter:(&(objectClass=inetOrgPerson)(uid=test01)) Attributes:[uid cn mail labeledUri memberOf:=cn=t1,ou=allhands,dc=example,dc=com]}
 // √ &{BaseObject:ou=people,dc=example,dc=com Scope:2 DerefAliases:3 SizeLimit:1 TimeLimit:0 TypesOnly:false Filter:(&(objectClass=inetOrgPerson)(uid=test01)) Attributes:[uid cn mail labeledUri memberOf:=cn=t1,ou=allhands,dc=example,dc=com]}
+// [harbor]
+// √ &{BaseObject:dc=example,dc=com Scope:2 DerefAliases:0 SizeLimit:0 TimeLimit:0 TypesOnly:false Filter:(uid=test01) Attributes:[dn cn uid memberOf]}
 
 // LdapSrvHandler Search method
 func (ls *LdapSrvHandler) Search(conn *ldapserver.Conn, msg *ldapserver.Message, req *ldapserver.SearchRequest) {
@@ -217,14 +219,23 @@ func (ls *LdapSrvHandler) Search(conn *ldapserver.Conn, msg *ldapserver.Message,
 	}
 
 	ocs := strings.Split(query.ObjectClass, "|")
+	matched := false
 	for _, oc := range ocs {
+		global.Log.Debugf("objectClass: %s", oc)
 		switch oc {
-		case "inetOrgPerson":
+		case "inetOrgPerson", "":
 			searchUser(conn, msg, req, query)
+			matched = true
 		case "groupOfUniqueNames", "groupOfNames", "organizationalUnit":
 			searchGroup(conn, msg, req, query)
+			matched = true
 		default:
-			searchUser(conn, msg, req, query)
+			global.Log.Errorf("error: not support ObjectClass: %s", oc)
+			conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultNoSuchObject.AsResult(""))
+			return
+		}
+		if matched {
+			break
 		}
 	}
 }
@@ -327,6 +338,10 @@ func genUserEntry(username string) (entry *ldapserver.SearchResultEntry, err err
 			{Description: "mobile", Values: []string{u.Mobile}},
 		},
 	}
+	for _, g := range u.Groups {
+		entry.Attributes = append(entry.Attributes, ldapserver.Attribute{Description: "memberOf", Values: []string{g.GroupDN}})
+	}
+
 	return
 }
 
@@ -350,6 +365,12 @@ func searchGroup(conn *ldapserver.Conn, msg *ldapserver.Message, req *ldapserver
 		}
 		if d.Rdn != "" {
 			group = d.Rdn
+		}
+	}
+
+	if group == "" {
+		if query.Uid != "" {
+			group = query.Uid
 		}
 	}
 
@@ -394,6 +415,7 @@ func genGroupEntry(groupname string) (entry *ldapserver.SearchResultEntry, err e
 		ObjectName: g.GroupDN,
 		Attributes: []ldapserver.Attribute{
 			{Description: "cn", Values: []string{g.GroupName}},
+			// {Description: "DN", Values: []string{g.GroupName}},
 			{Description: "description", Values: []string{g.Remark}},
 		},
 	}
@@ -411,6 +433,7 @@ func genGroupEntrys() (entrys []*ldapserver.SearchResultEntry, err error) {
 			ObjectName: g.GroupDN,
 			Attributes: []ldapserver.Attribute{
 				{Description: "cn", Values: []string{g.GroupName}},
+				// {Description: "DN", Values: []string{g.GroupName}},
 				{Description: "description", Values: []string{g.Remark}},
 			},
 		})

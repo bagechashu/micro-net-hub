@@ -61,6 +61,15 @@ func TestParseLdapQuery(t *testing.T) {
 			wantError: false,
 		},
 		{
+			query: "(&(objectclass=groupOfUniqueNames)(cn=*))",
+			want: &ldapsrv.Query{
+				MemberOf:    "",
+				Uid:         "*",
+				ObjectClass: "groupOfUniqueNames",
+			},
+			wantError: false,
+		},
+		{
 			query:     "invalid_query",
 			want:      nil,
 			wantError: true,
@@ -126,11 +135,24 @@ func TestParseLdapDN(t *testing.T) {
 			errMessage: "dn is not find: ou=Users,dc=example1,dc=com",
 		},
 		{
-			name:       "Invalid DN - missing cn",
-			dn:         ldapserver.MustParseDN("ou=Users,dc=example,dc=com"),
-			wantDN:     nil,
-			wantErr:    true,
-			errMessage: "failed to parse LDAP DN: map[dc:example.com ou:Users]",
+			name: "cn=*",
+			dn:   ldapserver.MustParseDN("cn=*"),
+			wantDN: &ldapsrv.DN{
+				Rdn: "*",
+				Ou:  "",
+				DC:  "",
+			},
+			wantErr: false,
+		},
+		{
+			name: "groupDN",
+			dn:   ldapserver.MustParseDN("cn=t2,ou=allhands,dc=example,dc=com"),
+			wantDN: &ldapsrv.DN{
+				Rdn: "t2",
+				Ou:  "allhands",
+				DC:  "example.com",
+			},
+			wantErr: false,
 		},
 	}
 
