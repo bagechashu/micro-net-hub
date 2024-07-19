@@ -85,11 +85,22 @@ func getUserInfo(username string) (*model.User, error) {
 }
 
 func getGroupInfo(groupname string) (*model.Group, error) {
-	return nil, nil
+	var g model.Group
+	err := g.Find(map[string]interface{}{"group_name": groupname})
+	if err != nil {
+		return nil, err
+	}
+	global.Log.Debugf("ldapserver get GroupInfo from database: %+v", groupname)
+	return &g, nil
 }
 
 func getGroupsInfo() ([]*model.Group, error) {
-	return nil, nil
+	var gs model.Groups
+	err := gs.Find(map[string]interface{}{"group_type": GroupOfUniqueNamesFields})
+	if err != nil {
+		return nil, err
+	}
+	return gs, nil
 }
 func getAuth(conn *ldapserver.Conn) ldapserver.DN {
 	var auth ldapserver.DN

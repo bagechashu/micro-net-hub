@@ -127,6 +127,10 @@ func NewGroups() Groups {
 	return make([]*Group, 0)
 }
 
+func (gs *Groups) Find(filter map[string]interface{}, args ...interface{}) error {
+	return global.DB.Where(filter, args).Find(&gs).Error
+}
+
 // List 获取数据列表
 func (gs *Groups) ListAll() (err error) {
 	err = global.DB.Model(&Group{}).Order("created_at DESC").Find(&gs).Error

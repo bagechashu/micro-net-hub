@@ -38,6 +38,8 @@ type Query struct {
 	ObjectClass string
 }
 
+const GroupOfUniqueNamesFields = "cn"
+
 // TODO: https://www.rfc-editor.org/rfc/rfc4515.html
 // Now, only implement the following filter:
 // 1. (&(objectClass=objectClass)(uid=xiaoxue)(memberOf:=cn=employees,dc=example,dc=com))
