@@ -135,8 +135,12 @@
           sortable
           prop="groupType"
           label="类型"
-          width="80"
-        />
+          width="180"
+        >
+          <template #default="scope">
+            {{ scope.row.groupType === 'ou' ? 'organizationalUnit' : 'groupOfUniqueNames' }}
+          </template>
+        </el-table-column>
         <el-table-column
           show-overflow-tooltip
           sortable
