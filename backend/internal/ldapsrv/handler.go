@@ -85,21 +85,34 @@ func getUserInfo(username string) (*model.User, error) {
 }
 
 func getGroupInfo(groupname string) (*model.Group, error) {
+	gc := model.CacheGroupInfoGet(groupname)
+	if gc != nil {
+		return gc, nil
+	}
+
 	var g model.Group
 	err := g.Find(map[string]interface{}{"group_name": groupname})
 	if err != nil {
 		return nil, err
 	}
 	global.Log.Debugf("ldapserver get GroupInfo from database: %+v", groupname)
+	model.CacheGroupInfoSet(groupname, &g)
 	return &g, nil
 }
 
 func getGroupsInfo() ([]*model.Group, error) {
+	gsc := model.CacheGroupsInfoGet()
+	if gsc != nil {
+		return gsc, nil
+	}
+
 	var gs model.Groups
 	err := gs.Find(map[string]interface{}{"group_type": GroupOfUniqueNamesFields})
 	if err != nil {
 		return nil, err
 	}
+	global.Log.Debug("ldapserver get GroupsInfo from database")
+	model.CacheGroupsInfoSet(gs)
 	return gs, nil
 }
 func getAuth(conn *ldapserver.Conn) ldapserver.DN {

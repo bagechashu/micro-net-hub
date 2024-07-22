@@ -6,7 +6,9 @@ import (
 	"micro-net-hub/internal/global"
 	"micro-net-hub/internal/tools"
 	"strings"
+	"time"
 
+	"github.com/patrickmn/go-cache"
 	"gorm.io/gorm"
 )
 
@@ -17,9 +19,40 @@ const (
 	GroupSyncUnNormal                            // 2 未同步
 )
 
+// 当前用户信息缓存，避免频繁获取数据库
+var GroupInfoCache = cache.New(24*time.Hour, 48*time.Hour)
+
+func cacheGroupInfoKeygen(groupname string) string {
+	return fmt.Sprintf("g_%s", groupname)
+}
+
+func CacheGroupInfoGet(groupname string) *Group {
+	key := cacheGroupInfoKeygen(groupname)
+	if cache, found := GroupInfoCache.Get(key); found {
+		return cache.(*Group)
+	}
+	return nil
+}
+
+func CacheGroupInfoSet(groupname string, groupInfo *Group) {
+	key := cacheGroupInfoKeygen(groupname)
+	GroupInfoCache.Set(key, groupInfo, cache.DefaultExpiration)
+}
+
+func CacheGroupInfoDel(groupname string) {
+	key := cacheGroupInfoKeygen(groupname)
+	if _, found := GroupInfoCache.Get(key); found {
+		GroupInfoCache.Delete(key)
+	}
+}
+
+func CacheGroupInfoClear() {
+	GroupInfoCache.Flush()
+}
+
 type Group struct {
 	gorm.Model
-	GroupName          string          `gorm:"type:varchar(128);comment:'分组名称'" json:"groupName"`
+	GroupName          string          `gorm:"type:varchar(128);not null;unique;comment:'分组名称'" json:"groupName"`
 	Remark             string          `gorm:"type:varchar(128);comment:'分组中文说明'" json:"remark"`
 	Creator            string          `gorm:"type:varchar(20);comment:'创建人'" json:"creator"`
 	ParentId           uint            `gorm:"default:0;comment:'父组编号(编号为0时表示根组)'" json:"parentId"`
@@ -119,6 +152,37 @@ func LdapDeptDnsToGroups(dns []string) (groups []*Group, err error) {
 		return nil, err
 	}
 	return
+}
+
+// 当前用户信息缓存，避免频繁获取数据库
+var GroupsInfoCache = cache.New(24*time.Hour, 48*time.Hour)
+
+func cacheGroupsInfoKeygen() string {
+	return "gs_all"
+}
+
+func CacheGroupsInfoGet() Groups {
+	key := cacheGroupsInfoKeygen()
+	if cache, found := GroupsInfoCache.Get(key); found {
+		return cache.(Groups)
+	}
+	return nil
+}
+
+func CacheGroupsInfoSet(groupsInfo Groups) {
+	key := cacheGroupsInfoKeygen()
+	GroupsInfoCache.Set(key, groupsInfo, cache.DefaultExpiration)
+}
+
+func CacheGroupsInfoDel() {
+	key := cacheGroupsInfoKeygen()
+	if _, found := GroupInfoCache.Get(key); found {
+		GroupsInfoCache.Delete(key)
+	}
+}
+
+func CacheGroupsInfoClear() {
+	GroupsInfoCache.Flush()
 }
 
 type Groups []*Group

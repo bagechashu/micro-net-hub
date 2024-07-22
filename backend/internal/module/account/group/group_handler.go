@@ -328,6 +328,7 @@ func Add(c *gin.Context) {
 		return
 	}
 
+	model.CacheGroupsInfoClear()
 	helper.Success(c, nil)
 }
 
@@ -390,6 +391,9 @@ func Update(c *gin.Context) {
 		helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("向MySQL更新分组失败")))
 		return
 	}
+
+	model.CacheGroupInfoDel(oldGroup.GroupName)
+	model.CacheGroupsInfoClear()
 	helper.Success(c, nil)
 }
 
@@ -437,6 +441,8 @@ func Delete(c *gin.Context) {
 			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("向LDAP删除分组失败："+err.Error())))
 			return
 		}
+
+		model.CacheGroupInfoDel(g.GroupName)
 	}
 
 	// 从MySQL中删除
@@ -446,6 +452,7 @@ func Delete(c *gin.Context) {
 		return
 	}
 
+	model.CacheGroupsInfoClear()
 	helper.Success(c, nil)
 }
 
