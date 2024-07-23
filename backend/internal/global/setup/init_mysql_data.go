@@ -805,6 +805,34 @@ func InitData() {
 			Remark:   "网址导航-站点删除",
 			Creator:  "System",
 		},
+		{
+			Method:   "GET",
+			Path:     "/notice/getall",
+			Category: "noticeboard",
+			Remark:   "首页公告-获取所有公告",
+			Creator:  "System",
+		},
+		{
+			Method:   "POST",
+			Path:     "/notice/mgr/add",
+			Category: "noticeboard",
+			Remark:   "首页公告-增加公告",
+			Creator:  "System",
+		},
+		{
+			Method:   "POST",
+			Path:     "/notice/mgr/update",
+			Category: "noticeboard",
+			Remark:   "首页公告-更新公告",
+			Creator:  "System",
+		},
+		{
+			Method:   "POST",
+			Path:     "/notice/mgr/delete",
+			Category: "noticeboard",
+			Remark:   "首页公告-删除公告",
+			Creator:  "System",
+		},
 	}
 	if err := global.DB.Create(&apis).Error; err != nil {
 		global.Log.Errorf("写入api数据失败：%s", err)
@@ -896,6 +924,7 @@ func InitData() {
 			"/user/changePwd",
 			"/menu/access/tree",
 			"/sitenav/list",
+			"/notice/getall",
 		}
 
 		if funk.ContainsString(basePaths, api.Path) {

@@ -9,6 +9,7 @@ import (
 	apiMgrModel "micro-net-hub/internal/module/apimgr/model"
 	dnsModel "micro-net-hub/internal/module/dns/model"
 	fieldRelationModel "micro-net-hub/internal/module/goldap/field_relation/model"
+	noticeboardModel "micro-net-hub/internal/module/noticeboard/model"
 	opLogModel "micro-net-hub/internal/module/operationlog/model"
 	siteNavModel "micro-net-hub/internal/module/sitenav/model"
 	totpModel "micro-net-hub/internal/module/totp/model"
@@ -46,6 +47,7 @@ func dbAutoMigrate() {
 		&siteNavModel.NavSite{},
 		&dnsModel.DnsZone{},
 		&dnsModel.DnsRecord{},
+		&noticeboardModel.NoticeBoard{},
 	)
 }
 

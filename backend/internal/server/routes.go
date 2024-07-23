@@ -15,6 +15,7 @@ import (
 	"micro-net-hub/internal/module/dns"
 	fieldrelation "micro-net-hub/internal/module/goldap/field_relation"
 	"micro-net-hub/internal/module/goldap/sync"
+	"micro-net-hub/internal/module/noticeboard"
 	"micro-net-hub/internal/module/operationlog"
 	"micro-net-hub/internal/module/sitenav"
 	"micro-net-hub/ui"
@@ -78,6 +79,11 @@ func InitRoutes(r *gin.Engine) {
 	// Dns Manager module routes
 	{
 		dns.InitDnsMgrRoutes(apiGroup, authMiddleware)
+	}
+
+	// Notice Manager module routes
+	{
+		noticeboard.InitNoticeMgrRoutes(apiGroup, authMiddleware)
 	}
 
 	global.Log.Info("初始化路由完成！")

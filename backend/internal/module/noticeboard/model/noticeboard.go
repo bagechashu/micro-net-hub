@@ -1,6 +1,12 @@
 package model
 
-import "gorm.io/gorm"
+import (
+	"fmt"
+	"micro-net-hub/internal/global"
+	"micro-net-hub/internal/server/helper"
+
+	"gorm.io/gorm"
+)
 
 // TODO: add an Notice Board
 type NoticeBoard struct {
@@ -27,4 +33,41 @@ func (n NoticeBoard) LevelText() string {
 	default:
 		return "Other"
 	}
+}
+
+func (n NoticeBoard) Find(filter map[string]interface{}) error {
+	if err := global.DB.Model(&NoticeBoard{}).Where(filter).First(&n).Error; err != nil {
+		return helper.NewMySqlError(fmt.Errorf("获取 NoticeBoard 失败: %w", err))
+	}
+	return nil
+}
+
+func (n NoticeBoard) Add() error {
+	if err := global.DB.Create(&n).Error; err != nil {
+		return helper.NewMySqlError(fmt.Errorf("添加 NoticeBoard 失败: %w", err))
+	}
+	return nil
+}
+
+func (n NoticeBoard) Update() error {
+	if err := global.DB.Save(&n).Error; err != nil {
+		return helper.NewMySqlError(fmt.Errorf("更新 NoticeBoard 失败: %w", err))
+	}
+	return nil
+}
+
+func (n NoticeBoard) Delete() error {
+	if err := global.DB.Unscoped().Delete(&n).Error; err != nil {
+		return helper.NewMySqlError(fmt.Errorf("删除 NoticeBoard 失败: %w", err))
+	}
+	return nil
+}
+
+type NoticeBoards []*NoticeBoard
+
+func (ns *NoticeBoards) Find(filter map[string]interface{}) error {
+	if err := global.DB.Model(&NoticeBoard{}).Where(filter).Find(&ns).Error; err != nil {
+		return helper.NewMySqlError(fmt.Errorf("获取 DnsZone 失败: %w", err))
+	}
+	return nil
 }
