@@ -50,7 +50,7 @@ const (
 
 // TODO: https://www.rfc-editor.org/rfc/rfc4515.html
 // Now, only implement the following filter:
-// 1. (&(objectClass=objectClass)(uid=xiaoxue)(memberOf:=cn=employees,dc=example,dc=com))
+// 1. (&(objectClass=inetOrgPerson)(uid=xiaoxue)(memberOf:=cn=employees,dc=example,dc=com))
 // 2. (&(uid=test02)(memberOf:=cn=t1,ou=allhands,dc=example,dc=com))
 // 3. (memberOf:=cn=t1,ou=allhands,dc=example,dc=com)
 // 4. (|(objectClass=organizationalUnit)(objectClass=groupOfUniqueNames))
