@@ -375,12 +375,20 @@ func (us *Users) List(req *User, pageNum int, pageSize int) error {
 // List 获取数据列表
 func (us *Users) ListAll() (err error) {
 	err = global.DB.Model(&User{}).Order("created_at DESC").Find(&us).Error
-
 	return err
 }
 
+// Find 获取多个 User
+func (us *Users) GetUsersByGroupDN(groupDN string) error {
+	return global.DB.Model(&User{}). // Specify the model to avoid loading unnecessary data
+						Joins("INNER JOIN group_users ON users.id = group_users.user_id").
+						Joins("INNER JOIN groups ON group_users.group_id = groups.id").
+						Where("groups.group_dn = ?", groupDN).
+						Find(&us).Error
+}
+
 // GetUserByIds 根据用户ID获取用户角色排序最小值
-func (us *Users) GetUserByIds(ids []uint) error {
+func (us *Users) GetUsersByIds(ids []uint) error {
 	// 根据用户ID获取用户信息
 	err := global.DB.Where("id IN (?)", ids).Preload("Groups").Preload("Roles").Find(&us).Error
 	return err

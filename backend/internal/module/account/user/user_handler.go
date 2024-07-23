@@ -439,7 +439,7 @@ func Delete(c *gin.Context) {
 	}
 
 	var users = model.NewUsers()
-	err = users.GetUserByIds(req.UserIds)
+	err = users.GetUsersByIds(req.UserIds)
 	if err != nil {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取用户信息失败: "+err.Error())))
 		return

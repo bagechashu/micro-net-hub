@@ -83,6 +83,26 @@ func getUserInfo(username string) (*model.User, error) {
 	model.CacheUserInfoSet(username, &u)
 	return &u, nil
 }
+func getUsersInfo(groupDN string) ([]*model.User, error) {
+	// gsc := model.CacheGroupsInfoGet()
+	// if gsc != nil {
+	// 	return gsc, nil
+	// }
+
+	var us model.Users
+	var err error
+	if groupDN != "" {
+		err = us.GetUsersByGroupDN(groupDN)
+	} else {
+		err = us.ListAll()
+	}
+	if err != nil {
+		return nil, err
+	}
+	global.Log.Debug("ldapserver get usersInfo from database")
+	// model.CacheGroupsInfoSet(gs)
+	return us, nil
+}
 
 func getGroupInfo(groupname string) (*model.Group, error) {
 	gc := model.CacheGroupInfoGet(groupname)
@@ -182,8 +202,6 @@ func (ls *LdapSrvHandler) Bind(conn *ldapserver.Conn, msg *ldapserver.Message, r
 // ### TODO: search req NOT supported: ###
 // [normal Wildcards search]
 // &{BaseObject: Scope:0 DerefAliases:0 SizeLimit:0 TimeLimit:0 TypesOnly:false Filter:(objectClass=*) Attributes:[altServer namingContexts supportedCapabilities supportedControl supportedExtension supportedFeatures supportedLdapVersion supportedSASLMechanisms]}
-// [nexus user mapping]:
-// x &{BaseObject:ou=people,dc=example,dc=com Scope:2 DerefAliases:3 SizeLimit:20 TimeLimit:0 TypesOnly:false Filter:(&(objectClass=inetOrgPerson)(uid=*)) Attributes:[uid cn mail labeledUri memberOf:=cn=t1,ou=allhands,dc=example,dc=com]}
 
 // ### search req supported: ###
 // [normal search]:
@@ -194,6 +212,8 @@ func (ls *LdapSrvHandler) Bind(conn *ldapserver.Conn, msg *ldapserver.Message, r
 // [nexus]:
 // √ &{BaseObject:dc=example,dc=com Scope:2 DerefAliases:3 SizeLimit:1 TimeLimit:0 TypesOnly:false Filter:(&(objectClass=inetOrgPerson)(uid=test01)) Attributes:[uid cn mail labeledUri memberOf:=cn=t1,ou=allhands,dc=example,dc=com]}
 // √ &{BaseObject:ou=people,dc=example,dc=com Scope:2 DerefAliases:3 SizeLimit:1 TimeLimit:0 TypesOnly:false Filter:(&(objectClass=inetOrgPerson)(uid=test01)) Attributes:[uid cn mail labeledUri memberOf:=cn=t1,ou=allhands,dc=example,dc=com]}
+// [nexus user mapping]:
+// √ &{BaseObject:ou=people,dc=example,dc=com Scope:2 DerefAliases:3 SizeLimit:20 TimeLimit:0 TypesOnly:false Filter:(&(objectClass=inetOrgPerson)(uid=*)) Attributes:[uid cn mail labeledUri memberOf:=cn=t1,ou=allhands,dc=example,dc=com]}
 // [harbor]
 // √ &{BaseObject:dc=example,dc=com Scope:2 DerefAliases:0 SizeLimit:0 TimeLimit:0 TypesOnly:false Filter:(uid=test01) Attributes:[dn cn uid memberOf]}
 
@@ -255,7 +275,7 @@ func (ls *LdapSrvHandler) Search(conn *ldapserver.Conn, msg *ldapserver.Message,
 
 func searchUser(conn *ldapserver.Conn, msg *ldapserver.Message, req *ldapserver.SearchRequest, query *Query) {
 	var user string
-	var group string
+	var groupdn string
 
 	// adapt "gitlab" ldap search request:
 	// if request is "gitlab" Req, it cat get "user" from the BaseObject DN.
@@ -290,21 +310,39 @@ func searchUser(conn *ldapserver.Conn, msg *ldapserver.Message, req *ldapserver.
 	}
 
 	if query.MemberOf != "" {
-		group = query.MemberOf
+		groupdn = query.MemberOf
 	} else {
 		// adapt "Nexus" Dynamic groups filter:
 		// "Nexus" Dynamic groups filter set "memeberOf" at Attributes.
 		// So we need to get "memberOf" from Attributes.
 		attr := parseLdapAttributes(req.Attributes)
 		if attr != nil && attr.MemberOf != "" {
-			group = attr.MemberOf
+			groupdn = attr.MemberOf
 		}
+	}
+
+	// adapt "nexus" ldap user mapping search request:
+	if user == "*" {
+		entrys, err := genUsersEntry(groupdn)
+		if err != nil {
+			if err == gorm.ErrRecordNotFound {
+				conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultNoSuchObject.AsResult(""))
+				return
+			}
+			conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultOperationsError.AsResult(""))
+			return
+		}
+		for _, entry := range entrys {
+			conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultEntryOp, entry)
+		}
+		conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultSuccess.AsResult(""))
+		return
 	}
 
 	// adapt Search with group filter:
 	// if group is not empty, we need to check if user is in group.
-	if group != "" {
-		find, err := model.UserExistsInGroup(user, group)
+	if groupdn != "" {
+		find, err := model.UserExistsInGroup(user, groupdn)
 		if err != nil {
 			conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultOperationsError.AsResult(err.Error()))
 			return
@@ -355,6 +393,32 @@ func genUserEntry(username string) (entry *ldapserver.SearchResultEntry, err err
 		entry.Attributes = append(entry.Attributes, ldapserver.Attribute{Description: "memberOf", Values: []string{g.GroupDN}})
 	}
 
+	return
+}
+
+func genUsersEntry(groupDN string) (entrys []*ldapserver.SearchResultEntry, err error) {
+	us, err := getUsersInfo(groupDN)
+	if err != nil {
+		return
+	}
+
+	for _, u := range us {
+		entrys = append(entrys, &ldapserver.SearchResultEntry{
+			ObjectName: u.UserDN,
+			Attributes: []ldapserver.Attribute{
+				{Description: "objectClass", Values: []string{"inetOrgPerson"}},
+				{Description: "uid", Values: []string{u.Username}},
+				{Description: "userid", Values: []string{u.Username}},
+				{Description: "cn", Values: []string{u.Username}},
+				{Description: "sn", Values: []string{u.Username}},
+				{Description: "displayName", Values: []string{u.Nickname}},
+				{Description: "givenName", Values: []string{u.GivenName}},
+				{Description: "mail", Values: []string{u.Mail}},
+				{Description: "email", Values: []string{u.Mail}},
+				{Description: "mobile", Values: []string{u.Mobile}},
+			},
+		})
+	}
 	return
 }
 

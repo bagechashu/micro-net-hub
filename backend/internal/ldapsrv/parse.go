@@ -55,6 +55,7 @@ const (
 // 3. (memberOf:=cn=t1,ou=allhands,dc=example,dc=com)
 // 4. (|(objectClass=organizationalUnit)(objectClass=groupOfUniqueNames))
 // 5. (&(objectclass=groupOfUniqueNames)(cn=*))
+// 6. (&(objectClass=inetOrgPerson)(uid=*)
 // x. (objectClass=*)
 func ParseLdapQuery(query string) (*Query, error) {
 	if query == "" {

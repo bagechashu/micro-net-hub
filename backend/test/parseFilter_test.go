@@ -80,6 +80,15 @@ func TestParseLdapQuery(t *testing.T) {
 			wantError: false,
 		},
 		{
+			query: "(&(objectClass=inetOrgPerson)(uid=*)",
+			want: &ldapsrv.Query{
+				MemberOf:    "",
+				Uid:         "*",
+				ObjectClass: "inetOrgPerson",
+			},
+			wantError: false,
+		},
+		{
 			query: "(&(objectclass=groupOfUniqueNames)(|(cn=Smith)(uid=Smith))(givenName=Smith))",
 			want: &ldapsrv.Query{
 				MemberOf:    "",
