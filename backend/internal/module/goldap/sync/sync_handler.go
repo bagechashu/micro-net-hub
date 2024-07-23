@@ -114,7 +114,7 @@ func SyncOpenLdapUsers(c *gin.Context) {
 		helper.ErrV2(c, helper.ReloadErr(err))
 		return
 	}
-	helper.Success(c, nil)
+	helper.Success(c, "Ldap用户同步完成, 但密码未同步, 需要用户自行重置")
 }
 
 // 同步原ldap部门信息

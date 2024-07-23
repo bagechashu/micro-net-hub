@@ -787,9 +787,10 @@ export default {
     // 判断结果
     judgeResult(res) {
       if (res.code === 200) {
+        const message = res.data ? res.data : "操作成功";
         Message({
           showClose: true,
-          message: "操作成功",
+          message: message,
           type: "success"
         });
       }
