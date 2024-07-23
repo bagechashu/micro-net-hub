@@ -332,6 +332,42 @@ func (u *User) Login() (*User, error) {
 	return &userRight, nil
 }
 
+// 当前用户信息缓存，避免频繁获取数据库
+var UsersInfoCache = cache.New(24*time.Hour, 48*time.Hour)
+
+func cacheUsersInfoKeygen(groupdn string) string {
+	if groupdn == "" {
+		return "us_all"
+	}
+	gdn := strings.ReplaceAll(groupdn, ",", "_")
+	gdn = strings.ReplaceAll(gdn, "=", "-")
+	return fmt.Sprintf("us_%s", gdn)
+}
+
+func CacheUsersInfoGet(groupdn string) *Users {
+	key := cacheUsersInfoKeygen(groupdn)
+	if cache, found := UsersInfoCache.Get(key); found {
+		return cache.(*Users)
+	}
+	return nil
+}
+
+func CacheUsersInfoSet(groupdn string, usersInfo *Users) {
+	key := cacheUsersInfoKeygen(groupdn)
+	UsersInfoCache.Set(key, usersInfo, cache.DefaultExpiration)
+}
+
+func CacheUsersInfoDel(groupdn string) {
+	key := cacheUsersInfoKeygen(groupdn)
+	if _, found := UsersInfoCache.Get(key); found {
+		UsersInfoCache.Delete(key)
+	}
+}
+
+func CacheUsersInfoClear() {
+	UsersInfoCache.Flush()
+}
+
 type Users []*User
 
 func NewUsers() Users {

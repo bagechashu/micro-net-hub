@@ -79,15 +79,15 @@ func getUserInfo(username string) (*model.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	global.Log.Debugf("ldapserver get UserInfo from database: %+v", username)
+	global.Log.Debugf("ldapserver get UserInfo from database: %s", username)
 	model.CacheUserInfoSet(username, &u)
 	return &u, nil
 }
-func getUsersInfo(groupDN string) ([]*model.User, error) {
-	// gsc := model.CacheGroupsInfoGet()
-	// if gsc != nil {
-	// 	return gsc, nil
-	// }
+func getUsersInfo(groupDN string) (*model.Users, error) {
+	usc := model.CacheUsersInfoGet(groupDN)
+	if usc != nil {
+		return usc, nil
+	}
 
 	var us model.Users
 	var err error
@@ -99,9 +99,9 @@ func getUsersInfo(groupDN string) ([]*model.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	global.Log.Debug("ldapserver get usersInfo from database")
-	// model.CacheGroupsInfoSet(gs)
-	return us, nil
+	global.Log.Debugf("ldapserver get usersInfo from database: %s", groupDN)
+	model.CacheUsersInfoSet(groupDN, &us)
+	return &us, nil
 }
 
 func getGroupInfo(groupname string) (*model.Group, error) {
@@ -115,7 +115,7 @@ func getGroupInfo(groupname string) (*model.Group, error) {
 	if err != nil {
 		return nil, err
 	}
-	global.Log.Debugf("ldapserver get GroupInfo from database: %+v", groupname)
+	global.Log.Debugf("ldapserver get GroupInfo from database: %s", groupname)
 	model.CacheGroupInfoSet(groupname, &g)
 	return &g, nil
 }
@@ -406,7 +406,7 @@ func genUsersEntry(groupDN string) (entrys []*ldapserver.SearchResultEntry, err 
 		return
 	}
 
-	for _, u := range us {
+	for _, u := range *us {
 		entrys = append(entrys, &ldapserver.SearchResultEntry{
 			ObjectName: u.UserDN,
 			Attributes: []ldapserver.Attribute{
