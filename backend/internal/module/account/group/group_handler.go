@@ -301,10 +301,12 @@ func Add(c *gin.Context) {
 	}
 
 	// 先在ldap中创建组
-	err = ldapmgr.LdapDeptAdd(&group)
-	if err != nil {
-		helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("向LDAP创建分组失败"+err.Error())))
-		return
+	if config.Conf.Ldap.EnableManage {
+		err = ldapmgr.LdapDeptAdd(&group)
+		if err != nil {
+			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("向LDAP创建分组失败"+err.Error())))
+			return
+		}
 	}
 
 	// 然后在数据库中创建组
@@ -381,10 +383,12 @@ func Update(c *gin.Context) {
 		newGroup.GroupName = oldGroup.GroupName
 	}
 
-	err = ldapmgr.LdapDeptUpdate(oldGroup, &newGroup)
-	if err != nil {
-		helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("向LDAP更新分组失败："+err.Error())))
-		return
+	if config.Conf.Ldap.EnableManage {
+		err = ldapmgr.LdapDeptUpdate(oldGroup, &newGroup)
+		if err != nil {
+			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("向LDAP更新分组失败："+err.Error())))
+			return
+		}
 	}
 	err = newGroup.Update()
 	if err != nil {
@@ -436,10 +440,13 @@ func Delete(c *gin.Context) {
 
 		// 删除的时候先从ldap进行删除
 		// global.Log.Infof("print groups before delete: %v", g)
-		err = ldapmgr.LdapDeptDelete(g.GroupDN)
-		if err != nil {
-			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("向LDAP删除分组失败："+err.Error())))
-			return
+
+		if config.Conf.Ldap.EnableManage {
+			err = ldapmgr.LdapDeptDelete(g.GroupDN)
+			if err != nil {
+				helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("向LDAP删除分组失败："+err.Error())))
+				return
+			}
 		}
 
 		model.CacheGroupInfoDel(g.GroupName)
@@ -504,11 +511,14 @@ func AddUser(c *gin.Context) {
 	}
 
 	// 再往ldap添加
-	for _, user := range users {
-		err = ldapmgr.LdapDeptAddUserToGroup(group.GroupDN, user.UserDN)
-		if err != nil {
-			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("向LDAP添加用户到分组失败"+err.Error())))
-			return
+
+	if config.Conf.Ldap.EnableManage {
+		for _, user := range users {
+			err = ldapmgr.LdapDeptAddUserToGroup(group.GroupDN, user.UserDN)
+			if err != nil {
+				helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("向LDAP添加用户到分组失败"+err.Error())))
+				return
+			}
 		}
 	}
 
@@ -555,11 +565,13 @@ func RemoveUser(c *gin.Context) {
 	}
 
 	// 先操作ldap
-	for _, user := range users {
-		err := ldapmgr.LdapDeptRemoveUserFromGroup(group.GroupDN, user.UserDN)
-		if err != nil {
-			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("将用户从ldap移除失败"+err.Error())))
-			return
+	if config.Conf.Ldap.EnableManage {
+		for _, user := range users {
+			err := ldapmgr.LdapDeptRemoveUserFromGroup(group.GroupDN, user.UserDN)
+			if err != nil {
+				helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("将用户从ldap移除失败"+err.Error())))
+				return
+			}
 		}
 	}
 

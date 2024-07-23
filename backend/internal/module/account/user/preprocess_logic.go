@@ -20,13 +20,16 @@ import (
 // CommonAddGroup 标准创建分组
 func CommonAddGroup(group *accountModel.Group) error {
 	// 先在ldap中创建组
-	err := ldapmgr.LdapDeptAdd(group)
-	if err != nil {
-		return err
+
+	if config.Conf.Ldap.EnableManage {
+		err := ldapmgr.LdapDeptAdd(group)
+		if err != nil {
+			return err
+		}
 	}
 
 	// 然后在数据库中创建组
-	err = group.Add()
+	err := group.Add()
 	if err != nil {
 		return err
 	}
@@ -53,11 +56,14 @@ func CommonUpdateGroup(oldGroup, newGroup *accountModel.Group) error {
 		newGroup.GroupName = oldGroup.GroupName
 	}
 
-	err := ldapmgr.LdapDeptUpdate(oldGroup, newGroup)
-	if err != nil {
-		return err
+	if config.Conf.Ldap.EnableManage {
+		err := ldapmgr.LdapDeptUpdate(oldGroup, newGroup)
+		if err != nil {
+			return err
+		}
 	}
-	err = newGroup.Update()
+
+	err := newGroup.Update()
 	if err != nil {
 		return err
 	}
@@ -77,20 +83,22 @@ func CommonAddUser(user *accountModel.User) error {
 		return helper.NewMySqlError(fmt.Errorf("向MySQL创建用户失败：" + err.Error()))
 	}
 	// 再将用户添加到ldap
-	err = ldapmgr.LdapUserAdd(user)
-	if err != nil {
-		return helper.NewLdapError(fmt.Errorf("AddUser向LDAP创建用户失败：" + err.Error()))
-	}
 
-	// 处理用户归属的组
-	for _, group := range user.Groups {
-		if group.GroupDN[:3] == "ou=" {
-			continue
-		}
-		//根据选择的部门，添加到部门内
-		err = ldapmgr.LdapDeptAddUserToGroup(group.GroupDN, user.UserDN)
+	if config.Conf.Ldap.EnableManage {
+		err := ldapmgr.LdapUserAdd(user)
 		if err != nil {
-			return helper.NewLdapError(fmt.Errorf("向Ldap添加用户到分组关系失败：" + err.Error()))
+			return helper.NewLdapError(fmt.Errorf("AddUser向LDAP创建用户失败：" + err.Error()))
+		}
+		// 处理用户归属的组
+		for _, group := range user.Groups {
+			if group.GroupDN[:3] == "ou=" {
+				continue
+			}
+			//根据选择的部门，添加到部门内
+			err = ldapmgr.LdapDeptAddUserToGroup(group.GroupDN, user.UserDN)
+			if err != nil {
+				return helper.NewLdapError(fmt.Errorf("向Ldap添加用户到分组关系失败：" + err.Error()))
+			}
 		}
 	}
 	return nil
@@ -111,12 +119,14 @@ func CommonUpdateUser(oldUser, newUser *accountModel.User, groupIds []uint) erro
 		}
 	}
 
-	err := ldapmgr.LdapUserUpdate(oldUser.Username, newUser)
-	if err != nil {
-		return helper.NewLdapError(fmt.Errorf("在LDAP更新用户失败：" + err.Error()))
+	if config.Conf.Ldap.EnableManage {
+		err := ldapmgr.LdapUserUpdate(oldUser.Username, newUser)
+		if err != nil {
+			return helper.NewLdapError(fmt.Errorf("在LDAP更新用户失败：" + err.Error()))
+		}
 	}
 
-	err = newUser.Update()
+	err := newUser.Update()
 	if err != nil {
 		return helper.NewMySqlError(fmt.Errorf("在MySQL更新用户失败：" + err.Error()))
 	}
@@ -144,9 +154,12 @@ func CommonUpdateUser(oldUser, newUser *accountModel.User, groupIds []uint) erro
 			return helper.NewMySqlError(fmt.Errorf("向MySQL添加用户到分组关系失败：" + err.Error()))
 		}
 		//根据选择的部门，添加到部门内
-		err = ldapmgr.LdapDeptAddUserToGroup(group.GroupDN, newUser.UserDN)
-		if err != nil {
-			return helper.NewLdapError(fmt.Errorf("向Ldap添加用户到分组关系失败：" + err.Error()))
+
+		if config.Conf.Ldap.EnableManage {
+			err := ldapmgr.LdapDeptAddUserToGroup(group.GroupDN, newUser.UserDN)
+			if err != nil {
+				return helper.NewLdapError(fmt.Errorf("向Ldap添加用户到分组关系失败：" + err.Error()))
+			}
 		}
 	}
 
@@ -164,9 +177,12 @@ func CommonUpdateUser(oldUser, newUser *accountModel.User, groupIds []uint) erro
 		if err != nil {
 			return helper.NewMySqlError(fmt.Errorf("在MySQL将用户从分组移除失败：" + err.Error()))
 		}
-		err = ldapmgr.LdapDeptRemoveUserFromGroup(group.GroupDN, newUser.UserDN)
-		if err != nil {
-			return helper.NewMySqlError(fmt.Errorf("在ldap将用户从分组移除失败：" + err.Error()))
+
+		if config.Conf.Ldap.EnableManage {
+			err := ldapmgr.LdapDeptRemoveUserFromGroup(group.GroupDN, newUser.UserDN)
+			if err != nil {
+				return helper.NewMySqlError(fmt.Errorf("在ldap将用户从分组移除失败：" + err.Error()))
+			}
 		}
 	}
 	return nil

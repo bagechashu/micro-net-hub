@@ -11,6 +11,8 @@ import (
 
 func InitCron() {
 	c := cron.New(cron.WithSeconds())
+	// 自动检索未同步数据
+	global.Log.Infof("定时任务启动: %s", config.Conf.Sync.LdapSyncTime)
 
 	if config.Conf.DingTalk != nil && config.Conf.DingTalk.Flag != "" && config.Conf.Sync.EnableSync {
 		ding := usermgr.NewDingTalk()
@@ -56,25 +58,25 @@ func InitCron() {
 			feishu.SyncDepts()
 		})
 		if err != nil {
-			global.Log.Errorf("启动同步部门的定时任务失败: %v", err)
+			global.Log.Errorf("同步部门的定时任务启动失败: %v", err)
 		}
 		//每天凌晨1点执行一次
 		_, err = c.AddFunc(config.Conf.Sync.UserSyncTime, func() {
 			feishu.SyncUsers()
 		})
 		if err != nil {
-			global.Log.Errorf("启动同步用户的定时任务失败: %v", err)
+			global.Log.Errorf("同步用户的定时任务启动失败: %v", err)
 		}
 	}
 
-	// 自动检索未同步数据
-	global.Log.Infof("启动同步ldap数据的定时任务: %s", config.Conf.Sync.LdapSyncTime)
-	_, err := c.AddFunc(config.Conf.Sync.LdapSyncTime, func() {
-		_ = sync.SearchGroupDiff()
-		_ = sync.SearchUserDiff()
-	})
-	if err != nil {
-		global.Log.Errorf("启动同步任务状态检查任务失败: %v", err)
+	if config.Conf.Ldap.EnableManage {
+		_, err := c.AddFunc(config.Conf.Sync.LdapSyncTime, func() {
+			_ = sync.SearchGroupDiff()
+			_ = sync.SearchUserDiff()
+		})
+		if err != nil {
+			global.Log.Errorf("同步任务状态检查任务启动失败: %v", err)
+		}
 	}
 	c.Start()
 	global.Log.Info("初始化定时任务完成")

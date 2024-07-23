@@ -37,7 +37,9 @@ func main() {
 	setup.InitDB()
 
 	// setup LdapPool
-	setup.InitLdapPool()
+	if config.Conf.Ldap.EnableManage {
+		setup.InitLdapPool()
+	}
 
 	// 初始化casbin策略管理器
 	setup.InitCasbinEnforcer()

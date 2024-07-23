@@ -91,10 +91,15 @@ func ForgetPwd(c *gin.Context) {
 		return
 	}
 
-	newpass, err := ldapmgr.LdapUserNewPwd(user.Username)
-	if err != nil {
-		helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("LDAP生成新密码失败"+err.Error())))
-		return
+	var newpass string
+	if config.Conf.Ldap.EnableManage {
+		newpass, err = ldapmgr.LdapUserNewPwd(user.Username)
+		if err != nil {
+			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("LDAP生成新密码失败"+err.Error())))
+			return
+		}
+	} else {
+		newpass = tools.GeneratePassword(8)
 	}
 
 	// 更新数据库密码

@@ -50,6 +50,7 @@ func InitConfig() {
 	viper.SetDefault("sync.ldap-sync-time", "0 */2 * * * *")
 	viper.SetDefault("radius.fail-times-before-block5min", 9)
 	viper.SetDefault("email.enable", false)
+	viper.SetDefault("ldap-server.enable-manage", false)
 	viper.SetDefault("ldap-server.listen-addr", "0.0.0.0:1389")
 	viper.SetDefault("ldap-server.totp-enable", true)
 	viper.SetDefault("dns.listen-addr", "0.0.0.0:53")
@@ -165,6 +166,7 @@ type RateLimit struct {
 }
 
 type Ldap struct {
+	EnableManage       bool   `mapstructure:"enable-manage" json:"enableManage"`
 	Url                string `mapstructure:"url" json:"url"`
 	MaxConn            int    `mapstructure:"max-conn" json:"maxConn"`
 	BaseDN             string `mapstructure:"base-dn" json:"baseDN"`

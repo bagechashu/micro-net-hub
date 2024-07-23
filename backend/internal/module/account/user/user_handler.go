@@ -446,11 +446,13 @@ func Delete(c *gin.Context) {
 	}
 
 	// 先将用户从ldap中删除
-	for _, user := range users {
-		err := ldapmgr.LdapUserDelete(user.UserDN)
-		if err != nil {
-			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("在LDAP删除用户失败"+err.Error())))
-			return
+	if config.Conf.Ldap.EnableManage {
+		for _, user := range users {
+			err := ldapmgr.LdapUserDelete(user.UserDN)
+			if err != nil {
+				helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("在LDAP删除用户失败"+err.Error())))
+				return
+			}
 		}
 	}
 
@@ -574,11 +576,14 @@ func ChangePwd(c *gin.Context) {
 		helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("原密码错误")))
 		return
 	}
+
 	// ldap更新密码时可以直接指定用户DN和新密码即可更改成功
-	err = ldapmgr.LdapUserChangePwd(user.UserDN, "", req.NewPassword)
-	if err != nil {
-		helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("在LDAP更新密码失败"+err.Error())))
-		return
+	if config.Conf.Ldap.EnableManage {
+		err = ldapmgr.LdapUserChangePwd(user.UserDN, "", req.NewPassword)
+		if err != nil {
+			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("在LDAP更新密码失败"+err.Error())))
+			return
+		}
 	}
 
 	// 更新密码
@@ -646,18 +651,22 @@ func ChangeUserStatus(c *gin.Context) {
 	var statusDesc string
 	var syncStat model.UserSyncStatus
 	if req.Status == model.UserDisabled {
-		err = ldapmgr.LdapUserDelete(user.UserDN)
-		if err != nil {
-			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("在LDAP删除用户失败"+err.Error())))
-			return
+		if config.Conf.Ldap.EnableManage {
+			err = ldapmgr.LdapUserDelete(user.UserDN)
+			if err != nil {
+				helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("在LDAP删除用户失败"+err.Error())))
+				return
+			}
 		}
 		statusDesc = "deactivated"
 		syncStat = model.UserSyncUnNormal
 	} else if req.Status == model.UserNormal {
-		err = ldapmgr.LdapUserAdd(user)
-		if err != nil {
-			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("在LDAP添加用户失败"+err.Error())))
-			return
+		if config.Conf.Ldap.EnableManage {
+			err = ldapmgr.LdapUserAdd(user)
+			if err != nil {
+				helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("在LDAP添加用户失败"+err.Error())))
+				return
+			}
 		}
 		statusDesc = "actived"
 		syncStat = model.UserSyncNormal

@@ -1,6 +1,7 @@
 package sync
 
 import (
+	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/module/account/role"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
@@ -20,10 +21,12 @@ func InitGoldapSyncRoutes(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddlewa
 		goldap.POST("/syncWeComDepts", SyncWeComDepts)       // 同步企业微信部门到平台
 		goldap.POST("/syncFeiShuUsers", SyncFeiShuUsers)     // 同步飞书用户到平台
 		goldap.POST("/syncFeiShuDepts", SyncFeiShuDepts)     // 同步飞书部门到平台
-		goldap.POST("/syncOpenLdapDepts", SyncOpenLdapDepts) // 同步ldap的分组到平台
-		goldap.POST("/syncOpenLdapUsers", SyncOpenLdapUsers) // 同步Ldap用户到平台
-		goldap.POST("/syncSqlUsers", SyncSqlUsers)           // 同步Sql用户到Ldap
-		goldap.POST("/syncSqlGroups", SyncSqlGroups)         // 同步Sql分组到Ldap
+		if config.Conf.Ldap.EnableManage {
+			goldap.POST("/syncOpenLdapDepts", SyncOpenLdapDepts) // 同步ldap的分组到平台
+			goldap.POST("/syncOpenLdapUsers", SyncOpenLdapUsers) // 同步Ldap用户到平台
+			goldap.POST("/syncSqlUsers", SyncSqlUsers)           // 同步Sql用户到Ldap
+			goldap.POST("/syncSqlGroups", SyncSqlGroups)         // 同步Sql分组到Ldap
+		}
 	}
 
 	return r
