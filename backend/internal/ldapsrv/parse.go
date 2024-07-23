@@ -22,7 +22,7 @@ func parseLdapAttributes(attributes []string) *Attributes {
 			parts := strings.SplitN(attribute, "=", 2)
 			key := strings.TrimSuffix(parts[0], ":")
 			switch key {
-			case "memberOf":
+			case "memberOf", "memberof":
 				attr.MemberOf = parts[1]
 			default:
 				return nil
@@ -40,6 +40,14 @@ type Query struct {
 
 const GroupOfUniqueNamesFields = "cn"
 
+// 定义键名常量
+const (
+	KeyObjectClass = "objectclass"
+	KeyMemberOf    = "memberof"
+	KeyUid         = "uid"
+	KeyCN          = "cn"
+)
+
 // TODO: https://www.rfc-editor.org/rfc/rfc4515.html
 // Now, only implement the following filter:
 // 1. (&(objectClass=objectClass)(uid=xiaoxue)(memberOf:=cn=employees,dc=example,dc=com))
@@ -49,121 +57,122 @@ const GroupOfUniqueNamesFields = "cn"
 // 5. (&(objectclass=groupOfUniqueNames)(cn=*))
 // x. (objectClass=*)
 func ParseLdapQuery(query string) (*Query, error) {
+	if query == "" {
+		return nil, fmt.Errorf("not supported empty query string")
+	}
+
 	queryMap, err := parseLdapQueryToMap(query)
 	if err != nil {
 		return nil, err
 	}
 	if queryMap == nil {
-		return nil, fmt.Errorf("ldap query format not support: %s", query)
+		return nil, fmt.Errorf("not supported ldap query format: %s", query)
+	}
+
+	// 统一处理键的大小写
+	for key, value := range queryMap {
+		lowerKey := strings.ToLower(key)
+		if lowerKey != key {
+			delete(queryMap, key)
+			queryMap[lowerKey] = value
+		}
 	}
 
 	q := &Query{}
+	q.ObjectClass = queryMap[KeyObjectClass]
+	q.MemberOf = queryMap[KeyMemberOf]
 
-	q.ObjectClass = queryMap["objectclass"]
-	q.MemberOf = queryMap["memberof"]
-
-	if val, ok := queryMap["uid"]; ok {
+	if val, ok := queryMap[KeyUid]; ok {
 		q.Uid = val
-	} else if val, ok := queryMap["cn"]; ok {
+	} else if val, ok := queryMap[KeyCN]; ok {
 		q.Uid = val
 	}
+
 	return q, nil
 }
 
 func parseLdapQueryToMap(query string) (map[string]string, error) {
-	result := make(map[string]string)
-	// 移除首尾可能存在的括号
 	query = strings.Trim(query, "()")
-	if strings.HasPrefix(query, "&") {
-		// 根据")("分割查询字符串
-		parts := strings.Split(query, ")(")
+	switch {
+	case strings.HasPrefix(query, "&"):
+		return parseLogicalOperatorQuery(query, "&")
+	case strings.HasPrefix(query, "|"):
+		return parseLogicalOperatorQuery(query, "|")
+	case strings.HasPrefix(query, "!"):
+		return nil, fmt.Errorf("not supported query format: %s", query)
+	default:
+		return parseSingleQuery(query)
+	}
+}
 
-		for _, part := range parts {
-			trimmedPart := strings.TrimSpace(part)
-			// 通过检查前缀来优化性能，避免不必要的TrimPrefix调用
-			trimmedPart = strings.TrimPrefix(trimmedPart, "&")
-			trimmedPart = strings.TrimPrefix(trimmedPart, "(")
-
-			// 这里可以添加对查询部分的额外验证来增强安全性
-			equalParts := strings.SplitN(trimmedPart, "=", 2)
-			if len(equalParts) != 2 {
-				return nil, fmt.Errorf("invalid query format: %s", trimmedPart)
-			}
-
-			key := strings.ToLower(strings.TrimSpace(equalParts[0]))
-			value := strings.TrimSpace(equalParts[1])
-
-			// 移除键末尾的冒号，如果存在的话, eg: memeberOf:=cn=employees,dc=example,dc=com
-			key = strings.TrimSuffix(key, ":")
-
-			// 验证key是否为空，增加边界条件处理
-			if key == "" {
-				return nil, fmt.Errorf("invalid query format: key is empty")
-			}
-			result[key] = value
-		}
-	} else if strings.HasPrefix(query, "|") {
-		// 根据")("分割查询字符串
-		parts := strings.Split(query, ")(")
-
-		for _, part := range parts {
-			trimmedPart := strings.TrimSpace(part)
-			// 通过检查前缀来优化性能，避免不必要的TrimPrefix调用
-			trimmedPart = strings.TrimPrefix(trimmedPart, "|")
-			trimmedPart = strings.TrimPrefix(trimmedPart, "(")
-
-			// 这里可以添加对查询部分的额外验证来增强安全性
-			equalParts := strings.SplitN(trimmedPart, "=", 2)
-			if len(equalParts) != 2 {
-				return nil, fmt.Errorf("invalid query format: %s", trimmedPart)
-			}
-
-			key := strings.ToLower(strings.TrimSpace(equalParts[0]))
-			value := strings.TrimSpace(equalParts[1])
-
-			// 移除键末尾的冒号，如果存在的话, eg: memeberOf:=cn=employees,dc=example,dc=com
-			key = strings.TrimSuffix(key, ":")
-
-			// 验证key是否为空，增加边界条件处理
-			if key == "" {
-				return nil, fmt.Errorf("invalid query format: key is empty")
-			}
+func parseLogicalOperatorQuery(query string, operator string) (map[string]string, error) {
+	result := make(map[string]string)
+	query = trimLogicSymbol(query)
+	// check subquery
+	if strings.ContainsAny(query, "&|!") {
+		return nil, fmt.Errorf("not supported subquery")
+	}
+	// 根据")("分割查询字符串
+	parts := strings.Split(query, ")(")
+	for _, part := range parts {
+		if key, value, err := parseQueryPart(part); err != nil {
+			return nil, err
+		} else {
+			// Handle key repetition for logical operator queries.
 			if existingValues, exists := result[key]; exists {
-				// Use strings.Builder for efficient string concatenation
 				var builder strings.Builder
 				builder.WriteString(existingValues)
-				builder.WriteString("|")
+				builder.WriteString(operator)
 				builder.WriteString(value)
 				result[key] = builder.String()
 			} else {
-				key = strings.ToLower(key)
 				result[key] = value
 			}
 		}
-	} else {
-		equalParts := strings.SplitN(query, "=", 2)
-		if len(equalParts) == 2 {
-			key := strings.ToLower(strings.TrimSpace(equalParts[0]))
-			value := strings.TrimSpace(equalParts[1])
-
-			// 移除键末尾的冒号，如果存在的话, eg: memeberOf:=cn=employees,dc=example,dc=com
-			key = strings.TrimSuffix(key, ":")
-
-			// 验证key是否为空，增加边界条件处理
-			if key == "" {
-				return nil, fmt.Errorf("invalid query format: key is empty")
-			}
-			result[key] = value
-		} else {
-			// 提供详细的错误信息帮助调用者理解问题所在
-			return nil, fmt.Errorf("invalid query format: %s", query)
-		}
-	}
-
-	if len(result) == 0 {
-		return nil, fmt.Errorf("invalid ldap query format: %s", query)
 	}
 	return result, nil
+}
+
+func parseSingleQuery(query string) (map[string]string, error) {
+	result := make(map[string]string, 1)
+	equalParts := strings.SplitN(query, "=", 2)
+	if len(equalParts) != 2 {
+		return nil, fmt.Errorf("not supported query format: %s", query)
+	}
+	if key, value, err := parseQueryPart(query); err != nil {
+		return nil, err
+	} else {
+		result[key] = value
+
+	}
+	return result, nil
+}
+
+func parseQueryPart(part string) (string, string, error) {
+	// Split key=value pair.
+	equalParts := strings.SplitN(part, "=", 2)
+	if len(equalParts) != 2 {
+		return "", "", fmt.Errorf("not supported query format: %s", part)
+	}
+	key := strings.TrimSpace(equalParts[0])
+	value := strings.TrimSpace(equalParts[1])
+	// Remove potential colon from key.
+	key = strings.TrimSuffix(key, ":")
+	// Validate key.
+	if key == "" {
+		return "", "", fmt.Errorf("not supported query format")
+	}
+	return key, value, nil
+}
+
+func trimLogicSymbol(query string) string {
+	trimmed := strings.TrimSpace(query)
+	// Remove prefix operators if present.
+	trimmed = strings.TrimPrefix(trimmed, "&")
+	trimmed = strings.TrimPrefix(trimmed, "|")
+	trimmed = strings.TrimPrefix(trimmed, "!")
+	trimmed = strings.TrimPrefix(trimmed, "(")
+	return trimmed
 }
 
 type DN struct {

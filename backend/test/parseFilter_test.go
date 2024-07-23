@@ -20,21 +20,31 @@ func initConfig() {
 func TestParseLdapQuery(t *testing.T) {
 	initConfig()
 	tests := []struct {
-		query     string
-		want      *ldapsrv.Query
-		wantError bool
+		query      string
+		want       *ldapsrv.Query
+		wantError  bool
+		errMessage string
 	}{
 		{
-			query: "(&(objectClass=objectClass)(uid=user01)(memberOf:=cn=employees,dc=example,dc=com))",
+			query: "(&(objectClass=inetOrgPerson)(uid=user01)(memberOf:=cn=employees,dc=example,dc=com))",
 			want: &ldapsrv.Query{
 				MemberOf:    "cn=employees,dc=example,dc=com",
 				Uid:         "user01",
-				ObjectClass: "objectClass",
+				ObjectClass: "inetOrgPerson",
 			},
 			wantError: false,
 		},
 		{
 			query: "(&(uid=user01)(memberOf:=cn=employees,dc=example,dc=com))",
+			want: &ldapsrv.Query{
+				MemberOf:    "cn=employees,dc=example,dc=com",
+				Uid:         "user01",
+				ObjectClass: "",
+			},
+			wantError: false,
+		},
+		{
+			query: "(&(cn=user01)(memberof:=cn=employees,dc=example,dc=com))",
 			want: &ldapsrv.Query{
 				MemberOf:    "cn=employees,dc=example,dc=com",
 				Uid:         "user01",
@@ -70,9 +80,20 @@ func TestParseLdapQuery(t *testing.T) {
 			wantError: false,
 		},
 		{
-			query:     "invalid_query",
-			want:      nil,
-			wantError: true,
+			query: "(&(objectclass=groupOfUniqueNames)(|(cn=Smith)(uid=Smith))(givenName=Smith))",
+			want: &ldapsrv.Query{
+				MemberOf:    "",
+				Uid:         "*",
+				ObjectClass: "groupOfUniqueNames",
+			},
+			wantError:  true,
+			errMessage: "not supported subquery",
+		},
+		{
+			query:      "invalid_query",
+			want:       nil,
+			wantError:  true,
+			errMessage: "not supported query format: invalid_query",
 		},
 	}
 
@@ -80,6 +101,10 @@ func TestParseLdapQuery(t *testing.T) {
 		t.Run(tt.query, func(t *testing.T) {
 			got, err := ldapsrv.ParseLdapQuery(tt.query)
 			if (err != nil) != tt.wantError {
+				t.Errorf("parseLdapQuery() error = %v, wantError %v", err, tt.wantError)
+				return
+			}
+			if err != nil && err.Error() != tt.errMessage {
 				t.Errorf("parseLdapQuery() error = %v, wantError %v", err, tt.wantError)
 				return
 			}

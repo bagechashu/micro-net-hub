@@ -296,7 +296,7 @@ func searchUser(conn *ldapserver.Conn, msg *ldapserver.Message, req *ldapserver.
 		// "Nexus" Dynamic groups filter set "memeberOf" at Attributes.
 		// So we need to get "memberOf" from Attributes.
 		attr := parseLdapAttributes(req.Attributes)
-		if attr.MemberOf != "" {
+		if attr != nil && attr.MemberOf != "" {
 			group = attr.MemberOf
 		}
 	}
