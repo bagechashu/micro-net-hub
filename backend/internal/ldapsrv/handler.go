@@ -212,6 +212,7 @@ func (ls *LdapSrvHandler) Bind(conn *ldapserver.Conn, msg *ldapserver.Message, r
 // [nexus]:
 // √ &{BaseObject:dc=example,dc=com Scope:2 DerefAliases:3 SizeLimit:1 TimeLimit:0 TypesOnly:false Filter:(&(objectClass=inetOrgPerson)(uid=test01)) Attributes:[uid cn mail labeledUri memberOf:=cn=t1,ou=allhands,dc=example,dc=com]}
 // √ &{BaseObject:ou=people,dc=example,dc=com Scope:2 DerefAliases:3 SizeLimit:1 TimeLimit:0 TypesOnly:false Filter:(&(objectClass=inetOrgPerson)(uid=test01)) Attributes:[uid cn mail labeledUri memberOf:=cn=t1,ou=allhands,dc=example,dc=com]}
+// √ &{BaseObject:dc=example,dc=com Scope:0 DerefAliases:3 SizeLimit:0 TimeLimit:0 TypesOnly:false Filter:(objectClass=*) Attributes:[]}
 // [nexus user mapping]:
 // √ &{BaseObject:ou=people,dc=example,dc=com Scope:2 DerefAliases:3 SizeLimit:20 TimeLimit:0 TypesOnly:false Filter:(&(objectClass=inetOrgPerson)(uid=*)) Attributes:[uid cn mail labeledUri memberOf:=cn=t1,ou=allhands,dc=example,dc=com]}
 // [harbor]
@@ -261,6 +262,9 @@ func (ls *LdapSrvHandler) Search(conn *ldapserver.Conn, msg *ldapserver.Message,
 			matched = true
 		case "groupOfUniqueNames", "groupOfNames", "organizationalUnit":
 			searchGroup(conn, msg, req, query)
+			matched = true
+		case "*":
+			conn.SendResult(msg.MessageID, nil, ldapserver.TypeSearchResultDoneOp, ldapserver.ResultSuccess.AsResult(""))
 			matched = true
 		default:
 			global.Log.Errorf("error: not support ObjectClass: %s", oc)
