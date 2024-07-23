@@ -126,7 +126,8 @@ notice:
 
 # ldap 配置
 ldap:
-  enable-manage: false
+  # 是否开启ldap管理功能
+  enable-manage: true
   # ldap服务器地址, TODO: ldaps that use private SSL need adapt
   url: ldap://localhost:389
   # ladp最大连接数设置

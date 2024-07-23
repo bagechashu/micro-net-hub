@@ -933,6 +933,8 @@ export default {
         this.judgeResult(res);
         this.loading = false;
         this.getGroupTreeData();
+      }).finally(() => {
+        this.loading = false;
       });
     },
     syncWeComDepts() {
@@ -941,6 +943,8 @@ export default {
         this.judgeResult(res);
         this.loading = false;
         this.getGroupTreeData();
+      }).finally(() => {
+        this.loading = false;
       });
     },
     syncFeiShuDepts() {
@@ -949,6 +953,8 @@ export default {
         this.judgeResult(res);
         this.loading = false;
         this.getGroupTreeData();
+      }).finally(() => {
+        this.loading = false;
       });
     },
     syncOpenLdapDepts() {
@@ -957,6 +963,8 @@ export default {
         this.judgeResult(res);
         this.loading = false;
         this.getGroupTreeData();
+      }).finally(() => {
+        this.loading = false;
       });
     }
   }

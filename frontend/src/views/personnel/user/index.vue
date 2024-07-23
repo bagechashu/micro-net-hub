@@ -1065,6 +1065,8 @@ export default {
         this.judgeResult(res);
         this.loading = false;
         this.getTableData();
+      }).finally(() => {
+        this.loading = false;
       });
     },
     syncWeComUsers() {
@@ -1073,6 +1075,8 @@ export default {
         this.judgeResult(res);
         this.loading = false;
         this.getTableData();
+      }).finally(() => {
+        this.loading = false;
       });
     },
     syncFeiShuUsers() {
@@ -1081,6 +1085,8 @@ export default {
         this.judgeResult(res);
         this.loading = false;
         this.getTableData();
+      }).finally(() => {
+        this.loading = false;
       });
     },
     syncOpenLdapUsers() {
@@ -1089,6 +1095,8 @@ export default {
         this.judgeResult(res);
         this.loading = false;
         this.getTableData();
+      }).finally(() => {
+        this.loading = false;
       });
     }
   }

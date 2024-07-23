@@ -103,6 +103,11 @@ func SyncFeiShuDepts(c *gin.Context) {
 
 // 同步ldap用户信息
 func SyncOpenLdapUsers(c *gin.Context) {
+	if !config.Conf.Ldap.EnableManage {
+		helper.Err(c, helper.NewConfigError(fmt.Errorf("未开启 Openldap 管理相关配置")), nil)
+		return
+	}
+
 	um := usermgr.NewOpenLdap()
 	err := um.SyncUsers()
 	if err != nil {
@@ -114,6 +119,11 @@ func SyncOpenLdapUsers(c *gin.Context) {
 
 // 同步原ldap部门信息
 func SyncOpenLdapDepts(c *gin.Context) {
+	if !config.Conf.Ldap.EnableManage {
+		helper.Err(c, helper.NewConfigError(fmt.Errorf("未开启 Openldap 管理相关配置")), nil)
+		return
+	}
+
 	um := usermgr.NewOpenLdap()
 	err := um.SyncDepts()
 	if err != nil {
@@ -129,6 +139,11 @@ type SyncSqlUserReq struct {
 
 // 同步sql用户信息到ldap
 func SyncSqlUsers(c *gin.Context) {
+	if !config.Conf.Ldap.EnableManage {
+		helper.Err(c, helper.NewConfigError(fmt.Errorf("未开启 Openldap 管理相关配置")), nil)
+		return
+	}
+
 	var req SyncSqlUserReq
 	err := helper.BindAndValidateRequest(c, &req)
 	if err != nil {
@@ -182,6 +197,11 @@ type SyncSqlGrooupsReq struct {
 
 // 同步Sql中的分组信息到ldap
 func SyncSqlGroups(c *gin.Context) {
+	if !config.Conf.Ldap.EnableManage {
+		helper.Err(c, helper.NewConfigError(fmt.Errorf("未开启 Openldap 管理相关配置")), nil)
+		return
+	}
+
 	var req SyncSqlGrooupsReq
 	err := helper.BindAndValidateRequest(c, &req)
 	if err != nil {

@@ -5,7 +5,10 @@ import (
 	"errors"
 	"math/big"
 	"micro-net-hub/internal/config"
+	"strings"
 	"unicode"
+
+	"github.com/thoas/go-funk"
 )
 
 var ErrPasswordNotComplex = errors.New("password must at least 8 characters long, and must contains at least 3 of the following: uppercase letters, lowercase letters, numbers, and symbols")
@@ -77,17 +80,38 @@ func CheckPasswordComplexity(password string) bool {
 }
 
 func GeneratePassword(length int) string {
-	charset := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-
-	password := make([]byte, length)
-
-	for i := 0; i < length; i++ {
-		randomIndex, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
-		if err != nil {
-			return "NotRandomPass"
-		}
-		password[i] = charset[randomIndex.Int64()]
+	if length < 8 {
+		length = 8
+	} else if length > 16 {
+		length = 16
 	}
 
-	return string(password)
+	lowerCharSet := "abcdefghijklmnopqrstuvwxyz"
+	upperCharSet := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	numberAndSymbolSet := "01234567890123456789!#$%&*"
+
+	setLen := funk.MinInt([]int{len(lowerCharSet), len(upperCharSet), len(numberAndSymbolSet)})
+	randomIndex, err := rand.Int(rand.Reader, big.NewInt(int64(setLen)))
+	if err != nil {
+		return "Micro-Net-2023"
+	}
+
+	password := make([]byte, length)
+	for i := 0; i < length; i++ {
+		if i < 3 {
+			// 处理边界条件，通过模运算确保不会发生数组越界
+			password[i] = lowerCharSet[randomIndex.Int64()%int64(setLen)]
+		} else if i >= 3 && i < 5 {
+			password[i] = upperCharSet[randomIndex.Int64()%int64(setLen)]
+		} else if i >= 5 {
+			password[i] = numberAndSymbolSet[randomIndex.Int64()%int64(setLen)]
+		}
+	}
+
+	stringSlice := make([]string, len(password))
+	for i, b := range password {
+		stringSlice[i] = string(b)
+	}
+
+	return strings.Join(stringSlice, "")
 }
