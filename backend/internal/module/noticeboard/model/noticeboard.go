@@ -17,13 +17,16 @@ type NoticeBoard struct {
 }
 
 const (
-	LevelInfo     uint = iota + 1 // 1
-	LevelWarning                  // 2
-	LevelCritical                 // 3
+	LevelNormal   uint = iota + 1 // 1
+	LevelInfo                     // 2
+	LevelWarning                  // 3
+	LevelCritical                 // 4
 )
 
 func (n NoticeBoard) LevelText() string {
 	switch n.Level {
+	case LevelNormal:
+		return "Normal"
 	case LevelInfo:
 		return "Info"
 	case LevelWarning:
@@ -35,29 +38,30 @@ func (n NoticeBoard) LevelText() string {
 	}
 }
 
-func (n NoticeBoard) Find(filter map[string]interface{}) error {
+func (n *NoticeBoard) Find(filter map[string]interface{}) error {
 	if err := global.DB.Model(&NoticeBoard{}).Where(filter).First(&n).Error; err != nil {
 		return helper.NewMySqlError(fmt.Errorf("获取 NoticeBoard 失败: %w", err))
 	}
 	return nil
 }
 
-func (n NoticeBoard) Add() error {
+func (n *NoticeBoard) Add() error {
 	if err := global.DB.Create(&n).Error; err != nil {
 		return helper.NewMySqlError(fmt.Errorf("添加 NoticeBoard 失败: %w", err))
 	}
 	return nil
 }
 
-func (n NoticeBoard) Update() error {
+func (n *NoticeBoard) Update() error {
 	if err := global.DB.Save(&n).Error; err != nil {
 		return helper.NewMySqlError(fmt.Errorf("更新 NoticeBoard 失败: %w", err))
 	}
 	return nil
 }
 
-func (n NoticeBoard) Delete() error {
-	if err := global.DB.Unscoped().Delete(&n).Error; err != nil {
+func (n *NoticeBoard) Delete() error {
+	// 软删除
+	if err := global.DB.Delete(&n).Error; err != nil {
 		return helper.NewMySqlError(fmt.Errorf("删除 NoticeBoard 失败: %w", err))
 	}
 	return nil

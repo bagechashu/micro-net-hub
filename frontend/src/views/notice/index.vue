@@ -45,12 +45,20 @@ export default {
   created: function() {
     this._getNotice();
   },
+  mounted() {
+    this.timer = setInterval(() => this._getNotice(), 60 * 60 * 1000); // 每 60 分钟执行一次
+  },
+  beforeDestroy() { // vue3 中 beforeDestroy 改名为 beforeUnmount.
+    if (this.timer) {
+      clearInterval(this.timer); // 组件销毁前清除定时器
+    }
+  },
   methods: {
     async _getNotice() {
       try {
         const { data } = await getNotice();
         this.data = data;
-        this.duration = Math.round(JSON.stringify(this.data).length / 50);
+        this.duration = Math.round(JSON.stringify(this.data).length / 30);
         this.repeat = 10 - data.length;
       } catch (e) {
         console.log(e);
@@ -59,22 +67,26 @@ export default {
     getLevelText(level) {
       switch (level) {
         case 1:
-          return "普通";
+          return "一般";
         case 2:
-          return "重要";
+          return "普通";
         case 3:
+          return "重要";
+        case 4:
           return "紧急";
         default:
-          return "一般";
+          return "其他";
       }
     },
     getLevelColorClass(level) {
       switch (level) {
         case 1:
-          return "info-level";
+          return "default-level";
         case 2:
-          return "warning-level";
+          return "info-level";
         case 3:
+          return "warning-level";
+        case 4:
           return "critical-level";
         default:
           return "default-level";

@@ -56,7 +56,7 @@ func AddNoticeBoard(c *gin.Context) {
 }
 
 type NoticeBoardUpdateReq struct {
-	Id      string `json:"id" validate:"required"`
+	Id      uint   `json:"id" validate:"required"`
 	Level   uint   `json:"level" validate:"required"`
 	Content string `json:"content" validate:"required"`
 }
@@ -105,8 +105,8 @@ func DeleteNoticeBoard(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	n := &model.NoticeBoard{}
 	for _, id := range req.Ids {
+		n := &model.NoticeBoard{}
 		err := n.Find(map[string]interface{}{"ID": id})
 		if err != nil {
 			helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("查询 NoticeBoard 失败: %s", err.Error())))
