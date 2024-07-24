@@ -28,11 +28,6 @@ A tool for managing your OpenLDAP/DNS/Navigation at a private network.
 - https://github.com/kenshinx/godns
 - https://github.com/snail2sky/coredns_mysql_extend.git 
 
-# TODO
-
-- Config Center
-- Cron Manager
-
 # Architechture
 
 ```mermaid
@@ -45,40 +40,35 @@ flowchart LR
    openldap[[OpenLDAP:389]]
   end
 
-  subgraph selfbuilt Ocserv
-   ocserv[[Ocserv:443]]
-  end
-
-  subgraph 3rd-Services
-   gitlab[[Gitlab]]
-   nexus[[Nexus]]
-   other[[...]]
-  end
   %% Database
   subgraph MySQL
     mysql-main[(MySQL main)]
   end
 
   subgraph Micro-Net-Hub
-    main --> ui
-    main --> SiteNavigationManager
     main[[Micro-Net-Hub:9000]]
     ui([Embedded-UI])
 
     main --> UserManager
     UserManager --> TOTPModule
-
     radius[[Micro-Net-Hub<br>RadiusService:1812/udp]]
     radius --> TOTPModule
 
+    main --> ui
+    main --> SiteNavigationManager
+    main --> DNSManager
+    main --> NoticeManager
+    
+
     embdns[[Micro-Net-Hub<br>DnsService:53/udp,tcp]]
+
+    embLdap[[Micro-Net-Hub<br>LdapService:1389/tcp]]
+    embLdapWithTotpVerify[[Micro-Net-Hub<br>LdapService:1390/tcp]]
 
     UserManager ---> GoLDAPAdmin
   end
 
   Micro-Net-Hub --> MySQL
-  GoLDAPAdmin --> openldap
-  3rd-Services --> openldap
-  ocserv --> radius
+  GoLDAPAdmin -.-> openldap
 
 ```
