@@ -1,26 +1,37 @@
 <template>
   <div class="app-container">
-    <div class="header-bar">
-      <el-input
-        v-model="search"
-        placeholder="内网地址搜索"
-        class="search"
-        @keyup.enter.native="searchData"
-      />
-      <span
-        class="search-text"
-      ><el-button
-        type="primary"
-        icon="search"
-        @click="searchData"
-      >搜索</el-button></span>
-      <el-button
-        v-show="searchStatus"
-        type="success"
-        icon="plus-round"
-        @click="resetSearch"
-      >重置</el-button>
-    </div>
+    <el-row>
+      <el-col :xs="24" :sm="12" :md="10" :lg="10" :xl="6">
+        <div class="header-bar">
+          <el-input
+            v-model="search"
+            placeholder="内网地址搜索"
+            class="search"
+            @keyup.enter.native="searchData"
+          />
+          <span
+            class="search-text"
+          ><el-button
+            type="primary"
+            icon="search"
+            @click="searchData"
+          >搜索</el-button></span>
+          <el-button
+            v-show="searchStatus"
+            type="success"
+            icon="plus-round"
+            @click="resetSearch"
+          >重置</el-button>
+        </div></el-col>
+      <el-col
+        :xs="24"
+        :sm="10"
+        :md="13"
+        :lg="13"
+        :xl="17"
+      ><Notice /></el-col>
+    </el-row>
+
     <NavSub v-if="data.length > 0" :data="data" />
     <el-empty v-else description="暂无数据" />
   </div>
@@ -29,11 +40,13 @@
 <script>
 import { Message } from "element-ui";
 import NavSub from "@/views/sitenav/components/sub";
+import Notice from "@/views/notice";
 import { getNav } from "@/api/sitenav/sitenav";
 export default {
   name: "SiteNav",
   components: {
-    NavSub
+    NavSub,
+    Notice
   },
   data() {
     return {
