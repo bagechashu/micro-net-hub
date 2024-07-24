@@ -1,7 +1,7 @@
 <template>
   <!-- https://juejin.cn/post/7049281448305491975 -->
   <div>
-    <el-dialog :visible.sync="childVisible">
+    <el-dialog :visible.sync="childVisible" @open="onDialogOpen">
       <div slot="title" class="dialog-header">
         <div class="dialog-header-text">Login</div>
       </div>
@@ -131,14 +131,16 @@ export default {
       immediate: true
     }
   },
-  mounted() {
-    if (this.loginForm.username === "" && this.$refs.username) {
-      this.$refs.username.focus();
-    } else if (this.loginForm.password === "" && this.$refs.password) {
-      this.$refs.password.focus();
-    }
-  },
   methods: {
+    onDialogOpen() {
+      this.$nextTick(() => {
+        if (this.$refs.username && this.loginForm.username === "") {
+          this.$refs.username.focus();
+        } else if (this.$refs.password) {
+          this.$refs.password.focus();
+        }
+      });
+    },
     checkCapslock(e) {
       const { key } = e;
       this.capsTooltip = key && key.length === 1 && key >= "A" && key <= "Z";
