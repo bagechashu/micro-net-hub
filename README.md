@@ -35,40 +35,37 @@ A tool for managing your OpenLDAP/DNS/Navigation at a private network.
 title: Micro Net Hub Architecture
 ---
 flowchart LR
-  %% Service provide by third-party, need deployed by yourself.
-  subgraph selfbuilt OpenLDAP
-   openldap[[OpenLDAP:389]]
-  end
-
   %% Database
   subgraph MySQL
     mysql-main[(MySQL main)]
   end
 
   subgraph Micro-Net-Hub
-    main[[Micro-Net-Hub:9000]]
+    admin[[AdminControlPanel:9000]]
     ui([Embedded-UI])
 
-    main --> UserManager
+    admin --> UserManager
     UserManager --> TOTPModule
-    radius[[Micro-Net-Hub<br>RadiusService:1812/udp]]
-    radius --> TOTPModule
 
-    main --> ui
-    main --> SiteNavigationManager
-    main --> DNSManager
-    main --> NoticeManager
+    admin --> ui
+    admin --> SiteNavigationManager
+    admin --> DNSManager
+    admin --> NoticeManager
     
-
+    radius[[Micro-Net-Hub<br>RadiusService:1812/udp]]
     embdns[[Micro-Net-Hub<br>DnsService:53/udp,tcp]]
-
     embLdap[[Micro-Net-Hub<br>LdapService:1389/tcp]]
     embLdapWithTotpVerify[[Micro-Net-Hub<br>LdapService:1390/tcp]]
 
-    UserManager ---> GoLDAPAdmin
+    GoLDAPAdmin[GoLDAPAdmin<br>Sync Organization from<br>DingTalk, Wechat, Feishu, Openldap]
   end
 
   Micro-Net-Hub --> MySQL
-  GoLDAPAdmin -.-> openldap
 
+  %% Service provide by third-party, need deployed by yourself.
+  subgraph selfbuilt OpenLDAP
+   openldap[[OpenLDAP:389<br>Not necessary]]
+  end
+
+  Micro-Net-Hub -.-> openldap
 ```
