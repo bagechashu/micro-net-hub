@@ -12,8 +12,7 @@
 
       <el-table v-loading="loading" :tree-props="{children: 'children', hasChildren: 'hasChildren'}" row-key="ID" :data="tableData" border stripe style="width: 100%" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center" />
-        <el-table-column show-overflow-tooltip prop="title" label="菜单标题" width="150" />
-        <el-table-column show-overflow-tooltip prop="name" label="名称" />
+        <el-table-column show-overflow-tooltip prop="name" label="名称" width="200" />
         <el-table-column show-overflow-tooltip prop="icon" label="图标" />
         <el-table-column show-overflow-tooltip prop="path" label="路由地址" />
         <el-table-column show-overflow-tooltip prop="component" label="组件路径" />
@@ -51,9 +50,6 @@
 
       <el-dialog :title="dialogFormTitle" :visible.sync="dialogFormVisible" width="580px">
         <el-form ref="dialogForm" :inline="true" size="small" :model="dialogFormData" :rules="dialogFormRules" label-width="80px">
-          <el-form-item label="菜单标题" prop="title">
-            <el-input v-model.trim="dialogFormData.title" placeholder="菜单标题(title)" style="width: 440px" />
-          </el-form-item>
           <el-form-item label="名称" prop="name">
             <el-input v-model.trim="dialogFormData.name" placeholder="名称(name)" style="width: 220px" />
           </el-form-item>
@@ -162,7 +158,6 @@ export default {
       dialogFormVisible: false,
       dialogFormData: {
         ID: "",
-        title: "",
         name: "",
         icon: "",
         path: "",
@@ -178,13 +173,16 @@ export default {
         parentId: 0
       },
       dialogFormRules: {
-        title: [
-          { required: true, message: "请输入标题", trigger: "blur" },
-          { min: 1, max: 50, message: "长度在 1 到 50 个字符", trigger: "blur" }
-        ],
         name: [
           { required: true, message: "请输入名称", trigger: "blur" },
-          { min: 1, max: 100, message: "长度在 1 到 100 个字符", trigger: "blur" }
+          { min: 1, max: 100, message: "长度在 1 到 100 个字符", trigger: "blur" },
+          { validator: (rule, value, callback) => {
+            if (!value || !/\s/.test(value)) {
+              callback();
+            } else {
+              callback(new Error("因为i18n引用了该字段, 不能有空格"));
+            }
+          }, trigger: "blur" }
         ],
         path: [
           { required: true, message: "请输入访问路径", trigger: "blur" },
@@ -225,7 +223,7 @@ export default {
         const { data } = await getMenuTree();
 
         this.tableData = data;
-        this.treeselectData = [{ ID: 0, title: "顶级类目", children: data }];
+        this.treeselectData = [{ ID: 0, name: "顶级类目", children: data }];
       } finally {
         this.loading = false;
       }
@@ -241,7 +239,6 @@ export default {
     // 修改
     update(row) {
       this.dialogFormData.ID = row.ID;
-      this.dialogFormData.title = row.title;
       this.dialogFormData.name = row.name;
       this.dialogFormData.icon = row.icon;
       this.dialogFormData.path = row.path;
@@ -325,7 +322,6 @@ export default {
       this.dialogFormVisible = false;
       this.$refs["dialogForm"].resetFields();
       this.dialogFormData = {
-        title: "",
         name: "",
         icon: "",
         path: "",
@@ -397,7 +393,7 @@ export default {
     normalizer(node) {
       return {
         id: node.ID,
-        label: node.title,
+        label: node.name,
         children: node.children
       };
     },

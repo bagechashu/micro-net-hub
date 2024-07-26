@@ -100,7 +100,7 @@
             <el-tree
               ref="roleMenuTree"
               v-loading="menuTreeLoading"
-              :props="{children: 'children',label: 'title'}"
+              :props="{children: 'children',label: 'name'}"
               :data="menuTree"
               show-checkbox
               node-key="ID"
