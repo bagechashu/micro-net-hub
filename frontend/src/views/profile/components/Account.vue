@@ -2,7 +2,7 @@
   <div>
     <el-card class="profile-card">
       <div slot="header" class="clearfix">
-        <span>修改账户密码</span>
+        <span>{{ $t('custom.profile.changePassword') }}</span>
       </div>
 
       <el-form
@@ -10,14 +10,14 @@
         size="small"
         :model="dialogFormData"
         :rules="dialogFormRules"
-        label-width="80px"
+        :label-width="labelWidth"
       >
-        <el-form-item label="原密码" prop="oldPassword">
+        <el-form-item :label="$t('custom.loginform.oldpass')" prop="oldPassword">
           <el-input
             v-model.trim="dialogFormData.oldPassword"
             autocomplete="on"
             :type="passwordTypeOld"
-            placeholder="请输入原密码"
+            :placeholder="$t('custom.loginform.oldpassTips')"
           />
           <span class="show-pwd" @click="showPwdOld">
             <svg-icon
@@ -26,12 +26,12 @@
           </span>
         </el-form-item>
 
-        <el-form-item label="新密码" prop="newPassword">
+        <el-form-item :label="$t('custom.loginform.newpass')" prop="newPassword">
           <el-input
             v-model.trim="dialogFormData.newPassword"
             autocomplete="on"
             :type="passwordTypeNew"
-            placeholder="请输入新密码"
+            :placeholder="$t('custom.loginform.newpassTips')"
           />
           <span class="show-pwd" @click="showPwdNew">
             <svg-icon
@@ -40,12 +40,12 @@
           </span>
         </el-form-item>
 
-        <el-form-item label="确认密码" prop="confirmPassword">
+        <el-form-item :label="$t('custom.loginform.confirmNewPass')" prop="confirmPassword">
           <el-input
             v-model.trim="dialogFormData.confirmPassword"
             autocomplete="on"
             :type="passwordTypeConfirm"
-            placeholder="请确认新密码"
+            :placeholder="$t('custom.loginform.confirmNewPassTips')"
           />
           <span class="show-pwd" @click="showPwdConfirm">
             <svg-icon
@@ -61,8 +61,8 @@
             :loading="submitLoading"
             type="primary"
             @click="submitForm"
-          >确定</el-button>
-          <el-button @click="cancelForm">取消</el-button>
+          >{{ $t('custom.common.confirm') }}</el-button>
+          <el-button @click="cancelForm">{{ $t('custom.common.cancel') }}</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -81,12 +81,12 @@ export default {
     const confirmPass = (rule, value, callback) => {
       if (value) {
         if (this.dialogFormData.newPassword !== value) {
-          callback(new Error("两次输入的密码不一致"));
+          callback(new Error(this.$i18n.t("custom.loginform.confirmNewPassErr")));
         } else {
           callback();
         }
       } else {
-        callback(new Error("请再次输入新密码"));
+        callback(new Error(this.$i18n.t("custom.loginform.confirmNewPassTips")));
       }
     };
     return {
@@ -98,7 +98,7 @@ export default {
       },
       dialogFormRules: {
         oldPassword: [
-          { required: true, message: "请输入旧密码", trigger: "blur" },
+          { required: true, message: this.$i18n.t("custom.loginform.oldpassTips"), trigger: "blur" },
           {
             min: 6,
             max: 30,
@@ -118,6 +118,11 @@ export default {
       passwordTypeNew: "password",
       passwordTypeConfirm: "password"
     };
+  },
+  computed: {
+    labelWidth() {
+      return this.$i18n.locale === "zh" ? "80px" : "200px";
+    }
   },
   methods: {
     submitForm() {
@@ -144,7 +149,7 @@ export default {
           if (code === 200 || code === 0) {
             Message({
               showClose: true,
-              message: "密码修改成功，请重新登录",
+              message: this.$i18n.t("custom.loginform.changePasswordSuccess"),
               type: "success"
             });
             this.resetForm();
@@ -157,7 +162,7 @@ export default {
           } else {
             Message({
               showClose: true,
-              message: "密码修改失败",
+              message: this.$i18n.t("custom.loginform.changePasswordErr"),
               type: "error"
             });
           }
@@ -165,7 +170,7 @@ export default {
         } else {
           this.$message({
             showClose: true,
-            message: "表单校验失败",
+            message: this.$i18n.t("custom.loginform.changePasswordValidErr"),
             type: "warn"
           });
           return false;

@@ -1,5 +1,6 @@
 {
   "common": {
+    "areyousure": "你确定吗?",
     "confirm": "确定",
     "cancel": "取消",
     "delete": "删除",
@@ -44,12 +45,33 @@
     "forgetPassword": "忘记密码?",
     "oldpass": "原密码",
     "newpass": "新密码",
-    "confirmNewPass": "确认密码"
+    "confirmNewPass": "确认密码",
+    "oldpassTips": "请输入原密码",
+    "newpassTips": "请输入新密码",
+    "confirmNewPassTips": "请再次输入新密码",
+    "oldpassErr": "请输入旧密码",
+    "newpassErr": "新密码不能为空",
+    "newpassValidErrLenMustThan8": "密码长度必须大于8位",
+    "newpassValidErrMustComplex": "密码要包含数字、大写字母、小写字母、特殊字符中的至少三种",
+    "confirmNewPassErr": "两次输入密码不一致",
+    "changePasswordSuccess": "修改密码成功，请重新登录",
+    "changePasswordErr": "修改密码失败",
+    "changePasswordValidErr": "表单校验失败"
   },
   "profile": {
     "profile": "个人中心",
     "aboutme": "关于我",
-    "changePassword": "修改密码",
-    "changeTOTP": "修改TOTP秘钥"
+    "changePassword": "修改个人密码",
+    "changeTotp": "修改 TOTP 秘钥",
+    "changeTotpTips": "请输入OTP",
+    "changeTotpTipsValid": "OTP 为6位数字码",
+    "changeTotpTipsValidErr": "表单校验失败"
+  },
+  "totpNotice": {
+    "notice": "注意:",
+    "content": [
+      "重置后, 之前的TOTP秘钥将失效.",
+      "二维码只显示一次, 刷新/切换页面后将消失."
+    ]
   }
 }

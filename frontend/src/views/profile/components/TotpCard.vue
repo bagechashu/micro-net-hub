@@ -1,14 +1,14 @@
 <template>
   <el-card class="profile-card">
     <div slot="header" class="clearfix">
-      <span>重置 Totp 秘钥</span>
+      <span>{{ $t('custom.profile.changeTotp') }}</span>
     </div>
     <div class="box-center">
       <div :style="{ display: showDiscribe ? 'block' : 'none' }">
         <div class="warning-message">
-          <p><b>注意:</b></p>
-          <p>重置后, 之前的TOTP秘钥将失效.</p>
-          <p>二维码只显示一次, 刷新/切换页面后将消失.</p>
+          <p><b>{{ $t('custom.totpNotice.notice') }}</b></p>
+          <p>{{ $t('custom.totpNotice.content[0]') }}</p>
+          <p>{{ $t('custom.totpNotice.content[1]') }}</p>
         </div>
         <el-form
           ref="resetTotpSecretForm"
@@ -22,13 +22,13 @@
               <el-col :xs="16" :sm="14" :md="16" :lg="16" :xl="16">
                 <el-input
                   v-model.trim="resetTotpSecretFormData.totp"
-                  placeholder="请输入OTP"
+                  :placeholder="$t('custom.profile.changeTotpTips')"
                 />
               </el-col>
 
               <el-col :xs="8" :sm="10" :md="8" :lg="8" :xl="8">
                 <el-popconfirm
-                  title="确定重置吗？"
+                  :title="$t('custom.common.areyousure')"
                   @confirm="resetTotpSecret"
                 >
                   <el-button
@@ -37,7 +37,7 @@
                     size="mini"
                     icon="el-icon-refresh"
                     type="danger"
-                  >重置
+                  >{{ $t('custom.common.reset') }}
                   </el-button>
                 </el-popconfirm>
               </el-col>
@@ -68,13 +68,13 @@ export default {
         totp: [
           {
             required: true,
-            message: "请输入 OTP",
+            message: this.$i18n.t("custom.profile.changeTotpTips"),
             trigger: "blur"
           },
           {
             validator: (rule, value, callback) => {
               if (!/^\d{6}$/.test(value)) {
-                return callback(new Error("OTP 为6位数字码"));
+                return callback(new Error(this.$i18n.t("custom.profile.changeTotpTipsValid")));
               }
               callback();
             },
@@ -99,7 +99,7 @@ export default {
         } else {
           this.$message({
             showClose: true,
-            message: "重置 TOTP 秘钥表单校验失败",
+            message: this.$i18n.t("custom.profile.changeTotpTipsValidErr"),
             type: "warn"
           });
           return false;

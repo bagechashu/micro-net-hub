@@ -1,6 +1,7 @@
 /**
  * Created by PanJiaChen on 16/11/18.
  */
+import i18n from "@/i18n";
 
 /**
  * @param {string} path
@@ -98,13 +99,13 @@ function checkPasswordComplexity(value) {
 
 export function validatePassword(rule, value, callback) {
   if (value === "") {
-    return callback(new Error("请输入新密码"));
+    return callback(new Error(i18n.t("custom.loginform.newpassTips")));
   }
   if (value.length < 8) {
-    return callback(new Error("密码长度必须大于8位"));
+    return callback(new Error(i18n.t("custom.loginform.newpassValidErrLenMustThan8")));
   }
   if (checkPasswordComplexity(value) < 3) {
-    return callback(new Error("密码要包含数字、大写字母、小写字母、特殊字符中的至少三种"));
+    return callback(new Error(i18n.t("custom.loginform.newpassValidErrMustComplex")));
   }
   callback();
 }
@@ -114,10 +115,10 @@ export function validatePasswordCanEnpty(rule, value, callback) {
     return callback();
   }
   if (value.length < 8) {
-    return callback(new Error("密码长度必须大于8位"));
+    return callback(new Error(i18n.t("custom.loginform.newpassValidErrLenMustThan8")));
   }
   if (checkPasswordComplexity(value) < 3) {
-    return callback(new Error("密码要包含数字、大写字母、小写字母、特殊字符中的至少三种"));
+    return callback(new Error(i18n.t("custom.loginform.newpassValidErrMustComplex")));
   }
   callback();
 }
