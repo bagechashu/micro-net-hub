@@ -6,7 +6,8 @@ const state = {
     withoutAnimation: false
   },
   device: "desktop",
-  size: Cookies.get("size") || "medium"
+  size: Cookies.get("size") || "medium",
+  locale: Cookies.get("locale") || "en"
 };
 
 const mutations = {
@@ -30,6 +31,10 @@ const mutations = {
   SET_SIZE: (state, size) => {
     state.size = size;
     Cookies.set("size", size);
+  },
+  SET_LOCALE: (state, locale) => {
+    state.locale = locale;
+    Cookies.set("locale", locale);
   }
 };
 
@@ -45,6 +50,9 @@ const actions = {
   },
   setSize({ commit }, size) {
     commit("SET_SIZE", size);
+  },
+  setLocale({ commit }, locale) {
+    commit("SET_LOCALE", locale);
   }
 };
 

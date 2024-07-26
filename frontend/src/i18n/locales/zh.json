@@ -1,0 +1,41 @@
+{
+  "common": {
+    "confirm": "确定",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "add": "添加",
+    "save": "保存",
+    "close": "关闭",
+    "reset": "重置",
+    "search": "搜索",
+    "index": "首页",
+    "total": "共计",
+    "refresh": "刷新",
+    "closeOthers": "关闭其他",
+    "closeAll": "关闭所有"
+  },
+  "message": {
+    "switchSizeSuccess": "切换表格尺寸成功"
+  },
+  "sidebar": {
+    "siteNav": "网站导航"
+  },
+  "tagview": {},
+  "loginform": {
+    "login": "登录",
+    "logout": "退出登录",
+    "username": "用户名",
+    "password": "密码",
+    "forgetPassword": "忘记密码?",
+    "oldpass": "原密码",
+    "newpass": "新密码",
+    "confirmNewPass": "确认密码"
+  },
+  "profile": {
+    "profile": "个人中心",
+    "aboutme": "关于我",
+    "changePassword": "修改密码",
+    "changeTOTP": "修改TOTP秘钥"
+  }
+}

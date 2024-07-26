@@ -1,0 +1,41 @@
+{
+  "common": {
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "save": "Save",
+    "close": "Close",
+    "reset": "Reset",
+    "search": "Search",
+    "index": "Home",
+    "total": "Total",
+    "refresh": "Refresh",
+    "closeOthers": "Close Others",
+    "closeAll": "Close All"
+  },
+  "message": {
+    "switchSizeSuccess": "Table size switch successful"
+  },
+  "sidebar": {
+    "siteNav": "Site Navigation"
+  },
+  "tagview": {},
+  "loginform": {
+    "login": "Login",
+    "logout": "Logout",
+    "username": "username",
+    "password": "password",
+    "forgetPassword": "Forget Password? ",
+    "oldpass": "Old Password",
+    "newpass": "New Password",
+    "confirmNewPass": "Confirm New Password"
+  },
+  "profile": {
+    "profile": "Profile",
+    "aboutme": "About Me",
+    "changePassword": "Change Password",
+    "changeTOTP": "Change TOTP Key"
+  }
+}

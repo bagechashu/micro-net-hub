@@ -20,7 +20,7 @@
           <el-input
             ref="username"
             v-model="loginForm.username"
-            placeholder="用户名"
+            :placeholder="$t('custom.loginform.username')"
             name="username"
             type="text"
             tabindex="1"
@@ -40,7 +40,7 @@
               ref="password"
               v-model="loginForm.password"
               :type="passwordType"
-              placeholder="密码"
+              :placeholder="$t('custom.loginform.password')"
               name="password"
               tabindex="2"
               autocomplete="on"
@@ -57,14 +57,14 @@
         </el-tooltip>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <div class="forgetpass-btn" @click="changePass">忘记密码</div>
+        <div class="forgetpass-btn" @click="changePass">{{ $t('custom.loginform.forgetPassword') }}</div>
         <el-button
           :loading="loading"
           type="primary"
           size="medium"
           @click.native.prevent="handleLogin"
         >
-          登录
+          {{ $t('custom.loginform.login') }}
         </el-button>
       </div>
     </el-dialog>

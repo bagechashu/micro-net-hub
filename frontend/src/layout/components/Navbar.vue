@@ -25,6 +25,10 @@
           <size-select id="size-select" class="right-menu-item hover-effect" />
         </el-tooltip>
 
+        <el-tooltip content="Language" effect="dark" placement="bottom">
+          <language-select id="language-select" class="right-menu-item hover-effect" />
+        </el-tooltip>
+
         <el-tooltip
           content="Doc Refs [eryajf]"
           effect="dark"
@@ -62,10 +66,10 @@
         </div>
         <el-dropdown-menu slot="dropdown">
           <router-link to="/profile/index">
-            <el-dropdown-item>个人中心</el-dropdown-item>
+            <el-dropdown-item>{{ $t('custom.profile.profile') }}</el-dropdown-item>
           </router-link>
           <el-dropdown-item divided @click.native="logout">
-            <span style="display: block">退出登陆</span>
+            <span style="display: block">{{ $t('custom.loginform.logout') }}</span>
           </el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
@@ -75,7 +79,7 @@
           size="mini"
           plain
           @click="updateLoginFormVisible(true)"
-        >登录</el-button>
+        >{{ $t('custom.loginform.login') }}</el-button>
       </div>
     </div>
     <Login
@@ -92,6 +96,7 @@ import Hamburger from "@/components/Hamburger";
 import ErrorLog from "@/components/ErrorLog";
 import Screenfull from "@/components/Screenfull";
 import SizeSelect from "@/components/SizeSelect";
+import LanguageSelect from "@/components/LanguageSelect";
 import HeaderSearch from "@/components/HeaderSearch";
 import Login from "./Login";
 import "@/assets/iconfont/font/iconfont.css";
@@ -103,6 +108,7 @@ export default {
     ErrorLog,
     Screenfull,
     SizeSelect,
+    LanguageSelect,
     HeaderSearch,
     Login
   },
