@@ -1,5 +1,6 @@
 import Vue from "vue";
 import Router from "vue-router";
+import i18n from "@/i18n";
 
 Vue.use(Router);
 
@@ -63,7 +64,7 @@ export const constantRoutes = [
     path: "/changePass",
     name: "changePass",
     hidden: true,
-    meta: { title: "忘记密码", icon: "user", noCache: true },
+    meta: { title: i18n.t("custom.loginform.forgetPassword"), icon: "user", noCache: true },
     component: () => import("@/views/changePassword/index")
   },
   {
@@ -98,7 +99,7 @@ export const constantRoutes = [
         path: "/sitenav",
         component: () => import("@/views/sitenav/index"),
         name: "SiteNav",
-        meta: { title: "网址导航", icon: "tree", affix: true }
+        meta: { title: i18n.t("custom.sidebar.siteNav"), icon: "tree", affix: true }
       }
     ]
   },
@@ -112,7 +113,7 @@ export const constantRoutes = [
         path: "/profile/index",
         component: () => import("@/views/profile/index"),
         name: "Profile",
-        meta: { title: "个人中心", icon: "user", noCache: true }
+        meta: { title: i18n.t("custom.profile.profile"), icon: "user", noCache: true }
       }
     ]
   }
