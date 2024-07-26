@@ -18,25 +18,25 @@
                 size="small"
                 icon="el-icon-position"
                 @click="jumpLink(item.link)"
-              >跳转</el-button>
+              >{{ $t("custom.sitenav.visit") }}</el-button>
               <el-button
                 v-if="item.doc"
                 size="small"
                 icon="el-icon-document"
                 @click="jumpLink(item.doc)"
-              >相关文档</el-button>
+              >{{ $t("custom.sitenav.doc") }}</el-button>
               <el-button
                 size="small"
                 icon="el-icon-copy-document"
                 class="clip-btn"
                 @click="copyLink(item.link)"
               >
-                拷贝网址</el-button>
+                {{ $t("custom.sitenav.copyURL") }}</el-button>
               <el-button
                 size="small"
                 icon="el-icon-star-on"
                 @click="addBookmarks(item.link, item.name)"
-              >加入书签</el-button>
+              >{{ $t("custom.sitenav.addBookmark") }}</el-button>
             </el-button-group>
             <el-card slot="reference" shadow="never">
               <span><img v-lazy="item.icon" class="icon" alt=""></span>
@@ -68,26 +68,23 @@ export default {
       window.open(link);
     },
     copyLink(link) {
-      this.$copyText(link).then(
-        function(e) {
+      this.$copyText(link)
+        .then(() => {
           Message({
-            message: "复制成功",
+            message: this.$i18n.t("custom.tips.copySuccess"),
             type: "success"
           });
-          // console.log(e);
-        },
-        function(e) {
+        })
+        .catch((error) => {
           Message({
-            message: "该浏览器不支持自动复制",
+            message: this.$i18n.t("custom.tips.copyFailed", [error]),
             type: "error"
           });
-          // console.log(e);
-        }
-      );
+        });
     },
     addBookmarks(url, title) {
       Message({
-        message: "请按 Ctrl+D 或 Command+D 将此页面添加至书签",
+        message: this.$i18n.t("custom.tips.addBookmarkInfo"),
         type: "info"
       });
     }

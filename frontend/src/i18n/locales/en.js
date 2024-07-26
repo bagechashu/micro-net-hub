@@ -14,29 +14,41 @@ const custom = {
     total: "Total",
     refresh: "Refresh",
     closeOthers: "Close Others",
-    closeAll: "Close All"
+    closeAll: "Close All",
+    nodata: "No data available"
   },
-  message: {
-    switchSizeSuccess: "Table size switch successful"
+  valid: {
+    length: "Must be between {0} and {1} characters",
+    mustInput: "This field is required",
+    pleaseInput: "Please enter a search item"
+  },
+  tips: {
+    switchSizeSuccess: "Table size switch successful",
+    formValidFailed: "Form validation failed",
+    notFound: "No content found for your query",
+    notFoundAndRetry: "No content found, please try again",
+    foundSome: "{0} items found",
+    copySuccess: "Copy successful",
+    copyFailed: "Copy failed, {0}",
+    addBookmarkInfo: "If adding was unsuccessful, please press Ctrl+D or Command+D to bookmark this page"
   },
   sidebar: {
     Sitenav: "Site Navigation",
-    UserManage: "Account Manage",
+    UserManage: "Account Management",
     User: "User",
     Group: "Group",
     FieldRelation: "Field Relation",
-    System: "System Manage",
+    System: "System Management",
     Role: "Role",
     Menu: "Menu",
     Api: "API",
-    SitenavManager: "Site Navigation Manage",
-    DnsManager: "DNS Manage",
-    NoticeManager: "Notice Manage",
-    Log: "Log Manage",
+    SitenavManager: "Site Navigation Management",
+    DnsManager: "DNS Management",
+    NoticeManager: "Notice Management",
+    Log: "Log Management",
     OperationLog: "Operation Log",
     Profile: "Profile"
   },
-  tagview: {},
   loginform: {
     login: "Login",
     logout: "Logout",
@@ -55,8 +67,7 @@ const custom = {
     newpassValidErrMustComplex: "must include at least 3 type characters",
     confirmNewPassErr: "Passwords do not match",
     changePasswordSuccess: "Password changed successfully, please log in again",
-    changePasswordErr: "Failed to change password",
-    changePasswordValidErr: "Failed to validate the Change Password form."
+    changePasswordErr: "Failed to change password"
   },
   profile: {
     profile: "Profile",
@@ -64,8 +75,7 @@ const custom = {
     changePassword: "Change Password",
     changeTotp: "Change TOTP Key",
     changeTotpTips: "Please enter the OTP",
-    changeTotpTipsValid: "OTP must be a 6-digit numeric code.",
-    changeTotpTipsValidErr: "Failed to validate the TOTP reset form."
+    changeTotpTipsValid: "OTP must be a 6-digit numeric code."
   },
   totpNotice: {
     notice: "Note:",
@@ -74,8 +84,13 @@ const custom = {
       "The QR code will be displayed only once and will disappear after refreshing or switching the page."
     ]
   },
-  valid: {
-    length: "Must be between {0} and {1} characters"
+  sitenav: {
+    searchTips: "Intranet address search",
+    visit: "Visit",
+    doc: "Related Documents",
+    copyURL: "Copy URL",
+    addBookmark: "Add to Bookmarks",
+    totolInfo: "Total: {0} sites"
   }
 };
 

@@ -170,7 +170,7 @@ export default {
         } else {
           this.$message({
             showClose: true,
-            message: this.$i18n.t("custom.loginform.changePasswordValidErr"),
+            message: this.$i18n.t("custom.tips.formValidFailed"),
             type: "warn"
           });
           return false;

@@ -5,7 +5,7 @@
         <div class="header-bar">
           <el-input
             v-model="search"
-            placeholder="内网地址搜索"
+            :placeholder="$t('custom.sitenav.searchTips')"
             class="search"
             @keyup.enter.native="searchData"
           />
@@ -15,13 +15,13 @@
             type="primary"
             icon="search"
             @click="searchData"
-          >搜索</el-button></span>
+          >{{ $t('custom.common.search') }}</el-button></span>
           <el-button
             v-show="searchStatus"
             type="success"
             icon="plus-round"
             @click="resetSearch"
-          >重置</el-button>
+          >{{ $t('custom.common.reset') }}</el-button>
         </div></el-col>
       <el-col
         :xs="24"
@@ -33,7 +33,7 @@
     </el-row>
 
     <NavSub v-if="data.length > 0" :data="data" />
-    <el-empty v-else description="暂无数据" />
+    <el-empty v-else :description="$t('custom.common.nodata')" />
   </div>
 </template>
 
@@ -90,7 +90,7 @@ export default {
         this.search === ""
       ) {
         Message({
-          message: "请输入内容",
+          message: this.$i18n.t("custom.valid.pleaseInput"),
           type: "error"
         });
         return true;
@@ -128,12 +128,12 @@ export default {
       }
       if (this.serarchNum === 0) {
         Message({
-          message: "没找到，请重试!",
+          message: this.$i18n.t("custom.tips.notFoundAndRetry"),
           type: "error"
         });
       } else {
         Message({
-          message: `查找到了 ${this.serarchNum}个相近的.`,
+          message: this.$i18n.t("custom.tips.foundSome", [this.serarchNum]),
           type: "success"
         });
       }

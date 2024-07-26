@@ -2,12 +2,12 @@
   <div>
     <div v-for="(item, index) in data" :id="item.title" :key="index">
       <el-card v-if="item.sites" class="node-card" shadow="hover">
-        <div slot="header" class="clearfix">
+        <div slot="header" class="clearfix card-header">
           <span>{{ item.title }}<a :href="'#' + item.title" /> </span>
           <span
             style="float: right; padding: 3px 0"
             type="text"
-          >共计：{{ item.sites.length }} 个项目</span>
+          >{{ $t('custom.sitenav.totolInfo', [item.sites.length]) }}</span>
         </div>
         <Nav
           :sites="item.sites"
@@ -35,11 +35,14 @@ export default {
 <style scoped>
 .anchor a {
   opacity: 0;
-  font-size: 24px;
+  font-size: 14px;
   transition: opacity 0.2s ease-in-out;
   margin-left: 5px;
   position: relative;
   top: 2px;
+}
+.card-header {
+  font-size: 14px;
 }
 .node-card {
   margin-top: 1rem;
