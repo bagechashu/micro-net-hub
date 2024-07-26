@@ -101,7 +101,6 @@ func Add(c *gin.Context) {
 
 	var menu = &accountModel.Menu{
 		Name:       req.Name,
-		Title:      req.Title,
 		Icon:       req.Icon,
 		Path:       req.Path,
 		Redirect:   req.Redirect,
@@ -172,7 +171,6 @@ func Update(c *gin.Context) {
 	newMenu := &accountModel.Menu{
 		Model:      oldMenu.Model,
 		Name:       req.Name,
-		Title:      req.Title,
 		Icon:       req.Icon,
 		Path:       req.Path,
 		Redirect:   req.Redirect,

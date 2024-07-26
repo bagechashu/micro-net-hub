@@ -93,7 +93,6 @@ func InitData() {
 		{
 			Model:     gorm.Model{ID: userMgrGID},
 			Name:      "UserManage",
-			Title:     "人员管理",
 			Icon:      "user",
 			Path:      "/personnel",
 			Component: "Layout",
@@ -106,7 +105,6 @@ func InitData() {
 		{
 			Model:     gorm.Model{ID: sysMgrGID},
 			Name:      "System",
-			Title:     "系统管理",
 			Icon:      "component",
 			Path:      "/system",
 			Component: "Layout",
@@ -119,7 +117,6 @@ func InitData() {
 		{
 			Model:     gorm.Model{ID: OperationLogGID},
 			Name:      "Log",
-			Title:     "日志管理",
 			Icon:      "example",
 			Path:      "/log",
 			Component: "Layout",
@@ -131,7 +128,6 @@ func InitData() {
 		},
 		{
 			Name:      "Profile",
-			Title:     "个人中心",
 			Icon:      "people",
 			Path:      "/profile/index",
 			Component: "Layout",
@@ -142,7 +138,6 @@ func InitData() {
 		},
 		{
 			Name:      "User",
-			Title:     "用户管理",
 			Icon:      "people",
 			Path:      "user",
 			Component: "/personnel/user/index",
@@ -154,7 +149,6 @@ func InitData() {
 		},
 		{
 			Name:      "Group",
-			Title:     "分组管理",
 			Icon:      "peoples",
 			Path:      "group",
 			Component: "/personnel/group/index",
@@ -166,7 +160,6 @@ func InitData() {
 		},
 		{
 			Name:      "FieldRelation",
-			Title:     "字段关系管理",
 			Icon:      "el-icon-s-tools",
 			Path:      "fieldRelation",
 			Component: "/personnel/fieldRelation/index",
@@ -177,7 +170,6 @@ func InitData() {
 		},
 		{
 			Name:      "Role",
-			Title:     "角色管理",
 			Icon:      "eye-open",
 			Path:      "role",
 			Component: "/system/role/index",
@@ -188,7 +180,6 @@ func InitData() {
 		},
 		{
 			Name:      "Menu",
-			Title:     "菜单管理",
 			Icon:      "tree-table",
 			Path:      "menu",
 			Component: "/system/menu/index",
@@ -199,7 +190,6 @@ func InitData() {
 		},
 		{
 			Name:      "Api",
-			Title:     "接口管理",
 			Icon:      "tree",
 			Path:      "api",
 			Component: "/system/api/index",
@@ -210,7 +200,6 @@ func InitData() {
 		},
 		{
 			Name:      "Sitenav",
-			Title:     "导航配置",
 			Icon:      "list",
 			Path:      "sitenavmgr",
 			Component: "/sitenav/manager",
@@ -221,7 +210,6 @@ func InitData() {
 		},
 		{
 			Name:      "DnsManager",
-			Title:     "Dns配置",
 			Icon:      "guide",
 			Path:      "dnsmgr",
 			Component: "/dns/manager",
@@ -233,7 +221,6 @@ func InitData() {
 		},
 		{
 			Name:      "NoticeManager",
-			Title:     "公告管理",
 			Icon:      "message",
 			Path:      "noticemgr",
 			Component: "/notice/manager",
@@ -245,7 +232,6 @@ func InitData() {
 		},
 		{
 			Name:      "OperationLog",
-			Title:     "操作日志",
 			Icon:      "documentation",
 			Path:      "operation-log",
 			Component: "/log/operation-log/index",
