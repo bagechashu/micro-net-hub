@@ -19,7 +19,21 @@
     "switchSizeSuccess": "切换表格尺寸成功"
   },
   "sidebar": {
-    "siteNav": "网站导航"
+    "Sitenav": "网站导航",
+    "UserManage": "人员管理",
+    "User": "用户管理",
+    "Group": "分组管理",
+    "FieldRelation": "字段关系管理",
+    "System": "系统管理",
+    "Role": "角色管理",
+    "Menu": "菜单管理",
+    "Api": "接口管理",
+    "SitenavManager": "导航配置",
+    "DnsManager": "Dns配置",
+    "NoticeManager": "公告管理",
+    "Log": "日志管理",
+    "OperationLog": "操作日志",
+    "Profile": "个人中心"
   },
   "tagview": {},
   "loginform": {

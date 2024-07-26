@@ -1,6 +1,7 @@
 import { constantRoutes } from "@/router";
 import { getUserMenuTreeByUserId } from "@/api/system/menu";
 import Layout from "@/layout";
+import i18n from "@/i18n";
 
 export const getRoutesFromMenuTree = (menuTree) => {
   const routes = [];
@@ -22,7 +23,7 @@ export const getRoutesFromMenuTree = (menuTree) => {
       children: menu.children,
       meta: {
         name: menu.name,
-        title: menu.title,
+        title: i18n.t(`custom.sidebar.${menu.name}`),
         icon: menu.icon,
         noCache: menu.noCache === 1,
         breadcrumb: menu.breadcrumb === 1,

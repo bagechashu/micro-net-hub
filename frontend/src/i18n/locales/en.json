@@ -19,7 +19,21 @@
     "switchSizeSuccess": "Table size switch successful"
   },
   "sidebar": {
-    "siteNav": "Site Navigation"
+    "Sitenav": "Site Navigation",
+    "UserManage": "Account Manage",
+    "User": "User",
+    "Group": "Group",
+    "FieldRelation": "Field Relation",
+    "System": "System Manage",
+    "Role": "Role",
+    "Menu": "Menu",
+    "Api": "API",
+    "SitenavManager": "Site Navigation Manage",
+    "DnsManager": "DNS Manage",
+    "NoticeManager": "Notice Manage",
+    "Log": "Log Manage",
+    "OperationLog": "Operation Log",
+    "Profile": "Profile"
   },
   "tagview": {},
   "loginform": {

@@ -99,7 +99,7 @@ export const constantRoutes = [
         path: "/sitenav",
         component: () => import("@/views/sitenav/index"),
         name: "SiteNav",
-        meta: { title: i18n.t("custom.sidebar.siteNav"), icon: "tree", affix: true }
+        meta: { title: i18n.t("custom.sidebar.Sitenav"), icon: "tree", affix: true }
       }
     ]
   },
