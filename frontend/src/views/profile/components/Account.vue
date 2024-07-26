@@ -102,7 +102,7 @@ export default {
           {
             min: 6,
             max: 30,
-            message: "长度在 6 到 30 个字符",
+            message: this.$i18n.t("custom.valid.length", [6, 30]),
             trigger: "blur"
           }
         ],
