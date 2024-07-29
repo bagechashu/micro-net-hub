@@ -324,5 +324,33 @@
     "6111tvyrcq40": "Cancel",
     "6111tvyrcs40": "Deletion Cancelled",
     "ipaddr": "IP"
+  },
+  "notice": {
+    "61125ywdxyk0": "Other",
+    "6112860xxb80": "Add",
+    "6112860xxug0": "Batch Delete",
+    "6112860xxyo0": "Level",
+    "6112860xy1c0": "Content",
+    "6112860xy3w0": "Creator",
+    "6112860xy700": "Action",
+    "6112860xya40": "Edit",
+    "6112860xycw0": "Delete",
+    "6112860xyfk0": "Are you sure you want to delete?",
+    "6112860xyjw0": "Please Select",
+    "6112860xymw0": "Cancel",
+    "6112860xyq00": "Confirm",
+    "6112860xyus0": "You must select a level",
+    "6112860xyxk0": "Enter content",
+    "6112860xz0c0": "General",
+    "6112860xz380": "Normal",
+    "6112860xz5w0": "Important",
+    "6112860xz8s0": "Urgent",
+    "6112860xzbk0": "Unknown",
+    "6112860xze80": "Add Site",
+    "6112860xzhs0": "Update Site",
+    "6112860xzkg0": "Prompt",
+    "6112860xzn00": "Deletion Cancelled",
+    "6112860xzp00": "Form validation failed",
+    "6112860xzr40": "Operation successful"
   }
 }

@@ -67,15 +67,15 @@ export default {
     getLevelText(level) {
       switch (level) {
         case 1:
-          return "一般";
+          return this.$t("notice.6112860xz0c0");
         case 2:
-          return "普通";
+          return this.$t("notice.6112860xz380");
         case 3:
-          return "重要";
+          return this.$t("notice.6112860xz5w0");
         case 4:
-          return "紧急";
+          return this.$t("notice.6112860xz8s0");
         default:
-          return "其他";
+          return this.$t("notice.61125ywdxyk0");
       }
     },
     getLevelColorClass(level) {

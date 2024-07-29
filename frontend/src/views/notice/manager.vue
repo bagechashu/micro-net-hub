@@ -8,7 +8,7 @@
             icon="el-icon-plus"
             type="warning"
             @click="addNotice"
-          >新增</el-button>
+          >{{ $t('notice.6112860xxb80') }}</el-button>
         </el-form-item>
         <el-form-item>
           <el-button
@@ -17,7 +17,7 @@
             icon="el-icon-delete"
             type="danger"
             @click="batchDeleteNotices"
-          >批量删除</el-button>
+          >{{ $t('notice.6112860xxug0') }}</el-button>
         </el-form-item>
       </el-form>
 
@@ -36,7 +36,7 @@
           show-overflow-tooltip
           sortable
           prop="level"
-          label="级别"
+          :label="$t('notice.6112860xxyo0')"
           width="80"
           align="center"
         >
@@ -50,18 +50,18 @@
           show-overflow-tooltip
           sortable
           prop="content"
-          label="内容"
+          :label="$t('notice.6112860xy1c0')"
         />
         <el-table-column
           show-overflow-tooltip
           sortable
           prop="creator"
-          label="创建人"
+          :label="$t('notice.6112860xy3w0')"
           width="100"
         />
-        <el-table-column fixed="right" label="操作" align="center" width="120">
+        <el-table-column fixed="right" :label="$t('notice.6112860xy700')" align="center" width="120">
           <template slot-scope="scope">
-            <el-tooltip content="编辑" effect="dark" placement="top">
+            <el-tooltip :content="$t('notice.6112860xya40')" effect="dark" placement="top">
               <el-button
                 size="mini"
                 icon="el-icon-edit"
@@ -72,12 +72,12 @@
             </el-tooltip>
             <el-tooltip
               class="delete-popover"
-              content="删除"
+              :content="$t('notice.6112860xycw0')"
               effect="dark"
               placement="top"
             >
               <el-popconfirm
-                title="确定删除吗？"
+                :title="$t('notice.6112860xyfk0')"
                 @confirm="deleteNotice(scope.row.ID)"
               >
                 <el-button
@@ -102,8 +102,8 @@
           :rules="noticeFormRules"
           label-width="auto"
         >
-          <el-form-item label="级别" prop="level">
-            <el-select v-model="noticeForm.level" placeholder="请选择">
+          <el-form-item :label="$t('notice.6112860xxyo0')" prop="level">
+            <el-select v-model="noticeForm.level" :placeholder="$t('notice.6112860xyjw0')">
               <el-option
                 v-for="item in levelOptions"
                 :key="item.id"
@@ -112,24 +112,24 @@
               />
             </el-select>
           </el-form-item>
-          <el-form-item label="内容" prop="content">
+          <el-form-item :label="$t('notice.6112860xy1c0')" prop="content">
             <el-input
               v-model.trim="noticeForm.content"
               type="textarea"
-              placeholder="内容"
+              :placeholder="$t('notice.6112860xy1c0')"
               show-word-limit
               maxlength="100"
             />
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
-          <el-button size="mini" @click="noticeFormCancel()">取 消</el-button>
+          <el-button size="mini" @click="noticeFormCancel()">{{ $t('notice.6112860xymw0') }}</el-button>
           <el-button
             size="mini"
             :loading="loading"
             type="primary"
             @click="noticeFormSubmit()"
-          >确 定</el-button>
+          >{{ $t('notice.6112860xyq00') }}</el-button>
         </div>
       </el-dialog>
     </el-card>
@@ -161,22 +161,22 @@ export default {
         content: ""
       },
       noticeFormRules: {
-        level: [{ required: true, message: "必须选择级别", trigger: "blur" }],
+        level: [{ required: true, message: this.$t("notice.6112860xyus0"), trigger: "blur" }],
         content: [
-          { required: true, message: "输入内容", trigger: "blur" },
+          { required: true, message: this.$t("notice.6112860xyxk0"), trigger: "blur" },
           {
             min: 10,
             max: 100,
-            message: "长度在 10 到 50 个字符",
+            message: this.$t("valid.length", [10, 100]),
             trigger: "blur"
           }
         ]
       },
       levelOptions: [
-        { name: "一般", id: 1 },
-        { name: "普通", id: 2 },
-        { name: "重要", id: 3 },
-        { name: "紧急", id: 4 }
+        { name: this.$t("notice.6112860xz0c0"), id: 1 },
+        { name: this.$t("notice.6112860xz380"), id: 2 },
+        { name: this.$t("notice.6112860xz5w0"), id: 3 },
+        { name: this.$t("notice.6112860xz8s0"), id: 4 }
       ],
       // 表格多选
       multipleSelection: []
@@ -198,7 +198,7 @@ export default {
     },
     getLevelText(level) {
       const option = this.levelOptions.find(option => option.id === level);
-      return option ? option.name : "未知";
+      return option ? option.name : this.$t("notice.6112860xzbk0");
     },
     getLevelColor(level) {
       switch (level) {
@@ -216,7 +216,7 @@ export default {
     },
     // 新增
     addNotice() {
-      this.noticeFormTitle = "新增站点";
+      this.noticeFormTitle = this.$t("notice.6112860xze80");
       this.noticeFormType = "add";
       this.noticeFormVisible = true;
     },
@@ -227,7 +227,7 @@ export default {
       this.noticeForm.level = row.level;
       this.noticeForm.content = row.content;
 
-      this.noticeFormTitle = "更新站点";
+      this.noticeFormTitle = this.$t("notice.6112860xzhs0");
       this.noticeFormType = "update";
       this.noticeFormVisible = true;
     },
@@ -246,9 +246,9 @@ export default {
     },
     // 批量删除
     batchDeleteNotices() {
-      this.$confirm("此操作将永久删除, 是否继续?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
+      this.$confirm(this.$t("tips.deleteWarning"), this.$t("notice.6112860xzkg0"), {
+        confirmButtonText: this.$t("notice.6112860xyq00"),
+        cancelButtonText: this.$t("notice.6112860xymw0"),
         type: "warning"
       })
         .then(async() => {
@@ -270,7 +270,7 @@ export default {
           Message({
             showClose: true,
             type: "info",
-            message: "已取消删除"
+            message: this.$t("notice.6112860xzn00")
           });
         });
     },
@@ -298,7 +298,7 @@ export default {
         } else {
           Message({
             showClose: true,
-            message: "表单校验失败",
+            message: this.$t("notice.6112860xzp00"),
             type: "warn"
           });
           return false;
@@ -323,7 +323,7 @@ export default {
     // 判断结果
     judgeResult(res) {
       if (res.code === 200) {
-        const message = res.msg ? res.msg : "操作成功";
+        const message = res.msg ? res.msg : this.$t("notice.6112860xzr40");
         Message({
           showClose: true,
           message: message,
