@@ -145,7 +145,7 @@
           </template>
         </el-tab-pane>
       </el-tabs>
-      <el-empty v-else description="暂无数据" />
+      <el-empty v-else :description="$t('common.nodata')" />
 
       <el-dialog :title="navSiteFormTitle" :visible.sync="navSiteFormVisible">
         <el-form

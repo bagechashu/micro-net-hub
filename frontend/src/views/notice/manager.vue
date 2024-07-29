@@ -92,7 +92,7 @@
           </template>
         </el-table-column>
       </el-table>
-      <el-empty v-else description="暂无数据" />
+      <el-empty v-else :description="$t('common.nodata')" />
 
       <el-dialog :title="noticeFormTitle" :visible.sync="noticeFormVisible">
         <el-form
