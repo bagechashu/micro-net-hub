@@ -20,7 +20,7 @@
             :loading="loading"
             type="primary"
             @click="addZone()"
-          >添加 Zone</el-button>
+          >{{ $t('dns.6112hr284k00') }} Zone</el-button>
         </el-form-item>
       </el-form>
       <el-tabs
@@ -44,7 +44,7 @@
                   icon="el-icon-plus"
                   type="warning"
                   @click="addRecord"
-                >新增</el-button>
+                >{{ $t('dns.6112hr2851s0') }}</el-button>
               </el-form-item>
               <el-form-item>
                 <el-button
@@ -53,7 +53,7 @@
                   icon="el-icon-delete"
                   type="danger"
                   @click="batchDeleteRecords"
-                >批量删除</el-button>
+                >{{ $t('dns.6112hr2856c0') }}</el-button>
               </el-form-item>
             </el-form>
 
@@ -95,16 +95,16 @@
                 show-overflow-tooltip
                 sortable
                 prop="creator"
-                label="创建人"
+                :label="$t('dns.6112hr285980')"
               />
               <el-table-column
                 fixed="right"
-                label="操作"
+                :label="$t('dns.6112hr285c40')"
                 align="center"
                 width="120"
               >
                 <template slot-scope="scope">
-                  <el-tooltip content="编辑" effect="dark" placement="top">
+                  <el-tooltip :content="$t('dns.6112hr285ew0')" effect="dark" placement="top">
                     <el-button
                       size="mini"
                       icon="el-icon-edit"
@@ -115,12 +115,12 @@
                   </el-tooltip>
                   <el-tooltip
                     class="delete-popover"
-                    content="删除"
+                    :content="$t('dns.6112hr285hs0')"
                     effect="dark"
                     placement="top"
                   >
                     <el-popconfirm
-                      title="确定删除吗？"
+                      :title="$t('dns.6112hr285kk0')"
                       @confirm="deleteRecord(scope.row.ID)"
                     >
                       <el-button
@@ -184,7 +184,7 @@
           <el-form-item label="TTL" prop="ttl">
             <el-input
               v-model.number="dnsRecordForm.ttl"
-              placeholder="缓存时长(s)"
+              :placeholder="$t('dns.6112hr285n40')"
             />
           </el-form-item>
         </el-form>
@@ -192,13 +192,13 @@
           <el-button
             size="mini"
             @click="dnsRecordFormCancel()"
-          >取 消</el-button>
+          >{{ $t('dns.6112hr285q00') }}</el-button>
           <el-button
             size="mini"
             :loading="loading"
             type="primary"
             @click="dnsRecordFormSubmit()"
-          >确 定</el-button>
+          >{{ $t('dns.6112hr285so0') }}</el-button>
         </div>
       </el-dialog>
     </el-card>
@@ -230,13 +230,13 @@ export default {
         name: [
           {
             required: true,
-            message: "请输入 Zone 的名称",
+            message: this.$t("dns.inputZoneNameTips"),
             trigger: "blur"
           },
           {
             min: 4,
             max: 20,
-            message: "长度在 4 到 20 个字符",
+            message: this.$t("valid.length", [4, 20]),
             trigger: "blur"
           }
         ]
@@ -254,28 +254,28 @@ export default {
         ttl: ""
       },
       dnsRecordFormRules: {
-        zone_id: [{ required: true, message: "请选择分组", trigger: "blur" }],
-        type: [{ required: true, message: "请选择类型", trigger: "blur" }],
+        zone_id: [{ required: true, message: this.$t("dns.6112hr285v80"), trigger: "blur" }],
+        type: [{ required: true, message: this.$t("dns.6112hr285xs0"), trigger: "blur" }],
         host: [
-          { required: true, message: "请输入 Host 名", trigger: "blur" },
+          { required: true, message: this.$t("dns.inputHostNameTips"), trigger: "blur" },
           {
             min: 1,
             max: 30,
-            message: "长度在 1 到 30 个字符",
+            message: this.$t("valid.length", [1, 30]),
             trigger: "blur"
           }
         ],
         value: [
-          { required: true, message: "请输入记录值", trigger: "change" },
+          { required: true, message: this.$t("dns.6112hr2860o0"), trigger: "change" },
           {
             min: 1,
             max: 100,
-            message: "长度在 1 到 100 个字符",
+            message: this.$t("valid.length", [1, 100]),
             trigger: "blur"
           }
         ],
         ttl: [
-          { required: true, message: "请选择 ttl", trigger: "blur" },
+          { required: true, message: this.$t("dns.inputTtlTips"), trigger: "blur" },
           { type: "number", message: "must be number", trigger: "blur" }
         ]
       },
@@ -328,7 +328,7 @@ export default {
         } else {
           Message({
             showClose: true,
-            message: "表单校验失败",
+            message: this.$t("dns.6112hr2864k0"),
             type: "warn"
           });
           return false;
@@ -347,11 +347,11 @@ export default {
     async deleteZone(tabname) {
       const dnsZoneId = this.getZoneIDFromTabname(tabname);
       this.$confirm(
-        "此操作将永久删除该导航组及其包含的记录, 是否继续?",
-        "提示",
+        this.$t("dns.deleteZoneTips"),
+        this.$t("dns.6112hr286740"),
         {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
+          confirmButtonText: this.$t("dns.6112hr285so0"),
+          cancelButtonText: this.$t("dns.6112hr285q00"),
           type: "warning"
         }
       )
@@ -372,7 +372,7 @@ export default {
           Message({
             showClose: true,
             type: "info",
-            message: "已取消删除"
+            message: this.$t("dns.6112hr2869s0")
           });
         });
     },
@@ -382,7 +382,7 @@ export default {
       const dnsZoneId = this.getZoneIDFromTabname(this.dnsZoneActiveTab);
       this.dnsRecordForm.zone_id = dnsZoneId;
 
-      this.dnsRecordFormTitle = "新增记录";
+      this.dnsRecordFormTitle = this.$t("dns.6112hr286cc0");
       this.dnsRecordFormType = "add";
       this.dnsRecordFormVisible = true;
     },
@@ -396,7 +396,7 @@ export default {
       this.dnsRecordForm.value = row.value;
       this.dnsRecordForm.ttl = row.ttl;
 
-      this.dnsRecordFormTitle = "更新记录";
+      this.dnsRecordFormTitle = this.$t("dns.6112hr286f40");
       this.dnsRecordFormType = "update";
       this.dnsRecordFormVisible = true;
     },
@@ -415,9 +415,9 @@ export default {
     },
     // 批量删除
     batchDeleteRecords() {
-      this.$confirm("此操作将永久删除, 是否继续?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
+      this.$confirm(this.$t("tips.deleteWarning"), this.$t("dns.6112hr286740"), {
+        confirmButtonText: this.$t("dns.6112hr285so0"),
+        cancelButtonText: this.$t("dns.6112hr285q00"),
         type: "warning"
       })
         .then(async() => {
@@ -439,7 +439,7 @@ export default {
           Message({
             showClose: true,
             type: "info",
-            message: "已取消删除"
+            message: this.$t("dns.6112hr2869s0")
           });
         });
     },
@@ -467,7 +467,7 @@ export default {
         } else {
           Message({
             showClose: true,
-            message: "表单校验失败",
+            message: this.$t("dns.6112hr2864k0"),
             type: "warn"
           });
           return false;
@@ -497,7 +497,7 @@ export default {
       if (res.code === 200) {
         Message({
           showClose: true,
-          message: "操作成功",
+          message: this.$t("dns.6112hr286i40"),
           type: "success"
         });
       }

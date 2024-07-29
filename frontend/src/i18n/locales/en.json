@@ -352,5 +352,31 @@
     "6112860xzn00": "Deletion Cancelled",
     "6112860xzp00": "Form validation failed",
     "6112860xzr40": "Operation successful"
+  },
+  "dns": {
+    "6112hr284k00": "Add",
+    "6112hr2851s0": "New",
+    "6112hr2856c0": "Batch Delete",
+    "6112hr285980": "Creator",
+    "6112hr285c40": "Action",
+    "6112hr285ew0": "Edit",
+    "6112hr285hs0": "Delete",
+    "6112hr285kk0": "Are you sure you want to delete?",
+    "6112hr285n40": "Cache Duration (s)",
+    "6112hr285q00": "Cancel",
+    "6112hr285so0": "Confirm",
+    "6112hr285v80": "Please select a group",
+    "6112hr285xs0": "Please select a type",
+    "6112hr2860o0": "Please enter the record value",
+    "6112hr2864k0": "Form validation failed",
+    "6112hr286740": "Prompt",
+    "6112hr2869s0": "Deletion Cancelled",
+    "6112hr286cc0": "Add Record",
+    "6112hr286f40": "Update Record",
+    "6112hr286i40": "Operation successful",
+    "inputZoneNameTips": "Please enter the name of the Zone",
+    "inputHostNameTips": "Please enter the Host name",
+    "inputTtlTips": "Please select ttl",
+    "deleteZoneTips": "This action will permanently delete the navigation group and its contained records. Do you want to continue?"
   }
 }
