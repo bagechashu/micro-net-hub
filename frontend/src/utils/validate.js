@@ -122,3 +122,18 @@ export function validatePasswordCanEnpty(rule, value, callback) {
   }
   callback();
 }
+
+export function validateName(rule, value, callback) {
+  if (value === "") {
+    return callback(new Error(i18n.t("valid.notAllowEmpty")));
+  }
+
+  const regex = /^[a-zA-Z0-9_-]+$/;
+  const isValid = regex.test(value);
+
+  if (!isValid) {
+    return callback(new Error(i18n.t("valid.InvalidName")));
+  }
+
+  callback(null);
+}

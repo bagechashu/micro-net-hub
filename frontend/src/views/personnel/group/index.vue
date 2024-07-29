@@ -7,37 +7,37 @@
         :model="params"
         class="demo-form-inline"
       >
-        <el-form-item label="名称">
+        <el-form-item :label="$t('group.610yx3auj8w0')">
           <el-input
             v-model.trim="params.groupName"
             style="width: 100px"
             clearable
-            placeholder="名称"
+            :placeholder="$t('group.610yx3auj8w0')"
             @keyup.enter.native="search"
             @clear="search"
           />
         </el-form-item>
-        <el-form-item label="描述">
+        <el-form-item :label="$t('group.610yx3auk3k0')">
           <el-input
             v-model.trim="params.remark"
             style="width: 100px"
             clearable
-            placeholder="描述"
+            :placeholder="$t('group.610yx3auk3k0')"
             @keyup.enter.native="search"
             @clear="search"
           />
         </el-form-item>
-        <el-form-item label="同步状态">
+        <el-form-item :label="$t('group.610yx3auk780')">
           <el-select
             v-model.trim="params.syncState"
             style="width: 110px"
             clearable
-            placeholder="同步状态"
+            :placeholder="$t('group.610yx3auk780')"
             @change="search"
             @clear="search"
           >
-            <el-option label="已同步" value="1" />
-            <el-option label="未同步" value="2" />
+            <el-option :label="$t('group.610yx3auk9s0')" value="1" />
+            <el-option :label="$t('group.610yx3aukc00')" value="2" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -46,10 +46,10 @@
             icon="el-icon-search"
             type="primary"
             @click="search"
-          >查询</el-button>
+          >{{ $t('group.610yx3auke40') }}</el-button>
         </el-form-item>
         <!-- <el-form-item>
-          <el-button :loading="loading" icon="el-icon-plus" type="warning" @click="resetData">重置</el-button>
+          <el-button :loading="loading" icon="el-icon-plus" type="warning" @click="resetData">{{$t('group.610yx3aukgg0')}}</el-button>
         </el-form-item> -->
         <el-form-item>
           <el-button
@@ -57,7 +57,7 @@
             icon="el-icon-plus"
             type="warning"
             @click="create"
-          >新增</el-button>
+          >{{ $t('group.610yx3aukig0') }}</el-button>
         </el-form-item>
         <el-form-item>
           <el-button
@@ -66,7 +66,7 @@
             icon="el-icon-delete"
             type="danger"
             @click="batchDelete"
-          >批量删除</el-button>
+          >{{ $t('group.610yx3aukks0') }}</el-button>
         </el-form-item>
         <el-form-item>
           <el-button
@@ -75,7 +75,7 @@
             icon="el-icon-upload2"
             type="success"
             @click="batchSync"
-          >批量同步</el-button>
+          >{{ $t('group.610yx3aukmw0') }}</el-button>
         </el-form-item>
         <br>
         <el-form-item>
@@ -84,7 +84,7 @@
             icon="el-icon-download"
             type="warning"
             @click="syncOpenLdapDepts"
-          >同步原ldap部门</el-button>
+          >{{ $t('group.610yx3aukos0') }}</el-button>
         </el-form-item>
         <el-form-item>
           <el-button
@@ -92,7 +92,7 @@
             icon="el-icon-download"
             type="warning"
             @click="syncDingTalkDepts"
-          >同步钉钉部门</el-button>
+          >{{ $t('group.610yx3aukr40') }}</el-button>
         </el-form-item>
         <el-form-item>
           <el-button
@@ -100,7 +100,7 @@
             icon="el-icon-download"
             type="warning"
             @click="syncFeiShuDepts"
-          >同步飞书部门</el-button>
+          >{{ $t('group.610yx3aukvw0') }}</el-button>
         </el-form-item>
         <el-form-item>
           <el-button
@@ -108,7 +108,7 @@
             icon="el-icon-download"
             type="warning"
             @click="syncWeComDepts"
-          >同步企业微信部门</el-button>
+          >{{ $t('group.610yx3aukyc0') }}</el-button>
         </el-form-item>
       </el-form>
 
@@ -128,13 +128,13 @@
           show-overflow-tooltip
           sortable
           prop="groupName"
-          label="名称"
+          :label="$t('group.610yx3auj8w0')"
         />
         <el-table-column
           show-overflow-tooltip
           sortable
           prop="groupType"
-          label="类型"
+          :label="$t('group.610yx3aul140')"
           width="180"
         >
           <template #default="scope">
@@ -152,28 +152,28 @@
           show-overflow-tooltip
           sortable
           prop="remark"
-          label="描述"
+          :label="$t('group.610yx3auk3k0')"
           width="320"
         />
         <el-table-column
           show-overflow-tooltip
           sortable
           prop="CreatedAt"
-          label="创建时间"
+          :label="$t('group.610yx3aul380')"
         />
         <el-table-column
           show-overflow-tooltip
           sortable
           prop="UpdatedAt"
-          label="更新时间"
+          :label="$t('group.610yx3aul5c0')"
         />
-        <el-table-column fixed="right" label="操作" align="center" width="220">
+        <el-table-column fixed="right" :label="$t('group.610yx3aul7g0')" align="center" width="220">
           <template #default="scope">
             <el-tooltip
               v-if="
                 scope.row.groupType != 'ou' && scope.row.groupName != 'root'
               "
-              content="组用户编辑"
+              :content="$t('group.610yx3aul9g0')"
               effect="dark"
               placement="top"
             >
@@ -185,7 +185,7 @@
                 @click="handleGetUserOfGroup(scope.row)"
               />
             </el-tooltip>
-            <el-tooltip content="编辑" effect="dark" placement="top">
+            <el-tooltip :content="$t('group.610yx3aulbs0')" effect="dark" placement="top">
               <el-button
                 size="mini"
                 icon="el-icon-edit"
@@ -196,12 +196,12 @@
             </el-tooltip>
             <el-tooltip
               class="delete-popover"
-              content="删除"
+              :content="$t('group.610yx3auleo0')"
               effect="dark"
               placement="top"
             >
               <el-popconfirm
-                title="确定删除吗？"
+                :title="$t('group.610yx3aulgo0')"
                 @confirm="singleDelete(scope.row.ID)"
               >
                 <el-button
@@ -216,12 +216,12 @@
             <el-tooltip
               v-if="scope.row.syncState === 2"
               class="delete-popover"
-              content="同步"
+              :content="$t('group.610yx3aulis0')"
               effect="dark"
               placement="top"
             >
               <el-popconfirm
-                title="确定同步吗？"
+                :title="$t('group.610yx3aulks0')"
                 @confirm="singleSync(scope.row.ID)"
               >
                 <el-button
@@ -245,36 +245,36 @@
           :rules="dialogFormRules"
           label-width="120px"
         >
-          <el-form-item label="名称" prop="groupName">
+          <el-form-item :label="$t('group.610yx3auj8w0')" prop="groupName">
             <el-input
               v-model.trim="dialogFormData.groupName"
-              placeholder="名称(拼音)"
+              :placeholder="$t('group.610yx3auj8w0')"
             />
           </el-form-item>
-          <el-form-item label="分组类型" prop="groupType">
+          <el-form-item :label="$t('group.610yx3aulns0')" prop="groupType">
             <el-select
               v-model.trim="dialogFormData.groupType"
-              placeholder="协定 [ou] 只维护 group 相关的 [cn]; [cn] 下维护用户. 用户'所属部门'有体现."
+              :placeholder="$t('group.610yx3aulpo0')"
               style="width: 100%"
             >
               <el-option label="ou [organizationalUnit]" value="ou" />
               <el-option label="cn [groupOfUniqueNames]" value="cn" />
             </el-select>
           </el-form-item>
-          <el-form-item label="上级分组" prop="parentId">
+          <el-form-item :label="$t('group.610yx3aulrk0')" prop="parentId">
             <treeselect
               v-model="dialogFormData.parentId"
               :options="treeselectData"
               :normalizer="normalizer"
-              placeholder="请选择上级分组"
+              :placeholder="$t('group.610yx3aultc0')"
               @input="treeselectInput"
             />
           </el-form-item>
-          <el-form-item label="描述" prop="remark">
+          <el-form-item :label="$t('group.610yx3auk3k0')" prop="remark">
             <el-input
               v-model.trim="dialogFormData.remark"
               type="textarea"
-              placeholder="描述"
+              :placeholder="$t('group.610yx3auk3k0')"
               :autosize="{ minRows: 3, maxRows: 6 }"
               show-word-limit
               maxlength="100"
@@ -282,13 +282,13 @@
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
-          <el-button size="mini" @click="cancelForm()">取 消</el-button>
+          <el-button size="mini" @click="cancelForm()">{{ $t('group.610yx3aulv00') }}</el-button>
           <el-button
             size="mini"
             :loading="submitLoading"
             type="primary"
             @click="submitForm()"
-          >确 定</el-button>
+          >{{ $t('group.610yx3aulws0') }}</el-button>
         </div>
       </el-dialog>
       <!-- 编辑 -->
@@ -300,18 +300,18 @@
           :rules="dialogFormRules"
           label-width="120px"
         >
-          <el-form-item label="名称" prop="groupName">
+          <el-form-item :label="$t('group.610yx3auj8w0')" prop="groupName">
             <el-input
               v-model.trim="dialogFormData.groupName"
               :disabled="true"
-              placeholder="名称"
+              :placeholder="$t('group.610yx3auj8w0')"
             />
           </el-form-item>
-          <el-form-item label="描述" prop="remark">
+          <el-form-item :label="$t('group.610yx3auk3k0')" prop="remark">
             <el-input
               v-model.trim="dialogFormData.remark"
               type="textarea"
-              placeholder="描述"
+              :placeholder="$t('group.610yx3auk3k0')"
               :autosize="{ minRows: 3, maxRows: 6 }"
               show-word-limit
               maxlength="100"
@@ -319,13 +319,13 @@
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
-          <el-button size="mini" @click="cancelForm()">取 消</el-button>
+          <el-button size="mini" @click="cancelForm()">{{ $t('group.610yx3aulv00') }}</el-button>
           <el-button
             size="mini"
             :loading="submitLoading"
             type="primary"
             @click="submitForm()"
-          >确 定</el-button>
+          >{{ $t('group.610yx3aulws0') }}</el-button>
         </div>
       </el-dialog>
       <!-- 组用户管理 -->
@@ -337,7 +337,7 @@
                 <el-input
                   v-model.trim="userOfGroupParams.nickname"
                   clearable
-                  placeholder="模糊搜索"
+                  :placeholder="$t('group.610yx3aulyk0')"
                   @keyup.enter.native="getUsersOfGroupData()"
                   @clear="getUsersOfGroupData()"
                 />
@@ -348,7 +348,7 @@
                 icon="el-icon-search"
                 type="primary"
                 @click="getUsersOfGroupData()"
-              >搜索</el-button>
+              >{{ $t('group.610yx3aum0c0') }}</el-button>
             </el-form></el-col>
           <el-col :span="10">
             <el-form size="mini" :inline="true" :model="groupAddUserParams">
@@ -359,7 +359,7 @@
                   filterable
                   remote
                   reserve-keyword
-                  placeholder="模糊搜索"
+                  :placeholder="$t('group.610yx3aulyk0')"
                   :remote-method="getUsersNoInGroupData"
                   :loading="submitLoading"
                 >
@@ -379,7 +379,7 @@
                   icon="el-icon-delete"
                   type="success"
                   @click="handleGroupAddUser()"
-                >添加</el-button>
+                >{{ $t('group.610yx3aum1w0') }}</el-button>
               </el-button-group>
             </el-form></el-col>
           <el-col :span="4">
@@ -391,7 +391,7 @@
                 icon="el-icon-delete"
                 type="danger"
                 @click="handleGroupDelUser()"
-              >移除选中</el-button>
+              >{{ $t('group.610yx3aum3o0') }}</el-button>
             </el-form></el-col>
         </el-row>
 
@@ -408,18 +408,18 @@
           <el-table-column type="expand">
             <template slot-scope="props">
               <el-form label-position="left" class="table-expand">
-                <el-form-item label="电话">
+                <el-form-item :label="$t('group.610yx3aum5k0')">
                   <span>{{ props.row.mobile }}</span>
                 </el-form-item>
-                <el-form-item label="邮箱">
+                <el-form-item :label="$t('group.610yx3aum7g0')">
                   <span>{{ props.row.mail }}</span>
                 </el-form-item>
               </el-form>
             </template>
           </el-table-column>
-          <el-table-column prop="userName" label="用户" sortable />
-          <el-table-column prop="nickName" label="昵称" />
-          <el-table-column prop="introduction" label="简介" />
+          <el-table-column prop="userName" :label="$t('group.610yx3aum940')" sortable />
+          <el-table-column prop="nickName" :label="$t('group.610yx3aumb40')" />
+          <el-table-column prop="introduction" :label="$t('group.610yx3aumcw0')" />
         </el-table>
       </el-dialog>
     </el-card>
@@ -444,6 +444,8 @@ import {
   groupAddUser,
   groupDelUser
 } from "@/api/personnel/group";
+
+import { validateName } from "@/utils/validate";
 import { Message } from "element-ui";
 
 export default {
@@ -496,36 +498,37 @@ export default {
       },
       dialogFormRules: {
         groupName: [
-          { required: true, message: "请输入所属类别", trigger: "blur" },
+          { required: true, message: this.$t("group.610yx3aumeo0"), trigger: "blur" },
           {
-            min: 1,
-            max: 50,
-            message: "长度在 1 到 50 个字符",
+            min: 2,
+            max: 30,
+            message: this.$t("valid.length", [2, 30]),
             trigger: "blur"
-          }
+          },
+          { required: true, validator: validateName, trigger: "blur" }
         ],
         groupType: [
-          { required: true, message: "请输入分组类型", trigger: "blur" },
-          { min: 1, max: 50, message: "ou、cn或者其他", trigger: "blur" }
+          { required: true, message: this.$t("group.610yx3aumgg0"), trigger: "blur" },
+          { min: 1, max: 50, message: this.$t("group.selectGroupTypeTips"), trigger: "blur" }
         ],
         parentId: [
-          { required: true, message: "请选择父级", trigger: "blur" },
+          { required: true, message: this.$t("group.610yx3aumi40"), trigger: "blur" },
           {
             validator: (rule, value, callBack) => {
               if (value >= 0) {
                 callBack();
               } else {
-                callBack("请选择有效的部门");
+                callBack(this.$t("group.610yx3aumjw0"));
               }
             }
           }
         ],
         remark: [
-          { required: false, message: "说明", trigger: "blur" },
+          { required: false, message: this.$t("group.610yx3aumlk0"), trigger: "blur" },
           {
             min: 0,
             max: 100,
-            message: "长度在 0 到 100 个字符",
+            message: this.$t("valid.length", [0, 100]),
             trigger: "blur"
           }
         ]
@@ -617,7 +620,7 @@ export default {
         this.groupTree = data;
         this.infoTableData = JSON.parse(JSON.stringify(data));
         this.treeselectData = [
-          { ID: 0, groupName: "顶级类目", children: data }
+          { ID: 0, groupName: this.$t("group.610yx3aumo00"), children: data }
         ];
       } finally {
         this.loading = false;
@@ -626,7 +629,7 @@ export default {
     // 用户管理
     handleGetUserOfGroup(row) {
       this.dialogUsersMgrVisible = true;
-      this.dialogUsersMgrTitle = `${row.groupName} 组用户管理`;
+      this.dialogUsersMgrTitle = this.$t("group.group", [row.groupName]);
       this.userOfGroupParams.groupId = row.ID;
       this.userOfGroupParams.nickname = "";
       this.groupAddUserParams.groupId = row.ID;
@@ -649,9 +652,9 @@ export default {
     },
     // 删除组用户
     async handleGroupDelUser() {
-      this.$confirm("确定将用户移出该组?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
+      this.$confirm(this.$t("group.610yx3aumps0"), this.$t("group.610yx3aumrs0"), {
+        confirmButtonText: this.$t("group.610yx3aulws0"),
+        cancelButtonText: this.$t("group.610yx3aulv00"),
         type: "warning"
       })
         .then(async(res) => {
@@ -668,7 +671,7 @@ export default {
               if (res.code === 0) {
                 Message({
                   showClose: true,
-                  message: "操作成功",
+                  message: this.$t("group.610yx3aumtg0"),
                   type: "success"
                 });
               }
@@ -682,7 +685,7 @@ export default {
           Message({
             showClose: true,
             type: "info",
-            message: "已取消删除"
+            message: this.$t("group.610yx3aumvc0")
           });
         });
     },
@@ -706,9 +709,9 @@ export default {
       }
     },
     handleGroupAddUser(query) {
-      this.$confirm("确定添加用户到该组?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
+      this.$confirm(this.$t("group.610yx3aumx00"), this.$t("group.610yx3aumrs0"), {
+        confirmButtonText: this.$t("group.610yx3aulws0"),
+        cancelButtonText: this.$t("group.610yx3aulv00"),
         type: "warning"
       })
         .then(async(res) => {
@@ -722,7 +725,7 @@ export default {
               if (res.code === 0) {
                 Message({
                   showClose: true,
-                  message: "操作成功",
+                  message: this.$t("group.610yx3aumtg0"),
                   type: "success"
                 });
               }
@@ -739,13 +742,13 @@ export default {
           Message({
             showClose: true,
             type: "info",
-            message: "已取消删除"
+            message: this.$t("group.610yx3aumvc0")
           });
         });
     },
     // 新增
     create() {
-      this.dialogFormTitle = "新增分组";
+      this.dialogFormTitle = this.$t("group.610yx3aumyw0");
       this.updateLoading = true; // 新增的展示
       this.dialogType = "create";
     },
@@ -754,7 +757,7 @@ export default {
       this.dialogFormData.ID = row.ID;
       this.dialogFormData.groupName = row.groupName;
       this.dialogFormData.remark = row.remark;
-      this.dialogFormTitle = "修改分组";
+      this.dialogFormTitle = this.$t("group.610yx3aun0k0");
       this.dialogType = "update";
       this.dialogFormVisible = true;
     },
@@ -764,7 +767,7 @@ export default {
       if (res.code === 200) {
         Message({
           showClose: true,
-          message: "操作成功",
+          message: this.$t("group.610yx3aumtg0"),
           type: "success"
         });
       }
@@ -793,7 +796,7 @@ export default {
         } else {
           Message({
             showClose: true,
-            message: "表单校验失败",
+            message: this.$t("group.610yx3aun2c0"),
             type: "warn"
           });
           return false;
@@ -818,9 +821,9 @@ export default {
 
     // 批量删除
     batchDelete() {
-      this.$confirm("此操作将永久删除, 是否继续?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
+      this.$confirm(this.$t("group.batchDeleteTips"), this.$t("group.610yx3aumrs0"), {
+        confirmButtonText: this.$t("group.610yx3aulws0"),
+        cancelButtonText: this.$t("group.610yx3aulv00"),
         type: "warning"
       })
         .then(async(res) => {
@@ -842,15 +845,15 @@ export default {
           Message({
             showClose: true,
             type: "info",
-            message: "已取消删除"
+            message: this.$t("group.610yx3aumvc0")
           });
         });
     },
     // 批量同步
     batchSync() {
-      this.$confirm("此操作批量同步数据到Ldap, 是否继续?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
+      this.$confirm(this.$t("group.betchSyncLdapTips"), this.$t("group.610yx3aumrs0"), {
+        confirmButtonText: this.$t("group.610yx3aulws0"),
+        cancelButtonText: this.$t("group.610yx3aulv00"),
         type: "warning"
       })
         .then(async(res) => {
@@ -872,7 +875,7 @@ export default {
           Message({
             showClose: true,
             type: "info",
-            message: "已取消同步"
+            message: this.$t("group.610yx3aun440")
           });
         });
     },

@@ -465,7 +465,7 @@
                 <el-input
                   v-model.trim="dialogFormData.introduction"
                   type="textarea"
-                  placeholder="$t('user.610wkzjiol00')}}"
+                  :placeholder="$t('user.610wkzjiol00')"
                   :autosize="{ minRows: 3, maxRows: 6 }"
                   show-word-limit
                   maxlength="100"
@@ -599,7 +599,7 @@ export default {
           {
             min: 2,
             max: 20,
-            message: "$t{{'valid.length', [2,20]}}",
+            message: this.$t("valid.length", [2, 20]),
             trigger: "blur"
           }
         ],
@@ -622,7 +622,7 @@ export default {
           {
             min: 0,
             max: 20,
-            message: "$t{{'valid.length', [0,20]}}",
+            message: this.$t("valid.length", [0, 20]),
             trigger: "blur"
           }
         ],
@@ -635,7 +635,7 @@ export default {
           {
             min: 2,
             max: 20,
-            message: "$t{{'valid.length', [2,20]}}",
+            message: this.$t("valid.length", [2, 20]),
             trigger: "blur"
           }
         ],
@@ -664,7 +664,7 @@ export default {
           {
             min: 0,
             max: 100,
-            message: "$t{{'valid.length', [0,100]}}",
+            message: this.$t("valid.length", [0, 100]),
             trigger: "blur"
           }
         ]
