@@ -7,11 +7,11 @@
         :model="params"
         class="demo-form-inline"
       >
-        <el-form-item label="字段标识">
+        <el-form-item :label="$t('fieldRelation.610zu0w6ymo0')">
           <el-input
             v-model.trim="params.remark"
             clearable
-            placeholder="描述"
+            :placeholder="$t('fieldRelation.610zu0w6z440')"
             @keyup.enter.native="search"
             @clear="search"
           />
@@ -22,7 +22,7 @@
             icon="el-icon-search"
             type="primary"
             @click="search"
-          >查询</el-button>
+          >{{ $t('fieldRelation.610zu0w6z7w0') }}</el-button>
         </el-form-item>
         <el-form-item>
           <el-button
@@ -30,7 +30,7 @@
             icon="el-icon-plus"
             type="warning"
             @click="create"
-          >新增</el-button>
+          >{{ $t('fieldRelation.610zu0w6zag0') }}</el-button>
         </el-form-item>
         <el-form-item>
           <el-button
@@ -39,7 +39,7 @@
             icon="el-icon-delete"
             type="danger"
             @click="batchDelete"
-          >批量删除</el-button>
+          >{{ $t('fieldRelation.610zu0w6zdw0') }}</el-button>
         </el-form-item>
         <br>
       </el-form>
@@ -60,22 +60,22 @@
           show-overflow-tooltip
           sortable
           prop="ID"
-          label="序号"
+          :label="$t('fieldRelation.610zu0w6zgo0')"
           width="80"
         />
         <el-table-column
           show-overflow-tooltip
           sortable
           prop="CreatedAt"
-          label="创建时间"
+          :label="$t('fieldRelation.610zu0w6ziw0')"
         />
         <el-table-column
           show-overflow-tooltip
           sortable
           prop="Flag"
-          label="字段标识"
+          :label="$t('fieldRelation.610zu0w6ymo0')"
         />
-        <el-table-column show-overflow-tooltip sortable label="字段属性">
+        <el-table-column show-overflow-tooltip sortable :label="$t('fieldRelation.610zu0w6zm80')">
           <template slot-scope="props">
             <el-form>
               <el-form-item>
@@ -84,9 +84,9 @@
             </el-form>
           </template>
         </el-table-column>
-        <el-table-column fixed="right" label="操作" align="center" width="150">
+        <el-table-column fixed="right" :label="$t('fieldRelation.610zu0w6zos0')" align="center" width="150">
           <template #default="scope">
-            <el-tooltip content="编辑" effect="dark" placement="top">
+            <el-tooltip :content="$t('fieldRelation.610zu0w6zr00')" effect="dark" placement="top">
               <el-button
                 size="mini"
                 icon="el-icon-edit"
@@ -97,12 +97,12 @@
             </el-tooltip>
             <el-tooltip
               class="delete-popover"
-              content="删除"
+              :content="$t('fieldRelation.610zu0w6zu00')"
               effect="dark"
               placement="top"
             >
               <el-popconfirm
-                title="确定删除吗？"
+                :title="$t('fieldRelation.610zu0w6zwk0')"
                 @confirm="singleDelete(scope.row.ID)"
               >
                 <el-button
@@ -122,11 +122,11 @@
       <el-dialog :title="dialogFormTitle" :visible.sync="updateLoading">
         <div class="components-container">
           <aside>
-            动态关系管理说明文档参考：
+            {{ $t('fieldRelation.610zu0w6zyo0') }}
             <a
               href="http://ldapdoc.eryajf.net/pages/84953d/"
               target="_blank"
-            >动态字段关系管理</a>
+            >{{ $t('fieldRelation.610zu0w70140') }}</a>
           </aside>
         </div>
         <el-form
@@ -134,9 +134,9 @@
           size="small"
           :model="dialogFormData"
           :rules="dialogFormRules"
-          label-width="120px"
+          label-width="180px"
         >
-          <el-form-item label="类型">
+          <el-form-item :label="$t('fieldRelation.610zu0w703g0')">
             <el-checkbox-group v-model="fieldRelationChecked">
               <el-checkbox-button
                 v-for="type in fieldRelationTypes"
@@ -149,11 +149,11 @@
             </el-checkbox-group>
           </el-form-item>
 
-          <template v-if="fieldRelationChecked.length === 1 && fieldRelationChecked[0] === '用户字段动态关联'">
-            <el-form-item label="类型标志">
+          <template v-if="fieldRelationChecked.length === 1 && fieldRelationChecked[0] === 'userFieldRelation'">
+            <el-form-item :label="$t('fieldRelation.610zu0w708g0')">
               <el-select
                 v-model="userVal"
-                placeholder="请选择"
+                :placeholder="$t('fieldRelation.610zu0w70ao0')"
                 @change="changeUser(userVal)"
               >
                 <el-option
@@ -164,91 +164,91 @@
                 />
               </el-select>
             </el-form-item>
-            <el-form-item label="用户名" prop="username">
+            <el-form-item :label="$t('fieldRelation.610zu0w70cs0')" prop="username">
               <el-input
                 v-model.trim="dialogFormData.username"
-                placeholder="用户名（拼音）"
+                :placeholder="$t('fieldRelation.610zu0w70cs0')"
               />
             </el-form-item>
-            <el-form-item label="中文名字" prop="nickname">
+            <el-form-item :label="$t('fieldRelation.610zu0w70fc0')" prop="nickname">
               <el-input
                 v-model.trim="dialogFormData.nickname"
-                placeholder="中文名字"
+                :placeholder="$t('fieldRelation.610zu0w70fc0')"
               />
             </el-form-item>
-            <el-form-item label="花名" prop="givenName">
+            <el-form-item :label="$t('fieldRelation.610zu0w70ik0')" prop="givenName">
               <el-input
                 v-model.trim="dialogFormData.givenName"
-                placeholder="花名"
+                :placeholder="$t('fieldRelation.610zu0w70ik0')"
               />
             </el-form-item>
-            <el-form-item label="邮箱" prop="mail">
-              <el-input v-model.trim="dialogFormData.mail" placeholder="邮箱" />
+            <el-form-item :label="$t('fieldRelation.610zu0w70kk0')" prop="mail">
+              <el-input v-model.trim="dialogFormData.mail" :placeholder="$t('fieldRelation.610zu0w70kk0')" />
             </el-form-item>
-            <el-form-item label="工号" prop="jobNumber">
+            <el-form-item :label="$t('fieldRelation.610zu0w70nc0')" prop="jobNumber">
               <el-input
                 v-model.trim="dialogFormData.jobNumber"
-                placeholder="工号"
+                :placeholder="$t('fieldRelation.610zu0w70nc0')"
               />
             </el-form-item>
-            <el-form-item label="手机号" prop="mobile">
+            <el-form-item :label="$t('fieldRelation.610zu0w70p80')" prop="mobile">
               <el-input
                 v-model.trim="dialogFormData.mobile"
-                placeholder="手机号"
+                :placeholder="$t('fieldRelation.610zu0w70p80')"
               />
             </el-form-item>
-            <el-form-item label="头像" prop="avatar">
+            <el-form-item :label="$t('fieldRelation.610zu0w70qw0')" prop="avatar">
               <el-input
                 v-model.trim="dialogFormData.avatar"
-                placeholder="头像"
+                :placeholder="$t('fieldRelation.610zu0w70qw0')"
               />
             </el-form-item>
-            <el-form-item label="地址" prop="postalAddress">
+            <el-form-item :label="$t('fieldRelation.610zu0w70sw0')" prop="postalAddress">
               <el-input
                 v-model.trim="dialogFormData.postalAddress"
-                placeholder="地址"
+                :placeholder="$t('fieldRelation.610zu0w70sw0')"
               />
             </el-form-item>
-            <el-form-item label="职位" prop="position">
+            <el-form-item :label="$t('fieldRelation.610zu0w70uo0')" prop="position">
               <el-input
                 v-model.trim="dialogFormData.position"
-                placeholder="职位"
+                :placeholder="$t('fieldRelation.610zu0w70uo0')"
               />
             </el-form-item>
-            <el-form-item label="源用户ID" prop="sourceUserId">
+            <el-form-item :label="$t('fieldRelation.610zu0w70ws0')" prop="sourceUserId">
               <el-input
                 v-model.trim="dialogFormData.sourceUserId"
-                placeholder="源用户ID"
+                :placeholder="$t('fieldRelation.610zu0w70ws0')"
               />
             </el-form-item>
-            <el-form-item label="源用户唯一ID" prop="sourceUnionId">
+            <el-form-item :label="$t('fieldRelation.610zu0w70ys0')" prop="sourceUnionId">
               <el-input
                 v-model.trim="dialogFormData.sourceUnionId"
-                placeholder="源用户唯一ID"
+                :placeholder="$t('fieldRelation.610zu0w70ys0')"
               />
             </el-form-item>
-            <el-form-item label="说明" prop="introduction">
+            <el-form-item :label="$t('fieldRelation.610zu0w710s0')" prop="introduction">
               <el-input
                 v-model.trim="dialogFormData.introduction"
-                placeholder="说明"
+                :placeholder="$t('fieldRelation.610zu0w710s0')"
               />
             </el-form-item>
             <!-- <el-form-item label="说明" prop="introduction">
               <el-input
                 v-model.trim="dialogFormData.introduction"
                 type="textarea"
-                placeholder="说明"
+                :placeholder="$t('fieldRelation.610zu0w710s0')"
                 :autosize="{ minRows: 3, maxRows: 6 }"
                 show-word-limit
                 maxlength="100"
               />
             </el-form-item> -->
           </template>
-          <template v-else-if="fieldRelationChecked.length === 1 && fieldRelationChecked[0] === '分组字段动态关联'">
-            <el-form-item label="类型标志">
+          <template v-else-if="fieldRelationChecked.length === 1 && fieldRelationChecked[0] === 'groupFieldRelation'">
+            <el-form-item :label="$t('fieldRelation.610zu0w708g0')">
               <el-select
                 v-model="groupVal"
-                placeholder="请选择"
+                :placeholder="$t('fieldRelation.610zu0w70ao0')"
                 @change="changeGroup(groupVal)"
               >
                 <el-option
@@ -259,43 +259,43 @@
                 />
               </el-select>
             </el-form-item>
-            <el-form-item label="分组名称" prop="groupName">
+            <el-form-item :label="$t('fieldRelation.610zu0w714g0')" prop="groupName">
               <el-input
                 v-model.trim="dialogFormData.groupName"
-                placeholder="分组名称"
+                :placeholder="$t('fieldRelation.610zu0w714g0')"
               />
             </el-form-item>
-            <el-form-item label="父部门ID" prop="sourceDeptParentId">
+            <el-form-item :label="$t('fieldRelation.610zu0w716c0')" prop="sourceDeptParentId">
               <el-input
                 v-model.trim="dialogFormData.sourceDeptParentId"
-                placeholder="父部门ID"
+                :placeholder="$t('fieldRelation.610zu0w716c0')"
               />
             </el-form-item>
-            <el-form-item label="部门ID" prop="sourceDeptId">
+            <el-form-item :label="$t('fieldRelation.610zu0w71840')" prop="sourceDeptId">
               <el-input
                 v-model.trim="dialogFormData.sourceDeptId"
-                placeholder="部门ID"
+                :placeholder="$t('fieldRelation.610zu0w71840')"
               />
             </el-form-item>
-            <el-form-item label="分组描述" prop="remark">
+            <el-form-item :label="$t('fieldRelation.610zu0w71as0')" prop="remark">
               <el-input
                 v-model.trim="dialogFormData.remark"
-                placeholder="分组描述"
+                :placeholder="$t('fieldRelation.610zu0w71as0')"
               />
             </el-form-item>
           </template>
           <template v-else>
-            <el-form-item><b>↑ 请选择一种类型</b></el-form-item>
+            <el-form-item><b>↑ {{ $t('fieldRelation.610zu0w71ck0') }}</b></el-form-item>
           </template>
         </el-form>
         <div slot="footer" class="dialog-footer">
-          <el-button size="mini" @click="cancelForm()">取 消</el-button>
+          <el-button size="mini" @click="cancelForm()">{{ $t('fieldRelation.610zu0w71ec0') }}</el-button>
           <el-button
             size="mini"
             :loading="submitLoading"
             type="primary"
             @click="submitForm('A')"
-          >确 定</el-button>
+          >{{ $t('fieldRelation.610zu0w71gc0') }}</el-button>
         </div>
       </el-dialog>
 
@@ -303,11 +303,11 @@
       <el-dialog :title="dialogFormTitle" :visible.sync="dialogFormVisible">
         <div class="components-container">
           <aside>
-            动态关系管理说明文档参考：
+            {{ $t('fieldRelation.610zu0w6zyo0') }}
             <a
               href="http://ldapdoc.eryajf.net/pages/84953d/"
               target="_blank"
-            >动态字段关系管理</a>
+            >{{ $t('fieldRelation.610zu0w70140') }}</a>
           </aside>
         </div>
         <el-form
@@ -315,17 +315,17 @@
           size="small"
           :model="dialogFormData"
           :rules="dialogFormRules"
-          label-width="120px"
+          label-width="180px"
         >
-          <template v-if="fieldRelationChecked.length === 1 && fieldRelationChecked[0] === '用户字段动态关联'">
-            <el-form-item label="类型">
-              <el-button type="primary">用户字段动态关联</el-button>
+          <template v-if="fieldRelationChecked.length === 1 && fieldRelationChecked[0] === 'userFieldRelation'">
+            <el-form-item :label="$t('fieldRelation.610zu0w703g0')">
+              <el-button type="primary">{{ $t('fieldRelation.610zu0w70600') }}</el-button>
             </el-form-item>
 
-            <el-form-item label="类型标志">
+            <el-form-item :label="$t('fieldRelation.610zu0w708g0')">
               <el-select
                 v-model="userVal"
-                placeholder="请选择"
+                :placeholder="$t('fieldRelation.610zu0w70ao0')"
                 @change="changeUser(userVal)"
               >
                 <el-option
@@ -336,84 +336,84 @@
                 />
               </el-select>
             </el-form-item>
-            <el-form-item label="用户名" prop="username">
+            <el-form-item :label="$t('fieldRelation.610zu0w70cs0')" prop="username">
               <el-input
                 v-model.trim="dialogFormData.username"
-                placeholder="用户名"
+                :placeholder="$t('fieldRelation.610zu0w70cs0')"
               />
             </el-form-item>
-            <el-form-item label="中文名字" prop="nickname">
+            <el-form-item :label="$t('fieldRelation.610zu0w70fc0')" prop="nickname">
               <el-input
                 v-model.trim="dialogFormData.nickname"
-                placeholder="中文名字"
+                :placeholder="$t('fieldRelation.610zu0w70fc0')"
               />
             </el-form-item>
-            <el-form-item label="花名" prop="givenName">
+            <el-form-item :label="$t('fieldRelation.610zu0w70ik0')" prop="givenName">
               <el-input
                 v-model.trim="dialogFormData.givenName"
-                placeholder="花名"
+                :placeholder="$t('fieldRelation.610zu0w70ik0')"
               />
             </el-form-item>
-            <el-form-item label="邮箱" prop="mail">
-              <el-input v-model.trim="dialogFormData.mail" placeholder="邮箱" />
+            <el-form-item :label="$t('fieldRelation.610zu0w70kk0')" prop="mail">
+              <el-input v-model.trim="dialogFormData.mail" :placeholder="$t('fieldRelation.610zu0w70kk0')" />
             </el-form-item>
-            <el-form-item label="工号" prop="jobNumber">
+            <el-form-item :label="$t('fieldRelation.610zu0w70nc0')" prop="jobNumber">
               <el-input
                 v-model.trim="dialogFormData.jobNumber"
-                placeholder="工号"
+                :placeholder="$t('fieldRelation.610zu0w70nc0')"
               />
             </el-form-item>
-            <el-form-item label="手机号" prop="mobile">
+            <el-form-item :label="$t('fieldRelation.610zu0w70p80')" prop="mobile">
               <el-input
                 v-model.trim="dialogFormData.mobile"
-                placeholder="手机号"
+                :placeholder="$t('fieldRelation.610zu0w70p80')"
               />
             </el-form-item>
-            <el-form-item label="头像" prop="avatar">
+            <el-form-item :label="$t('fieldRelation.610zu0w70qw0')" prop="avatar">
               <el-input
                 v-model.trim="dialogFormData.avatar"
-                placeholder="头像"
+                :placeholder="$t('fieldRelation.610zu0w70qw0')"
               />
             </el-form-item>
-            <el-form-item label="地址" prop="postalAddress">
+            <el-form-item :label="$t('fieldRelation.610zu0w70sw0')" prop="postalAddress">
               <el-input
                 v-model.trim="dialogFormData.postalAddress"
-                placeholder="地址"
+                :placeholder="$t('fieldRelation.610zu0w70sw0')"
               />
             </el-form-item>
-            <el-form-item label="职位" prop="position">
+            <el-form-item :label="$t('fieldRelation.610zu0w70uo0')" prop="position">
               <el-input
                 v-model.trim="dialogFormData.position"
-                placeholder="职位"
+                :placeholder="$t('fieldRelation.610zu0w70uo0')"
               />
             </el-form-item>
-            <el-form-item label="源用户ID" prop="sourceUserId">
+            <el-form-item :label="$t('fieldRelation.610zu0w70ws0')" prop="sourceUserId">
               <el-input
                 v-model.trim="dialogFormData.sourceUserId"
-                placeholder="源用户ID"
+                :placeholder="$t('fieldRelation.610zu0w70ws0')"
               />
             </el-form-item>
-            <el-form-item label="源用户唯一ID" prop="sourceUnionId">
+            <el-form-item :label="$t('fieldRelation.610zu0w70ys0')" prop="sourceUnionId">
               <el-input
                 v-model.trim="dialogFormData.sourceUnionId"
-                placeholder="源用户唯一ID"
+                :placeholder="$t('fieldRelation.610zu0w70ys0')"
               />
             </el-form-item>
-            <el-form-item label="说明" prop="introduction">
+            <el-form-item :label="$t('fieldRelation.610zu0w710s0')" prop="introduction">
               <el-input
                 v-model.trim="dialogFormData.introduction"
-                placeholder="说明"
+                :placeholder="$t('fieldRelation.610zu0w710s0')"
               />
             </el-form-item>
           </template>
           <template v-else>
-            <el-form-item label="类型">
-              <el-button type="primary">分组字段动态关联</el-button>
+            <el-form-item :label="$t('fieldRelation.610zu0w703g0')">
+              <el-button type="primary">{{ $t('fieldRelation.610zu0w712o0') }}</el-button>
             </el-form-item>
-            <el-form-item label="类型标志">
+            <el-form-item :label="$t('fieldRelation.610zu0w708g0')">
               <el-select
                 v-model="groupVal"
-                placeholder="请选择"
+                :placeholder="$t('fieldRelation.610zu0w70ao0')"
                 @change="changeGroup(groupVal)"
               >
                 <el-option
@@ -424,40 +424,40 @@
                 />
               </el-select>
             </el-form-item>
-            <el-form-item label="分组名称" prop="groupName">
+            <el-form-item :label="$t('fieldRelation.610zu0w714g0')" prop="groupName">
               <el-input
                 v-model.trim="dialogFormData.groupName"
-                placeholder="分组名称"
+                :placeholder="$t('fieldRelation.610zu0w714g0')"
               />
             </el-form-item>
-            <el-form-item label="父部门ID" prop="sourceDeptParentId">
+            <el-form-item :label="$t('fieldRelation.610zu0w716c0')" prop="sourceDeptParentId">
               <el-input
                 v-model.trim="dialogFormData.sourceDeptParentId"
-                placeholder="父部门ID"
+                :placeholder="$t('fieldRelation.610zu0w716c0')"
               />
             </el-form-item>
-            <el-form-item label="部门ID" prop="sourceDeptId">
+            <el-form-item :label="$t('fieldRelation.610zu0w71840')" prop="sourceDeptId">
               <el-input
                 v-model.trim="dialogFormData.sourceDeptId"
-                placeholder="部门ID"
+                :placeholder="$t('fieldRelation.610zu0w71840')"
               />
             </el-form-item>
-            <el-form-item label="分组描述" prop="remark">
+            <el-form-item :label="$t('fieldRelation.610zu0w71as0')" prop="remark">
               <el-input
                 v-model.trim="dialogFormData.remark"
-                placeholder="分组描述"
+                :placeholder="$t('fieldRelation.610zu0w71as0')"
               />
             </el-form-item>
           </template>
         </el-form>
         <div slot="footer" class="dialog-footer">
-          <el-button size="mini" @click="cancelForm()">取 消</el-button>
+          <el-button size="mini" @click="cancelForm()">{{ $t('fieldRelation.610zu0w71ec0') }}</el-button>
           <el-button
             size="mini"
             :loading="submitLoading"
             type="primary"
             @click="submitForm('B')"
-          >确 定</el-button>
+          >{{ $t('fieldRelation.610zu0w71gc0') }}</el-button>
         </div>
       </el-dialog>
     </el-card>
@@ -506,20 +506,20 @@ export default {
     // }
     return {
       options: [
-        { label: "飞书", value: "feishu_group" },
-        { label: "钉钉", value: "dingtalk_group" },
-        { label: "企业微信", value: "wecom_group" }
+        { label: this.$t("fieldRelation.610zu0w71i00"), value: "feishu_group" },
+        { label: this.$t("fieldRelation.610zu0w71jo0"), value: "dingtalk_group" },
+        { label: this.$t("fieldRelation.610zu0w71lg0"), value: "wecom_group" }
       ],
       userOptions: [
-        { label: "飞书", value: "feishu_user" },
-        { label: "钉钉", value: "dingtalk_user" },
-        { label: "企业微信", value: "wecom_user" }
+        { label: this.$t("fieldRelation.610zu0w71i00"), value: "feishu_user" },
+        { label: this.$t("fieldRelation.610zu0w71jo0"), value: "dingtalk_user" },
+        { label: this.$t("fieldRelation.610zu0w71lg0"), value: "wecom_user" }
       ],
       userVal: "",
       groupVal: "",
       updateId: "",
-      fieldRelationChecked: ["用户字段动态关联"], // 新增数据默认选中
-      fieldRelationTypes: ["用户字段动态关联", "分组字段动态关联"], // 新增默认选中
+      fieldRelationChecked: ["userFieldRelation"], // 新增数据默认选中
+      fieldRelationTypes: ["userFieldRelation", "groupFieldRelation"], // 新增默认选中
       // 查询参数
       params: {
         flag: "",
@@ -563,101 +563,101 @@ export default {
       //   },
       dialogFormRules: {
         sourceDeptParentId: [
-          { required: true, message: "请输入父部门ID", trigger: "blur" },
+          { required: true, message: this.$t("fieldRelation.610zu0w71n40"), trigger: "blur" },
           {
             min: 1,
             max: 50,
-            message: "长度在 1 到 50 个字符",
+            message: this.$t("valid.length", [1, 50]),
             trigger: "blur"
           }
         ],
         sourceDeptId: [
-          { required: true, message: "请输入部门ID", trigger: "blur" },
+          { required: true, message: this.$t("fieldRelation.610zu0w71ow0"), trigger: "blur" },
           {
             min: 1,
             max: 50,
-            message: "长度在 1 到 50 个字符",
+            message: this.$t("valid.length", [1, 50]),
             trigger: "blur"
           }
         ],
         username: [
-          { required: true, message: "请输入类型标志", trigger: "blur" },
+          { required: true, message: this.$t("fieldRelation.610zu0w71r40"), trigger: "blur" },
           {
             min: 1,
             max: 50,
-            message: "长度在 1 到 50 个字符",
+            message: this.$t("valid.length", [1, 50]),
             trigger: "blur"
           }
         ],
         givenName: [
-          { required: true, message: "请输入所属类别", trigger: "blur" },
+          { required: true, message: this.$t("fieldRelation.610zu0w71to0"), trigger: "blur" },
           {
             min: 1,
             max: 50,
-            message: "长度在 1 到 50 个字符",
+            message: this.$t("valid.length", [1, 50]),
             trigger: "blur"
           }
         ],
         avatar: [
-          { required: true, message: "请输入所属类别", trigger: "blur" },
+          { required: true, message: this.$t("fieldRelation.610zu0w71to0"), trigger: "blur" },
           {
             min: 1,
             max: 50,
-            message: "长度在 1 到 50 个字符",
+            message: this.$t("valid.length", [1, 50]),
             trigger: "blur"
           }
         ],
         postalAddress: [
-          { required: true, message: "请输入所属类别", trigger: "blur" },
+          { required: true, message: this.$t("fieldRelation.610zu0w71to0"), trigger: "blur" },
           {
             min: 1,
             max: 50,
-            message: "长度在 1 到 50 个字符",
+            message: this.$t("valid.length", [1, 50]),
             trigger: "blur"
           }
         ],
         position: [
-          { required: true, message: "请输入所属类别", trigger: "blur" },
+          { required: true, message: this.$t("fieldRelation.610zu0w71to0"), trigger: "blur" },
           {
             min: 1,
             max: 50,
-            message: "长度在 1 到 50 个字符",
+            message: this.$t("valid.length", [1, 50]),
             trigger: "blur"
           }
         ],
         sourceUserId: [
-          { required: true, message: "请输入所属类别", trigger: "blur" },
+          { required: true, message: this.$t("fieldRelation.610zu0w71to0"), trigger: "blur" },
           {
             min: 1,
             max: 50,
-            message: "长度在 1 到 50 个字符",
+            message: this.$t("valid.length", [1, 50]),
             trigger: ["blur", "change"]
           }
         ],
         sourceUnionId: [
-          { required: true, message: "请输入所属类别", trigger: "blur" },
+          { required: true, message: this.$t("fieldRelation.610zu0w71to0"), trigger: "blur" },
           {
             min: 1,
             max: 50,
-            message: "长度在 1 到 50 个字符",
+            message: this.$t("valid.length", [1, 50]),
             trigger: ["blur", "change"]
           }
         ],
         groupName: [
-          { required: true, message: "请输入分组名称", trigger: "blur" },
+          { required: true, message: this.$t("fieldRelation.610zu0w71w00"), trigger: "blur" },
           {
             min: 1,
             max: 50,
-            message: "长度在 1 到 50 个字符",
+            message: this.$t("valid.length", [1, 50]),
             trigger: "blur"
           }
         ],
         remark: [
-          { required: true, message: "请输入描述", trigger: "blur" },
+          { required: true, message: this.$t("fieldRelation.610zu0w71xs0"), trigger: "blur" },
           {
             min: 1,
             max: 50,
-            message: "长度在 1 到 50 个字符",
+            message: this.$t("valid.length", [1, 50]),
             trigger: "blur"
           }
         ],
@@ -666,34 +666,34 @@ export default {
         //   { type: 'email', message: '请输入正确的邮箱地址', trigger: ['blur', 'change'] }
         // ],
         mail: [
-          { required: true, message: "请输入邮箱", trigger: "blur" },
-          { min: 1, max: 50, message: "请输入邮箱地址", trigger: "blur" }
+          { required: true, message: this.$t("fieldRelation.610zu0w71zg0"), trigger: "blur" },
+          { min: 1, max: 50, message: this.$t("valid.length", [1, 50]), trigger: "blur" }
         ],
         jobNumber: [
-          { required: false, message: "请输入工号", trigger: "blur" },
+          { required: false, message: this.$t("fieldRelation.610zu0w722w0"), trigger: "blur" },
           {
             min: 0,
             max: 20,
-            message: "长度在 0 到 20 个字符",
+            message: this.$t("valid.length", [2, 20]),
             trigger: "blur"
           }
         ],
         nickname: [
-          { required: true, message: "请输入昵称", trigger: "blur" },
+          { required: true, message: this.$t("fieldRelation.610zu0w724o0"), trigger: "blur" },
           {
             min: 2,
             max: 20,
-            message: "长度在 2 到 20 个字符",
+            message: this.$t("valid.length", [2, 20]),
             trigger: "blur"
           }
         ],
-        mobile: [{ required: false, message: "请输入手机号", trigger: "blur" }],
+        mobile: [{ required: false, message: this.$t("fieldRelation.610zu0w726g0"), trigger: "blur" }],
         introduction: [
-          { required: false, message: "说明", trigger: "blur" },
+          { required: false, message: this.$t("fieldRelation.610zu0w710s0"), trigger: "blur" },
           {
             min: 0,
             max: 100,
-            message: "长度在 0 到 100 个字符",
+            message: this.$t("valid.length", [0, 100]),
             trigger: "blur"
           }
         ]
@@ -763,12 +763,12 @@ export default {
 
     // 新增
     create() {
-      this.fieldRelationChecked = ["用户字段动态关联"];
+      this.fieldRelationChecked = ["userFieldRelation"];
       this.userVal = "";
       this.groupVal = "";
       this.dialogFormData = {};
       this.dialogFromGroup = {};
-      this.dialogFormTitle = "新增";
+      this.dialogFormTitle = this.$t("fieldRelation.610zu0w6zag0");
       this.updateLoading = true; // 新增的展示
       this.dialogType = "create";
     },
@@ -797,7 +797,7 @@ export default {
 
       if (typeDialog === "user") {
         this.updateId = row.ID;
-        this.fieldRelationChecked = ["用户字段动态关联"];
+        this.fieldRelationChecked = ["userFieldRelation"];
 
         this.userVal = row.Flag;
         this.dialogFormData.username = username; // 用户名(通常为用户名拼音) name_pinyin
@@ -814,7 +814,7 @@ export default {
         this.dialogFormData.sourceUnionId = sourceUnionId; // 源用户唯一ID   unionid
       } else {
         this.updateId = row.ID;
-        this.fieldRelationChecked = ["分组字段动态关联"];
+        this.fieldRelationChecked = ["groupFieldRelation"];
         this.groupVal = row.Flag;
         this.dialogFormData.groupName = groupName; // 分组名称（通常为分组名的拼音）
         this.dialogFormData.remark = remark; // 分组描述
@@ -822,7 +822,7 @@ export default {
         this.dialogFormData.sourceDeptParentId = sourceDeptParentId; // 父部门ID
       }
 
-      this.dialogFormTitle = "修改";
+      this.dialogFormTitle = this.$t("fieldRelation.610zu0w72880");
       this.dialogType = "update";
       this.dialogFormVisible = true;
     },
@@ -830,10 +830,10 @@ export default {
     // 提交表单
     submitForm(e) {
       let flag, attributes;
-      if (this.fieldRelationChecked[0] === "用户字段动态关联") {
+      if (this.fieldRelationChecked[0] === "userFieldRelation") {
         if (this.userVal === "") {
           Message({
-            message: "请选择类型标志",
+            message: this.$t("fieldRelation.610zu0w72a40"),
             type: "warning"
           });
           return false;
@@ -843,7 +843,7 @@ export default {
       } else {
         if (this.groupVal === "") {
           Message({
-            message: "请选择类型标志",
+            message: this.$t("fieldRelation.610zu0w72a40"),
             type: "warning"
           });
           return false;
@@ -874,13 +874,13 @@ export default {
           this.getTableData();
           Message({
             showClose: true,
-            message: "操作成功",
+            message: this.$t("fieldRelation.610zu0w72bs0"),
             type: "success"
           });
         } else {
           Message({
             showClose: true,
-            message: "表单校验失败",
+            message: this.$t("fieldRelation.610zu0w72dg0"),
             type: "warn"
           });
           return false;
@@ -905,9 +905,9 @@ export default {
 
     // 批量删除
     batchDelete() {
-      this.$confirm("此操作将永久删除, 是否继续?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
+      this.$confirm(this.$t("fieldRelation.batchDeleteTips"), this.$t("fieldRelation.610zu0w72fk0"), {
+        confirmButtonText: this.$t("fieldRelation.610zu0w71gc0"),
+        cancelButtonText: this.$t("fieldRelation.610zu0w71ec0"),
         type: "warning"
       })
         .then(async(res) => {
@@ -924,7 +924,7 @@ export default {
           this.getTableData();
           Message({
             showClose: true,
-            message: "删除成功",
+            message: this.$t("fieldRelation.610zu0w72hg0"),
             type: "success"
           });
         })
@@ -932,7 +932,7 @@ export default {
           Message({
             showClose: true,
             type: "info",
-            message: "已取消删除"
+            message: this.$t("fieldRelation.610zu0w72jk0")
           });
         });
     },
