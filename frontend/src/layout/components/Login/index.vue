@@ -20,7 +20,7 @@
           <el-input
             ref="username"
             v-model="loginForm.username"
-            :placeholder="$t('custom.loginform.username')"
+            :placeholder="$t('loginform.username')"
             name="username"
             type="text"
             tabindex="1"
@@ -40,7 +40,7 @@
               ref="password"
               v-model="loginForm.password"
               :type="passwordType"
-              :placeholder="$t('custom.loginform.password')"
+              :placeholder="$t('loginform.password')"
               name="password"
               tabindex="2"
               autocomplete="on"
@@ -57,14 +57,14 @@
         </el-tooltip>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <div class="forgetpass-btn" @click="changePass">{{ $t('custom.loginform.forgetPassword') }}</div>
+        <div class="forgetpass-btn" @click="changePass">{{ $t('loginform.forgetPassword') }}</div>
         <el-button
           :loading="loading"
           type="primary"
           size="medium"
           @click.native.prevent="handleLogin"
         >
-          {{ $t('custom.loginform.login') }}
+          {{ $t('loginform.login') }}
         </el-button>
       </div>
     </el-dialog>

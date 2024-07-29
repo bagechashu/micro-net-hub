@@ -5,7 +5,7 @@
         <div class="header-bar">
           <el-input
             v-model="search"
-            :placeholder="$t('custom.sitenav.searchTips')"
+            :placeholder="$t('sitenav.searchTips')"
             class="search"
             @keyup.enter.native="searchData"
           />
@@ -15,13 +15,13 @@
             type="primary"
             icon="search"
             @click="searchData"
-          >{{ $t('custom.common.search') }}</el-button></span>
+          >{{ $t('common.search') }}</el-button></span>
           <el-button
             v-show="searchStatus"
             type="success"
             icon="plus-round"
             @click="resetSearch"
-          >{{ $t('custom.common.reset') }}</el-button>
+          >{{ $t('common.reset') }}</el-button>
         </div></el-col>
       <el-col
         :xs="24"
@@ -33,7 +33,7 @@
     </el-row>
 
     <NavSub v-if="data.length > 0" :data="data" />
-    <el-empty v-else :description="$t('custom.common.nodata')" />
+    <el-empty v-else :description="$t('common.nodata')" />
   </div>
 </template>
 
@@ -90,7 +90,7 @@ export default {
         this.search === ""
       ) {
         Message({
-          message: this.$i18n.t("custom.valid.pleaseInput"),
+          message: this.$t("valid.pleaseInput"),
           type: "error"
         });
         return true;
@@ -128,12 +128,12 @@ export default {
       }
       if (this.serarchNum === 0) {
         Message({
-          message: this.$i18n.t("custom.tips.notFoundAndRetry"),
+          message: this.$t("tips.notFoundAndRetry"),
           type: "error"
         });
       } else {
         Message({
-          message: this.$i18n.t("custom.tips.foundSome", [this.serarchNum]),
+          message: this.$t("tips.foundSome", [this.serarchNum]),
           type: "success"
         });
       }

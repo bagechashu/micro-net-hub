@@ -18,25 +18,25 @@
                 size="small"
                 icon="el-icon-position"
                 @click="jumpLink(item.link)"
-              >{{ $t("custom.sitenav.visit") }}</el-button>
+              >{{ $t("sitenav.visit") }}</el-button>
               <el-button
                 v-if="item.doc"
                 size="small"
                 icon="el-icon-document"
                 @click="jumpLink(item.doc)"
-              >{{ $t("custom.sitenav.doc") }}</el-button>
+              >{{ $t("sitenav.doc") }}</el-button>
               <el-button
                 size="small"
                 icon="el-icon-copy-document"
                 class="clip-btn"
                 @click="copyLink(item.link)"
               >
-                {{ $t("custom.sitenav.copyURL") }}</el-button>
+                {{ $t("sitenav.copyURL") }}</el-button>
               <el-button
                 size="small"
                 icon="el-icon-star-on"
                 @click="addBookmarks(item.link, item.name)"
-              >{{ $t("custom.sitenav.addBookmark") }}</el-button>
+              >{{ $t("sitenav.addBookmark") }}</el-button>
             </el-button-group>
             <el-card slot="reference" shadow="never">
               <span><img v-lazy="item.icon" class="icon" alt=""></span>
@@ -71,20 +71,20 @@ export default {
       this.$copyText(link)
         .then(() => {
           Message({
-            message: this.$i18n.t("custom.tips.copySuccess"),
+            message: this.$t("tips.copySuccess"),
             type: "success"
           });
         })
         .catch((error) => {
           Message({
-            message: this.$i18n.t("custom.tips.copyFailed", [error]),
+            message: this.$t("tips.copyFailed", [error]),
             type: "error"
           });
         });
     },
     addBookmarks(url, title) {
       Message({
-        message: this.$i18n.t("custom.tips.addBookmarkInfo"),
+        message: this.$t("tips.addBookmarkInfo"),
         type: "info"
       });
     }

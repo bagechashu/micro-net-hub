@@ -7,7 +7,7 @@
           <span
             style="float: right; padding: 3px 0"
             type="text"
-          >{{ $t('custom.sitenav.totolInfo', [item.sites.length]) }}</span>
+          >{{ $t('sitenav.totolInfo', [item.sites.length]) }}</span>
         </div>
         <Nav
           :sites="item.sites"

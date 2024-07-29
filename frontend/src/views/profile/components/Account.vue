@@ -2,7 +2,7 @@
   <div>
     <el-card class="profile-card">
       <div slot="header" class="clearfix">
-        <span>{{ $t('custom.profile.changePassword') }}</span>
+        <span>{{ $t('profile.changePassword') }}</span>
       </div>
 
       <el-form
@@ -12,12 +12,12 @@
         :rules="dialogFormRules"
         :label-width="labelWidth"
       >
-        <el-form-item :label="$t('custom.loginform.oldpass')" prop="oldPassword">
+        <el-form-item :label="$t('loginform.oldpass')" prop="oldPassword">
           <el-input
             v-model.trim="dialogFormData.oldPassword"
             autocomplete="on"
             :type="passwordTypeOld"
-            :placeholder="$t('custom.loginform.oldpassTips')"
+            :placeholder="$t('loginform.oldpassTips')"
           />
           <span class="show-pwd" @click="showPwdOld">
             <svg-icon
@@ -26,12 +26,12 @@
           </span>
         </el-form-item>
 
-        <el-form-item :label="$t('custom.loginform.newpass')" prop="newPassword">
+        <el-form-item :label="$t('loginform.newpass')" prop="newPassword">
           <el-input
             v-model.trim="dialogFormData.newPassword"
             autocomplete="on"
             :type="passwordTypeNew"
-            :placeholder="$t('custom.loginform.newpassTips')"
+            :placeholder="$t('loginform.newpassTips')"
           />
           <span class="show-pwd" @click="showPwdNew">
             <svg-icon
@@ -40,12 +40,12 @@
           </span>
         </el-form-item>
 
-        <el-form-item :label="$t('custom.loginform.confirmNewPass')" prop="confirmPassword">
+        <el-form-item :label="$t('loginform.confirmNewPass')" prop="confirmPassword">
           <el-input
             v-model.trim="dialogFormData.confirmPassword"
             autocomplete="on"
             :type="passwordTypeConfirm"
-            :placeholder="$t('custom.loginform.confirmNewPassTips')"
+            :placeholder="$t('loginform.confirmNewPassTips')"
           />
           <span class="show-pwd" @click="showPwdConfirm">
             <svg-icon
@@ -61,8 +61,8 @@
             :loading="submitLoading"
             type="primary"
             @click="submitForm"
-          >{{ $t('custom.common.confirm') }}</el-button>
-          <el-button @click="cancelForm">{{ $t('custom.common.cancel') }}</el-button>
+          >{{ $t('common.confirm') }}</el-button>
+          <el-button @click="cancelForm">{{ $t('common.cancel') }}</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -81,12 +81,12 @@ export default {
     const confirmPass = (rule, value, callback) => {
       if (value) {
         if (this.dialogFormData.newPassword !== value) {
-          callback(new Error(this.$i18n.t("custom.loginform.confirmNewPassErr")));
+          callback(new Error(this.$t("loginform.confirmNewPassErr")));
         } else {
           callback();
         }
       } else {
-        callback(new Error(this.$i18n.t("custom.loginform.confirmNewPassTips")));
+        callback(new Error(this.$t("loginform.confirmNewPassTips")));
       }
     };
     return {
@@ -98,11 +98,11 @@ export default {
       },
       dialogFormRules: {
         oldPassword: [
-          { required: true, message: this.$i18n.t("custom.loginform.oldpassTips"), trigger: "blur" },
+          { required: true, message: this.$t("loginform.oldpassTips"), trigger: "blur" },
           {
             min: 6,
             max: 30,
-            message: this.$i18n.t("custom.valid.length", [6, 30]),
+            message: this.$t("valid.length", [6, 30]),
             trigger: "blur"
           }
         ],
@@ -149,7 +149,7 @@ export default {
           if (code === 200 || code === 0) {
             Message({
               showClose: true,
-              message: this.$i18n.t("custom.loginform.changePasswordSuccess"),
+              message: this.$t("loginform.changePasswordSuccess"),
               type: "success"
             });
             this.resetForm();
@@ -162,7 +162,7 @@ export default {
           } else {
             Message({
               showClose: true,
-              message: this.$i18n.t("custom.loginform.changePasswordErr"),
+              message: this.$t("loginform.changePasswordErr"),
               type: "error"
             });
           }
@@ -170,7 +170,7 @@ export default {
         } else {
           this.$message({
             showClose: true,
-            message: this.$i18n.t("custom.tips.formValidFailed"),
+            message: this.$t("tips.formValidFailed"),
             type: "warn"
           });
           return false;

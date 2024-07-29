@@ -66,10 +66,10 @@
         </div>
         <el-dropdown-menu slot="dropdown">
           <router-link to="/profile/index">
-            <el-dropdown-item>{{ $t('custom.profile.profile') }}</el-dropdown-item>
+            <el-dropdown-item>{{ $t('profile.profile') }}</el-dropdown-item>
           </router-link>
           <el-dropdown-item divided @click.native="logout">
-            <span style="display: block">{{ $t('custom.loginform.logout') }}</span>
+            <span style="display: block">{{ $t('loginform.logout') }}</span>
           </el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
@@ -79,7 +79,7 @@
           size="mini"
           plain
           @click="updateLoginFormVisible(true)"
-        >{{ $t('custom.loginform.login') }}</el-button>
+        >{{ $t('loginform.login') }}</el-button>
       </div>
     </div>
     <Login

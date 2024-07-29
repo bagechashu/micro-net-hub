@@ -1,0 +1,11 @@
+{
+  "defaultLocalesPath": "src/i18n/locales",
+  "fileNameSubstitute": "components",
+  "i18nValueHover": true,
+  "langFile": "zh.json",
+  "modulePrefixFoUpdateJson": "",
+  "notAlertBeforeUpdateI18n": true,
+  "notUseFileNameAsKey": true,
+  "parentDirLevel": 1,
+  "puidType": "short"
+}

@@ -3,19 +3,19 @@ import VueI18n from "vue-i18n";
 import Cookies from "js-cookie";
 import enEle from "element-ui/lib/locale/lang/en";
 import zhEle from "element-ui/lib/locale/lang/zh-CN";
-import enCustom from "./locales/en.js";
-import zhCustom from "./locales/zh.js";
+import enCustom from "./locales/en.json";
+import zhCustom from "./locales/zh.json";
 
 Vue.use(VueI18n);
 
 const messages = {
   en: {
     ...enEle,
-    custom: enCustom
+    ...enCustom
   },
   zh: {
     ...zhEle,
-    custom: zhCustom
+    ...zhCustom
   }
 };
 

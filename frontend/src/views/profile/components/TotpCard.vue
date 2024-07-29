@@ -1,14 +1,14 @@
 <template>
   <el-card class="profile-card">
     <div slot="header" class="clearfix">
-      <span>{{ $t('custom.profile.changeTotp') }}</span>
+      <span>{{ $t('profile.changeTotp') }}</span>
     </div>
     <div class="box-center">
       <div :style="{ display: showDiscribe ? 'block' : 'none' }">
         <div class="warning-message">
-          <p><b>{{ $t('custom.totpNotice.notice') }}</b></p>
-          <p>{{ $t('custom.totpNotice.content[0]') }}</p>
-          <p>{{ $t('custom.totpNotice.content[1]') }}</p>
+          <p><b>{{ $t('totpNotice.notice') }}</b></p>
+          <p>{{ $t('totpNotice.content[0]') }}</p>
+          <p>{{ $t('totpNotice.content[1]') }}</p>
         </div>
         <el-form
           ref="resetTotpSecretForm"
@@ -22,13 +22,13 @@
               <el-col :xs="16" :sm="14" :md="16" :lg="16" :xl="16">
                 <el-input
                   v-model.trim="resetTotpSecretFormData.totp"
-                  :placeholder="$t('custom.profile.changeTotpTips')"
+                  :placeholder="$t('profile.changeTotpTips')"
                 />
               </el-col>
 
               <el-col :xs="8" :sm="10" :md="8" :lg="8" :xl="8">
                 <el-popconfirm
-                  :title="$t('custom.common.areyousure')"
+                  :title="$t('common.areyousure')"
                   @confirm="resetTotpSecret"
                 >
                   <el-button
@@ -37,7 +37,7 @@
                     size="mini"
                     icon="el-icon-refresh"
                     type="danger"
-                  >{{ $t('custom.common.reset') }}
+                  >{{ $t('common.reset') }}
                   </el-button>
                 </el-popconfirm>
               </el-col>
@@ -68,13 +68,13 @@ export default {
         totp: [
           {
             required: true,
-            message: this.$i18n.t("custom.profile.changeTotpTips"),
+            message: this.$t("profile.changeTotpTips"),
             trigger: "blur"
           },
           {
             validator: (rule, value, callback) => {
               if (!/^\d{6}$/.test(value)) {
-                return callback(new Error(this.$i18n.t("custom.profile.changeTotpTipsValid")));
+                return callback(new Error(this.$t("profile.changeTotpTipsValid")));
               }
               callback();
             },
@@ -99,7 +99,7 @@ export default {
         } else {
           this.$message({
             showClose: true,
-            message: this.$i18n.t("custom.tips.formValidFailed"),
+            message: this.$t("tips.formValidFailed"),
             type: "warn"
           });
           return false;

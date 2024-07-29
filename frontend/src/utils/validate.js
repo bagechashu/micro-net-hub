@@ -99,13 +99,13 @@ function checkPasswordComplexity(value) {
 
 export function validatePassword(rule, value, callback) {
   if (value === "") {
-    return callback(new Error(i18n.t("custom.loginform.newpassTips")));
+    return callback(new Error(i18n.t("loginform.newpassTips")));
   }
   if (value.length < 8) {
-    return callback(new Error(i18n.t("custom.loginform.newpassValidErrLenMustThan8")));
+    return callback(new Error(i18n.t("loginform.newpassValidErrLenMustThan8")));
   }
   if (checkPasswordComplexity(value) < 3) {
-    return callback(new Error(i18n.t("custom.loginform.newpassValidErrMustComplex")));
+    return callback(new Error(i18n.t("loginform.newpassValidErrMustComplex")));
   }
   callback();
 }
@@ -115,10 +115,10 @@ export function validatePasswordCanEnpty(rule, value, callback) {
     return callback();
   }
   if (value.length < 8) {
-    return callback(new Error(i18n.t("custom.loginform.newpassValidErrLenMustThan8")));
+    return callback(new Error(i18n.t("loginform.newpassValidErrLenMustThan8")));
   }
   if (checkPasswordComplexity(value) < 3) {
-    return callback(new Error(i18n.t("custom.loginform.newpassValidErrMustComplex")));
+    return callback(new Error(i18n.t("loginform.newpassValidErrMustComplex")));
   }
   callback();
 }

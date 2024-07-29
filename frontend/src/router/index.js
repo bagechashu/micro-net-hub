@@ -64,7 +64,7 @@ export const constantRoutes = [
     path: "/changePass",
     name: "changePass",
     hidden: true,
-    meta: { title: i18n.t("custom.loginform.forgetPassword"), icon: "user", noCache: true },
+    meta: { title: i18n.t("loginform.forgetPassword"), icon: "user", noCache: true },
     component: () => import("@/views/changePassword/index")
   },
   {
@@ -86,7 +86,7 @@ export const constantRoutes = [
   //       path: 'dashboard',
   //       component: () => import('@/views/dashboard/index'),
   //       name: 'Dashboard',
-  //       meta: { title: i18n.t("custom.common.index"), icon: 'dashboard', affix: true }
+  //       meta: { title: i18n.t("common.index"), icon: 'dashboard', affix: true }
   //     }
   //   ]
   // },
@@ -99,7 +99,7 @@ export const constantRoutes = [
         path: "/sitenav",
         component: () => import("@/views/sitenav/index"),
         name: "SiteNav",
-        meta: { title: i18n.t("custom.sidebar.Sitenav"), icon: "tree", affix: true }
+        meta: { title: i18n.t("sidebar.Sitenav"), icon: "tree", affix: true }
       }
     ]
   },
@@ -113,7 +113,7 @@ export const constantRoutes = [
         path: "/profile/index",
         component: () => import("@/views/profile/index"),
         name: "Profile",
-        meta: { title: i18n.t("custom.profile.profile"), icon: "user", noCache: true }
+        meta: { title: i18n.t("profile.profile"), icon: "user", noCache: true }
       }
     ]
   }

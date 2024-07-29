@@ -1,7 +1,7 @@
 <template>
   <el-card class="profile-card">
     <div slot="header" class="clearfix">
-      <span>{{ $t('custom.profile.aboutme') }}</span>
+      <span>{{ $t('profile.aboutme') }}</span>
     </div>
 
     <div class="user-profile">

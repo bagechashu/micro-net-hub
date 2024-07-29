@@ -35,7 +35,7 @@ export default {
       const first = matched[0];
 
       if (!this.isDashboard(first)) {
-        matched = [{ path: "/", meta: { title: this.$i18n.t("custom.common.index") }}].concat(matched);
+        matched = [{ path: "/", meta: { title: this.$t("common.index") }}].concat(matched);
       }
 
       this.levelList = matched.filter(item => item.meta && item.meta.title && item.meta.breadcrumb !== false);

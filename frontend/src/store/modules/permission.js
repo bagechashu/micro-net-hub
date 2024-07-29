@@ -23,7 +23,7 @@ export const getRoutesFromMenuTree = (menuTree) => {
       children: menu.children,
       meta: {
         name: menu.name,
-        title: i18n.t(`custom.sidebar.${menu.name}`),
+        title: i18n.t(`sidebar.${menu.name}`),
         icon: menu.icon,
         noCache: menu.noCache === 1,
         breadcrumb: menu.breadcrumb === 1,
