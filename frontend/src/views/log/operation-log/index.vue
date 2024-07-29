@@ -2,52 +2,52 @@
   <div>
     <el-card class="container-card" shadow="always">
       <el-form size="mini" :inline="true" :model="params" class="demo-form-inline">
-        <el-form-item label="请求人">
-          <el-input v-model.trim="params.username" clearable placeholder="请求人" @keyup.enter.native="search" @clear="search" />
+        <el-form-item :label="$t('operation-log.6111tvyrbi80')">
+          <el-input v-model.trim="params.username" clearable :placeholder="$t('operation-log.6111tvyrbi80')" @keyup.enter.native="search" @clear="search" />
         </el-form-item>
-        <el-form-item label="IP地址">
-          <el-input v-model.trim="params.ip" clearable placeholder="IP地址" @keyup.enter.native="search" @clear="search" />
+        <el-form-item :label="$t('operation-log.ipaddr')">
+          <el-input v-model.trim="params.ip" clearable :placeholder="$t('operation-log.ipaddr')" @keyup.enter.native="search" @clear="search" />
         </el-form-item>
-        <el-form-item label="请求路径">
-          <el-input v-model.trim="params.path" clearable placeholder="请求路径" @keyup.enter.native="search" @clear="search" />
+        <el-form-item :label="$t('operation-log.6111tvyrbt00')">
+          <el-input v-model.trim="params.path" clearable :placeholder="$t('operation-log.6111tvyrbt00')" @keyup.enter.native="search" @clear="search" />
         </el-form-item>
-        <el-form-item label="请求状态">
-          <el-input v-model.trim="params.status" clearable placeholder="请求状态" @keyup.enter.native="search" @clear="search" />
-        </el-form-item>
-        <el-form-item>
-          <el-button :loading="loading" icon="el-icon-search" type="primary" @click="search">查询</el-button>
+        <el-form-item :label="$t('operation-log.6111tvyrbw80')">
+          <el-input v-model.trim="params.status" clearable :placeholder="$t('operation-log.6111tvyrbw80')" @keyup.enter.native="search" @clear="search" />
         </el-form-item>
         <el-form-item>
-          <el-button :disabled="multipleSelection.length === 0" :loading="loading" icon="el-icon-delete" type="danger" @click="batchDelete">批量删除</el-button>
+          <el-button :loading="loading" icon="el-icon-search" type="primary" @click="search">{{ $t('operation-log.6111tvyrbyo0') }}</el-button>
+        </el-form-item>
+        <el-form-item>
+          <el-button :disabled="multipleSelection.length === 0" :loading="loading" icon="el-icon-delete" type="danger" @click="batchDelete">{{ $t('operation-log.6111tvyrc0o0') }}</el-button>
         </el-form-item>
       </el-form>
 
       <el-table v-loading="loading" :data="tableData" border stripe style="width: 100%" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center" />
-        <el-table-column show-overflow-tooltip sortable prop="username" label="请求人" width="100" />
-        <el-table-column show-overflow-tooltip sortable prop="ip" label="IP地址" width="120" />
-        <el-table-column show-overflow-tooltip sortable prop="method" label="请求方法" width="105" />
-        <el-table-column show-overflow-tooltip sortable prop="path" label="请求路径" />
-        <el-table-column show-overflow-tooltip sortable prop="status" label="请求状态" width="105" align="center">
+        <el-table-column show-overflow-tooltip sortable prop="username" :label="$t('operation-log.6111tvyrbi80')" width="120" />
+        <el-table-column show-overflow-tooltip sortable prop="ip" :label="$t('operation-log.ipaddr')" width="120" />
+        <el-table-column show-overflow-tooltip sortable prop="method" :label="$t('operation-log.6111tvyrc2s0')" width="100" />
+        <el-table-column show-overflow-tooltip sortable prop="path" :label="$t('operation-log.6111tvyrbt00')" />
+        <el-table-column show-overflow-tooltip sortable prop="status" :label="$t('operation-log.6111tvyrbw80')" width="100" align="center">
           <template slot-scope="scope">
             <el-tag size="small" :type="scope.row.status | statusTagFilter" disable-transitions>{{ scope.row.status }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column show-overflow-tooltip sortable prop="startTime" label="发起时间" width="300">
+        <el-table-column show-overflow-tooltip sortable prop="startTime" :label="$t('operation-log.6111tvyrc4w0')" width="300">
           <!-- <template slot-scope="scope">
             {{ parseGoTime(scope.row.startTime) }}
           </template> -->
         </el-table-column>
-        <el-table-column show-overflow-tooltip sortable prop="timeCost" label="耗时(ms)" width="105" align="center">
+        <el-table-column show-overflow-tooltip sortable prop="timeCost" :label="$t('operation-log.6111tvyrc8s0')" width="130" align="center">
           <template slot-scope="scope">
             <el-tag size="small" :type="scope.row.timeCost | timeCostTagFilter" disable-transitions>{{ scope.row.timeCost }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column show-overflow-tooltip sortable prop="desc" label="说明" />
-        <el-table-column fixed="right" label="操作" align="center" width="80">
+        <el-table-column show-overflow-tooltip sortable prop="desc" :label="$t('operation-log.6111tvyrcaw0')" />
+        <el-table-column fixed="right" :label="$t('operation-log.6111tvyrccw0')" align="center" width="80">
           <template slot-scope="scope">
-            <el-tooltip content="删除" effect="dark" placement="top">
-              <el-popconfirm title="确定删除吗？" @confirm="singleDelete(scope.row.ID)">
+            <el-tooltip :content="$t('operation-log.6111tvyrcf40')" effect="dark" placement="top">
+              <el-popconfirm :title="$t('operation-log.6111tvyrchk0')" @confirm="singleDelete(scope.row.ID)">
                 <el-button slot="reference" size="mini" icon="el-icon-delete" circle type="danger" />
               </el-popconfirm>
             </el-tooltip>
@@ -155,7 +155,7 @@ export default {
       if (res.code === 200 || res.code === 0) {
         Message({
           showClose: true,
-          message: "操作成功",
+          message: this.$t("operation-log.6111tvyrcjk0"),
           type: "success"
         });
       }
@@ -163,9 +163,9 @@ export default {
 
     // 批量删除
     batchDelete() {
-      this.$confirm("此操作将永久删除, 是否继续?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
+      this.$confirm(this.$t("tips.deleteWarning"), this.$t("operation-log.6111tvyrcls0"), {
+        confirmButtonText: this.$t("operation-log.6111tvyrcnw0"),
+        cancelButtonText: this.$t("operation-log.6111tvyrcq40"),
         type: "warning"
       }).then(async res => {
         this.loading = true;
@@ -185,7 +185,7 @@ export default {
         Message({
           showClose: true,
           type: "info",
-          message: "已取消删除"
+          message: this.$t("operation-log.6111tvyrcs40")
         });
       });
     },

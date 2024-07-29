@@ -41,7 +41,8 @@
         "foundSome": "查询到 {0} 条内容",
         "copySuccess": "复制成功",
         "copyFailed": "复制失败, {0}",
-        "addBookmarkInfo": "如果未添加成功, 请按 Ctrl+D 或 Command+D 将此页面添加至书签"
+        "addBookmarkInfo": "如果未添加成功, 请按 Ctrl+D 或 Command+D 将此页面添加至书签",
+        "deleteWarning":"此操作将永久删除, 是否继续?"
     },
     "sidebar": {
         "Sitenav": "网站导航",
@@ -303,5 +304,25 @@
         "6111lkey4zc0": "请输入验证码",
         "otpSendTips": "验证码已发送, 60s后再次发送",
         "resetSuccessTips": "操作成功, 3s后返回首页"
+    },
+    "operation-log": {
+        "6111tvyrbi80": "请求人",
+        "6111tvyrbt00": "请求路径",
+        "6111tvyrbw80": "请求状态",
+        "6111tvyrbyo0": "查询",
+        "6111tvyrc0o0": "批量删除",
+        "6111tvyrc2s0": "请求方法",
+        "6111tvyrc4w0": "发起时间",
+        "6111tvyrc8s0": "耗时(ms)",
+        "6111tvyrcaw0": "说明",
+        "6111tvyrccw0": "操作",
+        "6111tvyrcf40": "删除",
+        "6111tvyrchk0": "确定删除吗？",
+        "6111tvyrcjk0": "操作成功",
+        "6111tvyrcls0": "提示",
+        "6111tvyrcnw0": "确定",
+        "6111tvyrcq40": "取消",
+        "6111tvyrcs40": "已取消删除",
+        "ipaddr": "IP地址"
     }
 }

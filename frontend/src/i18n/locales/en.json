@@ -41,7 +41,8 @@
     "foundSome": "Found {0} matching items",
     "copySuccess": "Copy successful",
     "copyFailed": "Copy failed, {0}",
-    "addBookmarkInfo": "If unsuccessful, please press Ctrl+D or Command+D to bookmark this page"
+    "addBookmarkInfo": "If unsuccessful, please press Ctrl+D or Command+D to bookmark this page",
+    "deleteWarning": "This operation will permanently delete the items, do you want to continue?"
   },
   "sidebar": {
     "Sitenav": "Site Navigation",
@@ -154,7 +155,7 @@
     "610wkzjip6w0": "Please select a department",
     "610wkzjip8w0": "Add User",
     "610wkzjipao0": "Edit User",
-    "610wkzjipcg0": "Operation successful",
+    "610wkzjipcg0": "Execution Successful",
     "610wkzjipec0": "Please enter a nickname",
     "610wkzjipg00": "Please enter a username",
     "610wkzjipi40": "Please enter an email",
@@ -218,7 +219,7 @@
     "610yx3aumo00": "Top Category",
     "610yx3aumps0": "Are you sure you want to remove the user from the group?",
     "610yx3aumrs0": "Prompt",
-    "610yx3aumtg0": "Operation successful",
+    "610yx3aumtg0": "Execution Successful",
     "610yx3aumvc0": "Deletion canceled",
     "610yx3aumx00": "Are you sure you want to add the user to the group?",
     "610yx3aumyw0": "Add Group",
@@ -283,7 +284,7 @@
     "610zu0w726g0": "Please enter the phone number",
     "610zu0w72880": "Modify",
     "610zu0w72a40": "Please select Type Identifier",
-    "610zu0w72bs0": "Operation successful",
+    "610zu0w72bs0": "Execution Successful",
     "610zu0w72dg0": "Form validation failed",
     "610zu0w72fk0": "Prompt",
     "610zu0w72hg0": "Deletion successful",
@@ -302,6 +303,26 @@
     "6111lkey4wg0": "Verification Code",
     "6111lkey4zc0": "Please enter the verification code",
     "otpSendTips": "Verification code sent, you can resend after 60s",
-    "resetSuccessTips": "Operation successful, returning to homepage in 3s"
+    "resetSuccessTips": "Execution Successful, returning to homepage in 3s"
+  },
+  "operation-log": {
+    "6111tvyrbi80": "Requester",
+    "6111tvyrbt00": "Request Path",
+    "6111tvyrbw80": "Status",
+    "6111tvyrbyo0": "Search",
+    "6111tvyrc0o0": "Batch Delete",
+    "6111tvyrc2s0": "Method",
+    "6111tvyrc4w0": "Initiation Time",
+    "6111tvyrc8s0": "Duration (ms)",
+    "6111tvyrcaw0": "Description",
+    "6111tvyrccw0": "Action",
+    "6111tvyrcf40": "Delete",
+    "6111tvyrchk0": "Are you sure you want to delete?",
+    "6111tvyrcjk0": "Execution Successful",
+    "6111tvyrcls0": "Tips",
+    "6111tvyrcnw0": "Confirm",
+    "6111tvyrcq40": "Cancel",
+    "6111tvyrcs40": "Deletion Cancelled",
+    "ipaddr": "IP"
   }
 }
