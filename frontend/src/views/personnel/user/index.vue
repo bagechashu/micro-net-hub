@@ -7,50 +7,50 @@
         :model="params"
         class="demo-form-inline"
       >
-        <el-form-item label="用户名">
+        <el-form-item :label="$t('user.610wkzjikzs0')">
           <el-input
             v-model.trim="params.username"
             style="width: 100px"
             clearable
-            placeholder="用户名"
+            :placeholder="$t('user.610wkzjikzs0')"
             @keyup.enter.native="search"
             @clear="search"
           />
         </el-form-item>
-        <el-form-item label="昵称">
+        <el-form-item :label="$t('user.610wkzjill40')">
           <el-input
             v-model.trim="params.nickname"
             style="width: 100px"
             clearable
-            placeholder="昵称"
+            :placeholder="$t('user.610wkzjill40')"
             @keyup.enter.native="search"
             @clear="search"
           />
         </el-form-item>
-        <el-form-item label="状态">
+        <el-form-item :label="$t('common.status')">
           <el-select
             v-model.trim="params.status"
             style="width: 100px"
             clearable
-            placeholder="状态"
+            :placeholder="$t('common.status')"
             @change="search"
             @clear="search"
           >
-            <el-option label="正常" value="1" />
-            <el-option label="禁用" value="2" />
+            <el-option :label="$t('common.enabled')" value="1" />
+            <el-option :label="$t('common.disabled')" value="2" />
           </el-select>
         </el-form-item>
-        <el-form-item label="同步状态">
+        <el-form-item :label="$t('user.610wkzjilwo0')">
           <el-select
             v-model.trim="params.syncState"
             style="width: 100px"
             clearable
-            placeholder="同步状态"
+            :placeholder="$t('user.610wkzjilwo0')"
             @change="search"
             @clear="search"
           >
-            <el-option label="已同步" value="1" />
-            <el-option label="未同步" value="2" />
+            <el-option :label="$t('user.610wkzjilz00')" value="1" />
+            <el-option :label="$t('user.610wkzjim1c0')" value="2" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -59,7 +59,7 @@
             icon="el-icon-search"
             type="primary"
             @click="search"
-          >查询</el-button>
+          >{{ $t('common.query') }}</el-button>
         </el-form-item>
         <el-form-item>
           <el-button
@@ -67,7 +67,7 @@
             icon="el-icon-plus"
             type="warning"
             @click="create"
-          >新增</el-button>
+          >{{ $t('common.add') }}</el-button>
         </el-form-item>
         <el-form-item>
           <el-button
@@ -76,7 +76,7 @@
             icon="el-icon-delete"
             type="danger"
             @click="batchDelete"
-          >批量删除</el-button>
+          >{{ $t('user.610wkzjim8k0') }}</el-button>
         </el-form-item>
         <el-form-item>
           <el-button
@@ -85,7 +85,7 @@
             icon="el-icon-upload2"
             type="success"
             @click="batchSync"
-          >批量同步</el-button>
+          >{{ $t('user.610wkzjimb40') }}</el-button>
         </el-form-item>
         <br>
         <el-form-item>
@@ -94,7 +94,7 @@
             icon="el-icon-download"
             type="warning"
             @click="syncOpenLdapUsers"
-          >同步原ldap用户信息</el-button>
+          >{{ $t('user.610wkzjimd80') }}</el-button>
         </el-form-item>
         <el-form-item>
           <el-button
@@ -102,7 +102,7 @@
             icon="el-icon-download"
             type="warning"
             @click="syncDingTalkUsers"
-          >同步钉钉用户信息</el-button>
+          >{{ $t('user.610wkzjimfk0') }}</el-button>
         </el-form-item>
         <el-form-item>
           <el-button
@@ -110,7 +110,7 @@
             icon="el-icon-download"
             type="warning"
             @click="syncFeiShuUsers"
-          >同步飞书用户信息</el-button>
+          >{{ $t('user.610wkzjimho0') }}</el-button>
         </el-form-item>
         <el-form-item>
           <el-button
@@ -118,7 +118,7 @@
             icon="el-icon-download"
             type="warning"
             @click="syncWeComUsers"
-          >同步企业微信用户信息</el-button>
+          >{{ $t('user.610wkzjimk00') }}</el-button>
         </el-form-item>
       </el-form>
 
@@ -131,41 +131,41 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55" align="center" />
-        <el-table-column label="详情" width="55" type="expand">
+        <el-table-column :label="$t('user.610wkzjimm80')" width="65" type="expand">
           <template slot-scope="props">
             <el-form label-position="left" class="table-expand">
               <el-form-item label="userDN">
                 <span>{{ props.row.userDn }}</span>
               </el-form-item>
-              <el-form-item label="电话">
+              <el-form-item :label="$t('user.610wkzjimog0')">
                 <span>{{ props.row.mobile }}</span>
               </el-form-item>
-              <el-form-item label="邮箱">
+              <el-form-item :label="$t('user.610wkzjimqk0')">
                 <span>{{ props.row.mail }}</span>
               </el-form-item>
-              <el-form-item label="工号">
+              <el-form-item :label="$t('user.610wkzjimsw0')">
                 <span>{{ props.row.jobNumber }}</span>
               </el-form-item>
-              <el-form-item label="创建人">
+              <el-form-item :label="$t('user.610wkzjimwo0')">
                 <span>{{ props.row.creator }}</span>
               </el-form-item>
-              <el-form-item label="职位">
+              <el-form-item :label="$t('user.610wkzjimys0')">
                 <span>{{ props.row.position }}</span>
               </el-form-item>
-              <el-form-item label="个人简介">
+              <el-form-item :label="$t('user.610wkzjin0w0')">
                 <span>{{ props.row.introduction }}</span>
               </el-form-item>
             </el-form>
           </template>
         </el-table-column>
-        <el-table-column show-overflow-tooltip sortable label="用户名" width="120">
+        <el-table-column show-overflow-tooltip sortable :label="$t('user.610wkzjikzs0')" width="120">
           <template slot-scope="scope">
             <div slot="reference" class="name-wrapper">
               <el-tag size="medium">{{ scope.row.username }}</el-tag>
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="状态" width="80" align="center">
+        <el-table-column :label="$t('common.status')" width="80" align="center">
           <template slot-scope="scope">
             <el-switch
               v-model="scope.row.status"
@@ -180,20 +180,14 @@
           show-overflow-tooltip
           sortable
           prop="nickname"
-          label="中文名"
+          :label="$t('user.610wkzjill40')"
           width="120"
         />
-        <el-table-column show-overflow-tooltip prop="givenName" label="花名" width="120" />
-        <!-- 使用按钮方式展示，以后改成布尔参数比较合适 -->
-        <!-- <el-table-column show-overflow-tooltip sortable prop="status" label="状态" align="center">
-          <template slot-scope="scope">
-            <el-tag size="small" :type="scope.row.status === 1 ? 'success':'danger'" disable-transitions>{{ scope.row.status === 1 ? '正常':'禁用' }}</el-tag>
-          </template>
-        </el-table-column> -->
+        <el-table-column show-overflow-tooltip prop="givenName" :label="$t('user.610wkzjin4g0')" width="120" />
         <el-table-column
           show-overflow-tooltip
           sortable
-          label="角色"
+          :label="$t('user.610wkzjin680')"
           width="150"
         >
           <template slot-scope="scope">
@@ -203,7 +197,7 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column show-overflow-tooltip label="部门" width="420">
+        <el-table-column show-overflow-tooltip :label="$t('user.610wkzjin800')" width="420">
           <template slot-scope="scope">
             <div v-if="scope.row.groups && scope.row.groups.length">
               <span v-for="(group, index) in scope.row.groups" :key="group.ID">
@@ -220,17 +214,17 @@
           show-overflow-tooltip
           sortable
           prop="CreatedAt"
-          label="创建时间"
+          :label="$t('common.createTime')"
         />
         <el-table-column
           show-overflow-tooltip
           sortable
           prop="UpdatedAt"
-          label="更新时间"
+          :label="$t('common.updateTime')"
         />
-        <el-table-column fixed="right" label="操作" align="center" width="150">
+        <el-table-column fixed="right" :label="$t('common.management')" align="center" width="150">
           <template slot-scope="scope">
-            <el-tooltip content="编辑" effect="dark" placement="top">
+            <el-tooltip :content="$t('common.edit')" effect="dark" placement="top">
               <el-button
                 size="mini"
                 icon="el-icon-edit"
@@ -241,12 +235,12 @@
             </el-tooltip>
             <el-tooltip
               class="delete-popover"
-              content="删除"
+              :content="$t('common.delete')"
               effect="dark"
               placement="top"
             >
               <el-popconfirm
-                title="确定删除吗？"
+                :title="$t('user.610wkzjinjg0')"
                 @confirm="singleDelete(scope.row.ID)"
               >
                 <el-button
@@ -261,12 +255,12 @@
             <el-tooltip
               v-if="scope.row.syncState === 2 && scope.row.status === 1"
               class="delete-popover"
-              content="同步"
+              :content="$t('user.610wkzjinlc0')"
               effect="dark"
               placement="top"
             >
               <el-popconfirm
-                title="确定同步吗？"
+                :title="$t('user.610wkzjinn40')"
                 @confirm="singleSync(scope.row.ID)"
               >
                 <el-button
@@ -304,62 +298,62 @@
           size="small"
           :model="dialogFormData"
           :rules="dialogFormRules"
-          label-width="80px"
+          label-width="150px"
         >
           <el-row>
             <el-col :span="12">
-              <el-form-item label="用户名" prop="username">
+              <el-form-item :label="$t('user.610wkzjikzs0')" prop="username">
                 <el-input
                   ref="password"
                   v-model.trim="dialogFormData.username"
                   :disabled="disabled"
-                  placeholder="用户名（拼音）"
+                  :placeholder="$t('user.610wkzjinp00')"
                 />
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="中文名字" prop="nickname">
+              <el-form-item :label="$t('user.610wkzjill40')" prop="nickname">
                 <el-input
                   v-model.trim="dialogFormData.nickname"
-                  placeholder="中文名字"
+                  :placeholder="$t('user.610wkzjill40')"
                 />
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="花名" prop="givenName">
+              <el-form-item :label="$t('user.610wkzjin4g0')" prop="givenName">
                 <el-input
                   v-model.trim="dialogFormData.givenName"
-                  placeholder="花名"
+                  :placeholder="$t('user.610wkzjin4g0')"
                 />
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="头像Url" prop="avatar">
+              <el-form-item :label="$t('user.610wkzjinso0')" prop="avatar">
                 <el-input
                   v-model.trim="dialogFormData.avatar"
-                  placeholder="(创建时输入QQ号,会转换成QQ头像)"
+                  :placeholder="$t('user.imageTips')"
                 />
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="邮箱" prop="mail">
+              <el-form-item :label="$t('user.610wkzjimqk0')" prop="mail">
                 <el-input
                   v-model.trim="dialogFormData.mail"
-                  placeholder="邮箱"
+                  :placeholder="$t('user.610wkzjimqk0')"
                 />
               </el-form-item>
             </el-col>
             <el-col :span="12">
               <el-form-item
                 v-if="dialogType === 'create'"
-                label="密码"
+                :label="$t('user.610wkzjinuk0')"
                 prop="password"
               >
                 <el-input
                   v-model.trim="dialogFormData.password"
                   autocomplete="off"
                   :type="passwordType"
-                  placeholder="不填则随机生成"
+                  :placeholder="$t('user.610wkzjinwc0')"
                 />
                 <span class="show-pwd" @click="showPwd">
                   <svg-icon
@@ -369,12 +363,12 @@
                   />
                 </span>
               </el-form-item>
-              <el-form-item v-else label="重置密码" prop="password">
+              <el-form-item v-else :label="$t('user.610wkzjinyc0')" prop="password">
                 <el-input
                   v-model.trim="dialogFormData.password"
                   autocomplete="off"
                   :type="passwordType"
-                  placeholder="不填不重置"
+                  :placeholder="$t('user.610wkzjio000')"
                 />
                 <span class="show-pwd" @click="showPwd">
                   <svg-icon
@@ -386,11 +380,11 @@
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="角色" prop="roleIds">
+              <el-form-item :label="$t('user.610wkzjin680')" prop="roleIds">
                 <el-select
                   v-model.trim="dialogFormData.roleIds"
                   multiple
-                  placeholder="请选择角色"
+                  :placeholder="$t('user.610wkzjio200')"
                   style="width: 100%"
                 >
                   <el-option
@@ -403,63 +397,63 @@
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="状态" prop="status">
+              <el-form-item :label="$t('common.status')" prop="status">
                 <el-select
                   v-model.trim="dialogFormData.status"
-                  placeholder="请选择状态"
+                  :placeholder="$t('user.610wkzjio3s0')"
                   style="width: 100%"
                 >
-                  <el-option label="正常" :value="1" />
-                  <el-option label="禁用" :value="2" />
+                  <el-option :label="$t('common.enabled')" :value="1" />
+                  <el-option :label="$t('common.disabled')" :value="2" />
                 </el-select>
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="手机号" prop="mobile">
+              <el-form-item :label="$t('user.610wkzjio6c0')" prop="mobile">
                 <el-input
                   v-model.trim="dialogFormData.mobile"
-                  placeholder="手机号"
+                  :placeholder="$t('user.610wkzjio6c0')"
                 />
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="工号" prop="jobNumber">
+              <el-form-item :label="$t('user.610wkzjimsw0')" prop="jobNumber">
                 <el-input
                   v-model.trim="dialogFormData.jobNumber"
-                  placeholder="工号"
+                  :placeholder="$t('user.610wkzjimsw0')"
                 />
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="职位" prop="position">
+              <el-form-item :label="$t('user.610wkzjimys0')" prop="position">
                 <el-input
                   v-model.trim="dialogFormData.position"
-                  placeholder="职业"
+                  :placeholder="$t('user.610wkzjio8g0')"
                 />
               </el-form-item>
             </el-col>
             <el-col :span="24">
-              <el-form-item label="所属部门" prop="groupIds">
+              <el-form-item :label="$t('user.610wkzjioa80')" prop="groupIds">
                 <treeselect
                   v-model="dialogFormData.groupIds"
                   :options="groupsOptions"
-                  placeholder="请选择部门"
+                  :placeholder="$t('user.610wkzjioc00')"
                   :normalizer="normalizer"
                   value-consists-of="ALL"
                   :multiple="true"
                   :flat="true"
-                  no-children-text="没有更多选项"
-                  no-results-text="没有匹配的选项"
+                  :no-children-text="$t('user.610wkzjiods0')"
+                  :no-results-text="$t('user.610wkzjiofk0')"
                   @input="treeselectInput"
                 />
               </el-form-item>
             </el-col>
             <el-col :span="24">
-              <el-form-item label="地址" prop="postalAddress">
+              <el-form-item :label="$t('user.610wkzjiohc0')" prop="postalAddress">
                 <el-input
                   v-model.trim="dialogFormData.postalAddress"
                   type="textarea"
-                  placeholder="地址"
+                  :placeholder="$t('user.610wkzjiohc0')"
                   :autosize="{ minRows: 3, maxRows: 6 }"
                   show-word-limit
                   maxlength="100"
@@ -467,11 +461,11 @@
               </el-form-item>
             </el-col>
             <el-col :span="24">
-              <el-form-item label="说明" prop="introduction">
+              <el-form-item :label="$t('user.610wkzjioj40')" prop="introduction">
                 <el-input
                   v-model.trim="dialogFormData.introduction"
                   type="textarea"
-                  placeholder="说明: 如不填, 则默认为 LDAP domain"
+                  placeholder="$t('user.610wkzjiol00')}}"
                   :autosize="{ minRows: 3, maxRows: 6 }"
                   show-word-limit
                   maxlength="100"
@@ -483,16 +477,16 @@
         <div slot="footer" class="dialog-footer">
           <el-switch
             v-model="notice"
-            active-text="通知用户"
+            :active-text="$t('user.610wkzjiook0')"
             style="margin-right: 10px"
           />
-          <el-button size="mini" @click="cancelForm()">取 消</el-button>
+          <el-button size="mini" @click="cancelForm()">{{ $t('common.cancel') }}</el-button>
           <el-button
             size="mini"
             :loading="submitLoading"
             type="primary"
             @click="submitForm()"
-          >确 定</el-button>
+          >{{ $t('common.confirm') }}</el-button>
         </div>
       </el-dialog>
     </el-card>
@@ -500,25 +494,25 @@
 </template>
 
 <script>
-import JSEncrypt from "jsencrypt";
-import Treeselect from "@riophae/vue-treeselect";
-import "@riophae/vue-treeselect/dist/vue-treeselect.css";
+import { getGroupTree } from "@/api/personnel/group";
 import {
-  getUsers,
-  createUser,
-  updateUserById,
   batchDeleteUserByIds,
   changeUserStatus,
+  createUser,
+  getUsers,
   syncDingTalkUsersApi,
-  syncWeComUsersApi,
   syncFeiShuUsersApi,
   syncOpenLdapUsersApi,
-  syncSqlUsers
+  syncSqlUsers,
+  syncWeComUsersApi,
+  updateUserById
 } from "@/api/personnel/user";
-import { validatePasswordCanEnpty } from "@/utils/validate";
 import { getRoles } from "@/api/system/role";
-import { getGroupTree } from "@/api/personnel/group";
+import { validatePasswordCanEnpty } from "@/utils/validate";
+import Treeselect from "@riophae/vue-treeselect";
+import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 import { Message } from "element-ui";
+import JSEncrypt from "jsencrypt";
 
 export default {
   name: "User",
@@ -532,7 +526,7 @@ export default {
         if (reg.test(value)) {
           callback();
         } else {
-          return callback(new Error("请输入正确的手机号"));
+          return callback(new Error(this.$t("user.610wkzjioxc0")));
         }
       } else {
         return callback();
@@ -599,13 +593,13 @@ export default {
         username: [
           {
             required: true,
-            message: "请输入用户名",
+            message: this.$t("user.610wkzjioz80"),
             trigger: "blur"
           },
           {
             min: 2,
             max: 20,
-            message: "长度在 2 到 20 个字符",
+            message: "$t{{'valid.length', [2,20]}}",
             trigger: "blur"
           }
         ],
@@ -615,33 +609,33 @@ export default {
         mail: [
           {
             required: true,
-            message: "请输入邮箱",
+            message: this.$t("user.610wkzjip140"),
             trigger: "blur"
           }
         ],
         jobNumber: [
           {
             required: false,
-            message: "请输入工号",
+            message: this.$t("user.610wkzjip380"),
             trigger: "blur"
           },
           {
             min: 0,
             max: 20,
-            message: "长度在 0 到 20 个字符",
+            message: "$t{{'valid.length', [0,20]}}",
             trigger: "blur"
           }
         ],
         nickname: [
           {
             required: true,
-            message: "请输入昵称",
+            message: this.$t("user.610wkzjip540"),
             trigger: "blur"
           },
           {
             min: 2,
             max: 20,
-            message: "长度在 2 到 20 个字符",
+            message: "$t{{'valid.length', [2,20]}}",
             trigger: "blur"
           }
         ],
@@ -652,9 +646,9 @@ export default {
             trigger: "blur"
           }
         ],
-        status: [{ required: true, message: "请选择状态", trigger: "change" }],
+        status: [{ required: true, message: this.$t("user.610wkzjio3s0"), trigger: "change" }],
         groupIds: [
-          { required: false, message: "请选择部门", trigger: "blur" }
+          { required: false, message: this.$t("user.610wkzjioc00"), trigger: "blur" }
           // {
           //   validator: (rule, value, callBack) => {
           //     if (value < 1) {
@@ -666,11 +660,11 @@ export default {
           // }
         ],
         introduction: [
-          { required: false, message: "说明", trigger: "blur" },
+          { required: false, message: this.$t("user.610wkzjioj40"), trigger: "blur" },
           {
             min: 0,
             max: 100,
-            message: "长度在 0 到 100 个字符",
+            message: "$t{{'valid.length', [0,100]}}",
             trigger: "blur"
           }
         ]
@@ -727,7 +721,7 @@ export default {
         this.groupsOptions = [
           {
             ID: 0,
-            groupName: "请选择部门信息",
+            groupName: this.$t("user.610wkzjip6w0"),
             groupType: "T",
             children: data
           }
@@ -745,7 +739,7 @@ export default {
 
     // 新增
     create() {
-      this.dialogFormTitle = "新增用户";
+      this.dialogFormTitle = this.$t("user.610wkzjip8w0");
       this.dialogType = "create";
       this.disabled = false;
       this.getAllGroups();
@@ -757,7 +751,7 @@ export default {
 
     // 修改
     update(row) {
-      this.dialogFormTitle = "修改用户";
+      this.dialogFormTitle = this.$t("user.610wkzjipao0");
       this.dialogType = "update";
       this.disabled = true;
       this.passwordType = "password";
@@ -787,7 +781,7 @@ export default {
     // 判断结果
     judgeResult(res) {
       if (res.code === 200) {
-        const message = res.data ? res.data : "操作成功";
+        const message = res.data ? res.data : this.$t("user.610wkzjipcg0");
         Message({
           showClose: true,
           message: message,
@@ -801,7 +795,7 @@ export default {
       if (this.dialogFormData.nickname === "") {
         Message({
           showClose: true,
-          message: "请填写昵称",
+          message: this.$t("user.610wkzjipec0"),
           type: "error"
         });
         return false;
@@ -809,7 +803,7 @@ export default {
       if (this.dialogFormData.username === "") {
         Message({
           showClose: true,
-          message: "请填写用户名",
+          message: this.$t("user.610wkzjipg00"),
           type: "error"
         });
         return false;
@@ -817,7 +811,7 @@ export default {
       if (this.dialogFormData.mail === "") {
         Message({
           showClose: true,
-          message: "请填写邮箱",
+          message: this.$t("user.610wkzjipi40"),
           type: "error"
         });
         return false;
@@ -841,7 +835,7 @@ export default {
       if (this.dialogFormData.status === "") {
         Message({
           showClose: true,
-          message: "请填写状态",
+          message: this.$t("user.610wkzjipk40"),
           type: "error"
         });
         return false;
@@ -850,7 +844,7 @@ export default {
       if (this.dialogFormData.roleIds === "") {
         Message({
           showClose: true,
-          message: "请选择角色列表",
+          message: this.$t("user.610wkzjipn40"),
           type: "error"
         });
         return false;
@@ -886,7 +880,7 @@ export default {
         } else {
           Message({
             showClose: true,
-            message: "表单校验失败",
+            message: this.$t("user.610wkzjipp00"),
             type: "warn"
           });
           return false;
@@ -924,9 +918,9 @@ export default {
 
     // 批量删除
     batchDelete() {
-      this.$confirm("此操作将永久删除, 是否继续?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
+      this.$confirm(this.$t("user.batchDeleteTips"), this.$t("common.prompt"), {
+        confirmButtonText: this.$t("common.confirm"),
+        cancelButtonText: this.$t("common.cancel"),
         type: "warning"
       })
         .then(async(res) => {
@@ -948,15 +942,15 @@ export default {
           Message({
             showClose: true,
             type: "info",
-            message: "已取消删除"
+            message: this.$t("user.610wkzjipy40")
           });
         });
     },
     // 批量同步
     batchSync() {
-      this.$confirm("此操作批量将数据库的用户同步到Ldap, 是否继续?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
+      this.$confirm(this.$t("user.betchSyncLdapTips"), this.$t("common.prompt"), {
+        confirmButtonText: this.$t("common.confirm"),
+        cancelButtonText: this.$t("common.cancel"),
         type: "warning"
       })
         .then(async(res) => {
@@ -978,7 +972,7 @@ export default {
           Message({
             showClose: true,
             type: "info",
-            message: "已取消同步"
+            message: this.$t("user.610wkzjiq080")
           });
         });
     },
@@ -996,9 +990,9 @@ export default {
         const updatedUserInfo = { ...userInfo, status: !userInfo.status };
         // Update userInfo after the status change
         userInfo = updatedUserInfo;
-        return Message.error("更新用户状态失败");
+        return Message.error(this.$t("user.610wkzjiq240"));
       }
-      return Message.success("更新用户状态成功");
+      return Message.success(this.$t("user.610wkzjiq3w0"));
     },
 
     // 表格多选
