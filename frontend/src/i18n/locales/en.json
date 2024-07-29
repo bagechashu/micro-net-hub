@@ -293,5 +293,15 @@
   "error-page": {
     "6111j60ui7c0": "You do not have permission to access this page",
     "6111jrs9h280": "The page you are looking for does not exist"
+  },
+  "changePassword": {
+    "6111lkey47k0": "Reset Password",
+    "6111lkey4lw0": "Email",
+    "6111lkey4r00": "Please enter your email",
+    "6111lkey4tw0": "Send Verification Code",
+    "6111lkey4wg0": "Verification Code",
+    "6111lkey4zc0": "Please enter the verification code",
+    "otpSendTips": "Verification code sent, you can resend after 60s",
+    "resetSuccessTips": "Operation successful, returning to homepage in 3s"
   }
 }

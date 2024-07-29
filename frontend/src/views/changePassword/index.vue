@@ -2,28 +2,28 @@
   <div class="changepass-container">
     <el-card shadow="always" style="margin-top: 5rem">
       <div slot="header">
-        <b>重置密码</b>
+        <b>{{ $t('changePassword.6111lkey47k0') }}</b>
       </div>
       <el-form ref="form" :model="form" size="medium" label-width="auto">
-        <el-form-item required label="邮箱">
+        <el-form-item required :label="$t('changePassword.6111lkey4lw0')">
           <div class="input-container">
-            <el-input v-model="form.mail" placeholder="请输入个人邮箱" />
+            <el-input v-model="form.mail" :placeholder="$t('changePassword.6111lkey4r00')" />
             <el-button
               :loading="vCodeLoading"
               type="primary"
               @click="sendVerificationCode"
-            >发送验证码</el-button>
+            >{{ $t('changePassword.6111lkey4tw0') }}</el-button>
           </div>
         </el-form-item>
-        <el-form-item required label="验证码" class="code-item">
-          <el-input v-model="form.code" placeholder="请输入验证码" />
+        <el-form-item required :label="$t('changePassword.6111lkey4wg0')">
+          <el-input v-model="form.code" :placeholder="$t('changePassword.6111lkey4zc0')" />
         </el-form-item>
         <el-form-item class="reset-item">
           <el-button
             :loading="resetPassLoading"
             type="primary"
             @click="resetPass"
-          >重置密码</el-button>
+          >{{ $t('changePassword.6111lkey47k0') }}</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -56,7 +56,7 @@ export default {
           if (res.code === 200) {
             Message({
               showClose: true,
-              message: "验证码已发送, 60s后再次发送",
+              message: this.$t("changePassword.otpSendTips"),
               type: "success"
             });
             // 重新登录
@@ -86,7 +86,7 @@ export default {
           if (res.code === 200) {
             Message({
               showClose: true,
-              message: "操作成功, 3s后返回首页",
+              message: this.$t("changePassword.resetSuccessTips"),
               type: "success"
             });
             // 重新登录
@@ -129,9 +129,9 @@ export default {
   margin-right: 10px;
 }
 
-.code-item .el-input {
-  width: 20rem;
-}
+// .code-item .el-input {
+//   width: 20rem;
+// }
 
 .reset-item {
   text-align: right;
