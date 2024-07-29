@@ -289,5 +289,9 @@
     "610zu0w72hg0": "Deletion successful",
     "610zu0w72jk0": "Deletion cancelled",
     "batchDeleteTips": "This operation will permanently delete the items, do you want to continue?"
+  },
+  "error-page": {
+    "6111j60ui7c0": "You do not have permission to access this page",
+    "6111jrs9h280": "The page you are looking for does not exist"
   }
 }
