@@ -8,16 +8,16 @@
         :model="navGroupForm"
         :rules="navGroupFormRules"
       >
-        <el-form-item label="标识名:" prop="name">
+        <el-form-item :label="$t('sitenav.6112v35e5140')" prop="name">
           <el-input
             v-model.trim="navGroupForm.name"
-            placeholder="导航组的唯一标识"
+            :placeholder="$t('sitenav.6112v35e5ik0')"
           />
         </el-form-item>
-        <el-form-item label="展示名:" prop="title">
+        <el-form-item :label="$t('sitenav.6112v35e5o40')" prop="title">
           <el-input
             v-model.trim="navGroupForm.title"
-            placeholder="导航组的实际展示名"
+            :placeholder="$t('sitenav.6112v35e5r40')"
           />
         </el-form-item>
         <el-form-item>
@@ -26,7 +26,7 @@
             :loading="loading"
             type="primary"
             @click="addGroup()"
-          >添加导航组</el-button>
+          >{{ $t('sitenav.6112v35e5v40') }}</el-button>
         </el-form-item>
       </el-form>
 
@@ -51,7 +51,7 @@
                   icon="el-icon-plus"
                   type="warning"
                   @click="addSite"
-                >新增</el-button>
+                >{{ $t('sitenav.6112v35e5xw0') }}</el-button>
               </el-form-item>
               <el-form-item>
                 <el-button
@@ -60,7 +60,7 @@
                   icon="el-icon-delete"
                   type="danger"
                   @click="batchDeleteSites"
-                >批量删除</el-button>
+                >{{ $t('sitenav.6112v35e60s0') }}</el-button>
               </el-form-item>
             </el-form>
 
@@ -78,40 +78,40 @@
                 show-overflow-tooltip
                 sortable
                 prop="name"
-                label="站名"
+                :label="$t('sitenav.6112v35e63c0')"
               />
               <el-table-column
                 show-overflow-tooltip
                 sortable
                 prop="icon"
-                label="图标"
+                :label="$t('sitenav.6112v35e66c0')"
               />
               <el-table-column
                 show-overflow-tooltip
                 sortable
                 prop="desc"
-                label="描述"
+                :label="$t('sitenav.6112v35e68w0')"
               />
               <el-table-column
                 show-overflow-tooltip
                 sortable
                 prop="link"
-                label="链接"
+                :label="$t('sitenav.6112v35e6bw0')"
               />
               <el-table-column
                 show-overflow-tooltip
                 sortable
                 prop="doc"
-                label="文档"
+                :label="$t('sitenav.6112v35e6eo0')"
               />
               <el-table-column
                 fixed="right"
-                label="操作"
+                :label="$t('sitenav.6112v35e6ho0')"
                 align="center"
                 width="120"
               >
                 <template slot-scope="scope">
-                  <el-tooltip content="编辑" effect="dark" placement="top">
+                  <el-tooltip :content="$t('sitenav.6112v35e6k80')" effect="dark" placement="top">
                     <el-button
                       size="mini"
                       icon="el-icon-edit"
@@ -122,12 +122,12 @@
                   </el-tooltip>
                   <el-tooltip
                     class="delete-popover"
-                    content="删除"
+                    :content="$t('sitenav.6112v35e6mw0')"
                     effect="dark"
                     placement="top"
                   >
                     <el-popconfirm
-                      title="确定删除吗？"
+                      :title="$t('sitenav.6112v35e6pk0')"
                       @confirm="deleteSite(scope.row.ID)"
                     >
                       <el-button
@@ -155,8 +155,8 @@
           :rules="navSiteFormRules"
           label-width="auto"
         >
-          <el-form-item label="组ID" prop="groupid">
-            <el-select v-model="navSiteForm.groupid" placeholder="请选择">
+          <el-form-item :label="$t('sitenav.6112v35e6s80')" prop="groupid">
+            <el-select v-model="navSiteForm.groupid" :placeholder="$t('sitenav.6112v35e6v40')">
               <el-option
                 v-for="item in groupOptions"
                 :key="item.id"
@@ -165,16 +165,16 @@
               />
             </el-select>
           </el-form-item>
-          <el-form-item label="站名" prop="name">
-            <el-input v-model.trim="navSiteForm.name" placeholder="站名" />
+          <el-form-item :label="$t('sitenav.6112v35e63c0')" prop="name">
+            <el-input v-model.trim="navSiteForm.name" :placeholder="$t('sitenav.6112v35e63c0')" />
           </el-form-item>
-          <el-form-item label="图标" prop="icon">
+          <el-form-item :label="$t('sitenav.6112v35e66c0')" prop="icon">
             <el-select
               v-model.trim="navSiteForm.icon"
               filterable
               allow-create
               default-first-option
-              placeholder="可以输入图片URL"
+              :placeholder="$t('sitenav.6112v35e6y00')"
             >
               <el-option
                 v-for="item in iconOptions"
@@ -185,36 +185,36 @@
             </el-select>
             <!-- <el-input
               v-model.trim="navSiteForm.icon"
-              placeholder="图标"
+              :placeholder="$t('sitenav.6112v35e66c0')"
             /> -->
           </el-form-item>
-          <el-form-item label="链接" prop="link">
-            <el-input v-model.trim="navSiteForm.link" placeholder="链接" />
+          <el-form-item :label="$t('sitenav.6112v35e6bw0')" prop="link">
+            <el-input v-model.trim="navSiteForm.link" :placeholder="$t('sitenav.6112v35e6bw0')" />
           </el-form-item>
-          <el-form-item label="文档" prop="doc">
+          <el-form-item :label="$t('sitenav.6112v35e6eo0')" prop="doc">
             <el-input
               v-model.trim="navSiteForm.doc"
-              placeholder="文档, 不填不展示"
+              :placeholder="$t('sitenav.6112v35e70o0')"
             />
           </el-form-item>
-          <el-form-item label="描述" prop="desc">
+          <el-form-item :label="$t('sitenav.6112v35e68w0')" prop="desc">
             <el-input
               v-model.trim="navSiteForm.desc"
               type="textarea"
-              placeholder="描述"
+              :placeholder="$t('sitenav.6112v35e68w0')"
               show-word-limit
               maxlength="100"
             />
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
-          <el-button size="mini" @click="navSiteFormCancel()">取 消</el-button>
+          <el-button size="mini" @click="navSiteFormCancel()">{{ $t('sitenav.6112v35e74g0') }}</el-button>
           <el-button
             size="mini"
             :loading="loading"
             type="primary"
             @click="navSiteFormSubmit()"
-          >确 定</el-button>
+          >{{ $t('sitenav.6112v35e76o0') }}</el-button>
         </div>
       </el-dialog>
     </el-card>
@@ -248,26 +248,26 @@ export default {
         name: [
           {
             required: true,
-            message: "请输入导航组的唯一标识",
+            message: this.$t("sitenav.6112v35e7980"),
             trigger: "blur"
           },
           {
             min: 4,
             max: 20,
-            message: "长度在 4 到 20 个字符",
+            message: this.$t("valid.length", [4, 20]),
             trigger: "blur"
           }
         ],
         title: [
           {
             required: true,
-            message: "请输入导航组的实际展示名",
+            message: this.$t("sitenav.6112v35e7bc0"),
             trigger: "blur"
           },
           {
             min: 4,
             max: 20,
-            message: "长度在 4 到 20 个字符",
+            message: this.$t("valid.length", [4, 20]),
             trigger: "blur"
           }
         ]
@@ -287,51 +287,51 @@ export default {
       },
       navSiteFormRules: {
         name: [
-          { required: true, message: "请输入站名", trigger: "blur" },
+          { required: true, message: this.$t("sitenav.6112v35e7dc0"), trigger: "blur" },
           {
             min: 1,
             max: 50,
-            message: "长度在 1 到 50 个字符",
+            message: this.$t("valid.length", [1, 50]),
             trigger: "blur"
           }
         ],
         icon: [
-          { required: true, message: "请输入图标链接", trigger: "blur" },
+          { required: true, message: this.$t("sitenav.6112v35e7fw0"), trigger: "blur" },
           {
             min: 1,
             max: 100,
-            message: "长度在 1 到 100 个字符",
+            message: this.$t("valid.length", [1, 100]),
             trigger: "blur"
           }
         ],
         link: [
-          { required: true, message: "请输入链接地址", trigger: "change" },
+          { required: true, message: this.$t("sitenav.6112v35e7hw0"), trigger: "change" },
           {
             min: 0,
             max: 100,
-            message: "长度在 0 到 100 个字符",
+            message: this.$t("valid.length", [1, 100]),
             trigger: "blur"
           }
         ],
         doc: [
-          { required: false, message: "请输入文档地址", trigger: "blur" },
+          { required: false, message: this.$t("sitenav.6112v35e7k00"), trigger: "blur" },
           {
             min: 0,
             max: 100,
-            message: "长度在 0 到 100 个字符",
+            message: this.$t("valid.length", [1, 100]),
             trigger: "blur"
           }
         ],
         desc: [
-          { required: true, message: "输入描述", trigger: "blur" },
+          { required: true, message: this.$t("sitenav.6112v35e7m40"), trigger: "blur" },
           {
             min: 0,
             max: 200,
-            message: "长度在 0 到 200 个字符",
+            message: this.$t("valid.length", [1, 200]),
             trigger: "blur"
           }
         ],
-        groupid: [{ required: true, message: "必须选择分组", trigger: "blur" }]
+        groupid: [{ required: true, message: this.$t("sitenav.6112v35e7o40"), trigger: "blur" }]
       },
       iconOptions: [],
       groupOptions: [],
@@ -388,7 +388,7 @@ export default {
         } else {
           Message({
             showClose: true,
-            message: "表单校验失败",
+            message: this.$t("sitenav.6112v35e7qg0"),
             type: "warn"
           });
           return false;
@@ -407,11 +407,11 @@ export default {
     async deleteGroup(tabname) {
       const navGroupId = this.getGroupIDFromTabname(tabname);
       this.$confirm(
-        "此操作将永久删除该导航组及其包含的记录, 是否继续?",
-        "提示",
+        this.$t("sitenav.deleteSiteTips"),
+        this.$t("sitenav.6112v35e7sg0"),
         {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
+          confirmButtonText: this.$t("sitenav.6112v35e76o0"),
+          cancelButtonText: this.$t("sitenav.6112v35e74g0"),
           type: "warning"
         }
       )
@@ -432,7 +432,7 @@ export default {
           Message({
             showClose: true,
             type: "info",
-            message: "已取消删除"
+            message: this.$t("sitenav.6112v35e7uw0")
           });
         });
     },
@@ -442,7 +442,7 @@ export default {
       const navGroupId = this.getGroupIDFromTabname(this.navGroupActiveTab);
       this.navSiteForm.groupid = navGroupId;
 
-      this.navSiteFormTitle = "新增站点";
+      this.navSiteFormTitle = this.$t("sitenav.6112v35e7ww0");
       this.navSiteFormType = "add";
       this.navSiteFormVisible = true;
     },
@@ -457,7 +457,7 @@ export default {
       this.navSiteForm.doc = row.doc;
       this.navSiteForm.groupid = row.groupid;
 
-      this.navSiteFormTitle = "更新站点";
+      this.navSiteFormTitle = this.$t("sitenav.6112v35e7z00");
       this.navSiteFormType = "update";
       this.navSiteFormVisible = true;
     },
@@ -476,9 +476,9 @@ export default {
     },
     // 批量删除
     batchDeleteSites() {
-      this.$confirm("此操作将永久删除, 是否继续?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
+      this.$confirm(this.$t("tips.deleteWarning"), this.$t("sitenav.6112v35e7sg0"), {
+        confirmButtonText: this.$t("sitenav.6112v35e76o0"),
+        cancelButtonText: this.$t("sitenav.6112v35e74g0"),
         type: "warning"
       })
         .then(async() => {
@@ -500,7 +500,7 @@ export default {
           Message({
             showClose: true,
             type: "info",
-            message: "已取消删除"
+            message: this.$t("sitenav.6112v35e7uw0")
           });
         });
     },
@@ -528,7 +528,7 @@ export default {
         } else {
           Message({
             showClose: true,
-            message: "表单校验失败",
+            message: this.$t("sitenav.6112v35e7qg0"),
             type: "warn"
           });
           return false;
@@ -558,7 +558,7 @@ export default {
       if (res.code === 200) {
         Message({
           showClose: true,
-          message: "操作成功",
+          message: this.$t("sitenav.6112v35e8140"),
           type: "success"
         });
       }
