@@ -1,0 +1,21 @@
+# @format
+
+version: "3"
+services:
+  micro-net-hub:
+    image: xianleeti/micro-net-hub:v0.5.2
+    container_name: "micro-net-hub"
+    restart: always
+    volumes:
+      - ./config/app/config.yml:/app/config.yml
+      - ./config/app/auth-pub.pem:/app/auth-pub.pem
+      - ./config/app/auth-priv-rsa.pem:/app/auth-priv-rsa.pem
+      - ./config/app/entrypoint.sh:/entrypoint.sh
+    entrypoint: ["sh", "/entrypoint.sh"]
+    ports:
+      - 9000:9000
+      - 1812:1812/udp
+      - 53:53
+      - 53:53/udp
+      - 1389:1389
+      - 1390:1390
