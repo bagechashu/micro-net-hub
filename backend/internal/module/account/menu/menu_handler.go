@@ -69,7 +69,6 @@ func GetAccessTree(c *gin.Context) {
 // MenuAddReq 添加资源结构体
 type MenuAddReq struct {
 	Name       string                                `json:"name" validate:"required,min=1,max=50"`
-	Title      string                                `json:"title" validate:"required,min=1,max=50"`
 	Icon       string                                `json:"icon" validate:"min=0,max=50"`
 	Path       string                                `json:"path" validate:"required,min=1,max=100"`
 	Redirect   string                                `json:"redirect" validate:"min=0,max=100"`
@@ -132,7 +131,6 @@ func Add(c *gin.Context) {
 type MenuUpdateReq struct {
 	ID         uint                                  `json:"id" validate:"required"`
 	Name       string                                `json:"name" validate:"required,min=1,max=50"`
-	Title      string                                `json:"title" validate:"required,min=1,max=50"`
 	Icon       string                                `json:"icon" validate:"min=0,max=50"`
 	Path       string                                `json:"path" validate:"required,min=1,max=100"`
 	Redirect   string                                `json:"redirect" validate:"min=0,max=100"`

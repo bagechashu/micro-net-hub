@@ -135,5 +135,7 @@ export function validateName(rule, value, callback) {
     return callback(new Error(i18n.t("valid.InvalidName")));
   }
 
-  callback(null);
+  // if callback(null);
+  // vue.runtime.esm.js:620 [Vue warn]: Error in v-on handler: "TypeError: Cannot read properties of null (reading 'field')"
+  callback();
 }

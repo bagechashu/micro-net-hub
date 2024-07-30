@@ -247,6 +247,7 @@ export default {
       dnsRecordFormType: "",
       dnsRecordFormVisible: false,
       dnsRecordForm: {
+        id: "",
         zone_id: "",
         type: "",
         host: "",
@@ -390,6 +391,7 @@ export default {
     // 修改
     updateRecord(row) {
       this.getZoneOptions();
+      this.dnsRecordForm.id = row.ID;
       this.dnsRecordForm.zone_id = row.zone_id;
       this.dnsRecordForm.type = row.type;
       this.dnsRecordForm.host = row.host;
@@ -484,6 +486,7 @@ export default {
       this.dnsRecordFormVisible = false;
       this.$refs["dnsRecordForm"].resetFields();
       this.dnsRecordForm = {
+        id: "",
         zone_id: "",
         type: "",
         host: "",

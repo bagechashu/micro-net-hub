@@ -237,7 +237,7 @@
         </el-table-column>
       </el-table>
       <!-- 新增 -->
-      <el-dialog :title="dialogFormTitle" :visible.sync="updateLoading">
+      <el-dialog :title="dialogFormTitle" :visible.sync="dialogGroupAddFormVisible">
         <el-form
           ref="dialogForm"
           size="small"
@@ -292,7 +292,7 @@
         </div>
       </el-dialog>
       <!-- 编辑 -->
-      <el-dialog :title="dialogFormTitle" :visible.sync="dialogFormVisible">
+      <el-dialog :title="dialogFormTitle" :visible.sync="dialogGroupEditFormVisible">
         <el-form
           ref="dialogForm"
           size="small"
@@ -331,7 +331,7 @@
       <!-- 组用户管理 -->
       <el-dialog :title="dialogUsersMgrTitle" :visible.sync="dialogUsersMgrVisible">
         <el-row>
-          <el-col :span="10">
+          <el-col :span="9">
             <el-form size="mini" :inline="true" :model="userOfGroupParams">
               <el-form-item>
                 <el-input
@@ -350,7 +350,7 @@
                 @click="getUsersOfGroupData()"
               >{{ $t('group.610yx3aum0c0') }}</el-button>
             </el-form></el-col>
-          <el-col :span="10">
+          <el-col :span="9">
             <el-form size="mini" :inline="true" :model="groupAddUserParams">
               <el-form-item>
                 <el-select
@@ -482,12 +482,12 @@ export default {
       // 上级目录数据
       treeselectData: [],
       treeselectValue: 0,
-      updateLoading: false, // 新增
+      dialogGroupAddFormVisible: false, // 新增
       // dialog对话框
       submitLoading: false,
       dialogFormTitle: "",
       dialogType: "",
-      dialogFormVisible: false,
+      dialogGroupEditFormVisible: false,
       dialogFormData: {
         ID: "",
         groupName: "",
@@ -749,8 +749,8 @@ export default {
     // 新增
     create() {
       this.dialogFormTitle = this.$t("group.610yx3aumyw0");
-      this.updateLoading = true; // 新增的展示
       this.dialogType = "create";
+      this.dialogGroupAddFormVisible = true; // 新增的展示
     },
     // 修改
     update(row) {
@@ -759,7 +759,7 @@ export default {
       this.dialogFormData.remark = row.remark;
       this.dialogFormTitle = this.$t("group.610yx3aun0k0");
       this.dialogType = "update";
-      this.dialogFormVisible = true;
+      this.dialogGroupEditFormVisible = true;
     },
 
     // 判断结果
@@ -810,11 +810,15 @@ export default {
     },
 
     resetForm() {
-      this.dialogFormVisible = false;
-      this.updateLoading = false;
+      this.dialogGroupEditFormVisible = false;
+      this.dialogGroupAddFormVisible = false;
       this.$refs["dialogForm"].resetFields();
       this.dialogFormData = {
+        ID: "",
         groupName: "",
+        parentId: 0,
+        syncState: 1,
+        groupType: "",
         remark: ""
       };
     },
