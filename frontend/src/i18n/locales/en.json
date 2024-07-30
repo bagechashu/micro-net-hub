@@ -147,8 +147,8 @@
     "610wkzjilwo0": "Sync Status",
     "610wkzjilz00": "Synced",
     "610wkzjim1c0": "Not Synced",
-    "610wkzjim8k0": "Bulk Delete",
-    "610wkzjimb40": "Bulk Sync",
+    "610wkzjim8k0": "Batch Delete",
+    "610wkzjimb40": "Batch Sync",
     "610wkzjimd80": "Sync LDAP User Info",
     "610wkzjimfk0": "Sync DingTalk User Info",
     "610wkzjimho0": "Sync Feishu User Info",
@@ -205,7 +205,7 @@
     "610wkzjiq3w0": "User status updated successfully",
     "imageTips": "(Enter QQ No., it will be converted to avatar)",
     "batchDeleteTips": "This operation will permanently delete the items, do you want to continue?",
-    "betchSyncLdapTips": "This operation will bulk sync database users to LDAP, do you want to continue?"
+    "betchSyncLdapTips": "This operation will batch sync database users to LDAP, do you want to continue?"
   },
   "group": {
     "group": "Group [ {0} ] Management",
@@ -217,8 +217,8 @@
     "610yx3auke40": "Query",
     "610yx3aukgg0": "Reset",
     "610yx3aukig0": "Add",
-    "610yx3aukks0": "Bulk Delete",
-    "610yx3aukmw0": "Bulk Sync",
+    "610yx3aukks0": "Batch Delete",
+    "610yx3aukmw0": "Batch Sync",
     "610yx3aukos0": "Sync Original LDAP Department",
     "610yx3aukr40": "Sync DingTalk Department",
     "610yx3aukvw0": "Sync Feishu Department",
@@ -265,7 +265,7 @@
     "610yx3aun440": "Sync canceled",
     "selectGroupTypeTips": "please select Group Type",
     "batchDeleteTips": "This operation will permanently delete the items, do you want to continue?",
-    "betchSyncLdapTips": "This operation will bulk sync database groups to LDAP, do you want to continue?"
+    "betchSyncLdapTips": "This operation will batch sync database groups to LDAP, do you want to continue?"
   },
   "fieldRelation": {
     "610zu0w6ymo0": "Field Identifier",
