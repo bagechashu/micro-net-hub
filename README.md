@@ -5,7 +5,17 @@ A tool for managing your OpenLDAP/DNS/Navigation at a private network.
 
 # How to install Micro-Net-Hub
 
-[Click to see the doc](docs/README.md)
+just for functional experience
+```
+git clone https://github.com/bagechashu/micro-net-hub.git
+cd micro-net-hub/docs/docker-compose/simple
+
+# Install "docker" first; If you use old version "docker", install "docker-compose" also.
+docker compose up -d
+
+```
+
+[Installation Manual](docs/README.md)
 
 # How to set Ocserv Authentication with Radius which build in Micro-Net-Hub.
 
