@@ -175,7 +175,7 @@ export default {
       dialogFormRules: {
         name: [
           { required: true, message: this.$t("menu.61131vugo7s0"), trigger: "blur" },
-          { min: 1, max: 20, message: "长度在 1 到 20 个字符", trigger: "blur" },
+          { min: 1, max: 20, message: this.$t("valid.length", [1, 20]), trigger: "blur" },
           { validator: (rule, value, callback) => {
             if (!value || !/\s/.test(value)) {
               callback();
@@ -186,15 +186,15 @@ export default {
         ],
         path: [
           { required: true, message: this.$t("menu.61131vugoa40"), trigger: "blur" },
-          { min: 1, max: 100, message: "长度在 1 到 100 个字符", trigger: "blur" }
+          { min: 1, max: 100, message: this.$t("valid.length", [1, 100]), trigger: "blur" }
         ],
         component: [
           { required: false, message: this.$t("menu.61131vugoc00"), trigger: "blur" },
-          { min: 0, max: 100, message: "长度在 0 到 100 个字符", trigger: "blur" }
+          { min: 0, max: 100, message: this.$t("valid.length", [0, 100]), trigger: "blur" }
         ],
         redirect: [
           { required: false, message: this.$t("menu.61131vugoe40"), trigger: "blur" },
-          { min: 0, max: 100, message: "长度在 0 到 100 个字符", trigger: "blur" }
+          { min: 0, max: 100, message: this.$t("valid.length", [0, 100]), trigger: "blur" }
         ],
         // activeMenu: [
         //   { required: false, message: '请输入高亮菜单', trigger: 'blur' },
@@ -340,7 +340,7 @@ export default {
 
     // 批量删除
     batchDelete() {
-      this.$confirm("此操作将永久删除, 是否继续?", this.$t("menu.61131vugov00"), {
+      this.$confirm(this.$t("tips.deleteWarning"), this.$t("menu.61131vugov00"), {
         confirmButtonText: this.$t("menu.61131vugnwo0"),
         cancelButtonText: this.$t("menu.61131vugnuw0"),
         type: "warning"

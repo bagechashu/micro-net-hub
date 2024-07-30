@@ -173,18 +173,18 @@ export default {
       dialogFormRules: {
         name: [
           { required: true, message: this.$t("role.611p12poxb40"), trigger: "blur" },
-          { min: 1, max: 20, message: "长度在 1 到 20 个字符", trigger: "blur" }
+          { min: 1, max: 20, message: this.$t("valid.length", [1, 20]), trigger: "blur" }
         ],
         keyword: [
           { required: true, message: this.$t("role.611p12poxcw0"), trigger: "blur" },
-          { min: 1, max: 20, message: "长度在 1 到 20 个字符", trigger: "blur" }
+          { min: 1, max: 20, message: this.$t("valid.length", [1, 20]), trigger: "blur" }
         ],
         status: [
           { required: true, message: this.$t("role.611p12powu00"), trigger: "change" }
         ],
         remark: [
           { required: false, message: this.$t("role.611p12powdg0"), trigger: "blur" },
-          { min: 0, max: 100, message: "长度在 0 到 100 个字符", trigger: "blur" }
+          { min: 0, max: 100, message: this.$t("valid.length", [0, 100]), trigger: "blur" }
         ]
       },
 
@@ -305,7 +305,7 @@ export default {
 
     // 批量删除
     batchDelete() {
-      this.$confirm("此操作将永久删除, 是否继续?", this.$t("role.611p12poxkg0"), {
+      this.$confirm(this.$t("tips.deleteWarning"), this.$t("role.611p12poxkg0"), {
         confirmButtonText: this.$t("role.611p12pox180"),
         cancelButtonText: this.$t("role.611p12powys0"),
         type: "warning"

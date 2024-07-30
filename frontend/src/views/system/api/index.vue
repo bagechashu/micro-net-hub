@@ -153,18 +153,18 @@ export default {
       dialogFormRules: {
         path: [
           { required: true, message: this.$t("api.611p62ddn7s0"), trigger: "blur" },
-          { min: 1, max: 100, message: "长度在 1 到 100 个字符", trigger: "blur" }
+          { min: 1, max: 100, message: this.$t("valid.length", [1, 100]), trigger: "blur" }
         ],
         category: [
           { required: true, message: this.$t("api.611p62ddnao0"), trigger: "blur" },
-          { min: 1, max: 50, message: "长度在 1 到 50 个字符", trigger: "blur" }
+          { min: 1, max: 50, message: this.$t("valid.length", [1, 50]), trigger: "blur" }
         ],
         method: [
           { required: true, message: this.$t("api.611p62ddmzc0"), trigger: "change" }
         ],
         remark: [
           { required: false, message: this.$t("api.611p62ddmlo0"), trigger: "blur" },
-          { min: 0, max: 100, message: "长度在 0 到 100 个字符", trigger: "blur" }
+          { min: 0, max: 100, message: this.$t("valid.length", [0, 100]), trigger: "blur" }
         ]
       },
 
@@ -277,7 +277,7 @@ export default {
 
     // 批量删除
     batchDelete() {
-      this.$confirm("此操作将永久删除, 是否继续?", this.$t("api.611p62ddnos0"), {
+      this.$confirm(this.$t("tips.deleteWarning"), this.$t("api.611p62ddnos0"), {
         confirmButtonText: this.$t("api.611p62ddn4s0"),
         cancelButtonText: this.$t("api.611p62ddn240"),
         type: "warning"
