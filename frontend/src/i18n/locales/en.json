@@ -488,5 +488,31 @@
     "611p12poxik0": "Operation Successful",
     "611p12poxkg0": "Tip",
     "611p12poxm80": "Deletion Cancelled"
+  },
+  "api": {
+    "611p62ddlio0": "Access Path",
+    "611p62ddlz40": "Category",
+    "611p62ddm380": "Request Method",
+    "611p62ddm6c0": "Request Type",
+    "611p62ddm980": "Creator",
+    "611p62ddmdc0": "Search",
+    "611p62ddmg40": "Add",
+    "611p62ddmis0": "Batch Delete",
+    "611p62ddmlo0": "Description",
+    "611p62ddmoc0": "Action",
+    "611p62ddmr40": "Edit",
+    "611p62ddmu00": "Delete",
+    "611p62ddmwo0": "Are you sure you want to delete?",
+    "611p62ddmzc0": "Please select a request type",
+    "611p62ddn240": "Cancel",
+    "611p62ddn4s0": "Confirm",
+    "611p62ddn7s0": "Please enter the access path",
+    "611p62ddnao0": "Please enter the category",
+    "611p62ddnd40": "Add API",
+    "611p62ddng00": "Edit API",
+    "611p62ddnjk0": "Operation Successful",
+    "611p62ddnm40": "Form validation failed",
+    "611p62ddnos0": "Tip",
+    "611p62ddnr00": "Deletion Cancelled"
   }
 }

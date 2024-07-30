@@ -2,53 +2,53 @@
   <div>
     <el-card class="container-card" shadow="always">
       <el-form size="mini" :inline="true" :model="params" class="demo-form-inline">
-        <el-form-item label="访问路径">
-          <el-input v-model.trim="params.path" clearable placeholder="访问路径" @keyup.enter.native="search" @clear="search" />
+        <el-form-item :label="$t('api.611p62ddlio0')">
+          <el-input v-model.trim="params.path" clearable :placeholder="$t('api.611p62ddlio0')" @keyup.enter.native="search" @clear="search" />
         </el-form-item>
-        <el-form-item label="所属类别">
-          <el-input v-model.trim="params.category" clearable placeholder="所属类别" @keyup.enter.native="search" @clear="search" />
+        <el-form-item :label="$t('api.611p62ddlz40')">
+          <el-input v-model.trim="params.category" clearable :placeholder="$t('api.611p62ddlz40')" @keyup.enter.native="search" @clear="search" />
         </el-form-item>
-        <el-form-item label="请求方法">
-          <el-select v-model.trim="params.method" clearable placeholder="请求方式" @change="search" @clear="search">
-            <el-option label="GET[获取资源]" value="GET" />
-            <el-option label="POST[新增资源]" value="POST" />
-            <el-option label="PUT[全部更新]" value="PUT" />
-            <el-option label="PATCH[增量更新]" value="PATCH" />
-            <el-option label="DELETE[删除资源]" value="DELETE" />
+        <el-form-item :label="$t('api.611p62ddm380')">
+          <el-select v-model.trim="params.method" clearable :placeholder="$t('api.611p62ddm6c0')" @change="search" @clear="search">
+            <el-option label="GET" value="GET" />
+            <el-option label="POST" value="POST" />
+            <el-option label="PUT" value="PUT" />
+            <el-option label="PATCH" value="PATCH" />
+            <el-option label="DELETE" value="DELETE" />
           </el-select>
         </el-form-item>
-        <el-form-item label="创建人">
-          <el-input v-model.trim="params.creator" clearable placeholder="创建人" @keyup.enter.native="search" @clear="search" />
+        <el-form-item :label="$t('api.611p62ddm980')">
+          <el-input v-model.trim="params.creator" clearable :placeholder="$t('api.611p62ddm980')" @keyup.enter.native="search" @clear="search" />
         </el-form-item>
         <el-form-item>
-          <el-button :loading="loading" icon="el-icon-search" type="primary" @click="search">查询</el-button>
+          <el-button :loading="loading" icon="el-icon-search" type="primary" @click="search">{{ $t('api.611p62ddmdc0') }}</el-button>
         </el-form-item>
         <el-form-item>
-          <el-button :loading="loading" icon="el-icon-plus" type="warning" @click="create">新增</el-button>
+          <el-button :loading="loading" icon="el-icon-plus" type="warning" @click="create">{{ $t('api.611p62ddmg40') }}</el-button>
         </el-form-item>
         <el-form-item>
-          <el-button :disabled="multipleSelection.length === 0" :loading="loading" icon="el-icon-delete" type="danger" @click="batchDelete">批量删除</el-button>
+          <el-button :disabled="multipleSelection.length === 0" :loading="loading" icon="el-icon-delete" type="danger" @click="batchDelete">{{ $t('api.611p62ddmis0') }}</el-button>
         </el-form-item>
       </el-form>
 
       <el-table v-loading="loading" :data="tableData" border stripe style="width: 100%" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center" />
-        <el-table-column show-overflow-tooltip sortable prop="path" label="访问路径" />
-        <el-table-column show-overflow-tooltip sortable prop="category" label="所属类别" />
-        <el-table-column show-overflow-tooltip sortable prop="method" label="请求方式" align="center">
+        <el-table-column show-overflow-tooltip sortable prop="path" :label="$t('api.611p62ddlio0')" />
+        <el-table-column show-overflow-tooltip sortable prop="category" :label="$t('api.611p62ddlz40')" />
+        <el-table-column show-overflow-tooltip sortable prop="method" :label="$t('api.611p62ddm6c0')" align="center">
           <template slot-scope="scope">
             <el-tag size="small" :type="scope.row.method | methodTagFilter" disable-transitions>{{ scope.row.method }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column show-overflow-tooltip sortable prop="creator" label="创建人" />
-        <el-table-column show-overflow-tooltip sortable prop="remark" label="说明" />
-        <el-table-column fixed="right" label="操作" align="center" width="120">
+        <el-table-column show-overflow-tooltip sortable prop="creator" :label="$t('api.611p62ddm980')" />
+        <el-table-column show-overflow-tooltip sortable prop="remark" :label="$t('api.611p62ddmlo0')" />
+        <el-table-column fixed="right" :label="$t('api.611p62ddmoc0')" align="center" width="120">
           <template slot-scope="scope">
-            <el-tooltip content="编辑" effect="dark" placement="top">
+            <el-tooltip :content="$t('api.611p62ddmr40')" effect="dark" placement="top">
               <el-button size="mini" icon="el-icon-edit" circle type="primary" @click="update(scope.row)" />
             </el-tooltip>
-            <el-tooltip class="delete-popover" content="删除" effect="dark" placement="top">
-              <el-popconfirm title="确定删除吗？" @confirm="singleDelete(scope.row.ID)">
+            <el-tooltip class="delete-popover" :content="$t('api.611p62ddmu00')" effect="dark" placement="top">
+              <el-popconfirm :title="$t('api.611p62ddmwo0')" @confirm="singleDelete(scope.row.ID)">
                 <el-button slot="reference" size="mini" icon="el-icon-delete" circle type="danger" />
               </el-popconfirm>
             </el-tooltip>
@@ -70,28 +70,28 @@
 
       <el-dialog :title="dialogFormTitle" :visible.sync="dialogFormVisible">
         <el-form ref="dialogForm" size="small" :model="dialogFormData" :rules="dialogFormRules" label-width="120px">
-          <el-form-item label="访问路径" prop="path">
-            <el-input v-model.trim="dialogFormData.path" placeholder="访问路径" />
+          <el-form-item :label="$t('api.611p62ddlio0')" prop="path">
+            <el-input v-model.trim="dialogFormData.path" :placeholder="$t('api.611p62ddlio0')" />
           </el-form-item>
-          <el-form-item label="所属类别" prop="category">
-            <el-input v-model.trim="dialogFormData.category" placeholder="所属类别" />
+          <el-form-item :label="$t('api.611p62ddlz40')" prop="category">
+            <el-input v-model.trim="dialogFormData.category" :placeholder="$t('api.611p62ddlz40')" />
           </el-form-item>
-          <el-form-item label="请求方式" prop="method">
-            <el-select v-model.trim="dialogFormData.method" placeholder="请选择请求方式">
-              <el-option label="GET[获取资源]" value="GET" />
-              <el-option label="POST[新增资源]" value="POST" />
-              <el-option label="PUT[全部更新]" value="PUT" />
-              <el-option label="PATCH[增量更新]" value="PATCH" />
-              <el-option label="DELETE[删除资源]" value="DELETE" />
+          <el-form-item :label="$t('api.611p62ddm6c0')" prop="method">
+            <el-select v-model.trim="dialogFormData.method" :placeholder="$t('api.611p62ddmzc0')">
+              <el-option label="GET" value="GET" />
+              <el-option label="POST" value="POST" />
+              <el-option label="PUT" value="PUT" />
+              <el-option label="PATCH" value="PATCH" />
+              <el-option label="DELETE" value="DELETE" />
             </el-select>
           </el-form-item>
-          <el-form-item label="说明" prop="remark">
-            <el-input v-model.trim="dialogFormData.remark" type="textarea" placeholder="说明" show-word-limit maxlength="100" />
+          <el-form-item :label="$t('api.611p62ddmlo0')" prop="remark">
+            <el-input v-model.trim="dialogFormData.remark" type="textarea" :placeholder="$t('api.611p62ddmlo0')" show-word-limit maxlength="100" />
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
-          <el-button size="mini" @click="cancelForm()">取 消</el-button>
-          <el-button size="mini" :loading="submitLoading" type="primary" @click="submitForm()">确 定</el-button>
+          <el-button size="mini" @click="cancelForm()">{{ $t('api.611p62ddn240') }}</el-button>
+          <el-button size="mini" :loading="submitLoading" type="primary" @click="submitForm()">{{ $t('api.611p62ddn4s0') }}</el-button>
         </div>
       </el-dialog>
 
@@ -152,18 +152,18 @@ export default {
       },
       dialogFormRules: {
         path: [
-          { required: true, message: "请输入访问路径", trigger: "blur" },
+          { required: true, message: this.$t("api.611p62ddn7s0"), trigger: "blur" },
           { min: 1, max: 100, message: "长度在 1 到 100 个字符", trigger: "blur" }
         ],
         category: [
-          { required: true, message: "请输入所属类别", trigger: "blur" },
+          { required: true, message: this.$t("api.611p62ddnao0"), trigger: "blur" },
           { min: 1, max: 50, message: "长度在 1 到 50 个字符", trigger: "blur" }
         ],
         method: [
-          { required: true, message: "请选择请求方式", trigger: "change" }
+          { required: true, message: this.$t("api.611p62ddmzc0"), trigger: "change" }
         ],
         remark: [
-          { required: false, message: "说明", trigger: "blur" },
+          { required: false, message: this.$t("api.611p62ddmlo0"), trigger: "blur" },
           { min: 0, max: 100, message: "长度在 0 到 100 个字符", trigger: "blur" }
         ]
       },
@@ -198,7 +198,7 @@ export default {
 
     // 新增
     create() {
-      this.dialogFormTitle = "新增接口";
+      this.dialogFormTitle = this.$t("api.611p62ddnd40");
       this.dialogType = "create";
       this.dialogFormVisible = true;
     },
@@ -211,7 +211,7 @@ export default {
       this.dialogFormData.method = row.method;
       this.dialogFormData.remark = row.remark;
 
-      this.dialogFormTitle = "修改接口";
+      this.dialogFormTitle = this.$t("api.611p62ddng00");
       this.dialogType = "update";
       this.dialogFormVisible = true;
     },
@@ -221,7 +221,7 @@ export default {
       if (res.code === 200 || res.code === 0) {
         Message({
           showClose: true,
-          message: "操作成功",
+          message: this.$t("api.611p62ddnjk0"),
           type: "success"
         });
       }
@@ -250,7 +250,7 @@ export default {
         } else {
           Message({
             showClose: true,
-            message: "表单校验失败",
+            message: this.$t("api.611p62ddnm40"),
             type: "warn"
           });
           return false;
@@ -277,9 +277,9 @@ export default {
 
     // 批量删除
     batchDelete() {
-      this.$confirm("此操作将永久删除, 是否继续?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
+      this.$confirm("此操作将永久删除, 是否继续?", this.$t("api.611p62ddnos0"), {
+        confirmButtonText: this.$t("api.611p62ddn4s0"),
+        cancelButtonText: this.$t("api.611p62ddn240"),
         type: "warning"
       }).then(async res => {
         this.loading = true;
@@ -299,7 +299,7 @@ export default {
         Message({
           showClose: true,
           type: "info",
-          message: "已取消删除"
+          message: this.$t("api.611p62ddnr00")
         });
       });
     },
