@@ -91,19 +91,18 @@ func GeneratePassword(length int) string {
 	numberAndSymbolSet := "01234567890123456789!#$%&*"
 
 	setLen := funk.MinInt([]int{len(lowerCharSet), len(upperCharSet), len(numberAndSymbolSet)})
-	randomIndex, err := rand.Int(rand.Reader, big.NewInt(int64(setLen)))
-	if err != nil {
-		return "Micro-Net-2023"
-	}
 
 	password := make([]byte, length)
 	for i := 0; i < length; i++ {
 		if i < 3 {
 			// 处理边界条件，通过模运算确保不会发生数组越界
+			randomIndex, _ := rand.Int(rand.Reader, big.NewInt(int64(setLen)))
 			password[i] = lowerCharSet[randomIndex.Int64()%int64(setLen)]
 		} else if i >= 3 && i < 5 {
+			randomIndex, _ := rand.Int(rand.Reader, big.NewInt(int64(setLen)))
 			password[i] = upperCharSet[randomIndex.Int64()%int64(setLen)]
 		} else if i >= 5 {
+			randomIndex, _ := rand.Int(rand.Reader, big.NewInt(int64(setLen)))
 			password[i] = numberAndSymbolSet[randomIndex.Int64()%int64(setLen)]
 		}
 	}
