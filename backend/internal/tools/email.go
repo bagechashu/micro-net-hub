@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"strings"
+	"sync"
 	"time"
 
 	"micro-net-hub/internal/config"
@@ -16,26 +17,35 @@ import (
 
 // 验证码放到缓存当中
 var VerificationCodeCache = cache.New(24*time.Hour, 48*time.Hour)
+var lock sync.Mutex
+var wg sync.WaitGroup
 
 func email(mailTo []string, subject string, body string) error {
 	if !config.Conf.Email.Enable {
 		return nil
 	}
+
 	m := mail.NewMessage()
 	m.SetHeader("From", config.Conf.Email.User)
 	m.SetHeader("To", mailTo...)
 	m.SetHeader("Subject", subject)
 	m.SetBody("text/html", body)
 
-	d := mail.NewDialer(config.Conf.Email.Host, config.Conf.Email.Port, config.Conf.Email.User, config.Conf.Email.Pass)
-	// Warning: can't longer than http server WriteTimeout
-	d.Timeout = (config.Conf.System.WriteTimeout - 2) * time.Second
+	lock.Lock()
+	defer lock.Unlock()
+	wg.Add(1)
+	go func() {
+		d := mail.NewDialer(config.Conf.Email.Host, config.Conf.Email.Port, config.Conf.Email.User, config.Conf.Email.Pass)
+		// Warning: can't longer than http server WriteTimeout
+		d.Timeout = (config.Conf.System.WriteTimeout - 2) * time.Second
 
-	if err := d.DialAndSend(m); err != nil {
-		err := fmt.Errorf("send email error, maybe your email config is wrong: %s", err)
-		global.Log.Errorf("%s", err)
-		return err
-	}
+		if err := d.DialAndSend(m); err != nil {
+			err := fmt.Errorf("send email error, maybe your email config is wrong: %s", err)
+			global.Log.Errorf("%s", err)
+		}
+		wg.Done()
+	}()
+
 	return nil
 }
 
