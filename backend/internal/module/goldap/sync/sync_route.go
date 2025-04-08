@@ -14,6 +14,7 @@ func InitGoldapSyncRoutes(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddlewa
 	// 开启casbin鉴权中间件
 	goldap.Use(role.CasbinMiddleware())
 	{
+		// TODO: 修改成 get 请求
 		goldap.POST("/syncDingTalkUsers", SyncDingTalkUsers) // 同步钉钉用户到平台
 		goldap.POST("/syncDingTalkDepts", SyncDingTalkDepts) // 同步钉钉部门到平台
 		goldap.POST("/syncWeComUsers", SyncWeComUsers)       // 同步企业微信用户到平台
