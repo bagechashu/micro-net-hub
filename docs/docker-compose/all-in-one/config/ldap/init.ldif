@@ -8,3 +8,9 @@ ou: allhands
 description: "base group"
 objectClass: top
 objectClass: organizationalUnit
+
+dn: ou=groups,dc=example,dc=com
+ou: groups
+description: "base group"
+objectClass: top
+objectClass: organizationalUnit
