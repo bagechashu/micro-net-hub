@@ -1,0 +1,13 @@
+# Harbor Ldap settings
+- LDAP URL: 127.0.0.1
+- LDAP Search DN: cn=admin,dc=example,dc=com
+- LDAP base DN: ou=people,dc=example,dc=com
+- LDAP Filter: **Leave it blank**
+- LDAP UID: uid
+- LDAP User Scope: Subtree
+- LDAP Group Base DN: ou=allhands,dc=example,dc=com   (your's maybe ou=groups,dc=example,dc=com)
+- LDAP Group Filter: (objectClass=groupOfUniqueNames)
+- LDAP Group GID: cn
+- LDAP Group Admin DN: **Leave it blank**
+- LDAP Group Membership: memberof
+- LDAP Group Scope: Subtree
