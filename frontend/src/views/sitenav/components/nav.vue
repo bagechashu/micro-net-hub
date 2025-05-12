@@ -12,7 +12,7 @@
         class="site-card"
       >
         <div @click="jumpLink(item.link)">
-          <el-popover placement="right-start" width="200" trigger="hover">
+          <el-popover placement="top" width="200" trigger="hover" :open-delay="500" :close-delay="100">
             <el-button-group class="vertical">
               <el-button
                 size="small"
@@ -38,7 +38,7 @@
                 @click="addBookmarks(item.link, item.name)"
               >{{ $t("sitenav.addBookmark") }}</el-button>
             </el-button-group>
-            <el-card slot="reference" shadow="never">
+            <el-card slot="reference" shadow="hover" :body-style="{ padding: '8px' }">
               <span><img v-lazy="item.icon" class="icon" alt=""></span>
               <span>{{ item.name }}</span>
               <p />
@@ -94,9 +94,8 @@ export default {
 
 <style lang="css" scoped>
 .site-card {
-  /* margin: 0, 1rem, 1rem, 0; */
-  height: 8rem;
-  margin-bottom: 1rem;
+  margin: 5px;
+  /* height: 8rem; */
 }
 .el-button-group.vertical {
   display: flex;
@@ -109,8 +108,8 @@ export default {
 }
 
 .icon {
-  width: 40px;
-  height: 40px;
+  width: 30px;
+  height: 30px;
   vertical-align: middle;
   border-radius: 50%;
   pointer-events: none;

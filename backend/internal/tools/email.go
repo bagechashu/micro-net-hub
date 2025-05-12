@@ -3,6 +3,7 @@ package tools
 import (
 	"fmt"
 	"math/rand"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -178,6 +179,18 @@ func SendUserInfo(sendto []string, username string, password string, qrRawPngBas
 
 	// global.Log.Debugf("%s\n%s", subject, body)
 	// return nil
+
+	// 在没有可用 smtp 邮箱时使用,方便下发账户信息.
+	if config.Conf.Notice.AccountCreatedNoticeSave {
+		// 保存邮件内容到 config.Conf.Notice.AccountCreatedNoticeDir  目录下
+		// 文件名为 username + 时间戳 + .html
+		fileName := fmt.Sprintf("%s/%s_%d.html", config.Conf.Notice.AccountCreatedNoticeDir, username, time.Now().Unix())
+		err := os.WriteFile(fileName, []byte(body), 0644)
+		if err != nil {
+			return err
+		}
+	}
+
 	return email(sendto, subject, body)
 }
 

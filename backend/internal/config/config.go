@@ -217,6 +217,8 @@ type Notice struct {
 	VPNServer                string `mapstructure:"vpn-server" json:"vpnServer"`
 	DefaultNoticeSwitch      bool   `mapstructure:"default-notice-switch" json:"default-notice-switch"`
 	DefaultNoticeRoleKeyword string `mapstructure:"default-notice-role-keyword" json:"defaultNoticeRoleKeyword"`
+	AccountCreatedNoticeDir  string `mapstructure:"account-created-notice-dir" json:"accountCreatedNoticeDir"`
+	AccountCreatedNoticeSave bool   `mapstructure:"account-created-notice-save" json:"accountCreatedNoticeSave"`
 	HeaderHTML               string `mapstructure:"header-html" json:"headerHTML"`
 	FooterHTML               string `mapstructure:"footer-html" json:"footerHTML"`
 }

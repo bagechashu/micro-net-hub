@@ -11,25 +11,17 @@
           />
           <span
             class="search-text"
-          ><el-button
-            type="primary"
-            icon="search"
-            @click="searchData"
-          >{{ $t('common.search') }}</el-button></span>
+          ><el-button type="primary" icon="search" @click="searchData">{{
+            $t("common.search")
+          }}</el-button></span>
           <el-button
             v-show="searchStatus"
             type="success"
             icon="plus-round"
             @click="resetSearch"
-          >{{ $t('common.reset') }}</el-button>
+          >{{ $t("common.reset") }}</el-button>
         </div></el-col>
-      <el-col
-        :xs="24"
-        :sm="10"
-        :md="13"
-        :lg="13"
-        :xl="17"
-      ><Notice /></el-col>
+      <el-col :xs="24" :sm="10" :md="13" :lg="13" :xl="17"><Notice /></el-col>
     </el-row>
 
     <NavSub v-if="data.length > 0" :data="data" />
@@ -55,7 +47,7 @@ export default {
       searchStatus: false,
       data: [],
       sourceData: "",
-      serarchNum: 0
+      searchNum: 0
     };
   },
   created: function() {
@@ -87,61 +79,60 @@ export default {
       if (
         typeof this.search === "undefined" ||
         this.search === null ||
-        this.search === ""
+        this.search.trim() === ""
       ) {
         Message({
           message: this.$t("valid.pleaseInput"),
           type: "error"
         });
-        return true;
+        return;
       }
+
       if (!this.searchStatus) {
         this.sourceData = JSON.parse(JSON.stringify(this.data));
       } else {
         this.data = JSON.parse(JSON.stringify(this.sourceData));
       }
+
       this.searchStatus = true;
-      this.serarchNum = 0;
-      for (const d in this.data) {
-        if (!Object.prototype.hasOwnProperty.call(this.data[d], "nav")) {
-          continue;
-        }
-        for (let i = 0; i < this.data[d]["nav"].length; i++) {
-          if (
-            this.data[d]["nav"][i]["name"]
-              .toLowerCase()
-              .indexOf(this.search.toLowerCase()) === -1
-          ) {
-            if (
-              this.data[d]["nav"][i]["link"]
-                .toLowerCase()
-                .indexOf(this.search.toLowerCase()) === -1
-            ) {
-              this.data[d]["nav"].splice(i--, 1);
-            } else {
-              this.serarchNum++;
-            }
-          } else {
-            this.serarchNum++;
-          }
-        }
-      }
-      if (this.serarchNum === 0) {
+      this.searchNum = 0;
+
+      this.data = this.data
+        .map((group) => {
+          const filteredSites = group.sites.filter((site) => {
+            const keyword = this.search.toLowerCase();
+            return (
+              site.name.toLowerCase().includes(keyword) ||
+              site.link.toLowerCase().includes(keyword)
+            );
+          });
+
+          this.searchNum += filteredSites.length;
+
+          return {
+            ...group,
+            sites: filteredSites
+          };
+        })
+        .filter((group) => group.sites.length > 0);
+
+      if (this.searchNum === 0) {
         Message({
           message: this.$t("tips.notFoundAndRetry"),
           type: "error"
         });
       } else {
         Message({
-          message: this.$t("tips.foundSome", [this.serarchNum]),
+          message: this.$t("tips.foundSome", [this.searchNum]),
           type: "success"
         });
       }
     },
+
     resetSearch() {
       this.searchStatus = false;
       this.search = "";
-      this.serarchNum = 0;
+      this.searchNum = 0;
       this.data = JSON.parse(JSON.stringify(this.sourceData));
     }
   }

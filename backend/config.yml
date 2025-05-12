@@ -100,6 +100,8 @@ notice:
   default-notice-switch: true
   # 默认通知消息发送角色的关键字, 在[角色管理]查看.
   default-notice-role-keyword: "admin"
+  account-created-notice-dir: ../tmp/
+  account-created-notice-save: true
   header-html: |-
     <div class="note">
       <p>
