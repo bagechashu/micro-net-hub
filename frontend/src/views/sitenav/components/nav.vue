@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-row :gutter="20">
+    <el-row :gutter="0">
       <el-col
         v-for="(item, index) in sites"
         :key="index"
