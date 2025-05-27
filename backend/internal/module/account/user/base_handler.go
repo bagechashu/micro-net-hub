@@ -43,7 +43,7 @@ func SendCode(c *gin.Context) {
 		return
 	}
 	// global.Log.Debugf("SendCode Request User: %+v", user)
-	err = tools.SendVerificationCode([]string{req.Mail})
+	err = tools.SendVerificationCode([]string{req.Mail}, user.Username)
 	if err != nil {
 		helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("邮件发送验证码失败, 请联系管理员"+err.Error())))
 		return
@@ -116,7 +116,7 @@ func ForgetPwd(c *gin.Context) {
 		helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("邮件通知功能未启用, 请联系管理员")))
 		return
 	}
-	err = tools.SendNewPass([]string{user.Mail}, newpass)
+	err = tools.SendNewPass([]string{user.Mail}, newpass, user.Username)
 	if err != nil {
 		helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("邮件发送新密码失败, 请联系管理员"+err.Error())))
 		return

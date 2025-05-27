@@ -103,11 +103,16 @@ notice:
   account-created-notice-dir: ../tmp/
   account-created-notice-save: false
   header-html: |-
-    <div class="note">
+    <div>
       <p>
-        If there is any issue with the account, contact 
+        Your intranet account has been approved, the details are as follows. 
+      </p>
+      <p>If there is any issue with the account, contact 
         <a href="mailto:admin@example.com" style="color: #015281; text-decoration: underline;">@Admin</a>
         directly.
+      </p>
+      <p class="note">
+        Please never share your account with anyone.
       </p>
     </div>
   footer-html: |-

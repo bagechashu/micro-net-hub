@@ -51,7 +51,7 @@ func email(mailTo []string, subject string, body string) error {
 }
 
 // SendNewPass 邮件发送新密码
-func SendNewPass(sendto []string, password string) error {
+func SendNewPass(sendto []string, password, username string) error {
 	subject := fmt.Sprintf("[ %s ] LDAP Password reset successful.", config.Conf.Notice.ProjectName)
 
 	header := config.Conf.Notice.HeaderHTML
@@ -70,12 +70,12 @@ func SendNewPass(sendto []string, password string) error {
     <p>Please modify your default password in the <a href="%s" style="color: #3498db; text-decoration: none">[Profile Index]</a> </p>
   `, password, profileUrl)
 
-	body := fmt.Sprintf(bodyHtml, header, main, footer)
+	body := fmt.Sprintf(bodyHtml, username, header, main, footer)
 	return email(sendto, subject, body)
 }
 
 // SendVerificationCode 邮件发送验证码
-func SendVerificationCode(sendto []string) error {
+func SendVerificationCode(sendto []string, username string) error {
 	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
 	vcode := fmt.Sprintf("%06v", rnd.Int31n(1000000))
 	// 把验证码信息放到cache，以便于验证时拿到
@@ -98,14 +98,14 @@ func SendVerificationCode(sendto []string) error {
     <p>Please confirm that you are the one operating and do not disclose it to others. Thank you for your understanding and use.</p>
   `, vcode)
 
-	body := fmt.Sprintf(bodyHtml, header, main, footer)
+	body := fmt.Sprintf(bodyHtml, username, header, main, footer)
 	return email(sendto, subject, body)
 }
 
 // SendUserDeleteDenyNotice 邮件发送用户删除和禁用的通知
 func SendUserStatusNotifications(sendto []string, users []string, status string) error {
 	subject := fmt.Sprintf("[ %s ] Notice Of LDAP & VPN Account %s", config.Conf.Notice.ProjectName, status)
-
+	salutation := "Administrator"
 	header := config.Conf.Notice.HeaderHTML
 	footer := ""
 
@@ -123,7 +123,7 @@ func SendUserStatusNotifications(sendto []string, users []string, status string)
     <p> Actived users can log in to the VPN and Intranet projects using their LDAP accounts. </p>
   `, status, userList)
 
-	body := fmt.Sprintf(bodyHtml, header, main, footer)
+	body := fmt.Sprintf(bodyHtml, salutation, header, main, footer)
 
 	global.Log.Debugf("User Status Notice to %s", sendto)
 	return email(sendto, subject, body)
@@ -138,17 +138,13 @@ func SendUserInfo(sendto []string, username string, password string, qrRawPngBas
 
 	main := fmt.Sprintf(`
     <h3> Intranet account and related information </h3>
-    <div class="note">
-      <p><b>LDAP account</b> is used to log into Intranet systems (like gitlab, nexus, etc). </p>
-      <p><b>TOTP QRcode</b> is used to log into VPN systems (Ocserv).</p>
-    </div>
     <h5> Portal </h5>
     <ul>
+      <li> VPN Server address: <span class="key"> %s </span> </li>
       <li>
         Intranet Portal: <span class="key"> %s </span> 
-        <div class="description"> (<b>Visit after login VPN.</b> It includes an Intranet website navigator and a personal account information manager.) </div>
+        <div class="description"> (<b>Accessible after logging in to the VPN.</b> It includes an intranet website navigator and a personal account information manager.)</div>
       </li>
-      <li> VPN Server address: <span class="key"> %s </span> </li>
     </ul>
     <h5> LDAP Account </h5>
     <ul>
@@ -156,7 +152,16 @@ func SendUserInfo(sendto []string, username string, password string, qrRawPngBas
       <li> Password: <span class="key"> %s </span> </li>
     </ul>
     <h5> TOTP QRcode </h5>
+    <ul>
       <img src="data:image/png;base64,%s" alt="QR Code">
+    </ul>
+    <h5> How to use </h5>
+    <ol>
+      <li> Scan the QR code by <b>"MFA tools"(eg. Google authentication)</b>. Save it and you can get the <b>PIN Code</b>.</li>
+      <li> Connect VPN Server with <b>"Ocserv VPN Client"(eg. Cisco Secure Client)</b> using LDAP username and Combined Password<b>[LDAP Password + OTP Code]</b>.</li>
+      <li> Login <b>"Intranet systems"(eg. gitlab, nexus, Intranet Portal etc)</b> using LDAP username and LDAP password.</li>
+      <li> Login <b>"Intranet Portal"</b> to change your default LDAP password.</li>
+    </ol>
     <h5> VPN Password Notes </h5>
       <div style="padding-left: 30px;"> 
         <p>The <b>VPN password</b> is a combination of the <b>LDAP password</b> and the <b>TOTP dynamic code</b>. </p>
@@ -173,9 +178,9 @@ func SendUserInfo(sendto []string, username string, password string, qrRawPngBas
           </p>
         </div>
       </div>
-  `, config.Conf.Notice.ServiceDomain, config.Conf.Notice.VPNServer, username, password, qrRawPngBase64)
+  `, config.Conf.Notice.VPNServer, config.Conf.Notice.ServiceDomain, username, password, qrRawPngBase64)
 
-	body := fmt.Sprintf(bodyHtml, header, main, footer)
+	body := fmt.Sprintf(bodyHtml, username, header, main, footer)
 
 	// global.Log.Debugf("%s\n%s", subject, body)
 	// return nil
@@ -200,9 +205,9 @@ var bodyHtml = `
 <head>
   <style>
     body {
-      font-family: "Lucida Console", Courier, monospace;
       margin: 0;
       padding: 0;
+      font-size: small;
     }
     hr {
       border: 0;
@@ -228,27 +233,29 @@ var bodyHtml = `
       margin-bottom: 20px;
     }
     .note {
-      padding: 5px;
+      padding: 2px 0 2px 10px;
+      margin-top: 12px;
       background-color: #f0f8ff;
-      border-left: 5px solid #1897e1;
+      border-left: 5px solid #85bedf;
     }
     .key {
       display: inline-flex;
       padding: 3px 8px;
-      background-color: #d7f9d6;
+      background-color: #f3fff3;
       border-radius: 3px;
       margin-right: 5px;
     }
     .description {
       color: #333;
       font-style: italic;
-      font-size: xx-small;
+      font-size: x-small;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h3> Dear user, </h3>
+    <!-- salutation -->
+    <h3> Dear %s, </h3>
     <div class="message">
       <!-- header -->
       %s
@@ -265,7 +272,7 @@ var bodyHtml = `
       %s
     </div>
     <div class="message">
-      This email is a system mailbox. Please do not reply.
+      This is a system-generated email. Please do not reply.
     </div>
     <h3> Thanks </h3>
   </div>
