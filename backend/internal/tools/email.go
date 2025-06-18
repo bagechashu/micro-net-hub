@@ -131,54 +131,81 @@ func SendUserStatusNotifications(sendto []string, users []string, status string)
 
 // SendUserInfo 邮件发送用户信息
 func SendUserInfo(sendto []string, username string, password string, qrRawPngBase64 string) error {
-	subject := fmt.Sprintf("[ %s ] LDAP & VPN Account", config.Conf.Notice.ProjectName)
+	var subject, main string
+	if config.Conf.Notice.VpnInfoSendSwitch {
+		subject = fmt.Sprintf("[ %s ] LDAP & VPN Account", config.Conf.Notice.ProjectName)
+		main = fmt.Sprintf(`
+      <h3> Intranet account and related information </h3>
+      <h5> Portal </h5>
+      <ul>
+        <li> VPN Server address: <span class="key"> %s </span> </li>
+        <li>
+          Intranet Portal: <span class="key"> %s </span> 
+          <div class="description"> (<b>Accessible after logging in to the VPN.</b> It includes an intranet website navigator and a personal account information manager.)</div>
+        </li>
+      </ul>
+      <h5> LDAP Account </h5>
+      <ul>
+        <li> Username: <span class="key"> %s </span> </li>
+        <li> Password: <span class="key"> %s </span> </li>
+      </ul>
+      <h5> TOTP QRcode </h5>
+      <ul>
+        <img src="data:image/png;base64,%s" alt="QR Code">
+      </ul>
+      <h5> How to use </h5>
+      <ol>
+        <li> Scan the QR code by <b>"MFA tools"(eg. Google authentication)</b>. Save it and you can get the <b>PIN Code</b>.</li>
+        <li> Connect VPN Server with <b>"Ocserv VPN Client"(eg. Cisco Secure Client)</b> using LDAP username and Combined Password<b>[LDAP Password + OTP Code]</b>.</li>
+        <li> Login <b>"Intranet systems"(eg. gitlab, nexus, Intranet Portal etc)</b> using LDAP username and LDAP password.</li>
+        <li> Login <b>"Intranet Portal"</b> to change your default LDAP password.</li>
+        <li> Click <span class="key">"Forget Password"</span> at <b>"Intranet Portal Login Dialog"</b> to reset your password, if forget.</li>
+      </ol>
+      <h5> VPN Password Notes </h5>
+        <div style="padding-left: 30px;"> 
+          <p>The <b>VPN password</b> is a combination of the <b>LDAP password</b> and the <b>TOTP dynamic code</b>. </p>
+          <p>eg: <br></p>
+          <div class="note">
+            <p>
+              if <br>
+              <b>LDAP Password</b> is "ldappasswd" <br>
+              <b>TOTP dynamic code</b> is "123456" 
+            </p>
+            <p>
+              then <br>
+              <b>VPN Password</b> is "ldappasswd123456" 
+            </p>
+          </div>
+        </div>
+    `, config.Conf.Notice.VPNServer, config.Conf.Notice.ServiceDomain, username, password, qrRawPngBase64)
+
+	} else {
+		subject = fmt.Sprintf("[ %s ] LDAP Account", config.Conf.Notice.ProjectName)
+		main = fmt.Sprintf(`
+      <h3> LDAP Account and related information </h3>
+      <h5> Portal </h5>
+      <ul>
+        <li>
+          Intranet Portal: <span class="key"> %s </span> 
+          <div class="description"> (<b>Accessible after logging in to the VPN.</b> It includes an intranet website navigator and a personal account information manager.)</div>
+        </li>
+      </ul>
+      <h5> LDAP Account </h5>
+      <ul>
+        <li> Username: <span class="key"> %s </span> </li>
+        <li> Password: <span class="key"> %s </span> </li>
+      </ul>
+      <h5> How to use </h5>
+      <ol>
+        <li> Login <b>"Intranet systems"(eg. gitlab, nexus, Intranet Portal etc)</b> using LDAP username and LDAP password.</li>
+        <li> Login <span class="key"><b>"Intranet Portal"</b></span> to change your default LDAP password.</li>
+        <li> Click <span class="key">"Forget Password"</span> at <b>"Intranet Portal Login Dialog"</b> to reset your password, if forget.</li>
+      </ol>
+    `, config.Conf.Notice.ServiceDomain, username, password)
+	}
 
 	header := config.Conf.Notice.HeaderHTML
 	footer := config.Conf.Notice.FooterHTML
-
-	main := fmt.Sprintf(`
-    <h3> Intranet account and related information </h3>
-    <h5> Portal </h5>
-    <ul>
-      <li> VPN Server address: <span class="key"> %s </span> </li>
-      <li>
-        Intranet Portal: <span class="key"> %s </span> 
-        <div class="description"> (<b>Accessible after logging in to the VPN.</b> It includes an intranet website navigator and a personal account information manager.)</div>
-      </li>
-    </ul>
-    <h5> LDAP Account </h5>
-    <ul>
-      <li> Username: <span class="key"> %s </span> </li>
-      <li> Password: <span class="key"> %s </span> </li>
-    </ul>
-    <h5> TOTP QRcode </h5>
-    <ul>
-      <img src="data:image/png;base64,%s" alt="QR Code">
-    </ul>
-    <h5> How to use </h5>
-    <ol>
-      <li> Scan the QR code by <b>"MFA tools"(eg. Google authentication)</b>. Save it and you can get the <b>PIN Code</b>.</li>
-      <li> Connect VPN Server with <b>"Ocserv VPN Client"(eg. Cisco Secure Client)</b> using LDAP username and Combined Password<b>[LDAP Password + OTP Code]</b>.</li>
-      <li> Login <b>"Intranet systems"(eg. gitlab, nexus, Intranet Portal etc)</b> using LDAP username and LDAP password.</li>
-      <li> Login <b>"Intranet Portal"</b> to change your default LDAP password.</li>
-    </ol>
-    <h5> VPN Password Notes </h5>
-      <div style="padding-left: 30px;"> 
-        <p>The <b>VPN password</b> is a combination of the <b>LDAP password</b> and the <b>TOTP dynamic code</b>. </p>
-        <p>eg: <br></p>
-        <div class="note">
-          <p>
-            if <br>
-            <b>LDAP Password</b> is "ldappasswd" <br>
-            <b>TOTP dynamic code</b> is "123456" 
-          </p>
-          <p>
-            then <br>
-            <b>VPN Password</b> is "ldappasswd123456" 
-          </p>
-        </div>
-      </div>
-  `, config.Conf.Notice.VPNServer, config.Conf.Notice.ServiceDomain, username, password, qrRawPngBase64)
 
 	body := fmt.Sprintf(bodyHtml, username, header, main, footer)
 

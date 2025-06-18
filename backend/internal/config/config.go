@@ -214,6 +214,7 @@ type Email struct {
 type Notice struct {
 	ProjectName              string `mapstructure:"project-name" json:"projectName"`
 	ServiceDomain            string `mapstructure:"service-domain" json:"serviceDomain"`
+	VpnInfoSendSwitch        bool   `mapstructure:"vpn-info-send-switch" json:"vpnInfoSendSwitch"`
 	VPNServer                string `mapstructure:"vpn-server" json:"vpnServer"`
 	DefaultNoticeSwitch      bool   `mapstructure:"default-notice-switch" json:"default-notice-switch"`
 	DefaultNoticeRoleKeyword string `mapstructure:"default-notice-role-keyword" json:"defaultNoticeRoleKeyword"`
