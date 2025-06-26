@@ -27,11 +27,12 @@
         "management": "管理"
     },
     "valid": {
-        "length": "长度在 {0} 到 {1} 个字符",
-        "mustInput": "必须填写",
-        "pleaseInput": "请输入查询项",
-        "notAllowEmpty": "不能为空",
-        "InvalidName": "只能包括字母、数字、下划线、中划线"
+      "length": "长度在 {0} 到 {1} 个字符",
+      "mustInput": "必须填写",
+      "pleaseInput": "请输入查询项",
+      "notAllowEmpty": "不能为空",
+      "InvalidName": "只能包括字母、数字、下划线、中划线",
+      "invalidDnsZone": "仅支持二级域名"
     },
     "tips": {
         "switchSizeSuccess": "切换表格尺寸成功",

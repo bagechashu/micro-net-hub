@@ -214,6 +214,7 @@ import {
   updateDnsRecord,
   batchDeleteDnsRecordByIds
 } from "@/api/dns/dns";
+import { validateSecondLevelDomain } from "@/utils/validate";
 import { Message } from "element-ui";
 
 export default {
@@ -238,7 +239,8 @@ export default {
             max: 20,
             message: this.$t("valid.length", [4, 20]),
             trigger: "blur"
-          }
+          },
+          { required: true, validator: validateSecondLevelDomain, trigger: "blur" }
         ]
       },
       dnsZoneActiveTab: "",

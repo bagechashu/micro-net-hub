@@ -23,7 +23,7 @@ func GetAll(c *gin.Context) {
 }
 
 type ZoneAddReq struct {
-	Name string `json:"name" validate:"required"`
+	Name string `json:"name" validate:"required,fqdn,checkSecondLevelDomain"`
 }
 
 func AddZone(c *gin.Context) {
@@ -55,7 +55,7 @@ func AddZone(c *gin.Context) {
 
 type ZoneUpdateReq struct {
 	Id   string `json:"id" validate:"required"`
-	Name string `json:"name" validate:"required"`
+	Name string `json:"name" validate:"required,fqdn,checkSecondLevelDomain"`
 }
 
 func UpdateZone(c *gin.Context) {

@@ -139,3 +139,16 @@ export function validateName(rule, value, callback) {
   // vue.runtime.esm.js:620 [Vue warn]: Error in v-on handler: "TypeError: Cannot read properties of null (reading 'field')"
   callback();
 }
+
+export function validateSecondLevelDomain(rule, value, callback) {
+  if (!value || typeof value !== "string" || value.trim() === "") {
+    return callback(new Error(i18n.t("valid.notAllowEmpty")));
+  }
+  // 正则表达式匹配二级域名，如 example.com 或者 example.com.
+  const domainRegex = /^[a-zA-Z0-9-_]+\.[a-zA-Z]{2,}$/;
+  if (!domainRegex.test(value)) {
+    callback(new Error(i18n.t("valid.invalidDnsZone"))); // 自定义错误提示
+  } else {
+    callback();
+  }
+}
