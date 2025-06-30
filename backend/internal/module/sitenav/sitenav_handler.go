@@ -162,6 +162,7 @@ func AddNavSite(c *gin.Context) {
 }
 
 type NavSiteUpdateReq struct {
+	ID          uint   `json:"ID" validate:"required"`
 	Name        string `json:"name" validate:"required"`
 	NavGroupID  uint   `json:"groupid" validate:"required"`
 	IconUrl     string `json:"icon"`
@@ -185,13 +186,14 @@ func UpdateNavSite(c *gin.Context) {
 	}
 
 	s := &model.NavSite{}
-	err = s.FindByName(req.Name)
+	err = s.FindById(req.ID)
 	if err != nil {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取 NavSite 失败: %s", err.Error())))
 		return
 	}
 
 	s.NavGroupID = req.NavGroupID
+	s.Name = req.Name
 	s.Description = req.Description
 	s.Link = req.Link
 	s.DocUrl = req.DocUrl

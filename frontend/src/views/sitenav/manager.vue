@@ -278,6 +278,7 @@ export default {
       navSiteFormType: "",
       navSiteFormVisible: false,
       navSiteForm: {
+        ID: 0,
         name: "",
         icon: "",
         link: "",
@@ -450,6 +451,7 @@ export default {
     // 修改
     updateSite(row) {
       this.getGroupOptions();
+      this.navSiteForm.ID = row.ID;
       this.navSiteForm.name = row.name;
       this.navSiteForm.icon = row.icon;
       this.navSiteForm.desc = row.desc;
