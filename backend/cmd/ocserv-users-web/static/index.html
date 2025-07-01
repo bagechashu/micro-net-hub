@@ -1,0 +1,83 @@
+<!-- @format -->
+
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <title>VPN Online Users</title>
+    <style>
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-family: sans-serif;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        font-size: 14px;
+      }
+      th {
+        background-color: #f2f2f2;
+      }
+      tr:hover {
+        background-color: #f9f9f9;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Current Online Users</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Username</th>
+          <th>Groupname</th>
+          <th>State</th>
+          <th>IPAddr</th>
+          <th>UserAgent</th>
+          <th>RX</th>
+          <th>TX</th>
+          <th>AverageRX</th>
+          <th>AverageTX</th>
+          <th>ConnectedAt</th>
+          <th>ConnectedFor</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .}}
+        <tr>
+          <td>{{.ID}}</td>
+          <td>{{.Username}}</td>
+          <td>{{.Groupname}}</td>
+          <td>{{.State}}</td>
+          <td>{{.RemoteIP}}</td>
+          <td>{{.UserAgent}}</td>
+          <td>{{.RXHuman}}</td>
+          <td>{{.TXHuman}}</td>
+          <td>{{.AverageRX}}</td>
+          <td>{{.AverageTX}}</td>
+          <td><span class="utc-time" data-utc="{{.ConnectedAt}}">{{.ConnectedAt}}</span></td>
+          <td>{{.ConnectedFor}}</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const nodes = document.querySelectorAll(".utc-time");
+        nodes.forEach((el) => {
+          const utcText = el.getAttribute("data-utc");
+          if (!utcText) return;
+          // 解析 UTC 字符串为 ISO 格式
+          const iso = utcText.replace(" ", "T") + "Z";
+          const date = new Date(iso);
+          if (!isNaN(date)) {
+            // 格式化为本地字符串
+            el.textContent = date.toLocaleString();
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
