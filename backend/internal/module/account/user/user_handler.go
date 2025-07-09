@@ -285,16 +285,19 @@ func Update(c *gin.Context) {
 		UserDN:        oldData.UserDN,
 	}
 
+	var decodeData []byte
 	// 密码不为空就解密并更新, 为空则不更新
 	if req.Password != "" {
-		decodeData, err := tools.RSADecrypt([]byte(req.Password), config.Conf.System.RSAPrivateBytes)
+		decodeData, err = tools.RSADecrypt([]byte(req.Password), config.Conf.System.RSAPrivateBytes)
 		if err != nil {
 			helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("密码解密失败")))
 			return
 		}
 		user.Password = string(decodeData)
 	}
+	// global.Log.Info("更新用户信息: %+v", user)
 
+	// CommonUpdateUser 中调用 db.user.Update 会导致 user password 变成后端加密后的 password.
 	if err = CommonUpdateUser(oldData, &user, req.GroupIds); err != nil {
 		helper.ErrV2(c, helper.NewOperationError(fmt.Errorf("更新用户失败: "+err.Error())))
 		return
@@ -317,7 +320,9 @@ func Update(c *gin.Context) {
 		if user.Password == "" {
 			user.Password = "Use the original password"
 		}
-		if err := tools.SendUserInfo([]string{nu.Mail}, nu.Username, user.Password, qrRawPngBase64); err != nil {
+
+		// global.Log.Info("更新用户信息: %+v", user)
+		if err := tools.SendUserInfo([]string{nu.Mail}, nu.Username, string(decodeData), qrRawPngBase64); err != nil {
 			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("邮件发送用户账号更新信息失败, 请手工通知"+err.Error())))
 			return
 		}
