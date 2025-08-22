@@ -1,0 +1,14 @@
+# Jenkin LDAP settings
+- Server: ldap://127.0.0.1:389
+- Advanced Server Configuration: 
+    - root DN: dc=example,dc=com
+    - User search base: ou=people
+    - User search filter: (&(uid={0})(memberOf=cn=backend,ou=groups,dc=example,dc=com))
+    - Group search base: ou=groups
+    - Group search filter: (&(cn={0})(objectClass=groupOfUniqueNames))
+    - Group membership: Search for LDAP groups containing user 
+        - Group membership field: (uniqueMember={0})
+    - Manager DN: cn=admin,dc=example,dc=com
+    - Manager password: admin_pass
+    - Display name LDAP attribute: uid
+    - Display Address LDAP attribute: mail

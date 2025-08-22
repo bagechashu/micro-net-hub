@@ -1,5 +1,6 @@
 # nginx http context
 
+```conf
 auth_ldap_cache_enabled on;
 auth_ldap_cache_expiration_time 3600;
 auth_ldap_cache_size 1000;
@@ -14,3 +15,5 @@ ldap_server example-ldap {
     require group "cn=backend,ou=allhands,dc=example,dc=com";
     referral off;
 }
+
+```
