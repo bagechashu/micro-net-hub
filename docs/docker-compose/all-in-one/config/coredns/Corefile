@@ -1,0 +1,21 @@
+example.com corp.example.com {
+    bind 0.0.0.0
+    header {
+        response set ra
+    }
+    forward example.com 127.0.0.1:5353
+    forward corp.example.com 10.31.0.10:5353
+    cache 3600 .
+    loop
+    reload
+    log
+}
+
+. {
+    bind 0.0.0.0
+    forward . 1.1.1.1
+    cache 3600 .
+    loop
+    reload
+    log
+}
