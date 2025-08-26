@@ -16,8 +16,9 @@
         </el-form-item>
         <el-form-item :label="$t('sitenav.6112v35e5o40')" prop="title">
           <el-input
-            v-model.trim="navGroupForm.title"
+            v-model="navGroupForm.title"
             :placeholder="$t('sitenav.6112v35e5r40')"
+            @blur="navGroupForm.title = navGroupForm.title.trim()"
           />
         </el-form-item>
         <el-form-item>
@@ -26,7 +27,7 @@
             :loading="loading"
             type="primary"
             @click="addGroup()"
-          >{{ $t('sitenav.6112v35e5v40') }}</el-button>
+          >{{ $t("sitenav.6112v35e5v40") }}</el-button>
         </el-form-item>
       </el-form>
 
@@ -51,7 +52,7 @@
                   icon="el-icon-plus"
                   type="warning"
                   @click="addSite"
-                >{{ $t('sitenav.6112v35e5xw0') }}</el-button>
+                >{{ $t("sitenav.6112v35e5xw0") }}</el-button>
               </el-form-item>
               <el-form-item>
                 <el-button
@@ -60,7 +61,7 @@
                   icon="el-icon-delete"
                   type="danger"
                   @click="batchDeleteSites"
-                >{{ $t('sitenav.6112v35e60s0') }}</el-button>
+                >{{ $t("sitenav.6112v35e60s0") }}</el-button>
               </el-form-item>
             </el-form>
 
@@ -111,7 +112,11 @@
                 width="120"
               >
                 <template slot-scope="scope">
-                  <el-tooltip :content="$t('sitenav.6112v35e6k80')" effect="dark" placement="top">
+                  <el-tooltip
+                    :content="$t('sitenav.6112v35e6k80')"
+                    effect="dark"
+                    placement="top"
+                  >
                     <el-button
                       size="mini"
                       icon="el-icon-edit"
@@ -156,7 +161,10 @@
           label-width="auto"
         >
           <el-form-item :label="$t('sitenav.6112v35e6s80')" prop="groupid">
-            <el-select v-model="navSiteForm.groupid" :placeholder="$t('sitenav.6112v35e6v40')">
+            <el-select
+              v-model="navSiteForm.groupid"
+              :placeholder="$t('sitenav.6112v35e6v40')"
+            >
               <el-option
                 v-for="item in groupOptions"
                 :key="item.id"
@@ -166,15 +174,20 @@
             </el-select>
           </el-form-item>
           <el-form-item :label="$t('sitenav.6112v35e63c0')" prop="name">
-            <el-input v-model.trim="navSiteForm.name" :placeholder="$t('sitenav.6112v35e63c0')" />
+            <el-input
+              v-model="navSiteForm.name"
+              :placeholder="$t('sitenav.6112v35e63c0')"
+              @blur="navSiteForm.name = navSiteForm.name.trim()"
+            />
           </el-form-item>
           <el-form-item :label="$t('sitenav.6112v35e66c0')" prop="icon">
             <el-select
-              v-model.trim="navSiteForm.icon"
+              v-model="navSiteForm.icon"
               filterable
               allow-create
               default-first-option
               :placeholder="$t('sitenav.6112v35e6y00')"
+              @blur="navSiteForm.icon = navSiteForm.icon.trim()"
             >
               <el-option
                 v-for="item in iconOptions"
@@ -184,37 +197,45 @@
               />
             </el-select>
             <!-- <el-input
-              v-model.trim="navSiteForm.icon"
+              v-model="navSiteForm.icon"
               :placeholder="$t('sitenav.6112v35e66c0')"
             /> -->
           </el-form-item>
           <el-form-item :label="$t('sitenav.6112v35e6bw0')" prop="link">
-            <el-input v-model.trim="navSiteForm.link" :placeholder="$t('sitenav.6112v35e6bw0')" />
+            <el-input
+              v-model="navSiteForm.link"
+              :placeholder="$t('sitenav.6112v35e6bw0')"
+              @blur="navSiteForm.link = navSiteForm.link.trim()"
+            />
           </el-form-item>
           <el-form-item :label="$t('sitenav.6112v35e6eo0')" prop="doc">
             <el-input
-              v-model.trim="navSiteForm.doc"
+              v-model="navSiteForm.doc"
               :placeholder="$t('sitenav.6112v35e70o0')"
+              @blur="navSiteForm.doc = navSiteForm.doc.trim()"
             />
           </el-form-item>
           <el-form-item :label="$t('sitenav.6112v35e68w0')" prop="desc">
             <el-input
-              v-model.trim="navSiteForm.desc"
+              v-model="navSiteForm.desc"
               type="textarea"
               :placeholder="$t('sitenav.6112v35e68w0')"
               show-word-limit
               maxlength="100"
+              @blur="navSiteForm.desc = navSiteForm.desc.trim()"
             />
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
-          <el-button size="mini" @click="navSiteFormCancel()">{{ $t('sitenav.6112v35e74g0') }}</el-button>
+          <el-button size="mini" @click="navSiteFormCancel()">{{
+            $t("sitenav.6112v35e74g0")
+          }}</el-button>
           <el-button
             size="mini"
             :loading="loading"
             type="primary"
             @click="navSiteFormSubmit()"
-          >{{ $t('sitenav.6112v35e76o0') }}</el-button>
+          >{{ $t("sitenav.6112v35e76o0") }}</el-button>
         </div>
       </el-dialog>
     </el-card>
@@ -288,7 +309,11 @@ export default {
       },
       navSiteFormRules: {
         name: [
-          { required: true, message: this.$t("sitenav.6112v35e7dc0"), trigger: "blur" },
+          {
+            required: true,
+            message: this.$t("sitenav.6112v35e7dc0"),
+            trigger: "blur"
+          },
           {
             min: 1,
             max: 50,
@@ -297,7 +322,11 @@ export default {
           }
         ],
         icon: [
-          { required: true, message: this.$t("sitenav.6112v35e7fw0"), trigger: "blur" },
+          {
+            required: true,
+            message: this.$t("sitenav.6112v35e7fw0"),
+            trigger: "blur"
+          },
           {
             min: 1,
             max: 100,
@@ -306,7 +335,11 @@ export default {
           }
         ],
         link: [
-          { required: true, message: this.$t("sitenav.6112v35e7hw0"), trigger: "change" },
+          {
+            required: true,
+            message: this.$t("sitenav.6112v35e7hw0"),
+            trigger: "change"
+          },
           {
             min: 0,
             max: 100,
@@ -315,7 +348,11 @@ export default {
           }
         ],
         doc: [
-          { required: false, message: this.$t("sitenav.6112v35e7k00"), trigger: "blur" },
+          {
+            required: false,
+            message: this.$t("sitenav.6112v35e7k00"),
+            trigger: "blur"
+          },
           {
             min: 0,
             max: 100,
@@ -324,7 +361,11 @@ export default {
           }
         ],
         desc: [
-          { required: true, message: this.$t("sitenav.6112v35e7m40"), trigger: "blur" },
+          {
+            required: true,
+            message: this.$t("sitenav.6112v35e7m40"),
+            trigger: "blur"
+          },
           {
             min: 0,
             max: 200,
@@ -332,7 +373,13 @@ export default {
             trigger: "blur"
           }
         ],
-        groupid: [{ required: true, message: this.$t("sitenav.6112v35e7o40"), trigger: "blur" }]
+        groupid: [
+          {
+            required: true,
+            message: this.$t("sitenav.6112v35e7o40"),
+            trigger: "blur"
+          }
+        ]
       },
       iconOptions: [],
       groupOptions: [],
@@ -354,7 +401,10 @@ export default {
 
         // console.log(`navGroupActiveTab type: ${typeof(this.navGroupActiveTab)}, value: ${this.navGroupActiveTab}`);
         // default navGroupActiveTab type: string, value: 0
-        if ((this.navGroupActiveTab === "0" || this.navGroupActiveTab === "") && this.navData.length > 0) {
+        if (
+          (this.navGroupActiveTab === "0" || this.navGroupActiveTab === "") &&
+          this.navData.length > 0
+        ) {
           this.navGroupActiveTab = this.navData[0].name;
         }
       } finally {
@@ -478,11 +528,15 @@ export default {
     },
     // 批量删除
     batchDeleteSites() {
-      this.$confirm(this.$t("tips.deleteWarning"), this.$t("sitenav.6112v35e7sg0"), {
-        confirmButtonText: this.$t("sitenav.6112v35e76o0"),
-        cancelButtonText: this.$t("sitenav.6112v35e74g0"),
-        type: "warning"
-      })
+      this.$confirm(
+        this.$t("tips.deleteWarning"),
+        this.$t("sitenav.6112v35e7sg0"),
+        {
+          confirmButtonText: this.$t("sitenav.6112v35e76o0"),
+          cancelButtonText: this.$t("sitenav.6112v35e74g0"),
+          type: "warning"
+        }
+      )
         .then(async() => {
           this.loading = true;
           const ids = [];

@@ -114,11 +114,12 @@
           </el-form-item>
           <el-form-item :label="$t('notice.6112860xy1c0')" prop="content">
             <el-input
-              v-model.trim="noticeForm.content"
+              v-model="noticeForm.content"
               type="textarea"
               :placeholder="$t('notice.6112860xy1c0')"
               show-word-limit
               maxlength="100"
+              @blur="noticeForm.content = noticeForm.content.trim()"
             />
           </el-form-item>
         </el-form>
