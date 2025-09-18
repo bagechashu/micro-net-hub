@@ -248,6 +248,11 @@ func (u *User) CheckBindDNRole() bool {
 	return false
 }
 
+// 判断用户是否有等于用于配置 BindDN 的 Role
+func (u *User) CheckAdminDN() bool {
+	return u.UserDN == config.Conf.Ldap.AdminDN
+}
+
 // UserExistsInGroup checks if a user exists in a specific group.
 func UserExistsInGroup(username, groupDN string) (bool, error) {
 	var count int64

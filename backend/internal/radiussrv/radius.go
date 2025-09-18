@@ -78,6 +78,10 @@ func AuthRequest(username string, password string) (valid bool, err error) {
 		return false, fmt.Errorf("incorrect username or password, username=%s", username)
 	}
 	// 禁用是 BindDN 的角色登录
+	if userRight.CheckAdminDN() {
+		return false, fmt.Errorf("AdminDN 禁止登录 使用 radius, username=%s", username)
+	}
+	// 禁用是 BindDN 的角色登录
 	if userRight.CheckBindDNRole() {
 		return false, fmt.Errorf("用户为 BindDN Role, 禁止登录, username=%s", username)
 	}

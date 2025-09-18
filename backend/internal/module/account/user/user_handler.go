@@ -81,7 +81,7 @@ func Add(c *gin.Context) {
 	}
 
 	// 根据角色id获取角色
-	if req.RoleIds == nil || len(req.RoleIds) == 0 {
+	if len(req.RoleIds) == 0 {
 		req.RoleIds = []uint{2} // 默认添加为普通用户角色
 	}
 
@@ -199,6 +199,10 @@ func Update(c *gin.Context) {
 		return
 	}
 
+	if u.CheckAdminDN() {
+		helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("不能修改超级管理员信息")))
+		return
+	}
 	// 获取当前登陆用户
 	ctxUser, err := auth.GetCtxLoginUser(c)
 	if err != nil {
@@ -629,6 +633,10 @@ func ChangeUserStatus(c *gin.Context) {
 	err = user.Find(filter)
 	if err != nil {
 		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("在MySQL查询用户失败: "+err.Error())))
+		return
+	}
+	if user.CheckAdminDN() {
+		helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("不能修改超级管理员状态")))
 		return
 	}
 	if req.Status == user.Status {

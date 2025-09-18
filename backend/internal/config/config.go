@@ -59,6 +59,7 @@ func InitConfig() {
 	viper.SetDefault("dns.max-recursion-depth", 5)
 	viper.SetDefault("dns.forward-addr", "1.1.1.1:53")
 	viper.SetDefault("logs.audit-get-requests", true)
+	viper.SetDefault("ldap-server.binddn-role-keyword", "binddn")
 
 	// 读取配置信息
 	err = viper.ReadInConfig()
