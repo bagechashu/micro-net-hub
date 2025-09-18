@@ -238,6 +238,16 @@ func (u *User) Find(filter map[string]interface{}) error {
 	return global.DB.Where(filter).Preload("Groups").Preload("Roles").Preload("Totp").First(&u).Error
 }
 
+// 判断用户是否有等于用于配置 BindDN 的 Role
+func (u *User) CheckBindDNRole() bool {
+	for _, r := range u.Roles {
+		if r.Keyword == config.Conf.LdapServer.BindDNRoleKeyword {
+			return true
+		}
+	}
+	return false
+}
+
 // UserExistsInGroup checks if a user exists in a specific group.
 func UserExistsInGroup(username, groupDN string) (bool, error) {
 	var count int64

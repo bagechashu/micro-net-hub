@@ -42,8 +42,6 @@ var loginAttemptsCache = cache.New(time.Duration(banDurationMinute)*time.Minute,
 
 // AuthRequest - encapsulates approval logic
 func AuthRequest(username string, password string) (valid bool, err error) {
-	valid = false
-
 	var loginAttempt = &loginAttemptInfo{}
 	attempt, found := loginAttemptsCache.Get(username)
 	if found {
@@ -52,16 +50,14 @@ func AuthRequest(username string, password string) (valid bool, err error) {
 
 		// 如果最后一次失败尝试距离现在不足10分钟，则返回错误并禁止登录
 		if loginAttempt.Times > config.Conf.Radius.FailTimesBeforeBlock5min && time.Since(loginAttempt.LastFailedAt).Minutes() < banDurationMinute {
-			err = fmt.Errorf("登录失败次数过多，账户已被锁定5分钟")
-			return
+			return false, fmt.Errorf("登录失败次数过多，账户已被锁定5分钟, username=%s", username)
 		}
 	}
 
 	// password 后六位校验 TOTP, 其余的数据库校验密码
 	pl := len(password)
 	if pl <= 7 {
-		err = fmt.Errorf("incorrect username or password")
-		return
+		return false, fmt.Errorf("incorrect username or password, username=%s", username)
 	}
 	pinCode := password[:pl-6]
 	otp := password[pl-6:]
@@ -73,27 +69,33 @@ func AuthRequest(username string, password string) (valid bool, err error) {
 	}
 	userRight, err := u.Login()
 	if err != nil && userRight == nil {
+		// 登录失败次数记录
 		loginAttempt.Times++
 		loginAttempt.LastFailedAt = time.Now()
 		loginAttemptsCache.Set(username, loginAttempt, cache.DefaultExpiration)
 
-		global.Log.Debugf("radius cache: %s-after: %+v attempt %+v", username, loginAttempt.Times, loginAttempt.LastFailedAt)
-		return
+		// global.Log.Debugf("radius cache: %s-after: %+v attempt %+v", username, loginAttempt.Times, loginAttempt.LastFailedAt)
+		return false, fmt.Errorf("incorrect username or password, username=%s", username)
+	}
+	// 禁用是 BindDN 的角色登录
+	if userRight.CheckBindDNRole() {
+		return false, fmt.Errorf("用户为 BindDN Role, 禁止登录, username=%s", username)
 	}
 	// 校验 totp
 	if totpModel.CheckTotp(userRight.Totp.Secret, otp) {
 		valid = true
-		// 清除该用户的登录失败记录，因为验证成功了
+		// 验证成功了,清除该用户的登录失败记录，
 		loginAttemptsCache.Delete(username)
-		return
+		return true, nil
 	}
 
+	// Totp验证失败, 记录失败次数
 	loginAttempt.Times++
 	loginAttempt.LastFailedAt = time.Now()
 	loginAttemptsCache.Set(username, loginAttempt, cache.DefaultExpiration)
 
-	global.Log.Debugf("radius cache: %s-after: %+v attempt %+v", username, loginAttempt.Times, loginAttempt.LastFailedAt)
-	return
+	// global.Log.Debugf("radius cache: %s-after: %+v attempt %+v", username, loginAttempt.Times, loginAttempt.LastFailedAt)
+	return false, fmt.Errorf("totp 验证失败, username=%s", username)
 }
 
 func AuthHandler(w radius.ResponseWriter, r *radius.Request) {

@@ -60,12 +60,7 @@ func checkBindRuleUser(auth ldapserver.DN) bool {
 		return false
 	}
 	// 判断用户是否有 Bind DN 权限
-	for _, r := range u.Roles {
-		if r.Keyword == config.Conf.LdapServer.BindDNRoleKeyword {
-			return true
-		}
-	}
-	return false
+	return u.CheckBindDNRole()
 }
 
 func getUserInfo(username string) (*model.User, error) {
