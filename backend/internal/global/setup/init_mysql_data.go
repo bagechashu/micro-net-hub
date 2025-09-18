@@ -57,6 +57,15 @@ func InitData() {
 			Status:  1,
 			Creator: "System",
 		},
+		{
+			Model:   gorm.Model{ID: 4},
+			Name:    "BindDN",
+			Keyword: "binddn",
+			Remark:  "",
+			Sort:    5,
+			Status:  1,
+			Creator: "System",
+		},
 	}
 
 	// newRoles := make([]*accountModel.Role, 0)
