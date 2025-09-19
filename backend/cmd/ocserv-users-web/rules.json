@@ -1,0 +1,13 @@
+{
+  "public": [
+    { "ip": "8.8.8.8", "protocol": "tcp", "port": 53 },
+    { "ip": "1.1.1.0/24", "protocol": "udp" }
+  ],
+  "users": {
+    "alice": [
+      { "ip": "192.168.10.0/24", "protocol": "tcp", "port": 80 },
+      { "ip": "10.10.0.5", "protocol": "udp" }
+    ],
+    "bob": [{ "ip": "172.16.0.0/16", "protocol": "tcp" }]
+  }
+}
