@@ -7,17 +7,12 @@ import (
 	"fmt"
 	"html/template"
 	"log"
-	"net"
 	"net/http"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/google/nftables"
-	"github.com/google/nftables/expr"
-	"golang.org/x/sys/unix"
 )
 
 // -------------------- 数据结构 --------------------
@@ -102,273 +97,204 @@ func parseStringOrSlice(v interface{}) []string {
 	}
 }
 
-// -------------------- 全局变量 --------------------
-
 var (
-	conn  = &nftables.Conn{} // FIX: 统一使用一个全局 conn
-	table = &nftables.Table{
-		Name:   "vpn_filter",
-		Family: nftables.TableFamilyIPv4,
-	}
-	policy = nftables.ChainPolicyDrop
-	chain  = &nftables.Chain{
-		Name:     "vpn_forward",
-		Table:    table,
-		Type:     nftables.ChainTypeFilter,
-		Hooknum:  nftables.ChainHookForward,
-		Priority: nftables.ChainPriorityFilter,
-		Policy:   &policy,
-	}
 	onlineUsers = make(map[string]string) // username -> IPv4
 )
 
-// -------------------- 工具函数 --------------------
-
-// ipToBytes: 使用 net.ParseIP 更稳健（返回 4 字节 IPv4）
-func ipToBytes(ip string) []byte {
-	parsed := net.ParseIP(ip)
-	if parsed == nil {
-		return nil
-	}
-	ip4 := parsed.To4()
-	if ip4 == nil {
-		return nil
-	}
-	return ip4
-}
-
-// 16-bit 转 bytes (big-endian)
-func uint16ToBytes(n uint16) []byte {
-	return []byte{byte(n >> 8), byte(n & 0xff)}
-}
-
-// 将 IP 或 CIDR 转成 nftables Bitwise 匹配需要的 Addr + Mask
-func parseIPOrCIDR(ipstr string) (addr []byte, mask []byte) {
-	// 如果用户写 0.0.0.0 并意图表示任意源，尽量把它当作 /0
-	if ipstr == "0.0.0.0" {
-		ipstr = "0.0.0.0/0"
-	}
-	if !strings.Contains(ipstr, "/") {
-		// 单 IP
-		ip4 := ipToBytes(ipstr)
-		if ip4 == nil {
-			log.Printf("IP 解析失败: %s", ipstr)
-			return nil, nil
-		}
-		addr = ip4
-		mask = []byte{0xff, 0xff, 0xff, 0xff}
-		return
-	}
-	ip, ipnet, err := net.ParseCIDR(ipstr)
-	if err != nil {
-		log.Printf("CIDR 解析失败: %s (%v)", ipstr, err)
-		return nil, nil
-	}
-	ip4 := ip.To4()
-	if ip4 == nil {
-		log.Printf("非 IPv4 地址: %s", ipstr)
-		return nil, nil
-	}
-	addr = ip4
-	mask = ipnet.Mask
-	return
-}
-
 // -------------------- nftables 操作 --------------------
 
-// getTableAndChain: 使用全局 conn，若不存在则创建后 Flush 并再次查询返回真实指针
-func getTableAndChain() (*nftables.Table, *nftables.Chain, *nftables.Conn) {
-	// 使用全局 conn
-	// 查找表
-	tables, err := conn.ListTables()
+// 通过 nft 命令检查表和链是否存在，如果不存在则创建
+func ensureNatTableAndChain() error {
+	// 检查 nat 表是否存在
+	cmd := exec.Command("nft", "list", "table", "ip", "nat")
+	if err := cmd.Run(); err != nil {
+		// 表不存在，创建表
+		cmd = exec.Command("nft", "add", "table", "ip", "nat")
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("failed to create nat table: %v", err)
+		}
+	}
+
+	// 检查 POSTROUTING 链是否存在
+	cmd = exec.Command("nft", "list", "chain", "ip", "nat", "POSTROUTING")
+	if err := cmd.Run(); err != nil {
+		// 链不存在，创建链
+		cmd = exec.Command("nft", "add", "chain", "ip", "nat", "POSTROUTING",
+			"{", "type", "nat", "hook", "postrouting", "priority", "srcnat;", "policy", "accept;", "}")
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("failed to create POSTROUTING chain: %v", err)
+		}
+	}
+
+	// 检查是否已有 masquerade 规则
+	cmd = exec.Command("nft", "list", "chain", "ip", "nat", "POSTROUTING")
+	output, err := cmd.Output()
 	if err != nil {
-		log.Fatalf("ListTables 错误: %v", err)
+		return fmt.Errorf("failed to list POSTROUTING chain: %v", err)
 	}
-	var tbl *nftables.Table
-	for _, t := range tables {
-		if t.Name == table.Name && t.Family == table.Family {
-			tbl = t
-			break
+	if !strings.Contains(string(output), "masquerade") {
+		// 添加 masquerade 规则
+		cmd = exec.Command("nft", "add", "rule", "ip", "nat", "POSTROUTING", "masquerade")
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("failed to add masquerade rule: %v", err)
+		}
+		log.Println("已添加 nat POSTROUTING masquerade 规则")
+	} else {
+		log.Println("nat POSTROUTING masquerade 规则已存在")
+	}
+	return nil
+}
+
+func ensureFilterTableAndChain() error {
+	// 检查 vpn_filter 表是否存在
+	cmd := exec.Command("nft", "list", "table", "ip", "vpn_filter")
+	if err := cmd.Run(); err != nil {
+		// 表不存在，创建表
+		cmd = exec.Command("nft", "add", "table", "ip", "vpn_filter")
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("failed to create vpn_filter table: %v", err)
 		}
 	}
 
-	// 如果表不存在，创建
-	if tbl == nil {
-		log.Printf("nft 表 %s 不存在，创建它", table.Name)
-		conn.AddTable(table)
-		if err := conn.Flush(); err != nil {
-			log.Fatalf("创建表并 Flush 失败: %v", err)
-		}
-		// 重新列出以获取系统中的对象指针
-		tables, err = conn.ListTables()
-		if err != nil {
-			log.Fatalf("ListTables 失败: %v", err)
-		}
-		for _, t := range tables {
-			if t.Name == table.Name && t.Family == table.Family {
-				tbl = t
-				break
-			}
-		}
-		if tbl == nil {
-			log.Fatalf("创建表后仍未找到 %s", table.Name)
+	// 检查 vpn_forward 链是否存在
+	cmd = exec.Command("nft", "list", "chain", "ip", "vpn_filter", "vpn_forward")
+	if err := cmd.Run(); err != nil {
+		// 链不存在，创建链
+		cmd = exec.Command("nft", "add", "chain", "ip", "vpn_filter", "vpn_forward",
+			"{", "type", "filter", "hook", "forward", "priority", "filter;", "policy", "drop;", "}")
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("failed to create vpn_forward chain: %v", err)
 		}
 	}
-
-	// 查找链
-	chains, err := conn.ListChains()
-	if err != nil {
-		log.Fatalf("ListChains 错误: %v", err)
-	}
-	var chn *nftables.Chain
-	for _, c := range chains {
-		if c.Name == chain.Name && c.Table.Name == tbl.Name {
-			chn = c
-			break
-		}
-	}
-
-	// 如果链不存在，创建
-	if chn == nil {
-		log.Printf("nft 链 %s 不存在，创建它", chain.Name)
-		// 保证 chain.Table 指向正确的表
-		chain.Table = tbl
-		conn.AddChain(chain)
-		if err := conn.Flush(); err != nil {
-			log.Fatalf("创建链并 Flush 失败: %v", err)
-		}
-		// 重新列出获取指针
-		chains, err = conn.ListChains()
-		if err != nil {
-			log.Fatalf("ListChains 失败: %v", err)
-		}
-		for _, c := range chains {
-			if c.Name == chain.Name && c.Table.Name == tbl.Name {
-				chn = c
-				break
-			}
-		}
-		if chn == nil {
-			log.Fatalf("创建链后仍未找到 %s", chain.Name)
-		}
-	}
-
-	return tbl, chn, conn
+	return nil
 }
 
 // 初始化表、链和公共默认规则
 func initNftables(publicRules []RuleConfig) {
 	// 确保表/链存在
-	_, _, _ = getTableAndChain()
+	if err := ensureNatTableAndChain(); err != nil {
+		log.Fatalf("Failed to ensure table and chain: %v", err)
+	}
+
+	// 新增：确保 filter 表和链存在
+	if err := ensureFilterTableAndChain(); err != nil {
+		log.Fatalf("Failed to ensure filter table and chain: %v", err)
+	}
+
+	// 清除现有规则
+	cmd := exec.Command("nft", "flush", "chain", "ip", "vpn_filter", "vpn_forward")
+	if err := cmd.Run(); err != nil {
+		log.Printf("Failed to flush chain: %v", err)
+	}
+
+	// 添加已建立连接回包规则
+	cmd = exec.Command("nft", "add", "rule", "ip", "vpn_filter", "vpn_forward",
+		"position", "0",
+		"ct", "state", "established,related",
+		"accept", "comment", "\"allow return traffic\"")
+	if err := cmd.Run(); err != nil {
+		log.Printf("Failed to add established/related rule: %v", err)
+	}
 
 	// 添加公共规则（源改为 0.0.0.0/0 表示任意源）
 	for i, r := range publicRules {
 		userTag := fmt.Sprintf("public:%d", i)
-		addNftRule(userTag, "0.0.0.0/0", r) // FIX: 使用 /0 表示任意源
+		addNftRule(userTag, "0.0.0.0/0", r)
 	}
 }
 
+// 通过 nft 命令添加规则
 func addNftRule(userTag string, srcIP string, rule RuleConfig) {
-	proto := 0
-	switch strings.ToLower(rule.Protocol) {
-	case "tcp":
-		proto = unix.IPPROTO_TCP
-	case "udp":
-		proto = unix.IPPROTO_UDP
+	proto := strings.ToLower(rule.Protocol)
+
+	switch proto {
+	case "tcp", "udp":
+		var args []string
+		if rule.Port != 0 {
+			// 有端口时直接用协议和端口
+			args = []string{
+				"add", "rule", "ip", "vpn_filter", "vpn_forward",
+				"position", "0",
+				"ip", "saddr", srcIP,
+				"ip", "daddr", rule.IP,
+				proto, "dport", fmt.Sprintf("%d", rule.Port),
+				"accept", "comment", fmt.Sprintf("\"%s\"", userTag),
+			}
+		} else {
+			// 无端口时用 meta l4proto
+			args = []string{
+				"add", "rule", "ip", "vpn_filter", "vpn_forward",
+				"position", "0",
+				"ip", "saddr", srcIP,
+				"ip", "daddr", rule.IP,
+				"meta", "l4proto", proto,
+				"accept", "comment", fmt.Sprintf("\"%s\"", userTag),
+			}
+		}
+		cmd := exec.Command("nft", args...)
+		if output, err := cmd.CombinedOutput(); err != nil {
+			log.Printf("规则 %s 添加失败: %v, output: %s", userTag, err, string(output))
+			return
+		}
+		if rule.Port != 0 {
+			log.Printf("规则 %s 添加成功: src=%s, dst=%s, proto=%s, port=%d",
+				userTag, srcIP, rule.IP, rule.Protocol, rule.Port)
+		} else {
+			log.Printf("规则 %s 添加成功: src=%s, dst=%s, proto=%s (无端口)",
+				userTag, srcIP, rule.IP, rule.Protocol)
+		}
 	case "icmp":
-		proto = unix.IPPROTO_ICMP
+		cmd := exec.Command("nft", "add", "rule", "ip", "vpn_filter", "vpn_forward",
+			"position", "0",
+			"ip", "saddr", srcIP,
+			"ip", "daddr", rule.IP,
+			proto,
+			"accept", "comment", fmt.Sprintf("\"%s\"", userTag))
+		if output, err := cmd.CombinedOutput(); err != nil {
+			log.Printf("规则 %s 添加失败: %v, output: %s", userTag, err, string(output))
+			return
+		}
+		log.Printf("规则 %s 添加成功: src=%s, dst=%s, proto=%s",
+			userTag, srcIP, rule.IP, rule.Protocol)
 	default:
 		log.Printf("未知协议: %s", rule.Protocol)
 		return
 	}
-
-	dstAddr, dstMask := parseIPOrCIDR(rule.IP)
-	if dstAddr == nil || dstMask == nil {
-		log.Printf("目的地址无效: %s", rule.IP)
-		return
-	}
-
-	var exprs []expr.Any
-
-	// 只在非任意源地址时添加 src 匹配
-	if srcIP != "0.0.0.0/0" {
-		srcAddr, srcMask := parseIPOrCIDR(srcIP)
-		if srcAddr != nil && srcMask != nil {
-			exprs = append(exprs,
-				&expr.Payload{DestRegister: 1, Base: expr.PayloadBaseNetworkHeader, Offset: 12, Len: 4},
-				&expr.Bitwise{SourceRegister: 1, Mask: srcMask, Xor: []byte{0, 0, 0, 0}, DestRegister: 1},
-				&expr.Cmp{Register: 1, Op: expr.CmpOpEq, Data: srcAddr},
-			)
-		}
-	}
-
-	// dst 匹配
-	exprs = append(exprs,
-		&expr.Payload{DestRegister: 1, Base: expr.PayloadBaseNetworkHeader, Offset: 16, Len: 4},
-		&expr.Bitwise{SourceRegister: 1, Mask: dstMask, Xor: []byte{0, 0, 0, 0}, DestRegister: 1},
-		&expr.Cmp{Register: 1, Op: expr.CmpOpEq, Data: dstAddr},
-	)
-
-	// 协议匹配
-	exprs = append(exprs,
-		&expr.Meta{Key: expr.MetaKeyL4PROTO, Register: 1},
-		&expr.Cmp{Register: 1, Op: expr.CmpOpEq, Data: []byte{byte(proto)}},
-	)
-
-	// TCP/UDP 且端口不为 0 时才匹配 dport
-	if rule.Port != 0 && (proto == unix.IPPROTO_TCP || proto == unix.IPPROTO_UDP) {
-		exprs = append(exprs,
-			&expr.Payload{DestRegister: 1, Base: expr.PayloadBaseTransportHeader, Offset: 2, Len: 2},
-			&expr.Cmp{Register: 1, Op: expr.CmpOpEq, Data: uint16ToBytes(rule.Port)},
-		)
-	}
-
-	// accept
-	exprs = append(exprs, &expr.Verdict{Kind: expr.VerdictAccept})
-
-	tbl, chn, c := getTableAndChain()
-	if c == nil || tbl == nil || chn == nil {
-		log.Printf("table/chain 未就绪")
-		return
-	}
-
-	r := &nftables.Rule{
-		Table:    tbl,
-		Chain:    chn,
-		Exprs:    exprs,
-		UserData: []byte(userTag),
-	}
-	c.AddRule(r)
-	if err := c.Flush(); err != nil {
-		log.Printf("规则 %s 添加失败: %v", userTag, err)
-		return
-	}
-	log.Printf("规则 %s 添加成功", userTag)
 }
 
-// 删除用户规则
-func deleteUserRules(userTag string) {
-	tbl, chn, c := getTableAndChain()
-	if c == nil || tbl == nil || chn == nil {
-		log.Printf("deleteUserRules: 无法获取 table/chain")
-		return
-	}
-
-	rules, err := c.GetRules(tbl, chn)
+// 通过 nft 命令删除用户规则
+func deleteNftRules(userTag string) {
+	// 使用 nft list ruleset 并解析输出来找到带有特定注释的规则
+	cmd := exec.Command("nft", "-a", "list", "chain", "ip", "vpn_filter", "vpn_forward")
+	output, err := cmd.Output()
 	if err != nil {
-		log.Printf("GetRules 失败: %v", err)
+		log.Printf("获取规则失败: %v", err)
 		return
 	}
-	for _, r := range rules {
-		if string(r.UserData) == userTag {
-			c.DelRule(r)
-			log.Printf("删除规则: %s", userTag)
+
+	lines := strings.Split(string(output), "\n")
+	for _, line := range lines {
+		if strings.Contains(line, "# handle") && strings.Contains(line, userTag) {
+			// 提取句柄编号
+			handle := ""
+			if idx := strings.LastIndex(line, "# handle "); idx != -1 {
+				handle = strings.TrimSpace(line[idx+len("# handle "):])
+			}
+
+			if handle != "" {
+				// 删除规则
+				cmd := exec.Command("nft", "delete", "rule", "ip", "vpn_filter", "vpn_forward", "handle", handle)
+				if err := cmd.Run(); err != nil {
+					log.Printf("删除规则失败 %s: %v", userTag, err)
+				} else {
+					log.Printf("删除规则成功: %s", userTag)
+				}
+			}
 		}
 	}
-	if err := c.Flush(); err != nil {
-		log.Printf("deleteUserRules Flush 失败: %v", err)
-	}
 }
+
+// -------------------- occtl user 操作 --------------------
 
 func getSessions() ([]Session, error) {
 	cmd := exec.Command("occtl", "-j", "show", "users")
@@ -424,58 +350,8 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // -------------------- 主循环 --------------------
-func addSimpleTcp22Rule() error {
-	c := &nftables.Conn{}
-	tbl := c.AddTable(&nftables.Table{
-		Family: nftables.TableFamilyIPv4,
-		Name:   "testtbl",
-	})
-	chn := c.AddChain(&nftables.Chain{
-		Name:     "input",
-		Table:    tbl,
-		Type:     nftables.ChainTypeFilter,
-		Hooknum:  nftables.ChainHookInput,
-		Priority: nftables.ChainPriorityFilter,
-	})
-
-	// 匹配 TCP
-	exprs := []expr.Any{
-		// l4proto == tcp
-		&expr.Meta{Key: expr.MetaKeyL4PROTO, Register: 1},
-		&expr.Cmp{Register: 1, Op: expr.CmpOpEq, Data: []byte{unix.IPPROTO_TCP}},
-
-		// dport == 22
-		&expr.Payload{
-			DestRegister: 1,
-			Base:         expr.PayloadBaseTransportHeader,
-			Offset:       2,
-			Len:          2,
-		},
-		&expr.Cmp{
-			Register: 1,
-			Op:       expr.CmpOpEq,
-			Data:     []byte{0x00, 0x16}, // 22
-		},
-
-		// accept
-		&expr.Verdict{Kind: expr.VerdictAccept},
-	}
-
-	c.AddRule(&nftables.Rule{
-		Table: tbl,
-		Chain: chn,
-		Exprs: exprs,
-	})
-
-	return c.Flush()
-}
-
 func main() {
-
-	if err := addSimpleTcp22Rule(); err != nil {
-		log.Fatal(err)
-	}
-	log.Println("OK: added simple tcp/22 rule")
+	// 移除 addSimpleTcp22Rule 调用，因为我们现在使用命令行方式
 
 	http.HandleFunc("/", indexHandler)
 
@@ -545,7 +421,7 @@ func main() {
 						// 删除规则
 						log.Printf("userRules unset: %s:%d", username, i)
 						userTag := fmt.Sprintf("user:%s:%d", username, i)
-						deleteUserRules(userTag)
+						deleteNftRules(userTag)
 					}
 				}
 			}
