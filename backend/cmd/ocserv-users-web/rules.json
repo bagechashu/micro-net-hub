@@ -4,10 +4,10 @@
     { "ip": "1.1.1.0/24", "protocol": "udp" }
   ],
   "users": {
-    "alice": [
-      { "ip": "192.168.10.0/24", "protocol": "tcp", "port": 80 },
-      { "ip": "10.10.0.5", "protocol": "udp" }
+    "user1": [
+      { "ip": "10.12.0.11/32", "protocol": "tcp", "port": 22 },
+      { "ip": "8.8.4.4", "protocol": "udp" }
     ],
-    "bob": [{ "ip": "172.16.0.0/16", "protocol": "tcp" }]
+    "user2": [{ "ip": "10.12.0.0/16", "protocol": "tcp" }]
   }
 }
