@@ -45,9 +45,10 @@ func NftablesHandler(w http.ResponseWriter, r *http.Request) {
 	// w.Header().Set("Content-Type", "application/json")
 	// json.NewEncoder(w).Encode(map[string]string{
 	// 	"status":  "success",
-	// 	"message": "nftables 规则更新完成",
+	// 	"message": "nft updated successfully",
 	// })
 }
+
 func RunWebServer(addr string) {
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/nftables", NftablesHandler)
