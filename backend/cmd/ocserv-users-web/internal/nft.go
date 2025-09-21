@@ -20,7 +20,7 @@ const (
 // -------------------- 全局状态 --------------------
 
 var (
-	onlineUsers  = make(map[string]string) // username -> IPv4
+	onlineUsers  = make(map[string][]string) // username -> []IPv4
 	mu           sync.Mutex
 	userSessions = make(map[string]time.Time) // username -> login time
 )
@@ -29,14 +29,14 @@ var (
 
 func InitNftables(publicRules []RuleConfig) error {
 	if err := ensureNatTableAndChain(); err != nil {
-		return fmt.Errorf("确保NAT表和链失败: %v", err)
+		return err
 	}
 
 	if err := flushFilterTableAndChain(); err != nil {
-		return fmt.Errorf("清空过滤表和链失败: %v", err)
+		return err
 	}
 	if err := ensureFilterTableAndChain(); err != nil {
-		return fmt.Errorf("确保过滤表和链失败: %v", err)
+		return err
 	}
 
 	// 添加公共规则
@@ -70,14 +70,11 @@ func ensureNatTableAndChain() error {
 
 func flushFilterTableAndChain() error {
 	// 清空 vpn_forward 链规则
-	if err := exec.Command("nft", "list", "table", "ip", filterTableName).Run(); err == nil {
-		if err := exec.Command("nft", "flush", "chain", "ip", filterTableName, filterChainName).Run(); err != nil {
-			return err
-		}
+	if err := exec.Command("nft", "flush", "chain", "ip", filterTableName, filterChainName).Run(); err != nil {
+		return err
 	}
 	return nil
 }
-
 func ensureFilterTableAndChain() error {
 	// 确保 vpn_filter 表存在
 	if err := exec.Command("nft", "list", "table", "ip", filterTableName).Run(); err != nil {
@@ -120,7 +117,8 @@ func RunNftablesManager(ctx context.Context, refresh time.Duration) {
 	}
 }
 
-// 提取公共逻辑到一个函数
+// UpdateNftablesRulesWithSessions
+// 支持同一用户多个设备
 func UpdateNftablesRulesWithSessions(userRules map[string][]RuleConfig) error {
 	sessions, err := GetSessions()
 	if err != nil {
@@ -131,53 +129,101 @@ func UpdateNftablesRulesWithSessions(userRules map[string][]RuleConfig) error {
 	mu.Lock()
 	defer mu.Unlock()
 
-	current := make(map[string]string)
+	current := make(map[string][]string) // username -> []IPv4
 	currentSessions := make(map[string]time.Time)
 
+	// 构建当前在线用户映射
 	for _, s := range sessions {
-		current[s.Username] = s.IPv4
+		current[s.Username] = append(current[s.Username], s.IPv4)
 		currentSessions[s.Username] = time.Now()
+	}
 
-		// 检查是否为新用户
-		if old, ok := onlineUsers[s.Username]; !ok {
-			// 新用户登录
-			userSessions[s.Username] = time.Now()
-			log.Printf("[user] 用户 %s 登录，IP: %s，时间: %s", s.Username, s.IPv4, userSessions[s.Username].Format("2006-01-02 15:04:05"))
-			for i, r := range userRules[s.Username] {
-				if s.IPv4 != "" {
-					addNftRule(fmt.Sprintf("user:%s:%d", s.Username, i), s.IPv4, r)
+	// 处理每个在线用户
+	for username, ips := range current {
+		oldIPs, exists := onlineUsers[username]
+
+		if !exists {
+			// 新用户登录（任何设备）
+			userSessions[username] = time.Now()
+			log.Printf("[user] 用户 %s 首次登录，IP列表: %v，时间: %s", username, ips, userSessions[username].Format("2006-01-02 15:04:05"))
+			for i, ip := range ips {
+				if ip != "" {
+					for j, r := range userRules[username] {
+						addNftRule(fmt.Sprintf("user:%s:%d:%d", username, i, j), ip, r)
+					}
 				}
 			}
-		} else if old != s.IPv4 {
-			// 用户IP变更（重新连接）
-			log.Printf("[user] 用户 %s IP变更 %s -> %s，时间: %s", s.Username, old, s.IPv4, time.Now().Format("2006-01-02 15:04:05"))
-			// 删除旧规则
-			for i := range userRules[s.Username] {
-				deleteNftRules(fmt.Sprintf("user:%s:%d", s.Username, i))
+		} else {
+			// 检查是否有IP变更
+			needUpdate := false
+
+			// 检查是否有新IP（新设备登录）
+			for _, newIP := range ips {
+				found := false
+				for _, oldIP := range oldIPs {
+					if newIP == oldIP {
+						found = true
+						break
+					}
+				}
+				if !found && newIP != "" {
+					needUpdate = true
+					log.Printf("[user] 用户 %s 新设备登录，新增IP: %s，时间: %s", username, newIP, time.Now().Format("2006-01-02 15:04:05"))
+				}
 			}
-			// 添加新规则
-			for i, r := range userRules[s.Username] {
-				if s.IPv4 != "" {
-					addNftRule(fmt.Sprintf("user:%s:%d", s.Username, i), s.IPv4, r)
+
+			// 检查是否有IP变更（设备重新连接）
+			for _, oldIP := range oldIPs {
+				found := false
+				for _, newIP := range ips {
+					if oldIP == newIP {
+						found = true
+						break
+					}
+				}
+				if !found {
+					needUpdate = true
+					log.Printf("[user] 用户 %s 设备断开，移除IP: %s，时间: %s", username, oldIP, time.Now().Format("2006-01-02 15:04:05"))
+				}
+			}
+
+			if needUpdate {
+				// 删除该用户所有规则
+				for i := range oldIPs {
+					for j := range userRules[username] {
+						deleteNftRules(fmt.Sprintf("user:%s:%d:%d", username, i, j))
+					}
+				}
+
+				// 为所有当前IP重新添加规则
+				for i, ip := range ips {
+					if ip != "" {
+						for j, r := range userRules[username] {
+							addNftRule(fmt.Sprintf("user:%s:%d:%d", username, i, j), ip, r)
+						}
+					}
 				}
 			}
 		}
 	}
 
-	// 处理离线用户
-	for u := range onlineUsers {
-		if _, ok := current[u]; !ok {
-			// 用户离线
-			if loginTime, exists := userSessions[u]; exists {
-				log.Printf("[user] 用户 %s 离线，登录时间: %s，离线时间: %s，时长: %v",
-					u,
+	// 处理完全离线的用户
+	for username, oldIPs := range onlineUsers {
+		if _, ok := current[username]; !ok {
+			// 用户完全离线
+			if loginTime, exists := userSessions[username]; exists {
+				log.Printf("[user] 用户 %s 完全离线，登录时间: %s，离线时间: %s，时长: %v",
+					username,
 					loginTime.Format("2006-01-02 15:04:05"),
 					time.Now().Format("2006-01-02 15:04:05"),
 					time.Since(loginTime))
-				delete(userSessions, u)
+				delete(userSessions, username)
 			}
-			for i := range userRules[u] {
-				deleteNftRules(fmt.Sprintf("user:%s:%d", u, i))
+			// 删除该用户所有规则
+			for i := range oldIPs {
+				for j := range userRules[username] {
+					deleteNftRules(fmt.Sprintf("user:%s:%d:%d", username, i, j))
+				}
 			}
 		}
 	}
