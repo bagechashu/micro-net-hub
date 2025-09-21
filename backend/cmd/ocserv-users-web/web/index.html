@@ -42,14 +42,6 @@
           <th>AverageTX</th>
           <th>ConnectedAt</th>
           <th>ConnectedFor</th>
-
-          <th>vhost</th>
-          <th>Device</th>
-          <th>IPv4</th>
-          <th>P-t-P IPv4</th>
-          <th>DNS</th>
-          <th>Routes</th>
-          <th>No-routes</th>
         </tr>
       </thead>
       <tbody>
@@ -67,14 +59,6 @@
           <td>{{.AverageTX}}</td>
           <td><span class="utc-time" data-utc="{{.ConnectedAt}}">{{.ConnectedAt}}</span></td>
           <td>{{.ConnectedFor}}</td>
-
-          <td>{{.Vhost}}</td>
-          <td>{{.Device}}</td>
-          <td>{{.IPv4}}</td>
-          <td>{{.PtPIPv4}}</td>
-          <td>{{.DNS}}</td>
-          <td>{{.Routes}}</td>
-          <td>{{.NoRoutes}}</td>
         </tr>
         {{end}}
       </tbody>
