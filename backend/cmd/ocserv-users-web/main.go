@@ -25,18 +25,23 @@ func main() {
 		log.Fatalf("[main] 配置加载失败: %v", err)
 	}
 
-	internal.GlobalUserRules = internal.BuildUserRulesMapping(cfg)
 	// 初始化 nftables
+	log.Println("[nft] nftables 初始化")
 	publicRules := internal.GetPublicRules(cfg)
 	if err := internal.InitNftables(publicRules); err != nil {
 		log.Fatalf("[main] nftables 初始化失败: %v", err)
+	}
+
+	// 启动后初始化所有用户的规则
+	internal.GlobalUserRules = internal.BuildUserRulesMapping(cfg)
+	if err := internal.UpdateNftablesRulesWithSessions(internal.GlobalUserRules); err != nil {
+		log.Printf("[nft] 更新规则失败: %v", err)
 	}
 
 	// 启动 nftables 管理器
 	// 创建可取消的上下文
 	// ctx, cancel := context.WithCancel(context.Background())
 	// defer cancel()
-
 	// go internal.RunNftablesManager(ctx, *refresh)
 
 	// 启动 WEB 服务
