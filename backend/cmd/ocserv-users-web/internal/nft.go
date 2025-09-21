@@ -29,14 +29,14 @@ var (
 
 func InitNftables(publicRules []RuleConfig) error {
 	if err := ensureNatTableAndChain(); err != nil {
-		return fmt.Errorf("确保NAT表和链失败: %v", err)
+		return err
 	}
 
 	if err := flushFilterTableAndChain(); err != nil {
-		return fmt.Errorf("清空过滤表和链失败: %v", err)
+		return err
 	}
 	if err := ensureFilterTableAndChain(); err != nil {
-		return fmt.Errorf("确保过滤表和链失败: %v", err)
+		return err
 	}
 
 	// 添加公共规则
@@ -70,14 +70,11 @@ func ensureNatTableAndChain() error {
 
 func flushFilterTableAndChain() error {
 	// 清空 vpn_forward 链规则
-	if err := exec.Command("nft", "list", "table", "ip", filterTableName).Run(); err == nil {
-		if err := exec.Command("nft", "flush", "chain", "ip", filterTableName, filterChainName).Run(); err != nil {
-			return err
-		}
+	if err := exec.Command("nft", "flush", "chain", "ip", filterTableName, filterChainName).Run(); err != nil {
+		return err
 	}
 	return nil
 }
-
 func ensureFilterTableAndChain() error {
 	// 确保 vpn_filter 表存在
 	if err := exec.Command("nft", "list", "table", "ip", filterTableName).Run(); err != nil {
