@@ -2,7 +2,6 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"log"
 	"ocserv-users/internal"
@@ -10,13 +9,12 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 )
 
 func main() {
 	var (
-		configPath    = flag.String("config", "rules.json", "配置文件路径")
-		refresh       = flag.Duration("refresh", 30*time.Second, "刷新间隔")
+		configPath = flag.String("config", "rules.json", "配置文件路径")
+		// refresh       = flag.Duration("refresh", 30*time.Second, "刷新间隔")
 		webListenAddr = flag.String("webaddr", ":8080", "Web服务监听地址")
 	)
 
@@ -27,17 +25,21 @@ func main() {
 		log.Fatalf("[main] 配置加载失败: %v", err)
 	}
 
+	internal.GlobalUserRules = internal.BuildUserRulesMapping(cfg)
 	// 初始化 nftables
-	if err := internal.InitNftables(cfg); err != nil {
+	publicRules := internal.GetPublicRules(cfg)
+	if err := internal.InitNftables(publicRules); err != nil {
 		log.Fatalf("[main] nftables 初始化失败: %v", err)
 	}
 
+	// 启动 nftables 管理器
 	// 创建可取消的上下文
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	// ctx, cancel := context.WithCancel(context.Background())
+	// defer cancel()
 
-	// 启动服务
-	go internal.RunNftablesManager(ctx, cfg, *refresh)
+	// go internal.RunNftablesManager(ctx, *refresh)
+
+	// 启动 WEB 服务
 	go web.RunWebServer(*webListenAddr)
 
 	// 等待退出信号

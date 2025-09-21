@@ -6,6 +6,8 @@ import (
 	"os"
 )
 
+var GlobalUserRules map[string][]RuleConfig
+
 type RuleConfig struct {
 	IP       string `json:"ip"`
 	Protocol string `json:"protocol"`
@@ -42,18 +44,8 @@ func LoadConfig(path string) (*FullConfig, error) {
 	return &cfg, nil
 }
 
-// resolveRuleGroup 根据规则组名称查找规则组
-func resolveRuleGroup(groups []RuleGroup, name string) *RuleGroup {
-	for _, group := range groups {
-		if group.Name == name {
-			return &group
-		}
-	}
-	return nil
-}
-
-// buildUserRulesMapping 构建用户到规则的映射
-func buildUserRulesMapping(config *FullConfig) map[string][]RuleConfig {
+// BuildUserRulesMapping 构建用户到规则的映射
+func BuildUserRulesMapping(config *FullConfig) map[string][]RuleConfig {
 	userRules := make(map[string][]RuleConfig)
 
 	// 为每个用户组构建规则映射
@@ -74,12 +66,22 @@ func buildUserRulesMapping(config *FullConfig) map[string][]RuleConfig {
 	return userRules
 }
 
-// getPublicRules 获取公共规则
-func getPublicRules(config *FullConfig) []RuleConfig {
+// GetPublicRules 获取公共规则
+func GetPublicRules(config *FullConfig) []RuleConfig {
 	ruleGroup := resolveRuleGroup(config.Rules, config.PublicRuleRef)
 	if ruleGroup == nil {
 		log.Printf("[nft] 未找到公共规则组: %s", config.PublicRuleRef)
 		return []RuleConfig{}
 	}
 	return ruleGroup.Rules
+}
+
+// resolveRuleGroup 根据规则组名称查找规则组
+func resolveRuleGroup(groups []RuleGroup, name string) *RuleGroup {
+	for _, group := range groups {
+		if group.Name == name {
+			return &group
+		}
+	}
+	return nil
 }
