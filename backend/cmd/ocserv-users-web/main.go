@@ -1,4 +1,4 @@
-// main.go
+// env GOOS=linux GOARCH=amd64 go build -o ocserv-users-linux-amd64
 package main
 
 import (
