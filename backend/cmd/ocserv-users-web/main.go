@@ -30,12 +30,13 @@ func main() {
 	// 初始化 nftables
 	log.Println("[nft] nftables 初始化")
 	publicRules := internal.GetPublicRules(cfg)
-	if err := internal.InitNftables(publicRules); err != nil {
+	inputChainRules := internal.GetInputChainRules(cfg)
+	if err := internal.InitNftables(publicRules, inputChainRules); err != nil {
 		log.Fatalf("[main] nftables 初始化失败: %v", err)
 	}
 
 	// 启动后初始化所有用户的规则
-	internal.GlobalUserRules = internal.BuildUserRulesMapping(cfg)
+	internal.GlobalUserRules = internal.GetUserRulesMapping(cfg)
 	if err := internal.UpdateNftablesRulesWithSessions(internal.GlobalUserRules); err != nil {
 		log.Printf("[nft] 更新规则失败: %v", err)
 	}

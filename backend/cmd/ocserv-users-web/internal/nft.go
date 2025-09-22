@@ -26,7 +26,8 @@ var (
 
 // -------------------- Nftables Manager --------------------
 
-func InitNftables(publicRules []RuleConfig) error {
+// InitNftables 初始化nftables规则
+func InitNftables(publicRules []RuleConfig, inputChainRules map[string][]RuleConfig) error {
 	if err := ensureNatTableAndChain(); err != nil {
 		return fmt.Errorf("确保NAT表和链失败: %v", err)
 	}
@@ -41,6 +42,15 @@ func InitNftables(publicRules []RuleConfig) error {
 	// 添加公共规则
 	for i, r := range publicRules {
 		addNftRule("0.0.0.0/0", r.IP, r.Protocol, r.Port, r.ToLocal, fmt.Sprintf("public:%d", i))
+	}
+
+	// 添加 InputChain 规则
+	i := 0
+	for srcIP, rules := range inputChainRules {
+		for _, r := range rules {
+			addNftRule(srcIP, r.IP, r.Protocol, r.Port, r.ToLocal, fmt.Sprintf("input:%d", i))
+			i++
+		}
 	}
 
 	go enableSshAccept30MinAfterRestart()

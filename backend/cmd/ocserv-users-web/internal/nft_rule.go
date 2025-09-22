@@ -26,10 +26,16 @@ type UserGroup struct {
 	RuleRef string   `json:"rule_ref"` // 引用的规则组名称
 }
 
+type InputChainGroup struct {
+	SrcIP   []string `json:"src_ip"`
+	RuleRef string   `json:"rule_ref"` // 引用的规则组名称
+}
+
 type FullConfig struct {
-	Rules         []RuleGroup `json:"rules"`
-	Users         []UserGroup `json:"users"`
-	PublicRuleRef string      `json:"public_rule_ref"` // 引用的规则组名称
+	Rules         []RuleGroup       `json:"rules"`
+	Users         []UserGroup       `json:"users"`
+	PublicRuleRef string            `json:"public_rule_ref"` // 引用的规则组名称
+	InputChain    []InputChainGroup `json:"input_chain"`
 }
 
 // -------------------- Config Manager --------------------
@@ -45,8 +51,8 @@ func LoadConfig(path string) (*FullConfig, error) {
 	return &cfg, nil
 }
 
-// BuildUserRulesMapping 构建用户到规则的映射
-func BuildUserRulesMapping(config *FullConfig) map[string][]RuleConfig {
+// GetUserRulesMapping 构建用户到规则的映射
+func GetUserRulesMapping(config *FullConfig) map[string][]RuleConfig {
 	userRules := make(map[string][]RuleConfig)
 
 	// 为每个用户组构建规则映射
@@ -75,6 +81,28 @@ func GetPublicRules(config *FullConfig) []RuleConfig {
 		return []RuleConfig{}
 	}
 	return ruleGroup.Rules
+}
+
+// GetInputChainRules 获取InputChain规则
+func GetInputChainRules(config *FullConfig) map[string][]RuleConfig {
+	inputChainRules := make(map[string][]RuleConfig)
+
+	// 为每个InputChain组构建规则映射
+	for _, inputChainGroup := range config.InputChain {
+		// 查找该InputChain组引用的规则组
+		ruleGroup := resolveRuleGroup(config.Rules, inputChainGroup.RuleRef)
+		if ruleGroup == nil {
+			log.Printf("[nft] 未找到规则组: %s", inputChainGroup.RuleRef)
+			continue
+		}
+
+		// 为该组中的每个源IP分配规则
+		for _, srcIP := range inputChainGroup.SrcIP {
+			inputChainRules[srcIP] = ruleGroup.Rules
+		}
+	}
+
+	return inputChainRules
 }
 
 // resolveRuleGroup 根据规则组名称查找规则组
