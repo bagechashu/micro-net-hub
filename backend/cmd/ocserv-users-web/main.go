@@ -13,7 +13,9 @@ import (
 
 func main() {
 	// 检查系统依赖
-	internal.CheckDependencies()
+	if err := internal.CheckDependencies(); err != nil {
+		log.Fatalf("[main] 检查系统依赖失败: %v", err)
+	}
 
 	var (
 		configPath = flag.String("config", "rules.json", "配置文件路径")

@@ -85,3 +85,25 @@ disconnect-script = /etc/ocserv/nftables_permission_grant.sh
 #expose-iroutes = true
 
 ```
+
+# /etc/systemd/system/ocserv-users-web.service
+
+```conf
+
+[Unit]
+Description=ocserv-users-web
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/ocserv-users -config /etc/ocserv/rules.json -webaddr ":8080"
+Restart=on-failure
+User=root
+Environment=HOME=/root
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+
+```
