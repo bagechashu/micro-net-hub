@@ -12,6 +12,9 @@ import (
 )
 
 func main() {
+	// 检查系统依赖
+	internal.CheckDependencies()
+
 	var (
 		configPath = flag.String("config", "rules.json", "配置文件路径")
 		// refresh       = flag.Duration("refresh", 30*time.Second, "刷新间隔")

@@ -192,10 +192,11 @@ func UpdateNftablesRulesWithSessions(userRules map[string][]RuleConfig) error {
 
 			if needUpdate {
 				// 删除该用户所有规则
-				for i := range oldIPs {
+				for i, ip := range oldIPs {
 					for j := range userRules[username] {
 						deleteNftRules(fmt.Sprintf("user:%s:%d:%d", username, i, j))
 					}
+					clearConntrack(ip) // 清理旧连接
 				}
 
 				// 为所有当前IP重新添加规则
@@ -205,6 +206,7 @@ func UpdateNftablesRulesWithSessions(userRules map[string][]RuleConfig) error {
 							addNftRule(fmt.Sprintf("user:%s:%d:%d", username, i, j), ip, r)
 						}
 					}
+					clearConntrack(ip) // 清理旧连接
 				}
 			}
 		}
@@ -223,14 +225,16 @@ func UpdateNftablesRulesWithSessions(userRules map[string][]RuleConfig) error {
 				delete(userSessions, username)
 			}
 			// 删除该用户所有规则
-			for i := range oldIPs {
+			for i, ip := range oldIPs {
 				for j := range userRules[username] {
 					deleteNftRules(fmt.Sprintf("user:%s:%d:%d", username, i, j))
 				}
+				clearConntrack(ip) // 清理旧连接
 			}
 		}
 	}
 
+	// 更新全局在线用户映射
 	onlineUsers = current
 	return nil
 }
@@ -285,4 +289,23 @@ func deleteNftRules(tag string) {
 			}
 		}
 	}
+}
+
+func clearConntrack(ip string) {
+	cmd := exec.Command("conntrack", "-D", "-s", ip)
+	out, err := cmd.CombinedOutput()
+	output := string(out)
+
+	if err != nil {
+		// 特殊情况：没有条目被删除
+		if strings.Contains(output, "0 flow entries have been deleted") {
+			log.Printf("[nft] 执行命令: %s (没有匹配的条目)", strings.Join(cmd.Args, " "))
+			return
+		}
+		// 其他错误才是真的失败
+		log.Printf("[nft] 执行命令: %s 清理失败: %v (%s)", strings.Join(cmd.Args, " "), err, output)
+		return
+	}
+
+	log.Printf("[nft] 执行命令: %s", strings.Join(cmd.Args, " "))
 }

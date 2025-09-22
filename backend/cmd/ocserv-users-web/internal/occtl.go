@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os/exec"
 	"strconv"
+	"time"
 )
 
 // -------------------- Session Manager --------------------
@@ -72,7 +73,10 @@ func parseStringOrSlice(v interface{}) []string {
 		return nil
 	}
 }
+
+// GetSessions 使用 occtl 获取当前会话列表
 func GetSessions() ([]Session, error) {
+	time.Sleep(500 * time.Millisecond) // 等待 ocserv 稳定
 	cmd := exec.Command("occtl", "-j", "show", "users")
 	output, err := cmd.Output()
 	if err != nil {
@@ -84,12 +88,23 @@ func GetSessions() ([]Session, error) {
 		return nil, err
 	}
 
+	// 数据清洗
+	filtered := make([]Session, 0, len(sessions))
 	for i := range sessions {
 		s := &sessions[i]
+
+		// 过滤掉 username=none 的会话
+		if s.Username == "" || s.Username == "(none)" {
+			continue
+		}
+
 		s.RXHuman = toHumanSize(s.RX)
 		s.TXHuman = toHumanSize(s.TX)
 		s.Routes = parseStringOrSlice(s.Routes)
 		s.NoRoutes = parseStringOrSlice(s.NoRoutes)
+
+		filtered = append(filtered, *s)
 	}
-	return sessions, nil
+
+	return filtered, nil
 }

@@ -26,11 +26,9 @@ nft add rule ip vpn_filter vpn_forward counter accept
 ```sh
 #!/bin/bash
 
-echo IP_REMOTE="$IP_REMOTE"
-echo REASON="$REASON"
-echo USERNAME="$USERNAME"
+echo USERNAME="$USERNAME" IP_REMOTE="$IP_REMOTE" REASON="$REASON"
 
-/usr/bin/curl -XPOST http://127.0.0.1:8080/nftables 2>/dev/null
+(/usr/bin/curl -XPOST http://127.0.0.1:8080/nftables 2>/dev/null &)
 
 ```
 
