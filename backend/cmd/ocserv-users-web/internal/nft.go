@@ -230,9 +230,9 @@ func addNftRule(tag, srcIP string, r RuleConfig) {
 			args = append(args, "meta", "l4proto", proto)
 		}
 	case "icmp":
-		args = append(args, proto)
+		args = append(args, "meta", "l4proto", proto)
 	default:
-		log.Printf("[nft] 忽略未知协议 %s", r.Protocol)
+		log.Printf("[nft] 当前不支持协议 %s", r.Protocol)
 		return
 	}
 

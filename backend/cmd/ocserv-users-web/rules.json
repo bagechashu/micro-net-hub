@@ -11,6 +11,7 @@
       "name": "admin_access",
       "rules": [
         { "ip": "10.12.0.11/32", "protocol": "tcp", "port": 22 },
+        { "ip": "10.12.0.0/16", "protocol": "icmp", "port": 22 },
         { "ip": "8.8.4.4", "protocol": "udp" }
       ]
     },
