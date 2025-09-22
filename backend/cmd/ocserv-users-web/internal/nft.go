@@ -12,17 +12,17 @@ import (
 
 // -------------------- 常量定义 --------------------
 const (
-	filterTableName    = "vpn_filter"
-	filterChainName    = "vpn_forward"
-	establishedComment = "allow return traffic"
+	filterTableName        = "vpn_filter"
+	filterForwardChainName = "vpn_forward"
+	filterInputChainName   = "vpn_input"
+	establishedComment     = "allow return traffic"
 )
 
 // -------------------- 全局状态 --------------------
 
 var (
-	onlineUsers  = make(map[string][]string) // username -> []IPv4
-	mu           sync.Mutex
-	userSessions = make(map[string]time.Time) // username -> login time
+	onlineUsers = make(map[string][]string) // username -> []IPv4
+	mu          sync.Mutex
 )
 
 // -------------------- Nftables Manager --------------------
@@ -70,8 +70,15 @@ func ensureNatTableAndChain() error {
 
 func flushFilterTableAndChain() error {
 	// 清空 vpn_forward 链规则
-	if err := exec.Command("nft", "list", "table", "ip", filterTableName).Run(); err == nil {
-		if err := exec.Command("nft", "flush", "chain", "ip", filterTableName, filterChainName).Run(); err != nil {
+	if err := exec.Command("nft", "list", "chain", "ip", filterTableName, filterForwardChainName).Run(); err == nil {
+		if err := exec.Command("nft", "flush", "chain", "ip", filterTableName, filterForwardChainName).Run(); err != nil {
+			return err
+		}
+	}
+
+	// 清空 vpn_input 链规则
+	if err := exec.Command("nft", "list", "chain", "ip", filterTableName, filterInputChainName).Run(); err == nil {
+		if err := exec.Command("nft", "flush", "chain", "ip", filterTableName, filterInputChainName).Run(); err != nil {
 			return err
 		}
 	}
@@ -87,15 +94,29 @@ func ensureFilterTableAndChain() error {
 	}
 
 	// 确保 vpn_forward 链存在
-	if err := exec.Command("nft", "list", "chain", "ip", filterTableName, filterChainName).Run(); err != nil {
-		if err := exec.Command("nft", "add", "chain", "ip", filterTableName, filterChainName,
+	if err := exec.Command("nft", "list", "chain", "ip", filterTableName, filterForwardChainName).Run(); err != nil {
+		if err := exec.Command("nft", "add", "chain", "ip", filterTableName, filterForwardChainName,
 			"{", "type", "filter", "hook", "forward", "priority", "filter;", "policy", "drop;", "}").Run(); err != nil {
 			return err
 		}
 	}
 
-	// 添加已建立连接放行规则
-	if err := exec.Command("nft", "add", "rule", "ip", filterTableName, filterChainName,
+	// vpn_forward 添加已建立连接放行规则
+	if err := exec.Command("nft", "add", "rule", "ip", filterTableName, filterForwardChainName,
+		"ct", "state", "established,related", "accept", "comment", fmt.Sprintf("\"%s\"", establishedComment)).Run(); err != nil {
+		return err
+	}
+
+	// 确保 vpn_input 链存在
+	if err := exec.Command("nft", "list", "chain", "ip", filterTableName, filterInputChainName).Run(); err != nil {
+		if err := exec.Command("nft", "add", "chain", "ip", filterTableName, filterInputChainName,
+			"{", "type", "filter", "hook", "input", "priority", "filter;", "policy", "drop;", "}").Run(); err != nil {
+			return err
+		}
+	}
+
+	// vpn_input 添加已建立连接放行规则
+	if err := exec.Command("nft", "add", "rule", "ip", filterTableName, filterInputChainName,
 		"ct", "state", "established,related", "accept", "comment", fmt.Sprintf("\"%s\"", establishedComment)).Run(); err != nil {
 		return err
 	}
@@ -217,8 +238,15 @@ func diffIPs(oldIPs, newIPs []string) (added, removed []string) {
 
 func addNftRule(tag, srcIP string, r RuleConfig) {
 	proto := strings.ToLower(r.Protocol)
+
+	// 自动识别目标是否是本机
+	chain := filterForwardChainName
+	if isLocalIP(r.IP) || r.ToLocal { // 如果目标是本机，或者强制认为是本机
+		chain = filterInputChainName
+	}
+
 	args := []string{
-		"add", "rule", "ip", filterTableName, filterChainName,
+		"add", "rule", "ip", filterTableName, chain,
 		"ip", "saddr", srcIP, "ip", "daddr", r.IP,
 	}
 
@@ -247,21 +275,24 @@ func addNftRule(tag, srcIP string, r RuleConfig) {
 }
 
 func deleteNftRules(tag string) {
-	cmd := exec.Command("nft", "-a", "list", "chain", "ip", filterTableName, filterChainName)
-	out, err := cmd.Output()
-	if err != nil {
-		log.Printf("[nft] 列出规则失败: %v", err)
-		return
-	}
+	// 遍历 forward/input 两个链
+	for _, chain := range []string{filterForwardChainName, filterInputChainName} {
+		cmd := exec.Command("nft", "-a", "list", "chain", "ip", filterTableName, chain)
+		out, err := cmd.Output()
+		if err != nil {
+			log.Printf("[nft] 列出规则失败(%s): %v", chain, err)
+			continue
+		}
 
-	for _, line := range strings.Split(string(out), "\n") {
-		if strings.Contains(line, tag) && strings.Contains(line, "# handle") {
-			handle := strings.TrimSpace(line[strings.LastIndex(line, "# handle ")+9:])
-			delCmd := exec.Command("nft", "delete", "rule", "ip", filterTableName, filterChainName, "handle", handle)
-			if delOut, err := delCmd.CombinedOutput(); err != nil {
-				log.Printf("[nft] 删除规则失败 %s: %v (%s)", tag, err, delOut)
-			} else {
-				log.Printf("[nft] 执行命令: %s", strings.Join(delCmd.Args, " "))
+		for _, line := range strings.Split(string(out), "\n") {
+			if strings.Contains(line, tag) && strings.Contains(line, "# handle") {
+				handle := strings.TrimSpace(line[strings.LastIndex(line, "# handle ")+9:])
+				delCmd := exec.Command("nft", "delete", "rule", "ip", filterTableName, chain, "handle", handle)
+				if delOut, err := delCmd.CombinedOutput(); err != nil {
+					log.Printf("[nft] 删除规则失败 %s (%s): %v (%s)", tag, chain, err, delOut)
+				} else {
+					log.Printf("[nft] 执行命令: %s", strings.Join(delCmd.Args, " "))
+				}
 			}
 		}
 	}

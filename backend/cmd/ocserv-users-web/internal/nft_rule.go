@@ -12,6 +12,7 @@ type RuleConfig struct {
 	IP       string `json:"ip"`
 	Protocol string `json:"protocol"`
 	Port     uint16 `json:"port,omitempty"`
+	ToLocal  bool   `json:"to_local"` // 是否访问宿主机本地服务
 }
 
 type RuleGroup struct {

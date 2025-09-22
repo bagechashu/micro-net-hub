@@ -12,11 +12,6 @@ import (
 )
 
 func main() {
-	// 检查系统依赖
-	if err := internal.CheckDependencies(); err != nil {
-		log.Fatalf("[main] 检查系统依赖失败: %v", err)
-	}
-
 	var (
 		configPath = flag.String("config", "rules.json", "配置文件路径")
 		// refresh       = flag.Duration("refresh", 30*time.Second, "刷新间隔")
@@ -25,10 +20,12 @@ func main() {
 
 	flag.Parse()
 
+	// 加载防火墙配置
 	cfg, err := internal.LoadConfig(*configPath)
 	if err != nil {
 		log.Fatalf("[main] 配置加载失败: %v", err)
 	}
+	// log.Printf("[main] 配置加载成功: %+v", cfg)
 
 	// 初始化 nftables
 	log.Println("[nft] nftables 初始化")

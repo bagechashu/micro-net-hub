@@ -5,12 +5,10 @@ nft list ruleset
 nft list table inet vpn_filter
 nft list chain inet vpn_filter vpn_forward
 
-
 nft flush ruleset 
 nft delete table inet filter
 nft delete table ip vpn_filter
 nft flush chain ip vpn_filter vpn_forward
-
 
 nft delete chain ip vpn_filter vpn_forward
 nft delete table ip vpn_filter
@@ -18,6 +16,12 @@ nft delete table ip vpn_filter
 nft add table ip vpn_filter
 nft add chain ip vpn_filter vpn_forward
 nft add rule ip vpn_filter vpn_forward counter accept
+
+nft add rule ip vpn_filter vpn_input ip saddr 1.2.3.4 tcp dport 22 accept
+nft add rule ip vpn_filter vpn_input ip saddr 1.2.3.4 meta l4proto tcp accept
+
+nft add rule vpn_filter vpn_input tcp dport 22 accept
+nft add rule vpn_filter vpn_input meta l4proto tcp accept
 
 ```
 
