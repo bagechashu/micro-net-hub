@@ -22,6 +22,7 @@ nft add rule ip vpn_filter vpn_input ip saddr 1.2.3.4 meta l4proto tcp accept
 
 nft add rule vpn_filter vpn_input tcp dport 22 accept
 nft add rule vpn_filter vpn_input meta l4proto tcp accept
+nft add rule vpn_filter vpn_input iif lo accept comment "allow_loopback"
 
 ```
 

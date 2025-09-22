@@ -4,7 +4,6 @@ package main
 import (
 	"flag"
 	"log"
-	"net"
 	"ocserv-users/internal"
 	"ocserv-users/web"
 	"os"
@@ -49,15 +48,6 @@ func main() {
 
 	// 启动 WEB 服务
 	go web.RunWebServer(*webListenAddr)
-
-	// 允许本地访问 WEB 服务
-	_, port, err := net.SplitHostPort(*webListenAddr)
-	if err != nil {
-		log.Fatalf("[main] 解析webaddr失败: %v", err)
-	}
-	if err := internal.EnableWebAccessOnLocalhost(port); err != nil {
-		log.Printf("[nft] 添加 web access on localhost 规则失败: %v", err)
-	}
 
 	// 等待退出信号
 	sigChan := make(chan os.Signal, 1)

@@ -88,7 +88,8 @@ func flushFilterTableAndChain() error {
 
 func ensureFilterTableAndChain() error {
 	establishedComment := "allow_return_traffic"
-	ocserv443AllowComment := "allow_ocserv_443"
+	allowLoopbackComment := "allow_loopback"
+	allowOcserv443Comment := "allow_ocserv_443"
 	// 确保 vpn_filter 表存在
 	if err := exec.Command("nft", "list", "table", "ip", filterTableName).Run(); err != nil {
 		if err := exec.Command("nft", "add", "table", "ip", filterTableName).Run(); err != nil {
@@ -124,9 +125,15 @@ func ensureFilterTableAndChain() error {
 		return err
 	}
 
+	// vpn_input 添加允许 loopback
+	if err := exec.Command("nft", "add", "rule", "ip", filterTableName, filterInputChainName,
+		"iif", "lo", "accept", "comment", fmt.Sprintf("\"%s\"", allowLoopbackComment)).Run(); err != nil {
+		return err
+	}
+
 	// vpn_input 添加允许 443 端口访问规则
 	if err := exec.Command("nft", "add", "rule", "ip", filterTableName, filterInputChainName,
-		"tcp", "dport", "443", "accept", "comment", fmt.Sprintf("\"%s\"", ocserv443AllowComment)).Run(); err != nil {
+		"tcp", "dport", "443", "accept", "comment", fmt.Sprintf("\"%s\"", allowOcserv443Comment)).Run(); err != nil {
 		return err
 	}
 	return nil
@@ -143,17 +150,6 @@ func enableSshAccept30MinAfterRestart() error {
 		deleteNftRules(tmpSshAcceptComment)
 		log.Println("[nft] 已移除临时SSH放行规则")
 	})
-	return nil
-}
-
-// EnableWebAccessOnLocalhost 允许 127.0.0.1 访问 本服务的 web 端口, 使 ocserv script 能够工作
-func EnableWebAccessOnLocalhost(port string) error {
-	webAccessComment := "allow_web_on_localhost"
-	if err := exec.Command("nft", "add", "rule", "ip", filterTableName, filterInputChainName,
-		"ip", "saddr", "127.0.0.1",
-		"tcp", "dport", port, "accept", "comment", fmt.Sprintf("\"%s\"", webAccessComment)).Run(); err != nil {
-		return err
-	}
 	return nil
 }
 
