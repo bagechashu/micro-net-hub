@@ -15,7 +15,6 @@ const (
 	filterTableName        = "vpn_filter"
 	filterForwardChainName = "vpn_forward"
 	filterInputChainName   = "vpn_input"
-	establishedComment     = "allow_return_traffic"
 )
 
 // -------------------- 全局状态 --------------------
@@ -88,6 +87,8 @@ func flushFilterTableAndChain() error {
 }
 
 func ensureFilterTableAndChain() error {
+	establishedComment := "allow_return_traffic"
+	ocserv443AllowComment := "allow_ocserv_443"
 	// 确保 vpn_filter 表存在
 	if err := exec.Command("nft", "list", "table", "ip", filterTableName).Run(); err != nil {
 		if err := exec.Command("nft", "add", "table", "ip", filterTableName).Run(); err != nil {
@@ -122,12 +123,18 @@ func ensureFilterTableAndChain() error {
 		"ct", "state", "established,related", "accept", "comment", fmt.Sprintf("\"%s\"", establishedComment)).Run(); err != nil {
 		return err
 	}
+
+	// vpn_input 添加允许 443 端口访问规则
+	if err := exec.Command("nft", "add", "rule", "ip", filterTableName, filterInputChainName,
+		"tcp", "dport", "443", "accept", "comment", fmt.Sprintf("\"%s\"", ocserv443AllowComment)).Run(); err != nil {
+		return err
+	}
 	return nil
 }
 
 // enableSshAccept30MinAfterRestart 重启后30分钟内允许SSH访问
 func enableSshAccept30MinAfterRestart() error {
-	tmpSshAcceptComment := "tmp_ssh_accept_comment"
+	tmpSshAcceptComment := "tmp_allow_ssh"
 	if err := exec.Command("nft", "add", "rule", "ip", filterTableName, filterInputChainName,
 		"tcp", "dport", "22", "accept", "comment", fmt.Sprintf("\"%s\"", tmpSshAcceptComment)).Run(); err != nil {
 		return err
@@ -136,6 +143,17 @@ func enableSshAccept30MinAfterRestart() error {
 		deleteNftRules(tmpSshAcceptComment)
 		log.Println("[nft] 已移除临时SSH放行规则")
 	})
+	return nil
+}
+
+// EnableWebAccessOnLocalhost 允许 127.0.0.1 访问 本服务的 web 端口, 使 ocserv script 能够工作
+func EnableWebAccessOnLocalhost(port string) error {
+	webAccessComment := "allow_web_on_localhost"
+	if err := exec.Command("nft", "add", "rule", "ip", filterTableName, filterInputChainName,
+		"ip", "saddr", "127.0.0.1",
+		"tcp", "dport", port, "accept", "comment", fmt.Sprintf("\"%s\"", webAccessComment)).Run(); err != nil {
+		return err
+	}
 	return nil
 }
 
