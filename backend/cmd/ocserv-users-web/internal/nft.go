@@ -120,8 +120,7 @@ func RunNftablesManager(ctx context.Context, refresh time.Duration) {
 	}
 }
 
-// UpdateNftablesRulesWithSessions
-// 支持同一用户多个设备
+// UpdateNftablesRulesWithSessions 支持多设备，tag = username:ip:ruleIndex
 func UpdateNftablesRulesWithSessions(userRules map[string][]RuleConfig) error {
 	sessions, err := GetSessions()
 	if err != nil {
@@ -132,104 +131,55 @@ func UpdateNftablesRulesWithSessions(userRules map[string][]RuleConfig) error {
 	mu.Lock()
 	defer mu.Unlock()
 
-	current := make(map[string][]string) // username -> []IPv4
-	currentSessions := make(map[string]time.Time)
-
-	// 构建当前在线用户映射
+	// 当前在线用户映射 username -> []IPv4
+	current := make(map[string][]string)
 	for _, s := range sessions {
+		if s.Username == "" || s.IPv4 == "" {
+			continue
+		}
 		current[s.Username] = append(current[s.Username], s.IPv4)
-		currentSessions[s.Username] = time.Now()
 	}
 
-	// 处理每个在线用户
 	for username, ips := range current {
-		oldIPs, exists := onlineUsers[username]
+		oldIPs := onlineUsers[username]
 
-		if !exists {
-			// 新用户登录（任何设备）
-			userSessions[username] = time.Now()
-			log.Printf("[user] 用户 %s 首次登录，IP列表: %v，时间: %s", username, ips, userSessions[username].Format("2006-01-02 15:04:05"))
-			for i, ip := range ips {
-				if ip != "" {
-					for j, r := range userRules[username] {
-						addNftRule(fmt.Sprintf("user:%s:%d:%d", username, i, j), ip, r)
-					}
-				}
+		added, removed := diffIPs(oldIPs, ips)
+		if len(added) > 0 {
+			log.Printf("[diff] 用户 %s 新上线 IP: %v", username, added)
+		}
+		if len(removed) > 0 {
+			log.Printf("[diff] 用户 %s 下线 IP: %v", username, removed)
+		}
+
+		// 处理新增 IP
+		for _, ip := range added {
+			for j, r := range userRules[username] {
+				tag := fmt.Sprintf("user:%s:%s:%d", username, ip, j)
+				addNftRule(tag, ip, r)
 			}
-		} else {
-			// 检查是否有IP变更
-			needUpdate := false
+			clearConntrack(ip)
+		}
 
-			// 检查是否有新IP（新设备登录）
-			for _, newIP := range ips {
-				found := false
-				for _, oldIP := range oldIPs {
-					if newIP == oldIP {
-						found = true
-						break
-					}
-				}
-				if !found && newIP != "" {
-					needUpdate = true
-					log.Printf("[user] 用户 %s 新设备登录，新增IP: %s，时间: %s", username, newIP, time.Now().Format("2006-01-02 15:04:05"))
-				}
+		// 处理下线 IP
+		for _, ip := range removed {
+			for j := range userRules[username] {
+				tag := fmt.Sprintf("user:%s:%s:%d", username, ip, j)
+				deleteNftRules(tag)
 			}
-
-			// 检查是否有IP变更（设备重新连接）
-			for _, oldIP := range oldIPs {
-				found := false
-				for _, newIP := range ips {
-					if oldIP == newIP {
-						found = true
-						break
-					}
-				}
-				if !found {
-					needUpdate = true
-					log.Printf("[user] 用户 %s 设备断开，移除IP: %s，时间: %s", username, oldIP, time.Now().Format("2006-01-02 15:04:05"))
-				}
-			}
-
-			if needUpdate {
-				// 删除该用户所有规则
-				for i, ip := range oldIPs {
-					for j := range userRules[username] {
-						deleteNftRules(fmt.Sprintf("user:%s:%d:%d", username, i, j))
-					}
-					clearConntrack(ip) // 清理旧连接
-				}
-
-				// 为所有当前IP重新添加规则
-				for i, ip := range ips {
-					if ip != "" {
-						for j, r := range userRules[username] {
-							addNftRule(fmt.Sprintf("user:%s:%d:%d", username, i, j), ip, r)
-						}
-					}
-					clearConntrack(ip) // 清理旧连接
-				}
-			}
+			clearConntrack(ip)
 		}
 	}
 
-	// 处理完全离线的用户
+	// 处理完全下线用户
 	for username, oldIPs := range onlineUsers {
 		if _, ok := current[username]; !ok {
-			// 用户完全离线
-			if loginTime, exists := userSessions[username]; exists {
-				log.Printf("[user] 用户 %s 完全离线，登录时间: %s，离线时间: %s，时长: %v",
-					username,
-					loginTime.Format("2006-01-02 15:04:05"),
-					time.Now().Format("2006-01-02 15:04:05"),
-					time.Since(loginTime))
-				delete(userSessions, username)
-			}
-			// 删除该用户所有规则
-			for i, ip := range oldIPs {
+			log.Printf("[diff] 用户 %s 完全下线，移除所有 IP: %v", username, oldIPs)
+			for _, ip := range oldIPs {
 				for j := range userRules[username] {
-					deleteNftRules(fmt.Sprintf("user:%s:%d:%d", username, i, j))
+					tag := fmt.Sprintf("user:%s:%s:%d", username, ip, j)
+					deleteNftRules(tag)
 				}
-				clearConntrack(ip) // 清理旧连接
+				clearConntrack(ip)
 			}
 		}
 	}
@@ -237,6 +187,32 @@ func UpdateNftablesRulesWithSessions(userRules map[string][]RuleConfig) error {
 	// 更新全局在线用户映射
 	onlineUsers = current
 	return nil
+}
+
+// diffIPs 对比两个 IP 列表，返回新增和移除的 IP
+func diffIPs(oldIPs, newIPs []string) (added, removed []string) {
+	oldMap := make(map[string]struct{}, len(oldIPs))
+	newMap := make(map[string]struct{}, len(newIPs))
+
+	for _, ip := range oldIPs {
+		oldMap[ip] = struct{}{}
+	}
+	for _, ip := range newIPs {
+		newMap[ip] = struct{}{}
+	}
+
+	for ip := range newMap {
+		if _, ok := oldMap[ip]; !ok {
+			added = append(added, ip)
+		}
+	}
+	for ip := range oldMap {
+		if _, ok := newMap[ip]; !ok {
+			removed = append(removed, ip)
+		}
+	}
+
+	return
 }
 
 func addNftRule(tag, srcIP string, r RuleConfig) {
