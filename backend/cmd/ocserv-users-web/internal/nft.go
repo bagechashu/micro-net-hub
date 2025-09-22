@@ -40,7 +40,7 @@ func InitNftables(publicRules []RuleConfig) error {
 
 	// 添加公共规则
 	for i, r := range publicRules {
-		addNftRule(fmt.Sprintf("public:%d", i), "0.0.0.0/0", r)
+		addNftRule("0.0.0.0/0", r.IP, r.Protocol, r.Port, r.ToLocal, fmt.Sprintf("public:%d", i))
 	}
 
 	go enableSshAccept30MinAfterRestart()
@@ -206,7 +206,7 @@ func UpdateNftablesRulesWithSessions(userRules map[string][]RuleConfig) error {
 		for _, ip := range added {
 			for j, r := range userRules[username] {
 				tag := fmt.Sprintf("user:%s:%s:%d", username, ip, j)
-				addNftRule(tag, ip, r)
+				addNftRule(ip, r.IP, r.Protocol, r.Port, r.ToLocal, tag)
 			}
 			clearConntrack(ip)
 		}
@@ -266,31 +266,37 @@ func diffIPs(oldIPs, newIPs []string) (added, removed []string) {
 	return
 }
 
-func addNftRule(tag, srcIP string, r RuleConfig) {
-	proto := strings.ToLower(r.Protocol)
-
+// addNftRule 添加自定义规则到指定链
+// srcIP: 源IP地址
+// dstIP: 目标IP地址
+// protocol: 协议(tcp/udp/icmp)
+// port: 端口号(0表示所有端口)
+// toLocal: 是否要添加到 input 链(目标是本机)
+// tag: 规则标签，用于后续删除
+func addNftRule(srcIP, dstIP, protocol string, port uint16, toLocal bool, tag string) {
 	// 自动识别目标是否是本机
 	chain := filterForwardChainName
-	if isLocalIP(r.IP) || r.ToLocal { // 如果目标是本机，或者强制认为是本机
+	if isLocalIP(dstIP) || toLocal { // 如果目标是本机，或者强制认为是本机
 		chain = filterInputChainName
 	}
 
+	proto := strings.ToLower(protocol)
 	args := []string{
 		"add", "rule", "ip", filterTableName, chain,
-		"ip", "saddr", srcIP, "ip", "daddr", r.IP,
+		"ip", "saddr", srcIP, "ip", "daddr", dstIP,
 	}
 
 	switch proto {
 	case "tcp", "udp":
-		if r.Port > 0 {
-			args = append(args, proto, "dport", fmt.Sprint(r.Port))
+		if port > 0 {
+			args = append(args, proto, "dport", fmt.Sprint(port))
 		} else {
 			args = append(args, "meta", "l4proto", proto)
 		}
 	case "icmp":
 		args = append(args, "meta", "l4proto", proto)
 	default:
-		log.Printf("[nft] 当前不支持协议 %s", r.Protocol)
+		log.Printf("[nft] 当前不支持协议 %s", protocol)
 		return
 	}
 
