@@ -53,8 +53,9 @@
   ],
   "public_rule_ref": "public_dns",
   "input_chain": [
-    {
-      "src_ip": "10.12.0.0/16",
+    { 
+      "name": "input",
+      "src_ip": ["10.12.0.0/16"],
       "rule_ref": "input_rules"
     }
   ]

@@ -27,6 +27,7 @@ type UserGroup struct {
 }
 
 type InputChainGroup struct {
+	Name    string   `json:"name"`
 	SrcIP   []string `json:"src_ip"`
 	RuleRef string   `json:"rule_ref"` // 引用的规则组名称
 }
