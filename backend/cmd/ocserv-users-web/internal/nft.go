@@ -15,7 +15,7 @@ const (
 	filterTableName        = "vpn_filter"
 	filterForwardChainName = "vpn_forward"
 	filterInputChainName   = "vpn_input"
-	establishedComment     = "allow return traffic"
+	establishedComment     = "allow_return_traffic"
 )
 
 // -------------------- 全局状态 --------------------
@@ -43,6 +43,8 @@ func InitNftables(publicRules []RuleConfig) error {
 	for i, r := range publicRules {
 		addNftRule(fmt.Sprintf("public:%d", i), "0.0.0.0/0", r)
 	}
+
+	go enableSshAccept30MinAfterRestart()
 	return nil
 }
 
@@ -120,6 +122,20 @@ func ensureFilterTableAndChain() error {
 		"ct", "state", "established,related", "accept", "comment", fmt.Sprintf("\"%s\"", establishedComment)).Run(); err != nil {
 		return err
 	}
+	return nil
+}
+
+// enableSshAccept30MinAfterRestart 重启后30分钟内允许SSH访问
+func enableSshAccept30MinAfterRestart() error {
+	tmpSshAcceptComment := "tmp_ssh_accept_comment"
+	if err := exec.Command("nft", "add", "rule", "ip", filterTableName, filterInputChainName,
+		"tcp", "dport", "22", "accept", "comment", fmt.Sprintf("\"%s\"", tmpSshAcceptComment)).Run(); err != nil {
+		return err
+	}
+	time.AfterFunc(30*time.Minute, func() {
+		deleteNftRules(tmpSshAcceptComment)
+		log.Println("[nft] 已移除临时SSH放行规则")
+	})
 	return nil
 }
 
