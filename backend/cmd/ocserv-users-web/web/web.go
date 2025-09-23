@@ -24,7 +24,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	_ = tmpl.Execute(w, sessions)
 }
 
-func NftablesHandler(w http.ResponseWriter, r *http.Request) {
+func nftablesHandler(w http.ResponseWriter, r *http.Request) {
 	// 只接受 POST 请求
 	if r.Method != http.MethodPost {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
@@ -51,7 +51,7 @@ func NftablesHandler(w http.ResponseWriter, r *http.Request) {
 
 func RunWebServer(addr string) {
 	http.HandleFunc("/", indexHandler)
-	http.HandleFunc("/nftables", NftablesHandler)
+	http.HandleFunc("/nftables", nftablesHandler)
 	go func() {
 		log.Printf("[web] 服务运行中: http://%s", addr)
 		if err := http.ListenAndServe(addr, nil); err != nil {

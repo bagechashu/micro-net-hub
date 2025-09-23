@@ -163,24 +163,6 @@ func enableSshAccept30MinAfterRestart() error {
 	return nil
 }
 
-func RunNftablesManager(ctx context.Context, refresh time.Duration) {
-	ticker := time.NewTicker(refresh)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ctx.Done():
-			log.Println("[nft] 停止nftables管理器")
-			return
-		case <-ticker.C:
-			if err := UpdateNftablesRulesWithSessions(GlobalUserRules); err != nil {
-				log.Printf("[nft] 更新规则失败: %v", err)
-				continue
-			}
-		}
-	}
-}
-
 // UpdateNftablesRulesWithSessions 支持多设备，tag = username:ip:ruleIndex
 func UpdateNftablesRulesWithSessions(userRules map[string][]RuleConfig) error {
 	sessions, err := GetSessions()
@@ -361,4 +343,22 @@ func clearConntrack(ip string) {
 	}
 
 	log.Printf("[nft] 执行命令: %s", strings.Join(cmd.Args, " "))
+}
+
+func RunNftablesManager(ctx context.Context, refresh time.Duration) {
+	ticker := time.NewTicker(refresh)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			log.Println("[nft] 停止nftables管理器")
+			return
+		case <-ticker.C:
+			if err := UpdateNftablesRulesWithSessions(GlobalUserRules); err != nil {
+				log.Printf("[nft] 更新规则失败: %v", err)
+				continue
+			}
+		}
+	}
 }
