@@ -31,7 +31,9 @@ nft add rule vpn_filter vpn_input iif lo accept comment "allow_loopback"
 ```sh
 #!/bin/bash
 
-echo USERNAME="$USERNAME" IP_REMOTE="$IP_REMOTE" REASON="$REASON"
+CONNECT_INFO="[notice] $USERNAME\($IP_REAL\) $REASON Ocserv VPN"
+
+/usr/bin/curl --connect-timeout 5 -XPOST "http://:9000/webhook/raw/ding?secret=securitykey" -d "${CONNECT_INFO}" >/dev/null 2>&1
 
 (/usr/bin/curl -XPOST http://127.0.0.1:8080/nftables 2>/dev/null &)
 
