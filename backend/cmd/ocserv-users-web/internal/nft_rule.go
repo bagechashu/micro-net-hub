@@ -67,7 +67,8 @@ func GetUserRulesMapping(config *FullConfig) map[string][]RuleConfig {
 
 		// 为该组中的每个用户分配规则
 		for _, username := range userGroup.Users {
-			userRules[username] = ruleGroup.Rules
+			// 将规则追加到现有规则中，以支持多个组的规则合并
+			userRules[username] = append(userRules[username], ruleGroup.Rules...)
 		}
 	}
 

@@ -42,7 +42,7 @@
     },
     {
       "name": "developers",
-      "users": ["user2", "dev1", "dev2"],
+      "users": ["user1", "user2", "dev1", "dev2"],
       "rule_ref": "user_network"
     },
     {
