@@ -6,6 +6,7 @@ import (
 	"os"
 )
 
+// GlobalUserRules 全局用户规则映射
 var GlobalUserRules map[string][]RuleConfig
 
 type RuleConfig struct {

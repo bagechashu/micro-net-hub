@@ -31,7 +31,18 @@ nft add rule vpn_filter vpn_input iif lo accept comment "allow_loopback"
 ```sh
 #!/bin/bash
 
-CONNECT_INFO="[notice] $USERNAME\($IP_REAL\) $REASON Ocserv VPN"
+GREEN="#08d417"
+RED="#ff0000"
+
+if [[ $REASON == "connect" ]]; then
+  REASON_COLOR="<font color=\"$GREEN\"> $REASON </font>"
+elif [[ $REASON == "disconnect" ]]; then
+  REASON_COLOR="<font color=\"$RED\"> $REASON </font>"
+else
+  REASON_COLOR=$REASON
+fi
+
+CONNECT_INFO="[notice] $USERNAME\($IP_REAL\) $REASON_COLOR Ocserv VPN"
 
 /usr/bin/curl --connect-timeout 5 -XPOST "http://:9000/webhook/raw/ding?secret=securitykey" -d "${CONNECT_INFO}" >/dev/null 2>&1
 
