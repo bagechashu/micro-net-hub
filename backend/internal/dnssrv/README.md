@@ -19,8 +19,11 @@
 # multiple servers.
 dns = 192.168.0.10
 
-# The domains over which the provided DNS should be used. Use
-# multiple lines for multiple domains.
-split-dns = corp.example.com
+## "split-dns" limitation
+# "split-dns" functionality has compatibility issues with certain clients. 
+# Test results show that Cisco AnyConnect on macOS does not support the split-DNS feature, 
+# causing all intranet domain name resolution requests to fail 
+# to be proxied to the DNS server provided by Ocserv.
+# x split-dns = corp.example.com
 
 ```
