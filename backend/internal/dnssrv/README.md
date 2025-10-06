@@ -11,3 +11,16 @@
 ## TODO
 - Use state to control whether queries can be made
 - implementation of dns records to add, delete, change and search
+
+## Ocserv configuration
+
+```
+# The advertized DNS server. Use multiple lines for
+# multiple servers.
+dns = 192.168.0.10
+
+# The domains over which the provided DNS should be used. Use
+# multiple lines for multiple domains.
+split-dns = corp.example.com
+
+```
