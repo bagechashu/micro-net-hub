@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"strings"
 )
 
 // GlobalUserRules 全局用户规则映射
@@ -68,6 +69,7 @@ func GetUserRulesMapping(config *FullConfig) map[string][]RuleConfig {
 
 		// 为该组中的每个用户分配规则
 		for _, username := range userGroup.Users {
+			username = strings.ToLower(username) // 用户名转小写，保持一致性
 			// 将规则追加到现有规则中，以支持多个组的规则合并
 			userRules[username] = append(userRules[username], ruleGroup.Rules...)
 		}

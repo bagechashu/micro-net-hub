@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os/exec"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -97,6 +98,9 @@ func GetSessions() ([]Session, error) {
 		if s.Username == "" || s.Username == "(none)" {
 			continue
 		}
+
+		// s.Username 全部转成小写, 因为 Ocserv 登录的用户不区分大小写
+		s.Username = strings.ToLower(s.Username)
 
 		s.RXHuman = toHumanSize(s.RX)
 		s.TXHuman = toHumanSize(s.TX)
