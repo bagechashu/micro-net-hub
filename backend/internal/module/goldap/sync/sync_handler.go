@@ -162,27 +162,27 @@ func SyncSqlUsers(c *gin.Context) {
 	var users = accountModel.NewUsers()
 	err = users.GetUsersByIds(req.UserIds)
 	if err != nil {
-		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取用户信息失败: "+err.Error())))
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取用户信息失败: %s", err.Error())))
 		return
 	}
 	// 2.再将用户添加到ldap
 	for _, user := range users {
 		err = ldapmgr.LdapUserAdd(user)
 		if err != nil {
-			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("SyncUser向LDAP同步用户失败："+err.Error())))
+			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("SyncUser向LDAP同步用户失败: %s", err.Error())))
 			return
 		}
 		for _, group := range user.Groups {
 			//根据选择的部门，添加到部门内
 			err = ldapmgr.LdapDeptAddUserToGroup(group.GroupDN, user.UserDN)
 			if err != nil {
-				helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("向Ldap添加用户到分组关系失败："+err.Error())))
+				helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("向Ldap添加用户到分组关系失败: %s", err.Error())))
 				return
 			}
 		}
 		err = user.ChangeStatus(accountModel.UserNormal, accountModel.UserSyncNormal)
 		if err != nil {
-			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("用户同步完毕之后更新状态失败："+err.Error())))
+			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("用户同步完毕之后更新状态失败: %s", err.Error())))
 			return
 		}
 	}
@@ -220,14 +220,14 @@ func SyncSqlGroups(c *gin.Context) {
 	var gs = accountModel.NewGroups()
 	err = gs.GetGroupsByIds(req.GroupIds)
 	if err != nil {
-		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取分组信息失败: "+err.Error())))
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取分组信息失败: %s", err.Error())))
 		return
 	}
 	// 2.再将分组添加到ldap
 	for _, group := range gs {
 		err = ldapmgr.LdapDeptAdd(group)
 		if err != nil {
-			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("SyncUser向LDAP同步分组失败："+err.Error())))
+			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("SyncUser向LDAP同步分组失败: %s", err.Error())))
 			return
 		}
 		if len(group.Users) > 0 {
@@ -237,14 +237,14 @@ func SyncSqlGroups(c *gin.Context) {
 				}
 				err = ldapmgr.LdapDeptAddUserToGroup(group.GroupDN, user.UserDN)
 				if err != nil {
-					helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("同步分组之后处理分组内的用户失败："+err.Error())))
+					helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("同步分组之后处理分组内的用户失败：%s", err.Error())))
 					return
 				}
 			}
 		}
 		err = group.ChangeSyncState(1)
 		if err != nil {
-			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("分组同步完毕之后更新状态失败："+err.Error())))
+			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("分组同步完毕之后更新状态失败：%s", err.Error())))
 			return
 		}
 	}

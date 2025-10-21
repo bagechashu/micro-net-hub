@@ -307,7 +307,7 @@ func LdapUserSyncToDB(user *accountModel.User) error {
 		// 先将用户添加到MySQL
 		err := user.Add()
 		if err != nil {
-			return helper.NewMySqlError(fmt.Errorf("向MySQL创建用户失败：" + err.Error()))
+			return helper.NewMySqlError(fmt.Errorf("向MySQL创建用户失败: %s", err.Error()))
 		}
 	}
 	return nil

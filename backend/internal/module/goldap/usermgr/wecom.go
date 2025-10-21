@@ -79,7 +79,7 @@ func (mgr WeChat) SyncUsers() error {
 	var users = accountModel.NewUsers()
 	err = users.ListAll()
 	if err != nil {
-		return helper.NewMySqlError(fmt.Errorf("获取用户列表失败：" + err.Error()))
+		return helper.NewMySqlError(fmt.Errorf("获取用户列表失败：%s", err.Error()))
 	}
 	for _, user := range users {
 		if user.Source != config.Conf.WeCom.Flag {
@@ -101,21 +101,21 @@ func (mgr WeChat) SyncUsers() error {
 		user := new(accountModel.User)
 		err = user.Find(map[string]interface{}{"source_user_id": userTmp.SourceUserId, "status": 1})
 		if err != nil {
-			return helper.NewMySqlError(fmt.Errorf("在MySQL查询用户失败: " + err.Error()))
+			return helper.NewMySqlError(fmt.Errorf("在MySQL查询用户失败: %s", err.Error()))
 		}
 
 		// 先从ldap删除用户
 		if config.Conf.Ldap.EnableManage {
 			err = ldapmgr.LdapUserDelete(user.UserDN)
 			if err != nil {
-				return helper.NewLdapError(fmt.Errorf("在LDAP删除用户失败" + err.Error()))
+				return helper.NewLdapError(fmt.Errorf("在LDAP删除用户失败: %s", err.Error()))
 			}
 		}
 
 		// 然后更新MySQL中用户状态
 		err = user.ChangeStatus(accountModel.UserDisabled, accountModel.UserSyncUnNormal)
 		if err != nil {
-			return helper.NewMySqlError(fmt.Errorf("在MySQL更新用户状态失败: " + err.Error()))
+			return helper.NewMySqlError(fmt.Errorf("在MySQL更新用户状态失败: %s", err.Error()))
 		}
 	}
 	return nil

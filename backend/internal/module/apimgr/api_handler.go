@@ -79,7 +79,7 @@ type ApiTreeRsp struct {
 func GetTree(c *gin.Context) {
 	apis, err := model.ListAll()
 	if err != nil {
-		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取资源列表失败: "+err.Error())))
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取资源列表失败: %s", err.Error())))
 		return
 	}
 

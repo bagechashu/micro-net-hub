@@ -318,7 +318,7 @@ func RoleGetMenuList(c *gin.Context) {
 
 	menus, err := model.GetRoleMenusById(req.RoleID)
 	if err != nil {
-		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取角色的权限菜单失败: "+err.Error())))
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取角色的权限菜单失败: %s", err.Error())))
 	}
 	helper.Success(c, menus)
 
@@ -340,7 +340,7 @@ func RoleGetApiList(c *gin.Context) {
 	role := new(model.Role)
 	err = role.Find(map[string]interface{}{"id": req.RoleID})
 	if err != nil {
-		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取资源失败: "+err.Error())))
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取资源失败: %s", err.Error())))
 		return
 	}
 
@@ -352,7 +352,7 @@ func RoleGetApiList(c *gin.Context) {
 
 	apis, err := apiMgrModel.ListAll()
 	if err != nil {
-		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取资源列表失败: "+err.Error())))
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取资源列表失败: %s", err.Error())))
 		return
 	}
 	accessApis := make([]*apiMgrModel.Api, 0)
@@ -416,7 +416,7 @@ func RoleUpdateMenus(c *gin.Context) {
 	// 获取当前用户所拥有的权限菜单
 	ctxUserMenus, err := model.GetUserMenusByUserId(ctxUser.ID)
 	if err != nil {
-		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取当前用户的可访问菜单列表失败: "+err.Error())))
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取当前用户的可访问菜单列表失败: %s", err.Error())))
 		return
 	}
 
@@ -452,7 +452,7 @@ func RoleUpdateMenus(c *gin.Context) {
 		var menus = model.NewMenus()
 		err := menus.List()
 		if err != nil {
-			helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("获取菜单列表失败: "+err.Error())))
+			helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("获取菜单列表失败: %s", err.Error())))
 			return
 		}
 		for _, menuId := range req.MenuIds {
@@ -468,7 +468,7 @@ func RoleUpdateMenus(c *gin.Context) {
 
 	err = roles[0].UpdateRoleMenus()
 	if err != nil {
-		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("更新角色的权限菜单失败: "+err.Error())))
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("更新角色的权限菜单失败: %s", err.Error())))
 		return
 	}
 
@@ -492,7 +492,7 @@ func RoleUpdateApis(c *gin.Context) {
 	// 根据path中的角色ID获取该角色信息
 	roles := model.NewRoles()
 	if err := roles.GetRolesByIds([]uint{req.RoleID}); err != nil {
-		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取角色信息失败: "+err.Error())))
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取角色信息失败: %s", err.Error())))
 		return
 	}
 	if len(roles) == 0 {
@@ -521,7 +521,7 @@ func RoleUpdateApis(c *gin.Context) {
 	for _, role := range ctxRoles {
 		policy, err := global.CasbinEnforcer.GetFilteredPolicy(0, role.Keyword)
 		if err != nil {
-			helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取当前用户的可访问接口列表失败: "+err.Error())))
+			helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取当前用户的可访问接口列表失败: %s", err.Error())))
 			return
 		}
 		ctxRolesPolicies = append(ctxRolesPolicies, policy...)

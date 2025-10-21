@@ -135,13 +135,13 @@ func Add(c *gin.Context) {
 	var gs = model.NewGroups()
 	err = gs.GetGroupsByIds(req.GroupIds)
 	if err != nil {
-		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败: "+err.Error())))
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("根据部门ID获取部门信息失败: %s", err.Error())))
 		return
 	}
 	user.Groups = gs
 	err = CommonAddUser(&user)
 	if err != nil {
-		helper.ErrV2(c, helper.NewOperationError(fmt.Errorf("添加用户失败: "+err.Error())))
+		helper.ErrV2(c, helper.NewOperationError(fmt.Errorf("添加用户失败: %s", err.Error())))
 		return
 	}
 
@@ -157,7 +157,7 @@ func Add(c *gin.Context) {
 			return
 		}
 		if err := tools.SendUserInfo([]string{nu.Mail}, nu.Username, req.Password, qrRawPngBase64); err != nil {
-			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("邮件发送新用户账户信息失败, 请手工通知"+err.Error())))
+			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("邮件发送新用户账户信息失败, 请手工通知: %s", err.Error())))
 			return
 		}
 	}
@@ -303,7 +303,7 @@ func Update(c *gin.Context) {
 
 	// CommonUpdateUser 中调用 db.user.Update 会导致 user password 变成后端加密后的 password.
 	if err = CommonUpdateUser(oldData, &user, req.GroupIds); err != nil {
-		helper.ErrV2(c, helper.NewOperationError(fmt.Errorf("更新用户失败: "+err.Error())))
+		helper.ErrV2(c, helper.NewOperationError(fmt.Errorf("更新用户失败: %s", err.Error())))
 		return
 	}
 
@@ -327,7 +327,7 @@ func Update(c *gin.Context) {
 
 		// global.Log.Info("更新用户信息: %+v", user)
 		if err := tools.SendUserInfo([]string{nu.Mail}, nu.Username, string(decodeData), qrRawPngBase64); err != nil {
-			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("邮件发送用户账号更新信息失败, 请手工通知"+err.Error())))
+			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("邮件发送用户账号更新信息失败, 请手工通知: %s", err.Error())))
 			return
 		}
 	}
@@ -370,7 +370,7 @@ func List(c *gin.Context) {
 		req.PageSize,
 	)
 	if err != nil {
-		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取用户列表失败: "+err.Error())))
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取用户列表失败: %s", err.Error())))
 		return
 	}
 
@@ -387,7 +387,7 @@ func List(c *gin.Context) {
 		},
 	)
 	if err != nil {
-		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取用户总数失败: "+err.Error())))
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取用户总数失败: %s", err.Error())))
 		return
 	}
 
@@ -450,7 +450,7 @@ func Delete(c *gin.Context) {
 	var users = model.NewUsers()
 	err = users.GetUsersByIds(req.UserIds)
 	if err != nil {
-		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取用户信息失败: "+err.Error())))
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取用户信息失败: %s", err.Error())))
 		return
 	}
 
@@ -459,7 +459,7 @@ func Delete(c *gin.Context) {
 		for _, user := range users {
 			err := ldapmgr.LdapUserDelete(user.UserDN)
 			if err != nil {
-				helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("在LDAP删除用户失败"+err.Error())))
+				helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("在LDAP删除用户失败: %s", err.Error())))
 				return
 			}
 		}
@@ -468,7 +468,7 @@ func Delete(c *gin.Context) {
 	// 再将用户从MySQL中删除
 	err = model.DeleteUsersById(req.UserIds)
 	if err != nil {
-		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("在MySQL删除用户失败: "+err.Error())))
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("在MySQL删除用户失败: %s", err.Error())))
 		return
 	}
 
@@ -493,7 +493,7 @@ func Delete(c *gin.Context) {
 			delUsernames = append(delUsernames, user.Username)
 		}
 		if err := tools.SendUserStatusNotifications(noticeUsersEmail, delUsernames, "deleted"); err != nil {
-			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("邮件发送删除用户通知失败, 请手工通知"+err.Error())))
+			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("邮件发送删除用户通知失败, 请手工通知: %s", err.Error())))
 			return
 		}
 	}
@@ -590,7 +590,7 @@ func ChangePwd(c *gin.Context) {
 	if config.Conf.Ldap.EnableManage {
 		err = ldapmgr.LdapUserChangePwd(user.UserDN, "", req.NewPassword)
 		if err != nil {
-			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("在LDAP更新密码失败"+err.Error())))
+			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("在LDAP更新密码失败: %s", err.Error())))
 			return
 		}
 	}
@@ -598,7 +598,7 @@ func ChangePwd(c *gin.Context) {
 	// 更新密码
 	err = user.ChangePwd(tools.NewGenPasswd(req.NewPassword))
 	if err != nil {
-		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("在MySQL更新密码失败: "+err.Error())))
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("在MySQL更新密码失败: %s", err.Error())))
 		return
 	}
 
@@ -632,7 +632,7 @@ func ChangeUserStatus(c *gin.Context) {
 	user := new(model.User)
 	err = user.Find(filter)
 	if err != nil {
-		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("在MySQL查询用户失败: "+err.Error())))
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("在MySQL查询用户失败: %s", err.Error())))
 		return
 	}
 	if user.CheckAdminDN() {
@@ -640,10 +640,11 @@ func ChangeUserStatus(c *gin.Context) {
 		return
 	}
 	if req.Status == user.Status {
-		if req.Status == 2 {
+		switch req.Status {
+		case 2:
 			helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("用户已经是禁用状态")))
 			return
-		} else if req.Status == 1 {
+		case 1:
 			helper.ErrV2(c, helper.NewValidatorError(fmt.Errorf("用户已经是启用状态")))
 			return
 		}
@@ -663,21 +664,22 @@ func ChangeUserStatus(c *gin.Context) {
 
 	var statusDesc string
 	var syncStat model.UserSyncStatus
-	if req.Status == model.UserDisabled {
+	switch req.Status {
+	case model.UserDisabled:
 		if config.Conf.Ldap.EnableManage {
 			err = ldapmgr.LdapUserDelete(user.UserDN)
 			if err != nil {
-				helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("在LDAP删除用户失败"+err.Error())))
+				helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("在LDAP删除用户失败: %s", err.Error())))
 				return
 			}
 		}
 		statusDesc = "deactivated"
 		syncStat = model.UserSyncUnNormal
-	} else if req.Status == model.UserNormal {
+	case model.UserNormal:
 		if config.Conf.Ldap.EnableManage {
 			err = ldapmgr.LdapUserAdd(user)
 			if err != nil {
-				helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("在LDAP添加用户失败"+err.Error())))
+				helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("在LDAP添加用户失败: %s", err.Error())))
 				return
 			}
 		}
@@ -687,7 +689,7 @@ func ChangeUserStatus(c *gin.Context) {
 
 	err = user.ChangeStatus(req.Status, syncStat)
 	if err != nil {
-		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("在MySQL更新用户状态失败: "+err.Error())))
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("在MySQL更新用户状态失败: %s", err.Error())))
 		return
 	}
 
@@ -709,7 +711,7 @@ func ChangeUserStatus(c *gin.Context) {
 
 		usernames := []string{user.Username}
 		if err := tools.SendUserStatusNotifications(noticeUsersEmail, usernames, statusDesc); err != nil {
-			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("邮件发送变更用户通知失败, 请手工通知"+err.Error())))
+			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("邮件发送变更用户通知失败, 请手工通知: %s", err.Error())))
 			return
 		}
 	}
@@ -721,7 +723,7 @@ func ChangeUserStatus(c *gin.Context) {
 func GetUserInfo(c *gin.Context) {
 	user, err := auth.GetCtxLoginUser(c)
 	if err != nil {
-		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取当前用户信息失败: "+err.Error())))
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取当前用户信息失败: %s", err.Error())))
 		return
 	}
 	helper.Success(c, user)

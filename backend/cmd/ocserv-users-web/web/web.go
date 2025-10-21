@@ -18,7 +18,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseFS(Static, "index.html"))
 	sessions, err := internal.GetSessions()
 	if err != nil {
-		http.Error(w, "无法获取用户数据: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("无法获取用户数据: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
 	_ = tmpl.Execute(w, sessions)

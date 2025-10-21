@@ -19,50 +19,50 @@ type NavGroup struct {
 
 func (g *NavGroup) FindByName(name string) error {
 	if err := global.DB.Where("name = ?", name).First(&g).Error; err != nil {
-		return helper.NewMySqlError(fmt.Errorf("获取 NavGroup 失败: " + err.Error()))
+		return helper.NewMySqlError(fmt.Errorf("获取 NavGroup 失败: %s", err.Error()))
 	}
 	return nil
 }
 
 func (g *NavGroup) FindById(id uint) error {
 	if err := global.DB.First(&g, id).Error; err != nil {
-		return helper.NewMySqlError(fmt.Errorf("获取 NavGroup 失败: " + err.Error()))
+		return helper.NewMySqlError(fmt.Errorf("获取 NavGroup 失败: %s", err.Error()))
 	}
 	return nil
 }
 
 func (g *NavGroup) Add() error {
 	if err := global.DB.Create(&g).Error; err != nil {
-		return helper.NewMySqlError(fmt.Errorf("添加 NavGroup 失败: " + err.Error()))
+		return helper.NewMySqlError(fmt.Errorf("添加 NavGroup 失败: %s", err.Error()))
 	}
 	return nil
 }
 
 func (g *NavGroup) Update() error {
 	if err := global.DB.Save(&g).Error; err != nil {
-		return helper.NewMySqlError(fmt.Errorf("更新 NavGroup 失败: " + err.Error()))
+		return helper.NewMySqlError(fmt.Errorf("更新 NavGroup 失败: %s", err.Error()))
 	}
 	return nil
 }
 
 func (g *NavGroup) Delete() error {
 	if err := global.DB.Unscoped().Delete(&g).Error; err != nil {
-		return helper.NewMySqlError(fmt.Errorf("删除 NavGroup 失败: " + err.Error()))
+		return helper.NewMySqlError(fmt.Errorf("删除 NavGroup 失败: %s", err.Error()))
 	}
 	return nil
 }
 
 func (g *NavGroup) DeleteWithSites() error {
 	if err := global.DB.Where("name = ?", g.Name).Preload("NavSites").First(&g).Error; err != nil {
-		return helper.NewMySqlError(fmt.Errorf("获取 NavGroup 失败: " + err.Error()))
+		return helper.NewMySqlError(fmt.Errorf("获取 NavGroup 失败: %s", err.Error()))
 	}
 	for _, ni := range g.NavSites {
 		if err := global.DB.Unscoped().Delete(&ni).Error; err != nil {
-			return helper.NewMySqlError(fmt.Errorf("删除 NavSite 失败: " + err.Error()))
+			return helper.NewMySqlError(fmt.Errorf("删除 NavSite 失败: %s", err.Error()))
 		}
 	}
 	if err := global.DB.Unscoped().Delete(&g).Error; err != nil {
-		return helper.NewMySqlError(fmt.Errorf("删除 NavGroup 失败: " + err.Error()))
+		return helper.NewMySqlError(fmt.Errorf("删除 NavGroup 失败: %s", err.Error()))
 	}
 	return nil
 }
@@ -86,7 +86,7 @@ func (gs *NavGroups) Find() (err error) {
 
 func (gs *NavGroups) FindWithSites() error {
 	if err := global.DB.Preload("NavSites").Find(&gs).Error; err != nil {
-		return helper.NewMySqlError(fmt.Errorf("获取 NavGroups 失败: " + err.Error()))
+		return helper.NewMySqlError(fmt.Errorf("获取 NavGroups 失败: %s", err.Error()))
 	}
 	return nil
 }
@@ -104,35 +104,35 @@ type NavSite struct {
 
 func (ni *NavSite) FindByName(name string) error {
 	if err := global.DB.Where("name = ?", name).First(&ni).Error; err != nil {
-		return helper.NewMySqlError(fmt.Errorf("获取 NavSite 失败: " + err.Error()))
+		return helper.NewMySqlError(fmt.Errorf("获取 NavSite 失败: %s", err.Error()))
 	}
 	return nil
 }
 
 func (ni *NavSite) FindById(id uint) error {
 	if err := global.DB.First(&ni, id).Error; err != nil {
-		return helper.NewMySqlError(fmt.Errorf("获取 NavSite 失败: " + err.Error()))
+		return helper.NewMySqlError(fmt.Errorf("获取 NavSite 失败: %s", err.Error()))
 	}
 	return nil
 }
 
 func (ni *NavSite) Add() error {
 	if err := global.DB.Create(&ni).Error; err != nil {
-		return helper.NewMySqlError(fmt.Errorf("添加 NavSite 失败: " + err.Error()))
+		return helper.NewMySqlError(fmt.Errorf("添加 NavSite 失败: %s", err.Error()))
 	}
 	return nil
 }
 
 func (ni *NavSite) Update() error {
 	if err := global.DB.Save(&ni).Error; err != nil {
-		return helper.NewMySqlError(fmt.Errorf("更新 NavSite 失败: " + err.Error()))
+		return helper.NewMySqlError(fmt.Errorf("更新 NavSite 失败: %s", err.Error()))
 	}
 	return nil
 }
 
 func (ni *NavSite) Delete() error {
 	if err := global.DB.Unscoped().Delete(&ni).Error; err != nil {
-		return helper.NewMySqlError(fmt.Errorf("删除 NavSite 失败: " + err.Error()))
+		return helper.NewMySqlError(fmt.Errorf("删除 NavSite 失败: %s", err.Error()))
 	}
 	return nil
 }

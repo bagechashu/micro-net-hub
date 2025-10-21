@@ -104,7 +104,7 @@ func HandleRequest(c *gin.Context, reqStructInstance interface{}, fn HandlerLogi
 	if err = global.Validate.Struct(reqStructInstance); err != nil {
 		for _, err := range err.(validator.ValidationErrors) {
 			global.Log.Errorf("bind reqStruct err: \n\treqStruct: %+v\n\terr: %s", reqStructInstance, err)
-			Err(c, NewValidatorError(fmt.Errorf(err.Translate(global.Trans))), nil)
+			Err(c, NewValidatorError(fmt.Errorf("%s", err.Translate(global.Trans))), nil)
 			return
 		}
 	}
@@ -129,7 +129,7 @@ func BindAndValidateRequest(c *gin.Context, reqStructInstance interface{}) error
 	if errs := global.Validate.Struct(reqStructInstance); errs != nil {
 		for _, err := range errs.(validator.ValidationErrors) {
 			global.Log.Errorf("bind reqStruct err: \n\treqStruct: %+v\n\terr: %s", reqStructInstance, err)
-			ErrV2(c, NewValidatorError(fmt.Errorf(err.Translate(global.Trans))))
+			ErrV2(c, NewValidatorError(fmt.Errorf("%s", err.Translate(global.Trans))))
 			return err
 		}
 	}

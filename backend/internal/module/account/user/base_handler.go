@@ -30,7 +30,7 @@ func SendCode(c *gin.Context) {
 	user := new(accountModel.User)
 	err = user.Find(map[string]interface{}{"mail": req.Mail})
 	if err != nil {
-		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("通过邮箱查询用户失败"+err.Error())))
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("通过邮箱查询用户失败: %s", err.Error())))
 		return
 	}
 	if user.Status != 1 || user.SyncState != 1 {
@@ -45,7 +45,7 @@ func SendCode(c *gin.Context) {
 	// global.Log.Debugf("SendCode Request User: %+v", user)
 	err = tools.SendVerificationCode([]string{req.Mail}, user.Username)
 	if err != nil {
-		helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("邮件发送验证码失败, 请联系管理员"+err.Error())))
+		helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("邮件发送验证码失败, 请联系管理员: %s", err.Error())))
 		return
 	}
 
@@ -87,7 +87,7 @@ func ForgetPwd(c *gin.Context) {
 	user := new(accountModel.User)
 	err = user.Find(map[string]interface{}{"mail": req.Mail})
 	if err != nil {
-		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("通过邮箱查询用户失败"+err.Error())))
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("通过邮箱查询用户失败: %s", err.Error())))
 		return
 	}
 
@@ -95,7 +95,7 @@ func ForgetPwd(c *gin.Context) {
 	if config.Conf.Ldap.EnableManage {
 		newpass, err = ldapmgr.LdapUserNewPwd(user.Username)
 		if err != nil {
-			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("LDAP生成新密码失败"+err.Error())))
+			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("LDAP生成新密码失败: %s", err.Error())))
 			return
 		}
 	} else {
@@ -105,7 +105,7 @@ func ForgetPwd(c *gin.Context) {
 	// 更新数据库密码
 	err = user.ChangePwd(tools.NewGenPasswd(newpass))
 	if err != nil {
-		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("在MySQL更新密码失败: "+err.Error())))
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("在MySQL更新密码失败: %s", err.Error())))
 		return
 	}
 
@@ -118,7 +118,7 @@ func ForgetPwd(c *gin.Context) {
 	}
 	err = tools.SendNewPass([]string{user.Mail}, newpass, user.Username)
 	if err != nil {
-		helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("邮件发送新密码失败, 请联系管理员"+err.Error())))
+		helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("邮件发送新密码失败, 请联系管理员: %s", err.Error())))
 		return
 	}
 

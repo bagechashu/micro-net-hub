@@ -96,7 +96,7 @@ func GetTree(c *gin.Context) {
 		req.PageSize,
 	)
 	if err != nil {
-		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取资源列表失败: "+err.Error())))
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取资源列表失败: %s", err.Error())))
 		return
 	}
 
@@ -207,7 +207,7 @@ func UserNoInGroup(c *gin.Context) {
 	var userList = model.NewUsers()
 	err = userList.ListAll()
 	if err != nil {
-		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取资源列表失败: "+err.Error())))
+		helper.ErrV2(c, helper.NewMySqlError(fmt.Errorf("获取资源列表失败: %s", err.Error())))
 		return
 	}
 
@@ -304,7 +304,7 @@ func Add(c *gin.Context) {
 	if config.Conf.Ldap.EnableManage {
 		err = ldapmgr.LdapDeptAdd(&group)
 		if err != nil {
-			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("向LDAP创建分组失败"+err.Error())))
+			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("向LDAP创建分组失败: %s", err.Error())))
 			return
 		}
 	}
@@ -386,7 +386,7 @@ func Update(c *gin.Context) {
 	if config.Conf.Ldap.EnableManage {
 		err = ldapmgr.LdapDeptUpdate(oldGroup, &newGroup)
 		if err != nil {
-			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("向LDAP更新分组失败："+err.Error())))
+			helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("向LDAP更新分组失败： %s", err.Error())))
 			return
 		}
 	}
@@ -444,7 +444,7 @@ func Delete(c *gin.Context) {
 		if config.Conf.Ldap.EnableManage {
 			err = ldapmgr.LdapDeptDelete(g.GroupDN)
 			if err != nil {
-				helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("向LDAP删除分组失败："+err.Error())))
+				helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("向LDAP删除分组失败： %s", err.Error())))
 				return
 			}
 		}
@@ -516,7 +516,7 @@ func AddUser(c *gin.Context) {
 		for _, user := range users {
 			err = ldapmgr.LdapDeptAddUserToGroup(group.GroupDN, user.UserDN)
 			if err != nil {
-				helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("向LDAP添加用户到分组失败"+err.Error())))
+				helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("向LDAP添加用户到分组失败： %s", err.Error())))
 				return
 			}
 		}
@@ -569,7 +569,7 @@ func RemoveUser(c *gin.Context) {
 		for _, user := range users {
 			err := ldapmgr.LdapDeptRemoveUserFromGroup(group.GroupDN, user.UserDN)
 			if err != nil {
-				helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("将用户从ldap移除失败"+err.Error())))
+				helper.ErrV2(c, helper.NewLdapError(fmt.Errorf("将用户从ldap移除失败： %s", err.Error())))
 				return
 			}
 		}
