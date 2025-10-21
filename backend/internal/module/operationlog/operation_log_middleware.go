@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"micro-net-hub/internal/config"
-	accountModel "micro-net-hub/internal/module/account/model"
+	"micro-net-hub/internal/module/account/auth"
 	"micro-net-hub/internal/module/operationlog/model"
 
 	"github.com/gin-gonic/gin"
@@ -44,12 +44,11 @@ func OperationLogMiddleware() gin.HandlerFunc {
 
 		// 获取当前登录用户
 		var username string
-		ctxUser, _ := c.Get("user")
-		user, ok := ctxUser.(accountModel.User)
-		if !ok {
+		ctxUser, err := auth.GetCtxLoginUser(c)
+		if err != nil {
 			username = "anonymous"
 		} else {
-			username = user.Username
+			username = ctxUser.Username
 		}
 
 		// 检查接口并获取其描述
