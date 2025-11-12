@@ -31,7 +31,7 @@
 ##### User Schema Settings
 
 User Object Class: inetorgperson
-User Object Filter: (objectclass=inetorgperson)
+User Object Filter: (&(objectclass=inetorgperson)|(memberOf=cn=all,ou=allhands,dc=example,dc=com))
 User Name Attribute: uid
 User Name RDN Attribute cn
 User First Name Attribute: givenName
