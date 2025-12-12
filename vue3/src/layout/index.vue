@@ -19,8 +19,8 @@
 import RightPanel from '@/components/RightPanel';
 import { AppMain, Navbar, Settings, Sidebar, TagsView } from './components';
 import ResizeMixin from './mixin/ResizeHandler';
-import { mapState } from 'pinia';
-import store from '@/store';
+import appStore from '@/store/modules/app';
+import settingsStore from '@/store/modules/settings';
 import { defineComponent } from 'vue';
 
 export default defineComponent({
@@ -35,12 +35,21 @@ export default defineComponent({
   },
   mixins: [ResizeMixin],
   computed: {
-    ...mapState(store.app, ['sidebar', 'device']),
-    ...mapState(store.settings, {
-      showSettings: 'showSettings',
-      needTagsView: 'tagsView',
-      fixedHeader: 'fixedHeader'
-    }),
+    sidebar() {
+      return appStore().sidebar;
+    },
+    device() {
+      return appStore().device;
+    },
+    showSettings() {
+      return settingsStore().showSettings;
+    },
+    needTagsView() {
+      return settingsStore().tagsView;
+    },
+    fixedHeader() {
+      return settingsStore().fixedHeader;
+    },
     classObj() {
       return {
         hideSidebar: !this.sidebar.opened,
@@ -52,7 +61,7 @@ export default defineComponent({
   },
   methods: {
     handleClickOutside() {
-      store.app().closeSidebar({ withoutAnimation: false });
+      appStore().closeSidebar({ withoutAnimation: false });
     }
   }
 });

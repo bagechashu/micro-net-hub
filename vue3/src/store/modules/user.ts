@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
-import { login as apiLogin, logout as apiLogout, getInfo as apiGetInfo } from '@/api/user';
+import { login as apiLogin, logout as apiLogout } from '@/api/system/base';
+import { getInfo as apiGetInfo } from '@/api/system/user';
 import { getToken, setToken, removeToken } from '@/utils/auth';
 import router, { resetRouter } from '@/router';
 import tagsViewStore from './tagsView';
@@ -44,7 +45,7 @@ export default defineStore({
     // get user info
     getInfo() {
       return new Promise((resolve, reject) => {
-        apiGetInfo(this.token).then(response => {
+        apiGetInfo().then(response => {
           const { data } = response;
 
           if (!data) {
@@ -72,7 +73,7 @@ export default defineStore({
     // user logout
     logout():Promise<void> {
       return new Promise((resolve, reject) => {
-        apiLogout(this.token).then(() => {
+        apiLogout().then(() => {
           this.token = '';
           this.roles = [];
           removeToken();
@@ -105,15 +106,11 @@ export default defineStore({
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const infoRes = await this.getInfo() as any;
-      let roles = [];
-      if (infoRes.roles) {
-        roles = infoRes.roles;
-      }
 
       resetRouter();
 
-      // generate accessible routes map based on roles
-      const accessRoutes = await permissionStore().generateRoutes(roles);
+      // generate accessible routes map based on backend menu for the user
+      const accessRoutes = await permissionStore().generateRoutesFromMenu(infoRes);
       // dynamically add accessible routes
       // router.addRoutes(accessRoutes);
       accessRoutes.forEach(item => {

@@ -1,10 +1,10 @@
-import store from '@/store';
+import appStore from '@/store/modules/app';
 import { defineComponent } from 'vue';
 
 export default defineComponent({
   computed: {
     device() {
-      return store.app().device;
+      return appStore().device;
     }
   },
   mounted() {

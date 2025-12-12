@@ -2,3 +2,4 @@ docs/docker-compose/*/data
 bin
 .DS_Store
 tmp
+.jj

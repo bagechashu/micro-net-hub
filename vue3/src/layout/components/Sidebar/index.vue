@@ -12,12 +12,13 @@
 </template>
 
 <script>
-import { defineComponent } from 'vue';
-import { mapState } from 'pinia';
+import { defineComponent, computed } from 'vue';
+import { useRoute } from 'vue-router';
 import Logo from './Logo';
 import SidebarItem from './SidebarItem';
-// import variables from '@/styles/variables.modules.scss';
-import store from '@/store';
+import appStore from '@/store/modules/app';
+import permissionStore from '@/store/modules/permission';
+import settingsStore from '@/store/modules/settings';
 
 export default defineComponent({
   name: 'Sidebar',
@@ -25,41 +26,44 @@ export default defineComponent({
     SidebarItem,
     Logo
   },
-  data() {
-    return {
-      variables: {
-        menuBg: '#304156',
-        menuText: '#fff',
-        menuActiveText: '#409EFF'
-      }
+  setup() {
+    const app = appStore();
+    const permission = permissionStore();
+    const settings = settingsStore();
+    const route = useRoute();
+
+    const variables = {
+      menuBg: '#304156',
+      menuText: '#fff',
+      menuActiveText: '#409EFF'
     };
-  },
-  computed: {
-    ...mapState(store.app, ['sidebar']),
-    ...mapState(store.permission, {
-      permission_routes: 'routes'
-    }),
-    ...mapState(store.settings, {
-      secondMenuPopup: 'secondMenuPopup'
-    }),
-    activeMenu() {
-      const route = this.$route;
-      const { meta, path } = route;
-      // if set path, the sidebar will highlight the path you set
-      if (meta.activeMenu) {
-        return meta.activeMenu;
-      }
-      return path;
-    },
-    showLogo() {
-      return store.settings().sidebarLogo;
-    },
-    isCollapse() {
-      if (this.secondMenuPopup) {
-        return true;
-      }
-      return !this.sidebar.opened;
-    }
+
+    const sidebar = computed(() => app.sidebar);
+    const permission_routes = computed(() => permission.routes);
+    const secondMenuPopup = computed(() => settings.secondMenuPopup);
+
+    const activeMenu = computed(() => {
+      const meta = route.meta || {};
+      if (meta.activeMenu) return meta.activeMenu;
+      return route.path;
+    });
+
+    const showLogo = computed(() => settings.sidebarLogo);
+
+    const isCollapse = computed(() => {
+      if (secondMenuPopup.value) return true;
+      return !sidebar.value.opened;
+    });
+
+    return {
+      variables,
+      sidebar,
+      permission_routes,
+      secondMenuPopup,
+      activeMenu,
+      showLogo,
+      isCollapse
+    };
   }
 });
 </script>

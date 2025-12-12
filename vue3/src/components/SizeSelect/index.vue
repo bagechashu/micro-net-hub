@@ -16,7 +16,8 @@
 
 <script>
 import { defineComponent } from 'vue';
-import store from '@/store';
+import appStore from '@/store/modules/app';
+import tagsViewStore from '@/store/modules/tagsView';
 
 export default defineComponent({
   data() {
@@ -30,12 +31,12 @@ export default defineComponent({
   },
   computed: {
     size() {
-      return store.app().size;
+      return appStore().size;
     }
   },
   methods: {
     handleSetSize(size) {
-      store.app().setSize(size);
+      appStore().setSize(size);
       this.refreshView();
       ElMessage({
         message: 'Switch Size Success',
@@ -44,7 +45,7 @@ export default defineComponent({
     },
     refreshView() {
       // In order to make the cached page re-rendered
-      store.tagsView().delAllCachedViews();
+      tagsViewStore().delAllCachedViews();
 
       const { fullPath } = this.$route;
 

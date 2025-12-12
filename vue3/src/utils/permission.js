@@ -1,4 +1,4 @@
-import store from '@/store';
+import userStore from '@/store/modules/user';
 
 /**
  * @param {Array} value
@@ -7,7 +7,7 @@ import store from '@/store';
  */
 export default function checkPermission(value) {
   if (value && value instanceof Array && value.length > 0) {
-    const roles = store.user && store.user().roles;
+    const roles = userStore && userStore().roles;
     const permissionRoles = value;
 
     const hasPermission = roles.some(role => {

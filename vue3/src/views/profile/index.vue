@@ -35,7 +35,7 @@ import Activity from './components/Activity';
 import Timeline from './components/Timeline';
 import Account from './components/Account';
 import { defineComponent } from 'vue';
-import store from '@/store';
+import userStore from '@/store/modules/user';
 // const userStore = store.user();
 
 export default defineComponent({
@@ -48,7 +48,7 @@ export default defineComponent({
     };
   },
   computed: {
-    ...mapState(store.user, [
+    ...mapState(userStore, [
       'name',
       'avatar',
       'roles'

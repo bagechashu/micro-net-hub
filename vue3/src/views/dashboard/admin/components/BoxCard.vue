@@ -33,7 +33,7 @@ import { mapState } from 'pinia';
 import PanThumb from '@/components/PanThumb';
 import Mallki from '@/components/TextHoverEffect/Mallki';
 import { defineComponent } from 'vue';
-import store from '@/store';
+import userStore from '@/store/modules/user';
 
 export default defineComponent({
   components: { PanThumb, Mallki },
@@ -47,7 +47,7 @@ export default defineComponent({
     };
   },
   computed: {
-    ...mapState(store.user, [
+    ...mapState(userStore, [
       'name',
       'avatar',
       'roles'

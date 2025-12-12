@@ -8,13 +8,13 @@ import {
   Search,
   Star
 } from '@element-plus/icons-vue';
-import store from '@/store';
-console.log('store=', store);
+import appStore from '@/store/modules/app';
+console.log('store=', appStore);
 
 console.log('HomeView VITE_ENV=', import.meta.env.VITE_ENV);
 console.log('HomeView VITE_BASE_API=', import.meta.env.VITE_BASE_API);
 
-const useAppStore = store.app();
+const useAppStore = appStore();
 
 console.log('appStore.device=', useAppStore.device);
 </script>

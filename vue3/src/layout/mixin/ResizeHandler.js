@@ -1,4 +1,4 @@
-import store from '@/store';
+import appStore from '@/store/modules/app';
 import { defineComponent } from 'vue';
 
 const { body } = document;
@@ -8,7 +8,7 @@ export default defineComponent({
   watch: {
     $route() {
       if (this.device === 'mobile' && this.sidebar.opened) {
-        store.app().closeSidebar({ withoutAnimation: false });
+        appStore().closeSidebar({ withoutAnimation: false });
       }
     }
   },
@@ -21,8 +21,8 @@ export default defineComponent({
   mounted() {
     const isMobile = this.isMobile();
     if (isMobile) {
-      store.app().toggleDevice('mobile');
-      store.app().closeSidebar({ withoutAnimation: true });
+      appStore().toggleDevice('mobile');
+      appStore().closeSidebar({ withoutAnimation: true });
     }
   },
   methods: {
@@ -35,10 +35,10 @@ export default defineComponent({
     resizeHandler() {
       if (!document.hidden) {
         const isMobile = this.isMobile();
-        store.app().toggleDevice(isMobile ? 'mobile' : 'desktop');
+        appStore().toggleDevice(isMobile ? 'mobile' : 'desktop');
 
         if (isMobile) {
-          store.app().closeSidebar({ withoutAnimation: true });
+          appStore().closeSidebar({ withoutAnimation: true });
         }
       }
     }

@@ -1,4 +1,4 @@
-import store from '@/store';
+import errorLogStore from '@/store/modules/errorLog';
 import { isString, isArray } from '@/utils/validate';
 import settings from '@/settings';
 import { nextTick } from 'vue';
@@ -25,7 +25,7 @@ export function checkEnableLogs(app: App) {
       // Don't ask me why I use Vue.nextTick, it just a hack.
       // detail see https://forum.vuejs.org/t/dispatch-in-vue-config-errorhandler-has-some-problem/23500
       nextTick(() => {
-        store.errorLog().addErrorLog({
+        errorLogStore().addErrorLog({
           err,
           instance,
           info,

@@ -50,7 +50,7 @@
 
 <script>
 import { defineComponent, markRaw } from 'vue';
-import store from '@/store';
+import errorLogStore from '@/store/modules/errorLog';
 import { Delete as IconDelete } from '@element-plus/icons-vue';
 
 export default defineComponent({
@@ -63,13 +63,13 @@ export default defineComponent({
   },
   computed: {
     errorLogs() {
-      return store.errorLog().logs;
+      return errorLogStore().logs;
     }
   },
   methods: {
     clearAll() {
       this.dialogTableVisible = false;
-      store.errorLog().clearErrorLog();
+      errorLogStore().clearErrorLog();
     }
   }
 });

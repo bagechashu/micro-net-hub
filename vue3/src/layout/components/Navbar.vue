@@ -51,8 +51,8 @@
 </template>
 
 <script>
-import { mapState } from 'pinia';
-import store from '@/store';
+import appStore from '@/store/modules/app';
+import userStore from '@/store/modules/user';
 import Breadcrumb from '@/components/Breadcrumb';
 import Hamburger from '@/components/Hamburger';
 import ErrorLog from '@/components/ErrorLog';
@@ -73,20 +73,22 @@ export default defineComponent({
     CaretBottom
   },
   computed: {
-    ...mapState(store.app, [
-      'sidebar',
-      'device'
-    ]),
-    ...mapState(store.user, [
-      'avatar'
-    ])
+    sidebar() {
+      return appStore().sidebar;
+    },
+    device() {
+      return appStore().device;
+    },
+    avatar() {
+      return userStore().avatar;
+    }
   },
   methods: {
     toggleSidebar() {
-      store.app().toggleSidebar();
+      appStore().toggleSidebar();
     },
     async logout() {
-      await store.user().logout();
+      await userStore().logout();
       this.$router.push(`/login?redirect=${this.$route.fullPath}`);
     }
   }

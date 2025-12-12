@@ -22,7 +22,7 @@ import { mapState } from 'pinia';
 import PanThumb from '@/components/PanThumb';
 import GithubCorner from '@/components/GithubCorner';
 import { defineComponent } from 'vue';
-import store from '@/store';
+import userStore from '@/store/modules/user';
 
 export default defineComponent({
   name: 'DashboardEditor',
@@ -33,7 +33,7 @@ export default defineComponent({
     };
   },
   computed: {
-    ...mapState(store.user, [
+    ...mapState(userStore, [
       'name',
       'avatar',
       'roles'

@@ -12,13 +12,13 @@
 
 <script>
 import { defineComponent } from 'vue';
-import store from '@/store';
+import tagsViewStore from '@/store/modules/tagsView';
 
 export default defineComponent({
   name: 'AppMain',
   computed: {
     cachedViews() {
-      return store.tagsView().cachedViews;
+      return tagsViewStore().cachedViews;
     }
   }
 });

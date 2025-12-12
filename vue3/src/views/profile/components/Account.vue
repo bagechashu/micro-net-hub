@@ -14,7 +14,7 @@
 
 <script>
 import { defineComponent } from 'vue';
-import store from '@/store';
+import userStore from '@/store/modules/user';
 
 export default defineComponent({
   props: {
@@ -36,7 +36,7 @@ export default defineComponent({
   },
   methods: {
     submit() {
-      store.user().name = this.userName;
+      userStore().name = this.userName;
       // store.user().email = this.userEmail;
       ElMessage({
         message: 'User information has been updated successfully',

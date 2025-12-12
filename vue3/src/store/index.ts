@@ -1,3 +1,4 @@
+// 经过这次修改, 已经被架空的, 保留以备不时之需
 import { createPinia, acceptHMRUpdate } from 'pinia';
 import type { StoreDefinition } from 'pinia';
 // https://webpack.js.org/guides/dependency-management/#requirecontext

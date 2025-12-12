@@ -9,7 +9,7 @@ import { defineComponent } from 'vue';
 import { mapState } from 'pinia';
 import adminDashboard from './admin';
 import editorDashboard from './editor';
-import store from '@/store';
+import userStore from '@/store/modules/user';
 
 export default defineComponent({
   name: 'Dashboard',
@@ -20,7 +20,7 @@ export default defineComponent({
     };
   },
   computed: {
-    ...mapState(store.user, ['roles'])
+    ...mapState(userStore, ['roles'])
   },
   created() {
     console.log('dashboard created');

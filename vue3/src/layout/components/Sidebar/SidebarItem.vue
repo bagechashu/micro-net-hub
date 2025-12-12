@@ -44,8 +44,7 @@ import { isExternal } from '@/utils/validate';
 // import Item from './Item';
 import AppLink from './Link';
 import FixiOSBug from './FixiOSBug';
-import { mapState } from 'pinia';
-import store from '@/store';
+import settingsStore from '@/store/modules/settings';
 
 export default defineComponent({
   name: 'SidebarItem',
@@ -80,9 +79,9 @@ export default defineComponent({
     return {};
   },
   computed: {
-    ...mapState(store.settings, {
-      secondMenuPopup: 'secondMenuPopup'
-    }),
+    secondMenuPopup() {
+      return settingsStore().secondMenuPopup;
+    },
     isItemHidden() {
       if (this.item.meta && this.item.meta.hidden) {
         return true;

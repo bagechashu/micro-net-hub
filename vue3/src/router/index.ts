@@ -54,15 +54,22 @@ export const constantRoutes:RouteRecordRaw[] = [
   {
     path: '/',
     component: Layout,
-    redirect: '/dashboard',
+    redirect: '/sitenav',
     children: [
       {
-        path: 'dashboard',
-        component: () => import('@/views/dashboard/index.vue'),
-        name: 'Dashboard',
-        meta: { title: '首页', icon: 'dashboard', affix: true }
+        path: '/sitenav',
+        component: () => import('@/views/sitenav/index.vue'),
+        name: 'SiteNav',
+        meta: { title: '网站导航', icon: 'tree', affix: true }
       }
     ]
+  },
+
+  {
+    path: '/changePass',
+    name: 'changePass',
+    component: () => import('@/views/changePassword/index.vue'),
+    meta: { title: '忘记密码', icon: 'user', noCache: true, hidden: true }
   },
   {
     path: '/documentation',

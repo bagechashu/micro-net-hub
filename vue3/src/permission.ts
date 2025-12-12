@@ -8,7 +8,7 @@ import getPageTitle from '@/utils/get-page-title';
 
 NProgress.configure({ showSpinner: false }); // NProgress Configuration
 
-const whiteList = ['/login', '/auth-redirect']; // no redirect whitelist
+const whiteList = ['/login', '/auth-redirect', '/sitenav', '/changePass']; // no redirect whitelist
 
 router.beforeEach(async (to, from, next) => {
   // console.log('router.beforeEach', to.path, from.path);
@@ -43,8 +43,8 @@ router.beforeEach(async (to, from, next) => {
             roles = infoRes.roles;
           }
 
-          // generate accessible routes map based on roles
-          const accessRoutes = await permissionStore().generateRoutes(roles);
+          // generate accessible routes map based on backend menu for the user
+          const accessRoutes = await permissionStore().generateRoutesFromMenu(infoRes);
           // console.log('accessRoutes=', accessRoutes)
 
           // dynamically add accessible routes

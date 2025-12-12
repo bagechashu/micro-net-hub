@@ -18,7 +18,7 @@
 <script>
 import { addClass, removeClass } from '@/utils';
 import { defineComponent } from 'vue';
-import store from '@/store';
+import settingsStore from '@/store/modules/settings';
 import { Close, Setting } from '@element-plus/icons-vue';
 
 export default defineComponent({
@@ -44,7 +44,7 @@ export default defineComponent({
   },
   computed: {
     theme() {
-      return store.settings().theme;
+      return settingsStore().theme;
     }
   },
   watch: {

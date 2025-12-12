@@ -15,7 +15,7 @@
 import { defineComponent } from 'vue';
 import Fuse from 'fuse.js';
 import path from 'path-browserify';
-import store from '@/store';
+import permissionStore from '@/store/modules/permission';
 
 export default defineComponent({
   name: 'HeaderSearch',
@@ -30,7 +30,7 @@ export default defineComponent({
   },
   computed: {
     routes() {
-      return store.permission().routes;
+      return permissionStore().routes;
     }
   },
   watch: {

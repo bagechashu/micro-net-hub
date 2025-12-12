@@ -13,19 +13,19 @@
 
 <script>
 import { defineComponent } from 'vue';
-import store from '@/store';
+import userStore from '@/store/modules/user';
 
 export default defineComponent({
   computed: {
     roles() {
-      return store.user().roles;
+      return userStore().roles;
     },
     switchRoles: {
       get() {
         return this.roles[0];
       },
       set(val) {
-        store.user().changeRoles(val).then(() => {
+        userStore().changeRoles(val).then(() => {
           this.$emit('change');
         });
       }

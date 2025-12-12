@@ -34,69 +34,47 @@
 
 <script>
 // import ThemePicker from '@/components/ThemePicker';
-import { defineComponent } from 'vue';
-import store from '@/store';
+import { defineComponent, computed } from 'vue';
+import settingsStore from '@/store/modules/settings';
 
 export default defineComponent({
   components: {
     // ThemePicker
   },
-  data() {
-    return {};
-  },
-  computed: {
-    fixedHeader: {
-      get() {
-        return store.settings().fixedHeader;
-      },
-      set(val) {
-        store.settings().changeSetting({
-          key: 'fixedHeader',
-          value: val
-        });
-      }
-    },
-    tagsView: {
-      get() {
-        return store.settings().tagsView;
-      },
-      set(val) {
-        store.settings().changeSetting({
-          key: 'tagsView',
-          value: val
-        });
-      }
-    },
-    sidebarLogo: {
-      get() {
-        return store.settings().sidebarLogo;
-      },
-      set(val) {
-        store.settings().changeSetting({
-          key: 'sidebarLogo',
-          value: val
-        });
-      }
-    },
-    secondMenuPopup: {
-      get() {
-        return store.settings().secondMenuPopup;
-      },
-      set(val) {
-        store.settings().changeSetting({
-          key: 'secondMenuPopup',
-          value: val
-        });
-      }
+  setup() {
+    const settings = settingsStore();
+
+    const fixedHeader = computed({
+      get: () => settings.fixedHeader,
+      set: (val) => settings.changeSetting({ key: 'fixedHeader', value: val })
+    });
+
+    const tagsView = computed({
+      get: () => settings.tagsView,
+      set: (val) => settings.changeSetting({ key: 'tagsView', value: val })
+    });
+
+    const sidebarLogo = computed({
+      get: () => settings.sidebarLogo,
+      set: (val) => settings.changeSetting({ key: 'sidebarLogo', value: val })
+    });
+
+    const secondMenuPopup = computed({
+      get: () => settings.secondMenuPopup,
+      set: (val) => settings.changeSetting({ key: 'secondMenuPopup', value: val })
+    });
+
+    function themeChange(val) {
+      settings.changeSetting({ key: 'theme', value: val });
     }
-  },
-  methods: {
-    themeChange(val) {
-      store.settings().changeSetting({
-        key: 'theme',
-        value: val
-      });
-    }
+
+    return {
+      fixedHeader,
+      tagsView,
+      sidebarLogo,
+      secondMenuPopup,
+      themeChange
+    };
   }
 });
 </script>

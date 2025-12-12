@@ -1,5 +1,5 @@
 import axios from 'axios';
-import store from '@/store';
+import userStore from '@/store/modules/user';
 import { getToken } from '@/utils/auth';
 
 console.log('import.meta.env=', import.meta.env);
@@ -16,7 +16,7 @@ service.interceptors.request.use(
   config => {
     // do something before request is sent
 
-    if (store.user().token) {
+    if (userStore().token) {
       // let each request carry token
       // ['X-Token'] is a custom headers key
       // please modify it according to the actual situation

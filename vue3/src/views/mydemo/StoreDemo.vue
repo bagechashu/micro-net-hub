@@ -16,13 +16,14 @@
 <script>
 import { mapStores, mapState, mapActions } from 'pinia';
 import { defineComponent } from 'vue';
-import store from '@/store';
+import appStore from '@/store/modules/app';
+import userStore from '@/store/modules/user';
 
 export default defineComponent({
   name: 'StoreDemo',
   computed: {
-    ...mapStores(store.app, store.user),
-    ...mapState(store.app, ['device'])
+    ...mapStores(appStore, userStore),
+    ...mapState(appStore, ['device'])
   },
   mounted() {
     console.log('StoreDemo mounted appStore.device=', this.appStore.device);
@@ -33,7 +34,7 @@ export default defineComponent({
     console.log('StoreDemo END');
   },
   methods: {
-    ...mapActions(store.app, ['toggleDevice']),
+    ...mapActions(appStore, ['toggleDevice']),
     handleToggleDevice() {
       this.toggleDevice(+new Date());
     }

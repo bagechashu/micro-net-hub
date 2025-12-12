@@ -62,9 +62,10 @@
 import { validUsername } from '@/utils/validate';
 import { defineComponent } from 'vue';
 import SocialSign from './components/SocialSignin.vue';
+import JSEncrypt from 'jsencrypt';
 import type { FormItemRule } from 'element-plus';
 import type { IForm } from '@/types/element-plus';
-import store from '@/store';
+import userStore from '@/store/modules/user';
 
 interface QueryType {
   // 自定义key 任意字符串
@@ -100,6 +101,8 @@ export default defineComponent({
       },
       passwordType: 'password',
       capsTooltip: false,
+      // use Vite public key env var
+      publicKey: import.meta.env.VITE_PUBLIC_KEY,
       loading: false,
       showDialog: false,
       redirect: undefined,
@@ -151,8 +154,33 @@ export default defineComponent({
         return new Promise((resolve, reject) => {
           if (valid) {
             this.loading = true;
-            store.user().login(this.loginForm)
-              .then(() => {
+            // encrypt password with public key before sending
+            let payload = this.loginForm;
+            try {
+              if (!this.publicKey) {
+                console.warn('VITE_PUBLIC_KEY is empty — password will be sent plaintext');
+              }
+              const encryptor = new JSEncrypt();
+              if (this.publicKey) encryptor.setPublicKey(this.publicKey);
+              const encPassword = this.publicKey ? encryptor.encrypt(this.loginForm.password) : null;
+              if (encPassword) {
+                payload = { username: this.loginForm.username, password: encPassword };
+              }
+            } catch (err) {
+              // if encryption fails, fallback to plain password
+              console.warn('Password encryption failed, sending plain password', err);
+            }
+
+            userStore().login(payload)
+              .then(async () => {
+                // fetch user info right after login so stores are populated immediately
+                try {
+                  await userStore().getInfo();
+                } catch (err) {
+                  // eslint-disable-next-line no-console
+                  console.warn('getInfo() failed after login', err);
+                }
+
                 this.$router.push({ path: this.redirect || '/', query: this.otherQuery });
                 this.loading = false;
               })

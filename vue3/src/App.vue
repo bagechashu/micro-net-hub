@@ -5,10 +5,9 @@
 </template>
 
 <script>
-import { defineComponent } from 'vue';
+import { defineComponent, computed } from 'vue';
 import zhCn from 'element-plus/dist/locale/zh-cn.mjs';
-import { mapState } from 'pinia';
-import store from '@/store';
+import appStore from '@/store/modules/app';
 
 export default defineComponent({
   data() {
@@ -17,8 +16,10 @@ export default defineComponent({
       zIndex: 3000
     };
   },
-  computed: {
-    ...mapState(store.app, ['size'])
+  setup() {
+    const app = appStore();
+    const size = computed(() => app.size);
+    return { size };
   }
 });
 </script>
