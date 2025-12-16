@@ -63,7 +63,7 @@ import { validUsername } from '@/utils/validate';
 import { defineComponent } from 'vue';
 import SocialSign from './components/SocialSignin.vue';
 import JSEncrypt from 'jsencrypt';
-import type { FormItemRule } from 'element-plus';
+import { ElMessage, type FormItemRule } from 'element-plus';
 import type { IForm } from '@/types/element-plus';
 import userStore from '@/store/modules/user';
 
@@ -151,49 +151,45 @@ export default defineComponent({
     },
     handleLogin() {
       (this.$refs.loginForm as IForm).validate(valid => {
-        return new Promise((resolve, reject) => {
-          if (valid) {
-            this.loading = true;
-            // encrypt password with public key before sending
-            let payload = this.loginForm;
-            try {
-              if (!this.publicKey) {
-                console.warn('VITE_PUBLIC_KEY is empty — password will be sent plaintext');
-              }
-              const encryptor = new JSEncrypt();
-              if (this.publicKey) encryptor.setPublicKey(this.publicKey);
-              const encPassword = this.publicKey ? encryptor.encrypt(this.loginForm.password) : null;
-              if (encPassword) {
-                payload = { username: this.loginForm.username, password: encPassword };
-              }
-            } catch (err) {
-              // if encryption fails, fallback to plain password
-              console.warn('Password encryption failed, sending plain password', err);
+        if (valid) {
+          this.loading = true;
+          // encrypt password with public key before sending
+          let payload = this.loginForm;
+          try {
+            if (!this.publicKey) {
+              console.warn('VITE_PUBLIC_KEY is empty — password will be sent plaintext');
             }
-
-            userStore().login(payload)
-              .then(async () => {
-                // fetch user info right after login so stores are populated immediately
-                try {
-                  await userStore().getInfo();
-                } catch (err) {
-                  // eslint-disable-next-line no-console
-                  console.warn('getInfo() failed after login', err);
-                }
-
-                this.$router.push({ path: this.redirect || '/', query: this.otherQuery });
-                this.loading = false;
-              })
-              .catch(() => {
-                this.loading = false;
-              }).finally(() => {
-                resolve();
-              });
-          } else {
-            console.log('error submit!!');
-            reject();
+            const encryptor = new JSEncrypt();
+            if (this.publicKey) encryptor.setPublicKey(this.publicKey);
+            const encPassword = this.publicKey ? encryptor.encrypt(this.loginForm.password) : null;
+            if (encPassword) {
+              payload = { username: this.loginForm.username, password: encPassword };
+            }
+          } catch (err) {
+            // if encryption fails, fallback to plain password
+            console.warn('Password encryption failed, sending plain password', err);
           }
-        });
+
+          userStore().login(payload)
+            .then(async () => {
+              // fetch user info right after login so stores are populated immediately
+              try {
+                await userStore().getInfo();
+              } catch (err) {
+                console.warn('getInfo() failed after login', err);
+              }
+              this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
+                .catch(err => {
+                  console.error('Navigation error:', err);
+                });
+              this.loading = false;
+            })
+            .catch(() => {
+              this.loading = false;
+            });
+        } else {
+          ElMessage.error('Please check the form fields again');
+        }
       });
     },
     getOtherQuery(query:QueryType) {

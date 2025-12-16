@@ -5,6 +5,7 @@ import NProgress from 'nprogress'; // progress bar
 import 'nprogress/nprogress.css'; // progress bar style
 import { getToken } from '@/utils/auth'; // get token from cookie
 import getPageTitle from '@/utils/get-page-title';
+import { ElMessage } from 'element-plus';
 
 NProgress.configure({ showSpinner: false }); // NProgress Configuration
 
@@ -41,6 +42,7 @@ router.beforeEach(async (to, from, next) => {
           let roles = [];
           if (infoRes.roles) {
             roles = infoRes.roles;
+            console.log('current user\'s roles=', roles);
           }
 
           // generate accessible routes map based on backend menu for the user
@@ -59,6 +61,8 @@ router.beforeEach(async (to, from, next) => {
           next({ ...to, replace: true });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
+          // 确保控制台能够打印错误信息
+          console.error('Permission check error:', error);
           // remove token and go to login page to re-login
           await userStore().resetToken();
           ElMessage.error(error.message || 'Has Error');
