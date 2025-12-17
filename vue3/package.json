@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev:test": "vite --mode dev_test",
+    "dev:test": "vite --mode dev_test --logLevel info",
     "dev:prod": "vite --mode dev_prod",
     "build:test": "vite build --mode build_test",
     "build:prod": "vite build --mode build_prod",
@@ -43,6 +43,7 @@
     "@vue/eslint-config-typescript": "^14.6.0",
     "@vue/tsconfig": "^0.7.0",
     "eslint": "^9.10.0",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-vue": "^9.33.0",
     "mockjs": "^1.1.0",

@@ -9,8 +9,6 @@ import { ElMessage } from 'element-plus';
 
 NProgress.configure({ showSpinner: false }); // NProgress Configuration
 
-const whiteList = ['/login', '/auth-redirect', '/sitenav', '/changePass']; // no redirect whitelist
-
 router.beforeEach(async (to, from, next) => {
   // console.log('router.beforeEach', to.path, from.path);
   // start progress bar
@@ -30,7 +28,6 @@ router.beforeEach(async (to, from, next) => {
     } else {
       // determine whether the user has obtained his permission roles through getInfo
       const hasRoles = userStore().roles && userStore().roles.length > 0;
-      // console.log('hasRoles=', hasRoles);
       if (hasRoles) {
         next();
       } else {
@@ -39,15 +36,11 @@ router.beforeEach(async (to, from, next) => {
           // note: roles must be a object array! such as: ['admin'] or ,['developer','editor']
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const infoRes = await userStore().getInfo() as any;
-          let roles = [];
-          if (infoRes.roles) {
-            roles = infoRes.roles;
-            console.log('current user\'s roles=', roles);
-          }
+          // console.log('current user:', infoRes);
 
           // generate accessible routes map based on backend menu for the user
-          const accessRoutes = await permissionStore().generateRoutesFromMenu(infoRes);
-          // console.log('accessRoutes=', accessRoutes)
+          const accessRoutes = await permissionStore().generateRoutes(infoRes);
+          console.log('accessRoutes=', accessRoutes);
 
           // dynamically add accessible routes
           // router.addRoutes(accessRoutes);
@@ -67,19 +60,23 @@ router.beforeEach(async (to, from, next) => {
           await userStore().resetToken();
           ElMessage.error(error.message || 'Has Error');
           NProgress.done();
-          next(`/login?redirect=${to.path}`);
+          next('/');
+          // next(`/login?redirect=${to.path}`);
         }
       }
     }
   } else {
+    await permissionStore().generateRoutesAnonymous();
+    const whiteList = ['/', '/auth-redirect', '/sitenav', '/changePass']; // no redirect whitelist
     /* has no token*/
-    if (whiteList.indexOf(to.path) !== -1) {
+    if (whiteList.includes(to.path)) {
       // in the free login whitelist, go directly
       next();
     } else {
       // other pages that do not have permission to access are redirected to the login page.
       NProgress.done();
-      next(`/login?redirect=${to.path}`);
+      next('/');
+      // next(`/login?redirect=${to.path}`);
     }
   }
 });

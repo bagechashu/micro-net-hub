@@ -4,8 +4,7 @@ interface IErrorLogState {
   logs: unknown[];
 }
 
-export default defineStore({
-  id: 'errorLog',
+const useErrorLogStore = defineStore('errorLog', {
   state: ():IErrorLogState => ({
     logs: []
   }),
@@ -19,3 +18,5 @@ export default defineStore({
     }
   }
 });
+
+export default useErrorLogStore;

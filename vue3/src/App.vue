@@ -6,20 +6,22 @@
 
 <script>
 import { defineComponent, computed } from 'vue';
-import zhCn from 'element-plus/dist/locale/zh-cn.mjs';
+import zhLocale from 'element-plus/dist/locale/zh-cn.mjs';
+import enLocale from 'element-plus/dist/locale/en.mjs';
+import Cookies from 'js-cookie';
 import appStore from '@/store/modules/app';
 
 export default defineComponent({
-  data() {
-    return {
-      locale: zhCn,
-      zIndex: 3000
-    };
-  },
   setup() {
     const app = appStore();
     const size = computed(() => app.size);
-    return { size };
+    const locale = computed(() => (Cookies.get('locale') === 'zh' ? zhLocale : enLocale));
+    return { size, locale };
+  },
+  data() {
+    return {
+      zIndex: 3000
+    };
   }
 });
 </script>

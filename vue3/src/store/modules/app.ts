@@ -10,8 +10,7 @@ interface IAppState {
   size: 'large' | 'default' | 'small';
 }
 
-export default defineStore({
-  id: 'app',
+const useAppStore = defineStore('app', {
   state: ():IAppState => ({
     sidebar: {
       opened: Cookies.get('sidebarStatus') ? !!+Cookies.get('sidebarStatus') : true,
@@ -45,3 +44,5 @@ export default defineStore({
     }
   }
 });
+
+export default useAppStore;

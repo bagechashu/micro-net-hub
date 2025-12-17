@@ -5,6 +5,8 @@ import eslintPluginImport from 'eslint-plugin-import';
 import tsParser from '@typescript-eslint/parser';
 import js from '@eslint/js';
 import vueEslintParser from 'vue-eslint-parser';
+import prettierConfig from 'eslint-config-prettier';
+
 
 export default [
   // 忽略文件配置
@@ -68,7 +70,8 @@ export default [
       'camelcase': [0, {
         'properties': 'always'
       }],
-      'comma-dangle': [2, 'never'],
+      'comma-dangle': 'off',
+      '@typescript-eslint/comma-dangle': ['error', 'always-multiline'],
       'comma-spacing': [2, {
         'before': false,
         'after': true
@@ -235,5 +238,6 @@ export default [
       }],
       'array-bracket-spacing': [2, 'never']
     }
-  }
+  },
+  prettierConfig
 ];

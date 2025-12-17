@@ -4,7 +4,7 @@ import { getInfo as apiGetInfo } from '@/api/system/user';
 import { getToken, setToken, removeToken } from '@/utils/auth';
 import router, { resetRouter } from '@/router';
 import tagsViewStore from './tagsView';
-import permissionStore from './permission';
+import usePermissionStore from './permission';
 
 export interface IUserState {
   token: string;
@@ -15,8 +15,7 @@ export interface IUserState {
   roles: string[];
 }
 
-export default defineStore({
-  id: 'user',
+const useUserStore = defineStore('user', {
   state: ():IUserState => ({
     token: getToken(),
     userId: '',
@@ -98,19 +97,15 @@ export default defineStore({
     },
 
     // dynamically modify permissions
-    async changeRoles(role) {
-      const token = role + '-token';
-
-      this.token = token;
-      setToken(token);
-
+    async resetAccessRouter() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const infoRes = await this.getInfo() as any;
+      console.log('current user:', infoRes);
 
+      // set new routes
       resetRouter();
-
       // generate accessible routes map based on backend menu for the user
-      const accessRoutes = await permissionStore().generateRoutesFromMenu(infoRes);
+      const accessRoutes = await usePermissionStore().generateRoutes(infoRes);
       // dynamically add accessible routes
       // router.addRoutes(accessRoutes);
       accessRoutes.forEach(item => {
@@ -122,3 +117,4 @@ export default defineStore({
     }
   }
 });
+export default useUserStore;

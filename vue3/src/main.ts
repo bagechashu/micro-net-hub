@@ -3,6 +3,7 @@ import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
 import { setupStore } from './store';
+import i18n from '@/i18n';
 
 import '@/styles/index.scss';
 import SvgIcon from './icons'; // icon
@@ -12,6 +13,7 @@ import { checkEnableLogs } from './utils/error-log'; // error log
 
 const app = createApp(App);
 setupStore(app);
+app.use(i18n);
 app.use(router);
 app.component('svg-icon', SvgIcon);
 app.directive('permission', vPermission);

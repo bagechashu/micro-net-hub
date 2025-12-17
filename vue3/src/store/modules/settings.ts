@@ -3,8 +3,7 @@ import defaultSettings from '@/settings';
 
 const { showSettings, tagsView, fixedHeader, sidebarLogo, secondMenuPopup } = defaultSettings;
 
-export default defineStore({
-  id: 'settings',
+const useSettingsStore = defineStore('settings', {
   state: () => ({
     theme: '#1890ff',
     showSettings: showSettings,
@@ -23,3 +22,5 @@ export default defineStore({
     }
   }
 });
+
+export default useSettingsStore;

@@ -6,8 +6,7 @@ interface ITagsViewState {
   cachedViews: Array<RouteRecord>;
 }
 
-export default defineStore({
-  id: 'tagsView',
+const useTagsViewStore = defineStore('tagsView', {
   state: ():ITagsViewState => ({
     visitedViews: [],
     cachedViews: []
@@ -93,3 +92,5 @@ export default defineStore({
     }
   }
 });
+
+export default useTagsViewStore;

@@ -15,7 +15,6 @@ const service = axios.create({
 service.interceptors.request.use(
   config => {
     // do something before request is sent
-
     if (userStore().token) {
       // let each request carry token
       // ['X-Token'] is a custom headers key
@@ -71,13 +70,41 @@ service.interceptors.response.use(
     }
   },
   error => {
-    console.log('err' + error); // for debug
-    ElMessage({
-      message: error.message,
-      type: 'error',
-      duration: 5 * 1000
-    });
-    return Promise.reject(error);
+    if (error.response.status === 401) {
+      if (error.response.data.message.includes("Token is expired")) {
+        ElMessageBox.alert(
+          "登录状态过期, 请重新登录.",
+          "登录状态过期",
+          {
+            confirmButtonText: " 确定",
+            type: "warning",
+            callback: () => {
+              userStore().logout().then(() => {
+                location.reload();
+              });
+            }
+          }
+        );
+      } else {
+        ElMessage({
+          showClose: true,
+          message: error.response.msg || error.response.data.message || error.message,
+          type: "error",
+          duration: 5 * 1000
+        });
+        return Promise.reject(error);
+      }
+    } else if (error.response.status === 403) {
+      this.$router.push({ path: "/401" });
+    } else {
+      ElMessage({
+        showClose: true,
+        message: error.response.msg || error.response.data.message || error.message,
+        type: "error",
+        duration: 5 * 1000
+      });
+      return Promise.reject(error);
+    }
   }
 );
 

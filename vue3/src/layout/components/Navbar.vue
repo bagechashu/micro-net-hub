@@ -19,9 +19,9 @@
 
       </template>
 
-      <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
+      <el-dropdown v-if="token" class="avatar-container right-menu-item hover-effect" trigger="click">
         <div class="avatar-wrapper">
-          <img :src="avatar + '?imageView2/1/w/80/h/80'" class="user-avatar">
+          <img :src="(avatar ? avatar : defaultAvatar) + '?imageView2/1/w/80/h/80'" class="user-avatar">
           <el-icon class="el-icon-caret-bottom" size="small">
             <CaretBottom />
           </el-icon>
@@ -46,7 +46,11 @@
           </el-dropdown-menu>
         </template>
       </el-dropdown>
+      <div v-else class="avatar-container right-menu-item hover-effect">
+        <el-button type="primary" size="small" plain @click="updateLoginFormVisible(true)">{{ $t('loginform.login') }}</el-button>
+      </div>
     </div>
+    <Login v-model="loginFormVisible" />
   </div>
 </template>
 
@@ -61,6 +65,7 @@ import SizeSelect from '@/components/SizeSelect';
 import Search from '@/components/HeaderSearch';
 import { defineComponent } from 'vue';
 import { CaretBottom } from '@element-plus/icons-vue';
+import Login from '@/layout/components/Login';
 
 export default defineComponent({
   components: {
@@ -70,7 +75,14 @@ export default defineComponent({
     Screenfull,
     SizeSelect,
     Search,
-    CaretBottom
+    CaretBottom,
+    Login
+  },
+  data() {
+    return {
+      loginFormVisible: false,
+      defaultAvatar: 'https://q1.qlogo.cn/g?b=qq&nk=10002&s=100'
+    };
   },
   computed: {
     sidebar() {
@@ -81,9 +93,15 @@ export default defineComponent({
     },
     avatar() {
       return userStore().avatar;
+    },
+    token() {
+      return userStore().token;
     }
   },
   methods: {
+    updateLoginFormVisible(value) {
+      this.loginFormVisible = value;
+    },
     toggleSidebar() {
       appStore().toggleSidebar();
     },
