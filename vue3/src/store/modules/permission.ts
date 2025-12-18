@@ -19,79 +19,99 @@ interface MenuItem {
 }
 
 interface IPermissionState {
-  routes: Array<RouteRecordRaw>;
-  addRoutes: Array<RouteRecordRaw>;
+  routes: RouteRecordRaw[];
+  addRoutes: RouteRecordRaw[];
 }
 
 const usePermissionStore = defineStore('permission', {
-  state: ():IPermissionState => ({
+  state: (): IPermissionState => ({
     routes: [],
     addRoutes: []
   }),
-  getters: {},
+
   actions: {
     setRoutes(routes: RouteRecordRaw[]) {
       this.addRoutes = routes;
       this.routes = constantRoutes.concat(routes);
     },
-    // Convert backend menu tree to vue-router RouteRecordRaw
+
     async generateRoutes(userinfo: { ID: string | number }) {
-      console.log('Generating routes from menu for user:', userinfo);
-      try {
-        const { data } = await getUserMenuTreeByUserId({ id: userinfo.ID });
-        const menuTree = data;
-        const accessedRoutes = getRoutesFromMenuTree(menuTree);
-        this.setRoutes(accessedRoutes);
-        return accessedRoutes;
-      } catch (err) {
-        return Promise.reject(err);
-      }
+      const { data } = await getUserMenuTreeByUserId({ id: userinfo.ID });
+      const accessedRoutes = buildRoutesFromMenu(data || []);
+      this.setRoutes(accessedRoutes);
+      return accessedRoutes;
     },
+
     async generateRoutesAnonymous() {
       this.setRoutes([]);
       return;
     }
   }
 });
+
 export default usePermissionStore;
 
-/**
- * Helpers to transform backend menu data to RouteRecordRaw
- */
-export function getRoutesFromMenuTree(menuTree: MenuItem[]): RouteRecordRaw[] {
-  const routes: RouteRecordRaw[] = [];
-  menuTree.forEach(menu => {
-    let childrenRoutes: RouteRecordRaw[] | undefined;
-    if (menu.children && menu.children.length > 0) {
-      childrenRoutes = getRoutesFromMenuTree(menu.children);
-    }
-    const route: RouteRecordRaw = {
-      path: menu.path as string,
-      name: menu.name as string,
-      component: loadComponent(menu.component as string),
-      hidden: menu.hidden === 1,
-      redirect: menu.redirect || undefined,
-      meta: {
-        name: menu.name,
-        title: menu.title || menu.name,
-        icon: menu.icon,
-        noCache: menu.noCache === 1,
-        breadcrumb: menu.breadcrumb === 1,
-        activeMenu: menu.activeMenu
+export function buildRoutesFromMenu(menuTree: MenuItem[]): RouteRecordRaw[] {
+  return menuTree
+    .filter(m => !!m.path)
+    .map(menu => {
+      const children = menu.children?.length
+        ? buildRoutesFromMenu(menu.children)
+        : undefined;
+
+      const route: RouteRecordRaw = {
+        path: normalizePath(menu.path!),
+        name: buildRouteName(menu),
+        component: resolveComponent(menu.component),
+        redirect: menu.redirect || undefined,
+        meta: {
+          title: menu.title || menu.name,
+          icon: menu.icon,
+          hidden: menu.hidden === 1,
+          noCache: menu.noCache === 1,
+          breadcrumb: menu.breadcrumb !== 0,
+          activeMenu: menu.activeMenu
+        }
+      } as RouteRecordRaw;
+
+      if (children?.length) {
+        route.children = children;
       }
-    } as RouteRecordRaw;
-    if (childrenRoutes && childrenRoutes.length > 0) {
-      route.children = childrenRoutes;
-    }
-    routes.push(route);
-  });
-  return routes;
+
+      return route;
+    });
 }
 
-export function loadComponent(component:string) {
+/* -------------------------- Helpers -------------------------- */
+// permission.ts (top-level)
+const viewModules = import.meta.glob('@/views/**/*.vue');
+
+function resolveComponent(component?: string) {
   if (!component || component === '' || component === 'Layout') {
     return Layout;
   }
-  // component is expected like '/system/user/index'
-  return () => import(`@/views${component}.vue`);
+
+  const viewPath = `/src/views${component}.vue`;
+  const loader = viewModules[viewPath];
+
+  if (!loader) {
+    console.error(
+      `[Router] View component not found: ${viewPath}`
+    );
+    return Layout; // or NotFound component
+  }
+
+  return loader;
+}
+
+function buildRouteName(menu: MenuItem): string {
+  if (menu.name) return menu.name;
+  return `route_${menu.path?.replace(/\//g, '_')}`;
+}
+
+function normalizePath(path: string): string {
+  if (!path.startsWith('/')) {
+    return `/${path}`;
+  }
+  return path;
 }
