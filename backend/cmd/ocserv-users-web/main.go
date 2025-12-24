@@ -12,6 +12,11 @@ import (
 )
 
 func main() {
+	table := "vpn_filter"
+	chain := "vpn_input"
+	allowAccessOcservIpSetName := "allow_access_ocserv_ips"
+	allowAccessOcservIpSet := []string{"1.0.1.0/24", "1.0.2.0/23"}
+
 	var (
 		configPath = flag.String("config", "rules.json", "配置文件路径")
 		// refresh       = flag.Duration("refresh", 30*time.Second, "刷新间隔")
@@ -33,6 +38,16 @@ func main() {
 	inputChainRules := internal.GetInputChainRules(cfg)
 	if err := internal.InitNftables(publicRules, inputChainRules); err != nil {
 		log.Fatalf("[main] nftables 初始化失败: %v", err)
+	}
+
+	// 创建允许访问 ocserv 的 IP 集合
+	if err := internal.CreateIpSet(table, allowAccessOcservIpSetName, allowAccessOcservIpSet); err != nil {
+		log.Fatal(err)
+	}
+
+	// 添加规则允许访问 443
+	if err := internal.AddIpSetRules(table, chain, []string{allowAccessOcservIpSetName}); err != nil {
+		log.Fatal(err)
 	}
 
 	// 启动后初始化所有用户的规则

@@ -99,7 +99,7 @@ func flushFilterTableAndChain() error {
 func ensureFilterTableAndChain() error {
 	establishedComment := "allow_return_traffic"
 	allowLoopbackComment := "allow_loopback"
-	allowOcserv443Comment := "allow_ocserv_443"
+	// allowOcserv443Comment := "allow_ocserv_443"
 	// 确保 vpn_filter 表存在
 	if err := exec.Command("nft", "list", "table", "ip", filterTableName).Run(); err != nil {
 		if err := exec.Command("nft", "add", "table", "ip", filterTableName).Run(); err != nil {
@@ -142,10 +142,10 @@ func ensureFilterTableAndChain() error {
 	}
 
 	// vpn_input 添加允许 443 端口访问规则
-	if err := exec.Command("nft", "add", "rule", "ip", filterTableName, filterInputChainName,
-		"tcp", "dport", "443", "accept", "comment", fmt.Sprintf("\"%s\"", allowOcserv443Comment)).Run(); err != nil {
-		return err
-	}
+	// if err := exec.Command("nft", "add", "rule", "ip", filterTableName, filterInputChainName,
+	// 	"tcp", "dport", "443", "accept", "comment", fmt.Sprintf("\"%s\"", allowOcserv443Comment)).Run(); err != nil {
+	// 	return err
+	// }
 	return nil
 }
 
