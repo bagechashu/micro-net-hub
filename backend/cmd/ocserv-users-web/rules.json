@@ -1,18 +1,5 @@
 {
-  "rules": [
-    {
-      "name": "public_dns",
-      "rules": [
-        { "ip": "8.8.8.8", "protocol": "tcp", "port": 53 },
-        { "ip": "1.1.1.0/24", "protocol": "udp" }
-      ]
-    },
-    {
-      "name": "input_rules",
-      "rules": [
-        { "ip": "10.12.0.11", "protocol": "tcp", "port": 443 }
-      ]
-    },
+  "dest_rule_groups": [
     {
       "name": "admin_access",
       "rules": [
@@ -32,31 +19,64 @@
         { "ip": "192.168.1.0/24", "protocol": "tcp", "port": 8080 },
         { "ip": "192.168.2.0/24", "protocol": "udp", "port": 53 }
       ]
+    },
+    {
+      "name": "public_dns",
+      "rules": [
+        { "ip": "8.8.8.8", "protocol": "tcp", "port": 53 },
+        { "ip": "1.1.1.0/24", "protocol": "udp" }
+      ]
+    },
+    {
+      "name": "input_rules",
+      "rules": [{ "ip": "10.12.0.11", "protocol": "tcp", "port": 443 }]
+    },
+    {
+      "name": "allow_access_ocserv",
+      "rules": [
+        { "ip": "0.0.0.0/0", "protocol": "tcp", "port": 443 },
+        { "ip": "0.0.0.0/0", "protocol": "udp", "port": 443 }
+      ]
     }
   ],
-  "users": [
+  "dest_rule_mappings": [
     {
       "name": "admins",
+      "mapping_type": "users",
       "users": ["user1", "admin1"],
-      "rule_ref": "admin_access"
+      "rule_group_ref": "admin_access"
     },
     {
       "name": "developers",
+      "mapping_type": "users",
       "users": ["user1", "user2", "dev1", "dev2"],
-      "rule_ref": "user_network"
+      "rule_group_ref": "user_network"
     },
     {
       "name": "testers",
+      "mapping_type": "users",
       "users": ["tester1"],
-      "rule_ref": "dev_rules"
-    }
-  ],
-  "public_rule_ref": "public_dns",
-  "input_chain": [
-    { 
+      "rule_group_ref": "dev_rules"
+    },
+    {
+      "name": "public_dns",
+      "mapping_type": "public",
+      "rule_group_ref": "public_dns"
+    },
+    {
       "name": "input",
-      "src_ip": ["10.12.0.0/16"],
-      "rule_ref": "input_rules"
+      "mapping_type": "input_chain",
+      "src_ips": ["10.12.0.0/16"],
+      "rule_group_ref": "input_rules"
+    },
+    {
+      "name": "allow_access_ocserv",
+      "mapping_type": "input_chain_ip_set",
+      "src_ip_set": {
+        "name": "allow_access_ocserv",
+        "ips": ["0.0.0.0/0"]
+      },
+      "rule_group_ref": "allow_access_ocserv"
     }
   ]
 }

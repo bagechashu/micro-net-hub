@@ -27,7 +27,7 @@ var (
 // -------------------- Nftables Manager --------------------
 
 // InitNftables 初始化nftables规则
-func InitNftables(publicRules []RuleConfig, inputChainRules map[string][]RuleConfig) error {
+func InitNftables(publicRules, inputChainRules, inputChainIpSetRules map[string][]DestRule, srcIpSets []SrcIpSet) error {
 	if err := ensureNatTableAndChain(); err != nil {
 		return fmt.Errorf("确保NAT表和链失败: %v", err)
 	}
@@ -39,20 +39,35 @@ func InitNftables(publicRules []RuleConfig, inputChainRules map[string][]RuleCon
 		return fmt.Errorf("确保过滤表和链失败: %v", err)
 	}
 
-	// 添加公共规则
-	for i, r := range publicRules {
-		addNftRule("0.0.0.0/0", r.IP, r.Protocol, r.Port, r.ToLocal, fmt.Sprintf("public:%d", i))
-	}
-
-	// 添加 InputChain 规则
-	i := 0
-	for srcIP, rules := range inputChainRules {
-		for _, r := range rules {
-			addNftRule(srcIP, r.IP, r.Protocol, r.Port, r.ToLocal, fmt.Sprintf("input:%d", i))
-			i++
+	// 添加 公共Public 规则
+	for name, rules := range publicRules {
+		for i, r := range rules {
+			addNftRule("0.0.0.0/0", r.Ip, r.Protocol, r.Port, r.ToLocal, fmt.Sprintf("%s:%d", name, i))
 		}
 	}
 
+	// 添加 InputChain 规则
+	inputNo := 0
+	for srcIp, rules := range inputChainRules {
+		for _, r := range rules {
+			addNftRule(srcIp, r.Ip, r.Protocol, r.Port, r.ToLocal, fmt.Sprintf("%s:%d", srcIp, inputNo))
+			inputNo++
+		}
+	}
+
+	// 创建 IP 集合
+	for _, srcIpSet := range srcIpSets {
+		createIpSet(filterTableName, srcIpSet.Name, srcIpSet.Ips)
+	}
+
+	// 添加 InputChainIpSet 规则
+	for srcIpSetName, rules := range inputChainIpSetRules {
+		for i, r := range rules {
+			addNftRulesIpSet(filterTableName, filterInputChainName, srcIpSetName, r.Ip, r.Protocol, r.Port, r.ToLocal, fmt.Sprintf("%s:%d", srcIpSetName, i))
+		}
+	}
+	
+	// 重启后30分钟内允许SSH访问
 	go enableSshAccept30MinAfterRestart()
 	return nil
 }
@@ -164,7 +179,7 @@ func enableSshAccept30MinAfterRestart() error {
 }
 
 // UpdateNftablesRulesWithSessions 支持多设备，tag = username:ip:ruleIndex
-func UpdateNftablesRulesWithSessions(userRules map[string][]RuleConfig) error {
+func UpdateNftablesRulesWithSessions(usersDestRules map[string][]DestRule) error {
 	sessions, err := GetSessions()
 	if err != nil {
 		log.Printf("[nft] 获取会话失败: %v", err)
@@ -196,16 +211,16 @@ func UpdateNftablesRulesWithSessions(userRules map[string][]RuleConfig) error {
 
 		// 处理新增 IP
 		for _, ip := range added {
-			for j, r := range userRules[username] {
+			for j, r := range usersDestRules[username] {
 				tag := fmt.Sprintf("user:%s:%s:%d", username, ip, j)
-				addNftRule(ip, r.IP, r.Protocol, r.Port, r.ToLocal, tag)
+				addNftRule(ip, r.Ip, r.Protocol, r.Port, r.ToLocal, tag)
 			}
 			clearConntrack(ip)
 		}
 
 		// 处理下线 IP
 		for _, ip := range removed {
-			for j := range userRules[username] {
+			for j := range usersDestRules[username] {
 				tag := fmt.Sprintf("user:%s:%s:%d", username, ip, j)
 				deleteNftRules(tag)
 			}
@@ -218,7 +233,7 @@ func UpdateNftablesRulesWithSessions(userRules map[string][]RuleConfig) error {
 		if _, ok := current[username]; !ok {
 			log.Printf("[diff] 用户 %s 完全下线，移除所有 IP: %v", username, oldIPs)
 			for _, ip := range oldIPs {
-				for j := range userRules[username] {
+				for j := range usersDestRules[username] {
 					tag := fmt.Sprintf("user:%s:%s:%d", username, ip, j)
 					deleteNftRules(tag)
 				}
@@ -272,12 +287,13 @@ func addNftRule(srcIP, dstIP, protocol string, port uint16, toLocal bool, tag st
 		chain = filterInputChainName
 	}
 
-	proto := strings.ToLower(protocol)
 	args := []string{
 		"add", "rule", "ip", filterTableName, chain,
-		"ip", "saddr", srcIP, "ip", "daddr", dstIP,
+		"ip", "saddr", srcIP, 
+		"ip", "daddr", dstIP,
 	}
 
+	proto := strings.ToLower(protocol)
 	switch proto {
 	case "tcp", "udp":
 		if port > 0 {
@@ -292,7 +308,8 @@ func addNftRule(srcIP, dstIP, protocol string, port uint16, toLocal bool, tag st
 		return
 	}
 
-	args = append(args, "accept", "comment", fmt.Sprintf("\"%s\"", tag))
+	args = append(args, "accept")
+	args = append(args, "comment", fmt.Sprintf("\"%s\"", tag))
 
 	cmd := exec.Command("nft", args...)
 	if out, err := cmd.CombinedOutput(); err != nil {
@@ -355,7 +372,7 @@ func RunNftablesManager(ctx context.Context, refresh time.Duration) {
 			log.Println("[nft] 停止nftables管理器")
 			return
 		case <-ticker.C:
-			if err := UpdateNftablesRulesWithSessions(GlobalUserRules); err != nil {
+			if err := UpdateNftablesRulesWithSessions(Global_UsersDestRules); err != nil {
 				log.Printf("[nft] 更新规则失败: %v", err)
 				continue
 			}

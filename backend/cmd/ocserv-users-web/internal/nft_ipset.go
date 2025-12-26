@@ -9,14 +9,14 @@ import (
 )
 
 // CreateIpSet 在 nftables 中创建国家 IP 集合
-func CreateIpSet(table, setName string, ips []string) error {
+func createIpSet(table, setName string, ips []string) {
 	// 判断 set 是否存在
 	check := exec.Command("nft", "list", "set", "ip", table, setName)
 	if err := check.Run(); err == nil {
 		// set 已存在，先 flush
 		cmdFlush := exec.Command("nft", "flush", "set", "ip", table, setName)
 		if out, err := cmdFlush.CombinedOutput(); err != nil {
-			return fmt.Errorf("flush set %s 失败: %v (%s)", setName, err, out)
+			log.Printf("[nft] flush set %s 失败: %v (%s)", setName, err, out)
 		}
 	}
 
@@ -24,50 +24,67 @@ func CreateIpSet(table, setName string, ips []string) error {
 	cmdAdd := exec.Command("nft", "add", "set", "ip", table, setName,
 		"{", "type", "ipv4_addr;", "flags", "interval;", "}")
 	if out, err := cmdAdd.CombinedOutput(); err != nil {
-		return fmt.Errorf("创建 set %s 失败: %v (%s)", setName, err, out)
+		log.Printf("[nft] 创建 set %s 失败: %v (%s)", setName, err, out)
 	}
 
 	// 批量添加元素
-	if len(ips) > 0 {
+	ipsLen := len(ips)
+	if ipsLen > 0 {
 		args := []string{"add", "element", "ip", table, setName, "{"}
 		for i, ip := range ips {
 			args = append(args, ip)
-			if i != len(ips)-1 {
+			if i != ipsLen-1 {
 				args = append(args, ",")
 			}
 		}
 		args = append(args, "}")
 		cmdEl := exec.Command("nft", args...)
 		if out, err := cmdEl.CombinedOutput(); err != nil {
-			return fmt.Errorf("添加元素到 set %s 失败: %v (%s)", setName, err, out)
+			log.Printf("[nft] 添加元素到 set %s 失败: %v (%s)", setName, err, out)
 		}
 	}
 
-	log.Printf("[nft] 创建 set %s 完成，包含 %d 个 IP", setName, len(ips))
-	return nil
+	log.Printf("[nft] 创建 set %s 完成，包含 %d 个 IP", setName, ipsLen)
 }
 
 // AddIpSetRules 添加允许指定 IP 集合访问 ocserv 443 的规则
-func AddIpSetRules(table, chain string, ipSets []string) error {
-	for _, setName := range ipSets {
-		args := []string{
-			"add", "rule", "ip", table, chain,
-			"tcp", "dport", "443",
-			"ip", "saddr", fmt.Sprintf("@%s", setName),
-			"accept",
-		}
-		cmd := exec.Command("nft", args...)
-		if out, err := cmd.CombinedOutput(); err != nil {
-			return fmt.Errorf("添加规则失败: %v (%s)", err, out)
-		}
-		log.Printf("[nft] 添加规则: 允许 %s 访问 443", setName)
+func addNftRulesIpSet(table, chain, srcIpSetname, dstIP, protocol string, port uint16, toLocal bool, tag string) {
+	args := []string{
+		"add", "rule", "ip", table, chain,
+		"ip", "saddr", fmt.Sprintf("@%s", srcIpSetname),
+		"ip", "daddr", dstIP,
 	}
-	return nil
+
+	proto := strings.ToLower(protocol)
+	switch proto {
+	case "tcp", "udp":
+		if port > 0 {
+			args = append(args, proto, "dport", fmt.Sprint(port))
+		} else {
+			args = append(args, "meta", "l4proto", proto)
+		}
+	case "icmp":
+		args = append(args, "meta", "l4proto", proto)
+	default:
+		log.Printf("[nft] 当前不支持协议 %s", protocol)
+		return
+	}
+
+	args = append(args, "accept")
+	args = append(args, "comment", fmt.Sprintf("\"%s\"", tag))
+
+	cmd := exec.Command("nft", args...)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		log.Printf("[nft] 添加规则失败: %v (%s)", err, out)
+	} else {
+		log.Printf("[nft] 执行命令: %s", strings.Join(cmd.Args, " "))
+	}
+
 }
 
 // DeleteIpSetRules 删除指定 set 对应的规则
-func DeleteIpSetRules(table, chain string, ipSets []string) {
-	for _, setName := range ipSets {
+func deleteNftRulesIpSet(table, chain string, srcIpSets []string) {
+	for _, setName := range srcIpSets {
 		cmdList := exec.Command("nft", "-a", "list", "chain", "ip", table, chain)
 		out, err := cmdList.Output()
 		if err != nil {

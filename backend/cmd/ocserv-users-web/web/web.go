@@ -32,7 +32,7 @@ func nftablesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 执行一次 nftables 规则更新
-	err := internal.UpdateNftablesRulesWithSessions(internal.GlobalUserRules)
+	err := internal.UpdateNftablesRulesWithSessions(internal.Global_UsersDestRules)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("nft updated failed: %v", err), http.StatusInternalServerError)
 		return
