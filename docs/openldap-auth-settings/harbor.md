@@ -2,7 +2,7 @@
 - LDAP URL: 127.0.0.1
 - LDAP Search DN: cn=admin,dc=example,dc=com
 - LDAP base DN: ou=people,dc=example,dc=com
-- LDAP Filter: **Leave it blank**
+- LDAP Filter: memberOf=cn=all,ou=allhands,dc=example,dc=com
 - LDAP UID: uid
 - LDAP User Scope: Subtree
 - LDAP Group Base DN: ou=allhands,dc=example,dc=com   (your's maybe ou=groups,dc=example,dc=com)
