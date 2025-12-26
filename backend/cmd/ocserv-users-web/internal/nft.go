@@ -48,24 +48,21 @@ func InitNftables(publicRules, inputChainRules, inputChainIpSetRules map[string]
 	}
 
 	// 添加 InputChain 规则
-	inputNo := 0
-	for srcIp, rules := range inputChainRules {
-		for _, r := range rules {
-			chain := getChain(r.Ip, r.ToLocal)
-			addNftRule(filterTableName, chain, srcIp, r.Ip, r.Protocol, r.Port, fmt.Sprintf("%s:%d", srcIp, inputNo))
-			inputNo++
+	for name, rules := range inputChainRules {
+		for i, r := range rules {
+			addNftRule(filterTableName, filterInputChainName, r.SrcIp, r.Ip, r.Protocol, r.Port, fmt.Sprintf("%s:%d", name, i))
 		}
 	}
 
-	// 创建 ip set
+	// 创建 IP Set
 	for _, srcIpSet := range srcIpSets {
 		createIpSet(filterTableName, srcIpSet.Name, srcIpSet.Ips)
 	}
 
 	// 添加 InputChainIpSet 规则
-	for srcIpSetName, rules := range inputChainIpSetRules {
+	for name, rules := range inputChainIpSetRules {
 		for i, r := range rules {
-			addNftRulesIpSet(filterTableName, filterInputChainName, srcIpSetName, r.Ip, r.Protocol, r.Port, fmt.Sprintf("%s:%d", srcIpSetName, i))
+			addNftRulesIpSet(filterTableName, filterInputChainName, r.SrcIpSetName, r.Ip, r.Protocol, r.Port, fmt.Sprintf("%s:%d", name, i))
 		}
 	}
 

@@ -19,8 +19,8 @@ type DestRule struct {
 	Protocol     string `json:"protocol"`
 	Port         uint16 `json:"port,omitempty"`
 	ToLocal      bool   `json:"to_local,omitempty"` // 是否访问宿主机本地服务
-	srcIp        string
-	srcIpSetName string
+	SrcIp        string
+	SrcIpSetName string
 }
 
 type DestRuleGroup struct {
@@ -45,6 +45,56 @@ type DestRuleMapping struct {
 type Config struct {
 	DestRuleGroups   []DestRuleGroup   `json:"dest_rule_groups"`
 	DestRuleMappings []DestRuleMapping `json:"dest_rule_mappings"`
+}
+
+// Check: check the Config according to the following rules:
+// 1) DestRuleGroups must have unique Name (case-insensitive)
+// 2) SrcIpSet names (from mappings) must be unique (case-insensitive)
+// 3) DestRuleMapping Names must be unique within the same MappingType (case-insensitive)
+func (cfg Config) Check() error {
+	seenGroups := make(map[string]bool)
+	for _, g := range cfg.DestRuleGroups {
+		if g.Name == "" {
+			continue
+		}
+		k := strings.ToLower(g.Name)
+		if seenGroups[k] {
+			return fmt.Errorf("duplicate DestRuleGroup name %q", g.Name)
+		}
+		seenGroups[k] = true
+	}
+
+	seenSrcIpSets := make(map[string]bool)
+	seenMappingByType := make(map[MappingType]map[string]bool)
+
+	for _, mapping := range cfg.DestRuleMappings {
+		if !mapping.Type.Valid() {
+			return fmt.Errorf("无效的规则映射类型: %s", mapping.Type)
+		}
+
+		// check SrcIpSet name uniqueness when present
+		if mapping.SrcIpSet.Name != "" {
+			sk := strings.ToLower(mapping.SrcIpSet.Name)
+			if seenSrcIpSets[sk] {
+				return fmt.Errorf("duplicate SrcIpSet name %q", mapping.SrcIpSet.Name)
+			}
+			seenSrcIpSets[sk] = true
+		}
+
+		if mapping.Name == "" {
+			// unnamed mappings: skip name-based validation
+			continue
+		}
+		nameKey := strings.ToLower(mapping.Name)
+		if _, ok := seenMappingByType[mapping.Type]; !ok {
+			seenMappingByType[mapping.Type] = make(map[string]bool)
+		}
+		if seenMappingByType[mapping.Type][nameKey] {
+			return fmt.Errorf("duplicate mapping name %q for type %s", mapping.Name, mapping.Type)
+		}
+		seenMappingByType[mapping.Type][nameKey] = true
+	}
+	return nil
 }
 
 type MappingType string
@@ -95,52 +145,8 @@ func LoadConfig(path string) (*Config, error) {
 		}
 	}
 
-	// Validate:
-	// 1) DestRuleGroups must have unique Name (case-insensitive)
-	// 2) SrcIpSet names (from mappings) must be unique (case-insensitive)
-	// 3) DestRuleMapping Names must be unique within the same MappingType (case-insensitive)
-
-	seenGroups := make(map[string]bool)
-	for _, g := range cfg.DestRuleGroups {
-		if g.Name == "" {
-			continue
-		}
-		k := strings.ToLower(g.Name)
-		if seenGroups[k] {
-			return nil, fmt.Errorf("duplicate DestRuleGroup name %q", g.Name)
-		}
-		seenGroups[k] = true
-	}
-
-	seenSrcIpSets := make(map[string]bool)
-	seenMappingByType := make(map[MappingType]map[string]bool)
-
-	for _, mapping := range cfg.DestRuleMappings {
-		if !mapping.Type.Valid() {
-			return nil, fmt.Errorf("无效的规则映射类型: %s", mapping.Type)
-		}
-
-		// check SrcIpSet name uniqueness when present
-		if mapping.SrcIpSet.Name != "" {
-			sk := strings.ToLower(mapping.SrcIpSet.Name)
-			if seenSrcIpSets[sk] {
-				return nil, fmt.Errorf("duplicate SrcIpSet name %q", mapping.SrcIpSet.Name)
-			}
-			seenSrcIpSets[sk] = true
-		}
-
-		if mapping.Name == "" {
-			// unnamed mappings: skip name-based validation
-			continue
-		}
-		nameKey := strings.ToLower(mapping.Name)
-		if _, ok := seenMappingByType[mapping.Type]; !ok {
-			seenMappingByType[mapping.Type] = make(map[string]bool)
-		}
-		if seenMappingByType[mapping.Type][nameKey] {
-			return nil, fmt.Errorf("duplicate mapping name %q for type %s", mapping.Name, mapping.Type)
-		}
-		seenMappingByType[mapping.Type][nameKey] = true
+	if err := cfg.Check(); err != nil {
+		return nil, fmt.Errorf("invalid config %q: %w", path, err)
 	}
 
 	return &cfg, nil
@@ -186,9 +192,9 @@ func GetPublicRules(config *Config) map[string][]DestRule {
 			continue
 		}
 
-		rules_name := strings.ToLower(ruleGroup.Name) // 用户名转小写，保持一致性
+		rulemappingName := strings.ToLower(rulemapping.Name) // 用户名转小写，保持一致性
 		// 将规则追加到现有规则中，以支持多个组的规则合并
-		publicRules[rules_name] = append(publicRules[rules_name], ruleGroup.Rules...)
+		publicRules[rulemappingName] = append(publicRules[rulemappingName], ruleGroup.Rules...)
 	}
 
 	return publicRules
@@ -207,10 +213,19 @@ func GetInputChainRules(config *Config) map[string][]DestRule {
 			continue
 		}
 
-		// 将规则追加到现有规则中，以支持多个组的规则合并
+		rulemappingName := strings.ToLower(rulemapping.Name)
+
+		// dest_rule 中 srcIp 赋值
 		for _, srcIp := range rulemapping.SrcIps {
-			rules_name := srcIp // 使用源 srcIp 作为规则名称,方便 addNftRules 查找
-			inputChainRules[rules_name] = append(inputChainRules[rules_name], ruleGroup.Rules...)
+			// 为每个 srcIp 生成一份带有 SrcIp 的规则拷贝
+			rulesWithSrc := make([]DestRule, 0, len(ruleGroup.Rules))
+			for _, r := range ruleGroup.Rules {
+				r.SrcIp = srcIp
+				rulesWithSrc = append(rulesWithSrc, r)
+			}
+
+			// 将规则追加到现有规则中，以支持多个组的规则合并
+			inputChainRules[rulemappingName] = append(inputChainRules[rulemappingName], rulesWithSrc...)
 		}
 	}
 
@@ -232,9 +247,17 @@ func GetInputChainIpSetRules(config *Config) ([]SrcIpSet, map[string][]DestRule)
 			continue
 		}
 
-		rules_name := strings.ToLower(rulemapping.SrcIpSet.Name) // 使用集合名称作为规则名称,方便 addNftRulesIpSet 查找
+		rulemappingName := strings.ToLower(rulemapping.Name)
+
+		// dest_rule 中 srcIpSetName 赋值
+		rulesWithSrcIpSetName := make([]DestRule, 0, len(ruleGroup.Rules))
+		for _, r := range ruleGroup.Rules {
+			r.SrcIpSetName = rulemapping.SrcIpSet.Name
+			rulesWithSrcIpSetName = append(rulesWithSrcIpSetName, r)
+		}
+
 		// 将规则追加到现有规则中，以支持多个组的规则合并
-		inputChainIpSetRules[rules_name] = append(inputChainIpSetRules[rules_name], ruleGroup.Rules...)
+		inputChainIpSetRules[rulemappingName] = append(inputChainIpSetRules[rulemappingName], rulesWithSrcIpSetName...)
 	}
 
 	return srcIpSets, inputChainIpSetRules
