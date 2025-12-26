@@ -2,9 +2,13 @@ package internal
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
+
+	"sigs.k8s.io/yaml"
 )
 
 // GlobalUsersDestRules 全局用户目标规则映射
@@ -68,14 +72,75 @@ func LoadConfig(path string) (*Config, error) {
 		return nil, err
 	}
 	var cfg Config
-	if err := json.Unmarshal(data, &cfg); err != nil {
-		return nil, err
+
+	ext := strings.ToLower(filepath.Ext(path))
+	switch ext {
+	case ".yaml", ".yml":
+		if err := yaml.Unmarshal(data, &cfg); err != nil {
+			return nil, fmt.Errorf("failed to parse yaml config %q: %w", path, err)
+		}
+	case ".json":
+		if err := json.Unmarshal(data, &cfg); err != nil {
+			return nil, fmt.Errorf("failed to parse json config %q: %w", path, err)
+		}
+	default:
+		// Try json first, then yaml
+		if err := json.Unmarshal(data, &cfg); err == nil {
+			break
+		}
+		if err2 := yaml.Unmarshal(data, &cfg); err2 == nil {
+			break
+		} else {
+			return nil, fmt.Errorf("failed to parse config %q as json or yaml: json: %v; yaml: %v", path, err, err2)
+		}
 	}
+
+	// Validate:
+	// 1) DestRuleGroups must have unique Name (case-insensitive)
+	// 2) SrcIpSet names (from mappings) must be unique (case-insensitive)
+	// 3) DestRuleMapping Names must be unique within the same MappingType (case-insensitive)
+
+	seenGroups := make(map[string]bool)
+	for _, g := range cfg.DestRuleGroups {
+		if g.Name == "" {
+			continue
+		}
+		k := strings.ToLower(g.Name)
+		if seenGroups[k] {
+			return nil, fmt.Errorf("duplicate DestRuleGroup name %q", g.Name)
+		}
+		seenGroups[k] = true
+	}
+
+	seenSrcIpSets := make(map[string]bool)
+	seenMappingByType := make(map[MappingType]map[string]bool)
 
 	for _, mapping := range cfg.DestRuleMappings {
 		if !mapping.Type.Valid() {
-			log.Printf("[init] 无效的规则映射类型: %s", mapping.Type)
+			return nil, fmt.Errorf("无效的规则映射类型: %s", mapping.Type)
 		}
+
+		// check SrcIpSet name uniqueness when present
+		if mapping.SrcIpSet.Name != "" {
+			sk := strings.ToLower(mapping.SrcIpSet.Name)
+			if seenSrcIpSets[sk] {
+				return nil, fmt.Errorf("duplicate SrcIpSet name %q", mapping.SrcIpSet.Name)
+			}
+			seenSrcIpSets[sk] = true
+		}
+
+		if mapping.Name == "" {
+			// unnamed mappings: skip name-based validation
+			continue
+		}
+		nameKey := strings.ToLower(mapping.Name)
+		if _, ok := seenMappingByType[mapping.Type]; !ok {
+			seenMappingByType[mapping.Type] = make(map[string]bool)
+		}
+		if seenMappingByType[mapping.Type][nameKey] {
+			return nil, fmt.Errorf("duplicate mapping name %q for type %s", mapping.Name, mapping.Type)
+		}
+		seenMappingByType[mapping.Type][nameKey] = true
 	}
 
 	return &cfg, nil
