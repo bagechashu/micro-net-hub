@@ -48,7 +48,7 @@ func createIpSet(table, setName string, ips []string) {
 }
 
 // AddIpSetRules 添加允许指定 IP 集合访问 ocserv 443 的规则
-func addNftRulesIpSet(table, chain, srcIpSetname, dstIP, protocol string, port uint16, toLocal bool, tag string) {
+func addNftRulesIpSet(table, chain, srcIpSetname, dstIP, protocol string, port uint16, tag string) {
 	args := []string{
 		"add", "rule", "ip", table, chain,
 		"ip", "saddr", fmt.Sprintf("@%s", srcIpSetname),

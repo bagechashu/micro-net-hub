@@ -42,7 +42,8 @@ func InitNftables(publicRules, inputChainRules, inputChainIpSetRules map[string]
 	// 添加 公共Public 规则
 	for name, rules := range publicRules {
 		for i, r := range rules {
-			addNftRule("0.0.0.0/0", r.Ip, r.Protocol, r.Port, r.ToLocal, fmt.Sprintf("%s:%d", name, i))
+			chain := getChain(r.Ip, r.ToLocal)
+			addNftRule(filterTableName, chain, "0.0.0.0/0", r.Ip, r.Protocol, r.Port, fmt.Sprintf("%s:%d", name, i))
 		}
 	}
 
@@ -50,12 +51,13 @@ func InitNftables(publicRules, inputChainRules, inputChainIpSetRules map[string]
 	inputNo := 0
 	for srcIp, rules := range inputChainRules {
 		for _, r := range rules {
-			addNftRule(srcIp, r.Ip, r.Protocol, r.Port, r.ToLocal, fmt.Sprintf("%s:%d", srcIp, inputNo))
+			chain := getChain(r.Ip, r.ToLocal)
+			addNftRule(filterTableName, chain, srcIp, r.Ip, r.Protocol, r.Port, fmt.Sprintf("%s:%d", srcIp, inputNo))
 			inputNo++
 		}
 	}
 
-	// 创建 IP 集合
+	// 创建 ip set
 	for _, srcIpSet := range srcIpSets {
 		createIpSet(filterTableName, srcIpSet.Name, srcIpSet.Ips)
 	}
@@ -63,10 +65,10 @@ func InitNftables(publicRules, inputChainRules, inputChainIpSetRules map[string]
 	// 添加 InputChainIpSet 规则
 	for srcIpSetName, rules := range inputChainIpSetRules {
 		for i, r := range rules {
-			addNftRulesIpSet(filterTableName, filterInputChainName, srcIpSetName, r.Ip, r.Protocol, r.Port, r.ToLocal, fmt.Sprintf("%s:%d", srcIpSetName, i))
+			addNftRulesIpSet(filterTableName, filterInputChainName, srcIpSetName, r.Ip, r.Protocol, r.Port, fmt.Sprintf("%s:%d", srcIpSetName, i))
 		}
 	}
-	
+
 	// 重启后30分钟内允许SSH访问
 	go enableSshAccept30MinAfterRestart()
 	return nil
@@ -213,7 +215,8 @@ func UpdateNftablesRulesWithSessions(usersDestRules map[string][]DestRule) error
 		for _, ip := range added {
 			for j, r := range usersDestRules[username] {
 				tag := fmt.Sprintf("user:%s:%s:%d", username, ip, j)
-				addNftRule(ip, r.Ip, r.Protocol, r.Port, r.ToLocal, tag)
+				chain := getChain(r.Ip, r.ToLocal)
+				addNftRule(filterTableName, chain, ip, r.Ip, r.Protocol, r.Port, tag)
 			}
 			clearConntrack(ip)
 		}
@@ -273,6 +276,14 @@ func diffIPs(oldIPs, newIPs []string) (added, removed []string) {
 	return
 }
 
+// 根据 ip 和 tolocal 参数决定使用哪个链
+func getChain(ip string, tolocal bool) (chain string) {
+	if isLocalIP(ip) || tolocal { // 如果目标是本机，或者强制认为是本机
+		return filterInputChainName
+	}
+	return filterForwardChainName
+}
+
 // addNftRule 添加自定义规则到指定链
 // srcIP: 源IP地址
 // dstIP: 目标IP地址
@@ -280,16 +291,10 @@ func diffIPs(oldIPs, newIPs []string) (added, removed []string) {
 // port: 端口号(0表示所有端口)
 // toLocal: 是否要添加到 input 链(目标是本机)
 // tag: 规则标签，用于后续删除
-func addNftRule(srcIP, dstIP, protocol string, port uint16, toLocal bool, tag string) {
-	// 自动识别目标是否是本机
-	chain := filterForwardChainName
-	if isLocalIP(dstIP) || toLocal { // 如果目标是本机，或者强制认为是本机
-		chain = filterInputChainName
-	}
-
+func addNftRule(table, chain, srcIP, dstIP, protocol string, port uint16, tag string) {
 	args := []string{
-		"add", "rule", "ip", filterTableName, chain,
-		"ip", "saddr", srcIP, 
+		"add", "rule", "ip", table, chain,
+		"ip", "saddr", srcIP,
 		"ip", "daddr", dstIP,
 	}
 
