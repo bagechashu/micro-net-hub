@@ -42,7 +42,7 @@ else
   REASON_COLOR=$REASON
 fi
 
-CONNECT_INFO="[notice] $USERNAME\($IP_REAL\) $REASON_COLOR Ocserv VPN"
+CONNECT_INFO="[notice] $USERNAME\($IP_REAL\) $IP_REMOTE $REASON_COLOR Ocserv VPN"
 
 /usr/bin/curl --connect-timeout 5 -XPOST "http://:9000/webhook/raw/ding?secret=securitykey" -d "${CONNECT_INFO}" >/dev/null 2>&1
 
