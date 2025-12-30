@@ -1,51 +1,51 @@
-dest_rule_groups:
+rule_groups:
   - name: admin_access
     rules:
-      - { "ip": "10.12.0.11/32", "protocol": "tcp", "port": 22 }
-      - { "ip": "10.12.0.216", "protocol": "tcp", "port": 22 }
-      - { "ip": "10.12.0.0/16", "protocol": "icmp", "port": 22 }
-      - { "ip": "8.8.4.4", "protocol": "udp" }
+      - { "dest_ip": "10.12.0.11/32", "protocol": "tcp", "dest_port": 22 }
+      - { "dest_ip": "10.12.0.216", "protocol": "tcp", "dest_port": 22 }
+      - { "dest_ip": "10.12.0.0/16", "protocol": "icmp", "dest_port": 22 }
+      - { "dest_ip": "8.8.4.4", "dest_port": 53, "action": "drop" }
 
   - name: user_network
     rules:
-      - ip: 10.12.0.0/16
+      - dest_ip: 10.12.0.0/16
         protocol: tcp
 
   - name: dev_rules
     rules:
-      - ip: 192.168.1.0/24
+      - dest_ip: 192.168.1.0/24
         protocol: tcp
-        port: 8080
-      - ip: 192.168.2.0/24
+        dest_port: 8080
+      - dest_ip: 192.168.2.0/24
         protocol: udp
-        port: 53
+        dest_port: 53
 
   - name: public_dns
     rules:
-      - ip: 8.8.8.8
+      - dest_ip: 8.8.8.8
         protocol: tcp
-        port: 53
-      - ip: 1.1.1.0/24
+        dest_port: 53
+      - dest_ip: 1.1.1.0/24
         protocol: udp
 
   - name: input_rules
     rules:
-      - ip: 10.12.0.11
+      - dest_ip: 10.12.0.11
         protocol: tcp
-        port: 443
+        dest_port: 443
 
   - name: allow_access_ocserv
     rules:
-      - ip: 0.0.0.0/0
+      - dest_ip: 0.0.0.0/0
         protocol: tcp
-        port: 443
-      - ip: 0.0.0.0/0
+        dest_port: 443
+      - dest_ip: 0.0.0.0/0
         protocol: udp
-        port: 443
+        dest_port: 443
 
 
 # Mappings
-dest_rule_mappings:
+rule_mappings:
   - name: admins
     mapping_type: users
     users:

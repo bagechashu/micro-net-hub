@@ -37,8 +37,8 @@ func main() {
 	}
 
 	// 启动后初始化所有用户的规则
-	internal.Global_UsersDestRules = internal.GetUserRulesMapping(cfg)
-	if err := internal.UpdateNftablesRulesWithSessions(internal.Global_UsersDestRules); err != nil {
+	internal.Global_UsersRules = internal.GetUserRulesMapping(cfg)
+	if err := internal.UpdateNftablesRulesWithSessions(internal.Global_UsersRules); err != nil {
 		log.Printf("[nft] 更新规则失败: %v", err)
 	}
 

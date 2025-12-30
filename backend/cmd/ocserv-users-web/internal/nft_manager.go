@@ -33,7 +33,7 @@ var (
 // -------------------- Nftables Manager --------------------
 
 // InitNftables 初始化nftables规则
-func InitNftables(publicRules, inputChainRules, inputChainIpSetRules map[string][]DestRule, srcIpSets []SrcIpSet) error {
+func InitNftables(publicRules, inputChainRules, inputChainIpSetRules map[string][]Rule, srcIpSets []SrcIpSet) error {
 	if err := addNatTableAndChain(); err != nil {
 		return fmt.Errorf("确保NAT表和链失败: %v", err)
 	}
@@ -48,15 +48,15 @@ func InitNftables(publicRules, inputChainRules, inputChainIpSetRules map[string]
 	// 添加 公共Public 规则
 	for name, rules := range publicRules {
 		for i, r := range rules {
-			chain := getChain(r.Ip, r.ToLocal)
-			addNftRule(filterTableName, chain, "0.0.0.0/0", r.Ip, r.Protocol, r.Port, fmt.Sprintf("%s:%d", name, i))
+			chain := getChain(r.DestIp, r.ToLocal)
+			addNftRule(filterTableName, chain, "0.0.0.0/0", r.DestIp, r.Protocol, r.DestPort, r.Action, fmt.Sprintf("%s:%d", name, i))
 		}
 	}
 
 	// 添加 InputChain 规则
 	for name, rules := range inputChainRules {
 		for i, r := range rules {
-			addNftRule(filterTableName, filterInputChainName, r.SrcIp, r.Ip, r.Protocol, r.Port, fmt.Sprintf("%s:%d", name, i))
+			addNftRule(filterTableName, filterInputChainName, r.SrcIp, r.DestIp, r.Protocol, r.DestPort, r.Action, fmt.Sprintf("%s:%d", name, i))
 		}
 	}
 
@@ -68,7 +68,7 @@ func InitNftables(publicRules, inputChainRules, inputChainIpSetRules map[string]
 	// 添加 InputChainIpSet 规则
 	for name, rules := range inputChainIpSetRules {
 		for i, r := range rules {
-			addNftRulesIpSet(filterTableName, filterInputChainName, r.SrcIpSetName, r.Ip, r.Protocol, r.Port, fmt.Sprintf("%s:%d", name, i))
+			addNftRulesIpSet(filterTableName, filterInputChainName, r.SrcIpSetName, r.DestIp, r.Protocol, r.DestPort, r.Action, fmt.Sprintf("%s:%d", name, i))
 		}
 	}
 
@@ -78,7 +78,7 @@ func InitNftables(publicRules, inputChainRules, inputChainIpSetRules map[string]
 }
 
 // UpdateNftablesRulesWithSessions 支持多设备，tag = username:ip:ruleIndex
-func UpdateNftablesRulesWithSessions(usersDestRules map[string][]DestRule) error {
+func UpdateNftablesRulesWithSessions(usersDestRules map[string][]Rule) error {
 	sessions, err := GetSessions()
 	if err != nil {
 		log.Printf("[nft] 获取会话失败: %v", err)
@@ -112,8 +112,8 @@ func UpdateNftablesRulesWithSessions(usersDestRules map[string][]DestRule) error
 		for _, ip := range added {
 			for j, r := range usersDestRules[username] {
 				tag := fmt.Sprintf("user:%s:%s:%d", username, ip, j)
-				chain := getChain(r.Ip, r.ToLocal)
-				addNftRule(filterTableName, chain, ip, r.Ip, r.Protocol, r.Port, tag)
+				chain := getChain(r.DestIp, r.ToLocal)
+				addNftRule(filterTableName, chain, ip, r.DestIp, r.Protocol, r.DestPort, r.Action, tag)
 			}
 			clearConntrack(ip)
 		}
@@ -122,7 +122,7 @@ func UpdateNftablesRulesWithSessions(usersDestRules map[string][]DestRule) error
 		for _, ip := range removed {
 			for j := range usersDestRules[username] {
 				tag := fmt.Sprintf("user:%s:%s:%d", username, ip, j)
-				deleteNftRules(filterTableName, []string{filterForwardChainName,filterInputChainName},tag)
+				deleteNftRules(filterTableName, []string{filterForwardChainName, filterInputChainName}, tag)
 			}
 			clearConntrack(ip)
 		}
@@ -135,7 +135,7 @@ func UpdateNftablesRulesWithSessions(usersDestRules map[string][]DestRule) error
 			for _, ip := range oldIPs {
 				for j := range usersDestRules[username] {
 					tag := fmt.Sprintf("user:%s:%s:%d", username, ip, j)
-					deleteNftRules(filterTableName, []string{filterForwardChainName,filterInputChainName},tag)
+					deleteNftRules(filterTableName, []string{filterForwardChainName, filterInputChainName}, tag)
 				}
 				clearConntrack(ip)
 			}
@@ -158,7 +158,7 @@ func RunNftablesManager(ctx context.Context, refresh time.Duration) {
 			log.Println("[nft] 停止nftables管理器")
 			return
 		case <-ticker.C:
-			if err := UpdateNftablesRulesWithSessions(Global_UsersDestRules); err != nil {
+			if err := UpdateNftablesRulesWithSessions(Global_UsersRules); err != nil {
 				log.Printf("[nft] 更新规则失败: %v", err)
 				continue
 			}
