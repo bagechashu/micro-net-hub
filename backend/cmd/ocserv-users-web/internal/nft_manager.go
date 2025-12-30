@@ -34,14 +34,14 @@ var (
 
 // InitNftables 初始化nftables规则
 func InitNftables(publicRules, inputChainRules, inputChainIpSetRules map[string][]DestRule, srcIpSets []SrcIpSet) error {
-	if err := ensureNatTableAndChain(); err != nil {
+	if err := addNatTableAndChain(); err != nil {
 		return fmt.Errorf("确保NAT表和链失败: %v", err)
 	}
 
 	if err := flushFilterTableAndChain(filterTableName, filterForwardChainName, filterInputChainName); err != nil {
 		return fmt.Errorf("清空过滤表和链失败: %v", err)
 	}
-	if err := ensureFilterTableAndChain(filterTableName, filterForwardChainName, filterInputChainName); err != nil {
+	if err := addFilterTableAndChain(filterTableName, filterForwardChainName, filterInputChainName); err != nil {
 		return fmt.Errorf("确保过滤表和链失败: %v", err)
 	}
 
@@ -72,8 +72,8 @@ func InitNftables(publicRules, inputChainRules, inputChainIpSetRules map[string]
 		}
 	}
 
-	// 重启后30分钟内允许SSH访问
-	go enableSshAccept30MinAfterRestart(filterTableName, filterInputChainName)
+	// 重启后30分钟内允许SSH访问（由函数内部处理协程）
+	addSshAccept30MinRuleAfterRestart(filterTableName, filterInputChainName)
 	return nil
 }
 

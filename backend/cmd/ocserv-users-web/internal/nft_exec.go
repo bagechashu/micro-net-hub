@@ -9,87 +9,57 @@ import (
 	"strings"
 )
 
-func ensureNatTableAndChain() error {
-	if err := exec.Command("nft", "list", "table", "ip", "nat").Run(); err != nil {
-		if err := exec.Command("nft", "add", "table", "ip", "nat").Run(); err != nil {
-			return err
-		}
+func addNatTableAndChain() error {
+	table := "nat"
+	chain := "POSTROUTING"
+	// nat POSTROUTING 链默认允许所有出站流量
+	natChainAttrs := []string{"{", "type", "nat", "hook", "postrouting", "priority", "srcnat;", "policy", "accept;", "}"}
+	if err := addNftTableAndChain(table, chain, natChainAttrs); err != nil {
+		return err
 	}
-	if err := exec.Command("nft", "list", "chain", "ip", "nat", "POSTROUTING").Run(); err != nil {
-		if err := exec.Command("nft", "add", "chain", "ip", "nat", "POSTROUTING",
-			"{", "type", "nat", "hook", "postrouting", "priority", "srcnat;", "policy", "accept;", "}").Run(); err != nil {
-			return err
-		}
-	}
-	out, err := exec.Command("nft", "list", "chain", "ip", "nat", "POSTROUTING").Output()
+
+	// nat POSTROUTING 添加 masquerade 规则
+	out, err := exec.Command("nft", "list", "chain", "ip", table, chain).CombinedOutput()
 	if err != nil {
 		return err
 	}
 	if !strings.Contains(string(out), "masquerade") {
-		return exec.Command("nft", "add", "rule", "ip", "nat", "POSTROUTING", "masquerade").Run()
+		return exec.Command("nft", "add", "rule", "ip", table, chain, "masquerade").Run()
 	}
 	return nil
 }
 
-func flushFilterTableAndChain(tableName, forwardChainName, inputChainName string) error {
-	// 清空 vpn_forward 链规则
-	if err := flushChain(tableName, forwardChainName); err == nil {
-		return err
-	}
-
-	// 清空 vpn_input 链规则
-	if err := flushChain(tableName, inputChainName); err == nil {
-		return err
-	}
-	return nil
-}
-
-func ensureFilterTableAndChain(tableName, forwardChainName, inputChainName string) error {
+func addFilterTableAndChain(tableName, forwardChainName, inputChainName string) error {
 	establishedComment := "allow_return_traffic"
 	allowLoopbackComment := "allow_loopback"
-	// allowOcserv443Comment := "allow_ocserv_443"
-	// 确保 vpn_filter 表存在
-	if err := exec.Command("nft", "list", "table", "ip", tableName).Run(); err != nil {
-		if err := exec.Command("nft", "add", "table", "ip", tableName).Run(); err != nil {
-			return err
-		}
-	}
 
-	// 确保 vpn_forward 链存在
-	if err := exec.Command("nft", "list", "chain", "ip", tableName, forwardChainName).Run(); err != nil {
-		if err := exec.Command("nft", "add", "chain", "ip", tableName, forwardChainName,
-			"{", "type", "filter", "hook", "forward", "priority", "filter;", "policy", "drop;", "}").Run(); err != nil {
-			return err
-		}
+	// 确保 filter表 和 forward, input 链存在
+	// forward 链默认 drop 所有流量
+	forwardChainAttrs := []string{"{", "type", "filter", "hook", "forward", "priority", "filter;", "policy", "drop;", "}"}
+	if err := addNftTableAndChain(tableName, forwardChainName, forwardChainAttrs); err != nil {
+		return err
 	}
-
-	// vpn_forward 添加已建立连接放行规则
-	if err := exec.Command("nft", "add", "rule", "ip", tableName, forwardChainName,
-		"ct", "state", "established,related", "accept", "comment", fmt.Sprintf("\"%s\"", establishedComment)).Run(); err != nil {
+	// input 链默认 drop 所有流量
+	inputChainAttrs := []string{"{", "type", "filter", "hook", "input", "priority", "filter;", "policy", "drop;", "}"}
+	if err := addNftTableAndChain(tableName, inputChainName, inputChainAttrs); err != nil {
 		return err
 	}
 
-	// 确保 vpn_input 链存在
-	if err := exec.Command("nft", "list", "chain", "ip", tableName, inputChainName).Run(); err != nil {
-		if err := exec.Command("nft", "add", "chain", "ip", tableName, inputChainName,
-			"{", "type", "filter", "hook", "input", "priority", "filter;", "policy", "drop;", "}").Run(); err != nil {
-			return err
-		}
+	// forward, input 添加已建立连接放行规则
+	if err := addEstablishedRule(tableName, forwardChainName, establishedComment); err != nil {
+		return err
 	}
-
-	// vpn_input 添加已建立连接放行规则
-	if err := exec.Command("nft", "add", "rule", "ip", tableName, inputChainName,
-		"ct", "state", "established,related", "accept", "comment", fmt.Sprintf("\"%s\"", establishedComment)).Run(); err != nil {
+	if err := addEstablishedRule(tableName, inputChainName, establishedComment); err != nil {
 		return err
 	}
 
 	// vpn_input 添加允许 loopback
-	if err := exec.Command("nft", "add", "rule", "ip", tableName, inputChainName,
-		"iif", "lo", "accept", "comment", fmt.Sprintf("\"%s\"", allowLoopbackComment)).Run(); err != nil {
+	if err := addLoopbackRule(tableName, inputChainName, allowLoopbackComment); err != nil {
 		return err
 	}
 
 	// vpn_input 添加允许 443 端口访问规则
+	// allowOcserv443Comment := "allow_ocserv_443"
 	// if err := exec.Command("nft", "add", "rule", "ip", tableName, filterInputChainName,
 	// 	"tcp", "dport", "443", "accept", "comment", fmt.Sprintf("\"%s\"", allowOcserv443Comment)).Run(); err != nil {
 	// 	return err
@@ -97,28 +67,80 @@ func ensureFilterTableAndChain(tableName, forwardChainName, inputChainName strin
 	return nil
 }
 
-// enableSshAccept30MinAfterRestart 重启后30分钟内允许SSH访问
-func enableSshAccept30MinAfterRestart(tableName, inputChainName string) error {
-	tmpSshAcceptComment := "tmp_allow_ssh"
-	if err := exec.Command("nft", "add", "rule", "ip", tableName, inputChainName,
-		"tcp", "dport", "22", "accept", "comment", fmt.Sprintf("\"%s\"", tmpSshAcceptComment)).Run(); err != nil {
+func flushFilterTableAndChain(tableName, forwardChainName, inputChainName string) error {
+	// 清空 vpn_forward 链规则
+	if err := flushChain(tableName, forwardChainName); err != nil {
 		return err
 	}
-	time.AfterFunc(30*time.Minute, func() {
-		deleteNftRules(tableName, []string{inputChainName}, tmpSshAcceptComment)
-		log.Println("[nft] 已移除临时SSH放行规则")
-	})
+
+	// 清空 vpn_input 链规则
+	if err := flushChain(tableName, inputChainName); err != nil {
+		return err
+	}
 	return nil
 }
 
+// addNftTableAndChain 添加 nftables 表和链
+func addNftTableAndChain(tableName, chainName string, chainAttrs []string) error {
+	if err := exec.Command("nft", "list", "table", "ip", tableName).Run(); err != nil {
+		if err := exec.Command("nft", "add", "table", "ip", tableName).Run(); err != nil {
+			return err
+		}
+	}
+	if err := exec.Command("nft", "list", "chain", "ip", tableName, chainName).Run(); err != nil {
+		args := []string{"add", "chain", "ip", tableName, chainName}
+		args = append(args, chainAttrs...)
+		if err := exec.Command("nft", args...).Run(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// flushChain 清空指定链规则
 func flushChain(tableName, chainName string) error {
-	// 清空指定链规则
+	// 如果链存在，则 flush
 	if err := exec.Command("nft", "list", "chain", "ip", tableName, chainName).Run(); err == nil {
 		if err := exec.Command("nft", "flush", "chain", "ip", tableName, chainName).Run(); err != nil {
 			return err
 		}
 	}
+	// 链不存在，直接返回 nil
 	return nil
+}
+
+// addEstablishedRule 添加已建立连接放行规则
+func addEstablishedRule(tableName, chainName, comment string) error {
+	if err := exec.Command("nft", "add", "rule", "ip", tableName, chainName,
+		"ct", "state", "established,related", "accept", "comment", fmt.Sprintf("\"%s\"", comment)).Run(); err != nil {
+		return err
+	}
+	return nil
+}
+
+// addLoopbackRule 添加允许 loopback 访问规则
+func addLoopbackRule(tableName, chainName, comment string) error {
+		if err := exec.Command("nft", "add", "rule", "ip", tableName, chainName,
+		"iif", "lo", "accept", "comment", fmt.Sprintf("\"%s\"", comment)).Run(); err != nil {
+		return err
+	}
+	return nil
+}
+
+// addSshAccept30MinRuleAfterRestart 重启后30分钟内允许SSH访问（由函数内部处理协程）
+func addSshAccept30MinRuleAfterRestart(tableName, inputChainName string) {
+	go func() {
+		tmpSshAcceptComment := "tmp_allow_ssh"
+		if err := exec.Command("nft", "add", "rule", "ip", tableName, inputChainName,
+			"tcp", "dport", "22", "accept", "comment", fmt.Sprintf("\"%s\"", tmpSshAcceptComment)).Run(); err != nil {
+			log.Printf("[nft] 添加临时SSH放行规则失败: %v", err)
+			return
+		}
+		time.AfterFunc(30*time.Minute, func() {
+			deleteNftRules(tableName, []string{inputChainName}, tmpSshAcceptComment)
+			log.Println("[nft] 已移除临时SSH放行规则")
+		})
+	}()
 }
 
 // addNftRule 添加自定义规则到指定链
@@ -165,7 +187,7 @@ func deleteNftRules(table string, chains []string, tag string) {
 	// 遍历 forward/input 两个链
 	for _, chain := range chains {
 		cmd := exec.Command("nft", "-a", "list", "chain", "ip", table, chain)
-		out, err := cmd.Output()
+		out, err := cmd.CombinedOutput()
 		if err != nil {
 			log.Printf("[nft] 列出规则失败(%s): %v", chain, err)
 			continue
@@ -224,7 +246,7 @@ func addNftRulesIpSet(table, chain, srcIpSetname, dstIP, protocol string, port u
 func deleteNftRulesIpSet(table, chain string, srcIpSets []string) {
 	for _, setName := range srcIpSets {
 		cmdList := exec.Command("nft", "-a", "list", "chain", "ip", table, chain)
-		out, err := cmdList.Output()
+		out, err := cmdList.CombinedOutput()
 		if err != nil {
 			log.Printf("[nft] list chain 错误: %v", err)
 			continue
