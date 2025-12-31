@@ -35,44 +35,9 @@ type Session struct {
 	TXHuman string
 }
 
-// -------------------- 工具函数 --------------------
-
-func toHumanSize(bytesStr string) string {
-	n, err := strconv.ParseInt(bytesStr, 10, 64)
-	if err != nil {
-		return "?"
-	}
-	const KB, MB, GB = 1024, 1024 * 1024, 1024 * 1024 * 1024
-	switch {
-	case n >= GB:
-		return fmt.Sprintf("%.2f GB", float64(n)/float64(GB))
-	case n >= MB:
-		return fmt.Sprintf("%.2f MB", float64(n)/float64(MB))
-	case n >= KB:
-		return fmt.Sprintf("%.2f KB", float64(n)/float64(KB))
-	default:
-		return fmt.Sprintf("%d B", n)
-	}
-}
-
-func parseStringOrSlice(v interface{}) []string {
-	switch vv := v.(type) {
-	case string:
-		if vv == "" {
-			return nil
-		}
-		return []string{vv}
-	case []interface{}:
-		out := make([]string, 0, len(vv))
-		for _, x := range vv {
-			if s, ok := x.(string); ok {
-				out = append(out, s)
-			}
-		}
-		return out
-	default:
-		return nil
-	}
+func (s Session) Disconnect() error {
+	cmd := exec.Command("occtl", "disconnect", "id", strconv.Itoa(s.ID))
+	return cmd.Run()
 }
 
 // GetSessions 使用 occtl 获取当前会话列表
@@ -111,4 +76,42 @@ func GetSessions() ([]Session, error) {
 	}
 
 	return filtered, nil
+}
+
+func toHumanSize(bytesStr string) string {
+	n, err := strconv.ParseInt(bytesStr, 10, 64)
+	if err != nil {
+		return "?"
+	}
+	const KB, MB, GB = 1024, 1024 * 1024, 1024 * 1024 * 1024
+	switch {
+	case n >= GB:
+		return fmt.Sprintf("%.2f GB", float64(n)/float64(GB))
+	case n >= MB:
+		return fmt.Sprintf("%.2f MB", float64(n)/float64(MB))
+	case n >= KB:
+		return fmt.Sprintf("%.2f KB", float64(n)/float64(KB))
+	default:
+		return fmt.Sprintf("%d B", n)
+	}
+}
+
+func parseStringOrSlice(v interface{}) []string {
+	switch vv := v.(type) {
+	case string:
+		if vv == "" {
+			return nil
+		}
+		return []string{vv}
+	case []interface{}:
+		out := make([]string, 0, len(vv))
+		for _, x := range vv {
+			if s, ok := x.(string); ok {
+				out = append(out, s)
+			}
+		}
+		return out
+	default:
+		return nil
+	}
 }

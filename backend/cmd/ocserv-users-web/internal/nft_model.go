@@ -11,15 +11,18 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-// Global_UsersRules 全局用户目标规则映射
-var Global_UsersRules map[string][]Rule
+var (
+	// Global_UsersRules 全局用户目标规则映射
+	Global_UsersRules map[string][]Rule
+)
 
 type Rule struct {
-	DestIp       string       `json:"dest_ip,omitempty"`
-	DestPort     uint16       `json:"dest_port,omitempty"`
-	Protocol     ProtocolType `json:"protocol,omitempty"` // tcp | udp | icmp, 默认 tcp
-	ToLocal      bool         `json:"to_local,omitempty"` // 是否访问宿主机本地服务, 默认 false
-	Action       ActionType   `json:"action,omitempty"`   // accept | drop，默认 accept
+	DestIp   string       `json:"dest_ip,omitempty"`
+	DestPort uint16       `json:"dest_port,omitempty"`
+	Protocol ProtocolType `json:"protocol,omitempty"` // tcp | udp | icmp, 默认 tcp
+	ToLocal  bool         `json:"to_local,omitempty"` // 是否访问宿主机本地服务, 默认 false
+	Action   ActionType   `json:"action,omitempty"`   // accept | drop，默认 accept
+
 	SrcIp        string
 	SrcIpSetName string
 }

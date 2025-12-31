@@ -149,6 +149,7 @@ func UpdateNftablesRulesWithSessions(usersDestRules map[string][]Rule) error {
 
 // RunNftablesManager 启动nftables管理器，定期更新规则
 func RunNftablesManager(ctx context.Context, refresh time.Duration) {
+	log.Printf("[nft] 启动 nftables 管理器 (refresh=%s)", refresh.String())
 	ticker := time.NewTicker(refresh)
 	defer ticker.Stop()
 

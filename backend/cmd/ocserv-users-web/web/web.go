@@ -49,9 +49,28 @@ func nftablesHandler(w http.ResponseWriter, r *http.Request) {
 	// })
 }
 
+func vpnAccessHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// 执行一次 EnforceVpnAccess 规则检查
+	err := internal.EnforceVpnAccess(internal.Global_VpnAccessRules)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("vpn access enforcement failed: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// 返回成功响应
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("vpn access enforced\n"))
+}
+
 func RunWebServer(addr string) {
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/nftables", nftablesHandler)
+	http.HandleFunc("/vpnaccess", vpnAccessHandler)
 	go func() {
 		log.Printf("[web] 服务运行中: http://%s", addr)
 		if err := http.ListenAndServe(addr, nil); err != nil {

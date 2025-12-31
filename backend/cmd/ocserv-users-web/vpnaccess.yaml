@@ -1,0 +1,16 @@
+vpn_access_rules:
+  - users:
+      - user1
+      - user2
+    remote_ip_whitelist:
+      - 1.2.3.4
+    time_range:
+      start: "08:00"
+      end: "12:00"
+  - users:
+      - user1
+    remote_ip_whitelist:
+      - 0.0.0.0/0
+    time_range:
+      start: "8:00"
+      end: "18:00"
