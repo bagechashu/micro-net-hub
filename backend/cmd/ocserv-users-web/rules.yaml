@@ -42,6 +42,9 @@ rule_groups:
       - dest_ip: 0.0.0.0/0
         protocol: udp
         dest_port: 443
+      - dest_ip: 0.0.0.0/0
+        protocol: tcp
+        dest_port: 8080
 
 # Mappings
 rule_mappings:

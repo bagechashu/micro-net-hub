@@ -31,8 +31,8 @@ type Session struct {
 	ConnectedAt  string      `json:"Connected at"`  // string time
 	ConnectedFor string      `json:"_Connected at"` // duration string
 
-	RXHuman string
-	TXHuman string
+	RXHuman string `json:"RXHuman"`
+	TXHuman string `json:"TXHuman"`
 }
 
 func (s Session) Disconnect() error {

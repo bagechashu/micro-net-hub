@@ -23,47 +23,44 @@ func main() {
 
 	flag.Parse()
 
-	// 加载防火墙配置
-	nftRulesCfg, err := internal.LoadConfig(*config)
+	// 加载配置（包含防火墙规则和 VPN 访问控制规则）
+	cfg, err := internal.LoadConfig(*config)
 	if err != nil {
 		log.Fatalf("[main] 配置加载失败: %v", err)
 	}
 
-	// 先在启动时加载并校验配置文件，确保配置有效
-	internal.Global_VpnAccessRules, err = internal.LoadVpnAccessConfig(*config)
-	if err != nil {
-		log.Fatalf("[main] vpn access 配置加载失败: %v", err)
-	}
-	if internal.Global_VpnAccessRules == nil {
-		log.Println("[main] 未提供 vpn access 相关配置 ，跳过访问控制")
-	}
-
 	// 初始化 nftables
 	log.Println("[nft] nftables 初始化")
-	publicRules := internal.GetPublicRules(nftRulesCfg)
-	inputChainRules := internal.GetInputChainRules(nftRulesCfg)
-	srcIpSets, inputChainIpSetRules := internal.GetInputChainIpSetRules(nftRulesCfg)
+	publicRules := internal.GetPublicRules(cfg)
+	inputChainRules := internal.GetInputChainRules(cfg)
+	srcIpSets, inputChainIpSetRules := internal.GetInputChainIpSetRules(cfg)
 	if err := internal.InitNftables(publicRules, inputChainRules, inputChainIpSetRules, srcIpSets); err != nil {
 		log.Fatalf("[main] nftables 初始化失败: %v", err)
 	}
 
 	// 启动后初始化所有用户的规则
-	internal.Global_UsersRules = internal.GetUserRulesMapping(nftRulesCfg)
+	internal.Global_UsersRules = internal.GetUserRulesMapping(cfg)
 	if err := internal.UpdateNftablesRulesWithSessions(internal.Global_UsersRules); err != nil {
 		log.Printf("[nft] 更新规则失败: %v", err)
 	}
 
 	// 启动VPN访问控制器
-	if internal.Global_VpnAccessRules != nil {
+	if len(cfg.VpnAccessRules) > 0 {
+		internal.Global_VpnAccessRules = cfg.VpnAccessRules
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 		go internal.RunVpnAccessTimeEnforcer(ctx, *refresh)
+	} else {
+		log.Println("[main] 未提供 vpn access 相关配置，跳过访问控制")
 	}
 
 	// 启动 nftables 管理器
 	// ctx, cancel := context.WithCancel(context.Background()) // 创建可取消的上下文
 	// defer cancel()
 	// go internal.RunNftablesManager(ctx, *refresh)
+
+	// 初始化全局配置管理器
+	web.GlobalConfigManager = internal.NewConfigManager(*config)
 
 	// 启动 WEB 服务
 	go web.RunWebServer(*webListenAddr)

@@ -1,14 +1,8 @@
 package internal
 
 import (
-	"encoding/json"
-	"fmt"
 	"log"
-	"os"
-	"path/filepath"
 	"strings"
-
-	"sigs.k8s.io/yaml"
 )
 
 var (
@@ -23,114 +17,28 @@ type Rule struct {
 	ToLocal  bool         `json:"to_local,omitempty"` // 是否访问宿主机本地服务, 默认 false
 	Action   ActionType   `json:"action,omitempty"`   // accept | drop，默认 accept
 
-	SrcIp        string
-	SrcIpSetName string
+	// SrcIp, SrcIpSetName 默认不配置, 通过 RuleMapping 去补充
+	SrcIp        string `json:"src_ip,omitempty"`
+	SrcIpSetName string `json:"src_ip_set_name,omitempty"`
 }
 
 type RuleGroup struct {
 	Name  string `json:"name"`
-	Rules []Rule `json:"rules"`
+	Rules []Rule `json:"rules,omitempty"`
 }
 
 type SrcIpSet struct {
-	Name string   `json:"name"`
-	Ips  []string `json:"ips"`
+	Name string   `json:"name,omitempty"`
+	Ips  []string `json:"ips,omitempty"`
 }
 
 type RuleMapping struct {
-	Name         string      `json:"name"`
-	Type         MappingType `json:"mapping_type"` // [users | public | input_chain]
-	SrcIps       []string    `json:"src_ips,omitempty"`
-	SrcIpSet     SrcIpSet    `json:"src_ip_set,omitempty"`
-	Users        []string    `json:"users,omitempty"`
-	RuleGroupRef string      `json:"rule_group_ref"` // 引用的规则组名称
-}
-
-type Config struct {
-	RuleGroups   []RuleGroup   `json:"rule_groups"`
-	RuleMappings []RuleMapping `json:"rule_mappings"`
-}
-
-// Check: check the Config according to the following rules:
-// 1) RuleGroups must have unique Name (case-insensitive)
-// 2) SrcIpSet names (from mappings) must be unique (case-insensitive)
-// 3) RuleMappings Names must be unique within the same MappingType (case-insensitive)
-func (cfg Config) Check() error {
-	seenGroups := make(map[string]bool)
-	for _, g := range cfg.RuleGroups {
-		if g.Name == "" {
-			continue
-		}
-		k := strings.ToLower(g.Name)
-		if seenGroups[k] {
-			return fmt.Errorf("duplicate DestRuleGroup name %q", g.Name)
-		}
-		seenGroups[k] = true
-
-		for ri, r := range g.Rules {
-			if !r.Protocol.Valid() {
-				return fmt.Errorf("invalid protocol %q in rule group %q rule index %d", r.Protocol, g.Name, ri)
-			}
-			if !r.Action.Valid() {
-				return fmt.Errorf("invalid action %q in rule group %q rule index %d", r.Action, g.Name, ri)
-			}
-		}
-	}
-
-	seenSrcIpSets := make(map[string]bool)
-	seenMappingByType := make(map[MappingType]map[string]bool)
-
-	for _, mapping := range cfg.RuleMappings {
-		if !mapping.Type.Valid() {
-			return fmt.Errorf("无效的规则映射类型: %s", mapping.Type)
-		}
-
-		// check SrcIpSet name uniqueness when present
-		if mapping.SrcIpSet.Name != "" {
-			sk := strings.ToLower(mapping.SrcIpSet.Name)
-			if seenSrcIpSets[sk] {
-				return fmt.Errorf("duplicate SrcIpSet name %q", mapping.SrcIpSet.Name)
-			}
-			seenSrcIpSets[sk] = true
-		}
-
-		if mapping.Name == "" {
-			// unnamed mappings: skip name-based validation
-			continue
-		}
-		nameKey := strings.ToLower(mapping.Name)
-		if _, ok := seenMappingByType[mapping.Type]; !ok {
-			seenMappingByType[mapping.Type] = make(map[string]bool)
-		}
-		if seenMappingByType[mapping.Type][nameKey] {
-			return fmt.Errorf("duplicate mapping name %q for type %s", mapping.Name, mapping.Type)
-		}
-		seenMappingByType[mapping.Type][nameKey] = true
-	}
-	return nil
-}
-
-// setRuleDefaults sets default and normalized values for rules when fields are omitted
-// protocol default: tcp, action default: accept
-func (cfg *Config) setRuleDefaults() {
-	for gi := range cfg.RuleGroups {
-		for ri := range cfg.RuleGroups[gi].Rules {
-			r := &cfg.RuleGroups[gi].Rules[ri]
-			// default protocol to tcp and normalize to lower-case
-			if r.Protocol == "" {
-				r.Protocol = ProtocolTcp
-			} else {
-				r.Protocol = ProtocolType(strings.ToLower(string(r.Protocol)))
-			}
-
-			// default action to accept and normalize to lower-case
-			if r.Action == "" {
-				r.Action = ActionAccept
-			} else {
-				r.Action = ActionType(strings.ToLower(string(r.Action)))
-			}
-		}
-	}
+	Name         string       `json:"name,omitempty"`
+	Type         MappingType  `json:"mapping_type"` // [users | public | input_chain | input_chain_ip_set]
+	SrcIps       []string     `json:"src_ips,omitempty"`
+	SrcIpSet     *SrcIpSet    `json:"src_ip_set,omitempty"`
+	Users        []string     `json:"users,omitempty"`
+	RuleGroupRef string       `json:"rule_group_ref,omitempty"` // 引用的规则组名称
 }
 
 type ProtocolType string
@@ -182,46 +90,6 @@ func (t MappingType) Valid() bool {
 	default:
 		return false
 	}
-}
-
-// -------------------- Config Manager --------------------
-func LoadConfig(path string) (*Config, error) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	var cfg Config
-
-	ext := strings.ToLower(filepath.Ext(path))
-	switch ext {
-	case ".yaml", ".yml":
-		if err := yaml.Unmarshal(data, &cfg); err != nil {
-			return nil, fmt.Errorf("failed to parse yaml config %q: %w", path, err)
-		}
-	case ".json":
-		if err := json.Unmarshal(data, &cfg); err != nil {
-			return nil, fmt.Errorf("failed to parse json config %q: %w", path, err)
-		}
-	default:
-		// Try json first, then yaml
-		if err := json.Unmarshal(data, &cfg); err == nil {
-			break
-		}
-		if err2 := yaml.Unmarshal(data, &cfg); err2 == nil {
-			break
-		} else {
-			return nil, fmt.Errorf("failed to parse config %q as json or yaml: json: %v; yaml: %v", path, err, err2)
-		}
-	}
-
-	// set default values for rules
-	cfg.setRuleDefaults()
-
-	if err := cfg.Check(); err != nil {
-		return nil, fmt.Errorf("invalid config %q: %w", path, err)
-	}
-
-	return &cfg, nil
 }
 
 // GetUserRulesMapping 构建用户到规则的映射
@@ -312,7 +180,9 @@ func GetInputChainIpSetRules(config *Config) ([]SrcIpSet, map[string][]Rule) {
 		if rulemapping.Type != MappingInputChainIpSet {
 			continue
 		}
-		srcIpSets = append(srcIpSets, rulemapping.SrcIpSet)
+		if rulemapping.SrcIpSet != nil {
+			srcIpSets = append(srcIpSets, *rulemapping.SrcIpSet)
+		}
 		ruleGroup := resolveRuleGroup(config.RuleGroups, rulemapping.RuleGroupRef)
 		if ruleGroup == nil {
 			log.Printf("[init] 未找到规则组: %s", rulemapping.RuleGroupRef)
@@ -324,7 +194,9 @@ func GetInputChainIpSetRules(config *Config) ([]SrcIpSet, map[string][]Rule) {
 		// dest_rule 中 srcIpSetName 赋值
 		rulesWithSrcIpSetName := make([]Rule, 0, len(ruleGroup.Rules))
 		for _, r := range ruleGroup.Rules {
-			r.SrcIpSetName = rulemapping.SrcIpSet.Name
+			if rulemapping.SrcIpSet != nil {
+				r.SrcIpSetName = rulemapping.SrcIpSet.Name
+			}
 			rulesWithSrcIpSetName = append(rulesWithSrcIpSetName, r)
 		}
 

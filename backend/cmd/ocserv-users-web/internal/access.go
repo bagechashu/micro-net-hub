@@ -9,7 +9,7 @@ import (
 )
 
 // EnforceVpnAccess checks all sessions and disconnects those that violate access rules.
-func EnforceVpnAccess(cfg *VpnAccessConfig) error {
+func EnforceVpnAccess(cfg []VpnAccessRule) error {
 	sessions, err := GetSessions()
 	if err != nil {
 		return fmt.Errorf("[access] 获取会话失败: %v", err)
@@ -33,7 +33,7 @@ func EnforceVpnAccess(cfg *VpnAccessConfig) error {
 }
 
 // EnforceVpnAccessTimeOnly checks sessions and disconnects those that violate time-range rules only.
-func EnforceVpnAccessTime(cfg *VpnAccessConfig) error {
+func EnforceVpnAccessTime(cfg []VpnAccessRule) error {
 	sessions, err := GetSessions()
 	if err != nil {
 		return fmt.Errorf("[access] 获取会话失败: %v", err)
@@ -79,10 +79,10 @@ func RunVpnAccessTimeEnforcer(ctx context.Context, refresh time.Duration) {
 // checkSession determines whether the given session is permitted according to the config.
 // Policy: if any rule that matches the session's username exists and its predicates (ip/time) pass, session is allowed.
 // If there are rules for the user but none of them permit the session, it is disallowed.
-func checkSession(cfg *VpnAccessConfig, s Session, now time.Time) (allow bool, err error) {
+func checkSession(cfg []VpnAccessRule, s Session, now time.Time) (allow bool, err error) {
 	u := strings.ToLower(s.Username)
 	hasRule := false
-	for _, r := range cfg.VpnAccessRules {
+	for _, r := range cfg {
 		if !r.matchesUser(u) {
 			continue
 		}
@@ -108,10 +108,10 @@ func checkSession(cfg *VpnAccessConfig, s Session, now time.Time) (allow bool, e
 // checkSessionTime determines whether the given session is permitted according to the config.
 // Policy: if any rule that matches the session's username exists and its predicates (time) pass, session is allowed.
 // If there are rules for the user but none of them permit the session, it is disallowed.
-func checkSessionTime(cfg *VpnAccessConfig, s Session, now time.Time) (allow bool, err error) {
+func checkSessionTime(cfg []VpnAccessRule, s Session, now time.Time) (allow bool, err error) {
 	u := strings.ToLower(s.Username)
 	hasRule := false
-	for _, r := range cfg.VpnAccessRules {
+	for _, r := range cfg {
 		if !r.matchesUser(u) {
 			continue
 		}

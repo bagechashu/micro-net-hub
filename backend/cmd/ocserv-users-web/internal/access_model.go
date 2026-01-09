@@ -4,17 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
-	"os"
-	"path/filepath"
 	"strings"
 	"time"
-
-	"sigs.k8s.io/yaml"
 )
 
 var (
 	// Global_VpnAccessRules 全局 VPN 访问控制规则
-	Global_VpnAccessRules *VpnAccessConfig
+	Global_VpnAccessRules []VpnAccessRule
 )
 
 // TimeRange defines a daily time range in HH:MM format, e.g. {"start":"08:00","end":"18:00"}
@@ -110,7 +106,7 @@ func (tr TimeRange) Contains(now time.Time) (bool, error) {
 
 // VpnAccessRule describes access constraints for a set of users.
 type VpnAccessRule struct {
-	Users             []string   `json:"users"`
+	Users             []string   `json:"users,omitempty"`
 	RemoteIPWhiteList []string   `json:"remote_ip_whitelist,omitempty"`
 	TimeRange         *TimeRange `json:"time_range,omitempty"` // e.g. "08:00-18:00"
 }
@@ -174,45 +170,4 @@ func (r VpnAccessRule) isWithinTimeRange(now time.Time) (bool, error) {
 		return true, nil
 	}
 	return r.TimeRange.Contains(now)
-}
-
-// VpnAccessConfig holds multiple VpnAccessRule entries
-type VpnAccessConfig struct {
-	VpnAccessRules []VpnAccessRule `json:"vpn_access_rules,omitempty"`
-}
-
-// LoadVpnAccessConfig loads the file (json or yaml) from path
-func LoadVpnAccessConfig(path string) (*VpnAccessConfig, error) {
-	if path == "" {
-		return nil, nil
-	}
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	var cfg VpnAccessConfig
-
-	ext := strings.ToLower(filepath.Ext(path))
-	switch ext {
-	case ".yaml", ".yml":
-		if err := yaml.Unmarshal(data, &cfg); err != nil {
-			return nil, fmt.Errorf("failed to parse yaml config %q: %w", path, err)
-		}
-	case ".json":
-		if err := json.Unmarshal(data, &cfg); err != nil {
-			return nil, fmt.Errorf("failed to parse json config %q: %w", path, err)
-		}
-	default:
-		// Try json first, then yaml
-		if err := json.Unmarshal(data, &cfg); err == nil {
-			break
-		}
-		if err2 := yaml.Unmarshal(data, &cfg); err2 == nil {
-			break
-		} else {
-			return nil, fmt.Errorf("failed to parse config %q as json or yaml: json: %v; yaml: %v", path, err, err2)
-		}
-	}
-
-	return &cfg, nil
 }
