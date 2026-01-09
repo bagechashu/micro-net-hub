@@ -43,7 +43,6 @@ rule_groups:
         protocol: udp
         dest_port: 443
 
-
 # Mappings
 rule_mappings:
   - name: admins
@@ -85,3 +84,20 @@ rule_mappings:
       ips:
         - 0.0.0.0/0
     rule_group_ref: allow_access_ocserv
+
+vpn_access_rules:
+  - users:
+      - user1
+      - user2
+    remote_ip_whitelist:
+      - 1.2.3.4
+    time_range:
+      start: "08:00"
+      end: "12:00"
+  - users:
+      - user1
+    remote_ip_whitelist:
+      - 0.0.0.0/0
+    time_range:
+      start: "8:00"
+      end: "18:00"

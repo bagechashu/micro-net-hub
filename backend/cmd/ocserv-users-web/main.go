@@ -16,8 +16,7 @@ import (
 
 func main() {
 	var (
-		nftRulesConfigPath  = flag.String("nftRulesCfg", "rules.json", "配置文件路径 (json|yaml)")
-		vpnAccessConfigPath = flag.String("vpnAccessCfg", "", "用户访问控制配置文件 (json|yaml)")
+		config  = flag.String("config", "rules.yaml", "配置文件路径 (json|yaml)")
 		refresh             = flag.Duration("refresh", 30*time.Second, "刷新间隔")
 		webListenAddr       = flag.String("webaddr", ":8080", "Web服务监听地址")
 	)
@@ -25,13 +24,13 @@ func main() {
 	flag.Parse()
 
 	// 加载防火墙配置
-	nftRulesCfg, err := internal.LoadConfig(*nftRulesConfigPath)
+	nftRulesCfg, err := internal.LoadConfig(*config)
 	if err != nil {
 		log.Fatalf("[main] 配置加载失败: %v", err)
 	}
 
 	// 先在启动时加载并校验配置文件，确保配置有效
-	internal.Global_VpnAccessRules, err = internal.LoadVpnAccessConfig(*vpnAccessConfigPath)
+	internal.Global_VpnAccessRules, err = internal.LoadVpnAccessConfig(*config)
 	if err != nil {
 		log.Fatalf("[main] vpn access 配置加载失败: %v", err)
 	}
