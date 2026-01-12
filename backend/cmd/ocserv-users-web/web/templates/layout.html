@@ -1,0 +1,43 @@
+{{ define "layout" }}
+<!DOCTYPE html>
+<html lang="zh" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ block "title" . }}VPN 管理{{ end }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- htmx -->
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+
+  <!-- Stimulus -->
+  <script src="https://unpkg.com/@hotwired/stimulus/dist/stimulus.umd.js"></script>
+
+  <!-- Pico.css -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/@picocss/pico@1.5.10/css/pico.min.css"
+  />
+
+  <!-- App CSS -->
+  <link rel="stylesheet" href="/static/app.css" />
+</head>
+
+<body>
+<main class="container">
+
+<header class="app-header">
+  <h3>VPN 管理面板</h3>
+  <nav>
+    <a href="/" role="button">用户</a>
+    <a href="/config.html" role="button" class="secondary">配置</a>
+  </nav>
+</header>
+
+{{ block "content" . }}{{ end }}
+
+{{ block "script" . }}{{ end }}
+
+</main>
+</body>
+</html>
+{{ end }}

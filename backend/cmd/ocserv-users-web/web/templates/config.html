@@ -1,0 +1,415 @@
+{{ define "title" }}配置管理 - VPN 规则{{ end }}
+
+{{ define "content" }}
+<section>
+  <h3 slot="header">🔧 VPN 规则配置管理</h3>
+
+  <nav class="tabs" data-controller="tabs" aria-label="配置选项卡">
+    <button data-action="click->tabs#select" data-tabs-target="btn" data-tab="ruleGroups" class="active">规则组</button>
+    <button data-action="click->tabs#select" data-tabs-target="btn" data-tab="ruleMappings">规则映射</button>
+    <button data-action="click->tabs#select" data-tabs-target="btn" data-tab="vpnAccess">VPN 访问</button>
+    <button data-action="click->tabs#select" data-tabs-target="btn" data-tab="backups">备份</button>
+  </nav>
+
+  <div data-controller="config" data-config-path-value="rules.yaml">
+
+    <!-- Rule Groups -->
+    <div data-config-target="ruleGroups" class="section" hidden>
+      <h4>规则组管理</h4>
+      <div style="margin-bottom:10px">
+        <button class="secondary" data-action="click->config#openCreateRuleGroup">+ 新增规则组</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>名称</th>
+            <th>规则数</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody
+          hx-get="/partials/rule-groups.html"
+          hx-trigger="show"
+          hx-swap="innerHTML">
+          <tr><td colspan="3">加载中...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Rule Mappings -->
+    <div data-config-target="ruleMappings" class="section" hidden>
+      <h4>规则映射管理</h4>
+      <div style="margin-bottom:10px">
+        <button class="secondary" data-action="click->config#openCreateRuleMapping">+ 新增规则映射</button>
+      </div>
+      <table>
+        <thead>
+          <tr><th>名称</th><th>类型</th><th>引用规则组</th><th>操作</th></tr>
+        </thead>
+        <tbody
+          hx-get="/partials/rule-mappings.html"
+          hx-trigger="show"
+          hx-swap="innerHTML">
+          <tr><td colspan="4">加载中...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- VPN Access -->
+    <div data-config-target="vpnAccess" class="section" hidden>
+      <h4>VPN 访问规则</h4>
+      <div style="margin-bottom:10px">
+        <button class="secondary" data-action="click->config#openVpnAccess">编辑规则</button>
+      </div>
+      <table>
+        <thead>
+          <tr><th>用户</th><th>远程 IP 白名单</th><th>时间范围</th></tr>
+        </thead>
+        <tbody
+          hx-get="/partials/vpn-access.html"
+          hx-trigger="show"
+          hx-swap="innerHTML">
+          <tr><td colspan="3">加载中...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Backups -->
+    <div data-config-target="backups" class="section" hidden>
+      <h4>配置备份</h4>
+      <div style="margin-bottom:10px">
+        <button class="secondary" data-action="click->config#refreshBackups">刷新备份列表</button>
+        <a class="secondary" href="/api/config/export" style="margin-left:8px">导出配置</a>
+      </div>
+      <table>
+        <thead>
+          <tr><th>文件名</th><th>大小</th><th>修改时间</th><th>操作</th></tr>
+        </thead>
+        <tbody
+          hx-get="/partials/backups.html"
+          hx-trigger="show"
+          hx-swap="innerHTML">
+          <tr><td colspan="4">加载中...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</section>
+
+<!-- Modals (hidden by default) -->
+<div id="modal" class="modal" hidden aria-hidden="true" data-controller="modal">
+  <div class="modal__container">
+    <div data-modal-target="title" class="modal__title"></div>
+    <div data-modal-target="body" class="modal__body"></div>
+    <div style="margin-top:1rem">
+      <button class="secondary" data-action="modal#close">取消</button>
+      <button class="primary" data-action="modal#ok">保存</button>
+    </div>
+  </div>
+</div>
+
+{{ end }}
+
+{{ define "script" }}
+<script>
+(() => {
+  // Tabs controller - manages showing/hiding sections
+  (() => {
+    const application = Stimulus.Application.start();
+
+    application.register("tabs", class extends Stimulus.Controller {
+      static get targets() { return ["btn"] }
+      connect() {
+        // select default (first) tab
+        const first = this.btnTargets[0];
+        if (first) this.selectByName(first.dataset.tab)
+      }
+      select(e) {
+        const tab = e.currentTarget.dataset.tab
+        this.selectByName(tab)
+      }
+      selectByName(tab) {
+        this.btnTargets.forEach(b => b.classList.toggle('active', b.dataset.tab === tab))
+        // hide all sections first
+        document.querySelectorAll('[data-config-target]').forEach(el => el.hidden = true)
+        const el = document.querySelector(`[data-config-target="${tab}"]`)
+        if (el) {
+          el.hidden = false
+          // trigger loading for HTMX elements inside the section (dispatch on the actual hx targets)
+          el.querySelectorAll('[hx-get]').forEach(t => t.dispatchEvent(new CustomEvent('show')))
+          // also notify Stimulus listeners on the section itself
+          el.dispatchEvent(new CustomEvent('show', { bubbles: true }))
+        }
+      }
+    })
+
+    // Modal controller
+    application.register("modal", class extends Stimulus.Controller {
+      static get targets() { return ["title","body"] }
+      connect() {
+        this.okCallback = null
+      }
+      open(title, content, okCallback) {
+        this.titleTarget.textContent = title
+        this.bodyTarget.innerHTML = ''
+        if (typeof content === 'string') this.bodyTarget.innerHTML = content
+        else this.bodyTarget.appendChild(content)
+        this.element.hidden = false
+        this.element.setAttribute('aria-hidden','false')
+        this.okCallback = okCallback
+      }
+      close() {
+        this.element.hidden = true
+        this.element.setAttribute('aria-hidden','true')
+        this.okCallback = null
+      }
+      ok() {
+        if (this.okCallback) this.okCallback()
+        this.close()
+      }
+    })
+
+    // Config controller: talk to /api endpoints and render lists
+    application.register("config", class extends Stimulus.Controller {
+      static get targets() { return ["ruleGroups", "ruleGroupsList", "ruleMappings", "ruleMappingsList", "vpnAccess", "vpnAccessList", "backups", "backupsList"] }
+      static get values() { return { path: String } }
+
+      connect() {
+        // Listen for section show events
+        this.ruleGroupsTarget.addEventListener('show', () => this.loadRuleGroups())
+        this.ruleMappingsTarget.addEventListener('show', () => this.loadRuleMappings())
+        this.vpnAccessTarget.addEventListener('show', () => this.loadVpnAccess())
+        this.backupsTarget.addEventListener('show', () => this.loadBackups())
+      }
+
+      // ---------------- Rule Groups ----------------
+      async loadRuleGroups() {
+        this.ruleGroupsListTarget.textContent = '加载中...'
+        try {
+          const res = await fetch('/api/rule-groups', { headers: { 'X-Config-Path': this.pathValue } })
+          if (!res.ok) throw new Error('加载失败')
+          const json = await res.json()
+          const groups = json.data || []
+          if (groups.length === 0) { this.ruleGroupsListTarget.innerHTML = '<div class="muted">暂无规则组</div>'; return }
+          const table = document.createElement('table')
+          table.innerHTML = `<thead><tr><th>名称</th><th>规则数</th><th>操作</th></tr></thead>`
+          const tbody = document.createElement('tbody')
+          groups.forEach(g => {
+            const tr = document.createElement('tr')
+            tr.innerHTML = `<td><strong>${g.name || '未命名'}</strong></td><td>${(g.rules||[]).length}</td><td><button class="secondary" data-action="click->config#editRuleGroup" data-name="${g.name}">编辑</button> <button class="danger" data-action="click->config#deleteRuleGroup" data-name="${g.name}">删除</button></td>`
+            tbody.appendChild(tr)
+          })
+          table.appendChild(tbody)
+          this.ruleGroupsListTarget.innerHTML = ''
+          this.ruleGroupsListTarget.appendChild(table)
+        } catch (err) {
+          this.ruleGroupsListTarget.innerHTML = `<div class="contrast">${err.message}</div>`
+        }
+      }
+
+      openCreateRuleGroup() {
+        const modal = document.getElementById('modal')
+        const modalCtrl = this.application.getControllerForElementAndIdentifier(modal, 'modal')
+        const form = document.createElement('div')
+        form.innerHTML = `<label>规则组名称<input type="text" id="rg_name" /></label><label>规则<textarea id="rg_rules" placeholder='每行: dest_ip protocol dest_port action (json 格式更稳)'></textarea></label>`
+        modalCtrl.open('新增规则组', form, async () => {
+          const name = form.querySelector('#rg_name').value.trim()
+          if (!name) return alert('请输入名称')
+          const rulesText = form.querySelector('#rg_rules').value.trim()
+          const rules = []
+          // simple parse: allow JSON or simple lines
+          if (rulesText) {
+            try { rules.push(...JSON.parse(rulesText)) } catch (e) { // fallback naive parse
+              rulesText.split('\n').map(l=>l.trim()).filter(Boolean).forEach(l=>{
+                const parts = l.split(/\s+/)
+                rules.push({ dest_ip: parts[0], protocol: parts[1]||'tcp', dest_port: parts[2] ? parseInt(parts[2]): undefined, action: parts[3]||'accept' })
+              })
+            }
+          }
+          const body = { name, rules }
+          const res = await fetch('/api/rule-groups/create', { method: 'POST', headers: {'Content-Type':'application/json','X-Config-Path':this.pathValue }, body: JSON.stringify(body) })
+          if (!res.ok) { alert('创建失败'); return }
+          this.loadRuleGroups()
+        })
+      }
+
+      async deleteRuleGroup(e) {
+        const name = e.currentTarget.dataset.name
+        if (!confirm(`确定删除规则组 ${name} ?`)) return
+        const res = await fetch(`/api/rule-groups/delete?name=${encodeURIComponent(name)}`, { method: 'DELETE', headers: { 'X-Config-Path': this.pathValue } })
+        if (!res.ok) return alert('删除失败')
+        this.loadRuleGroups()
+      }
+
+      // Edit minimal - show JSON and allow PUT
+      async editRuleGroup(e) {
+        const name = e.currentTarget.dataset.name
+        // fetch groups, find one
+        const res = await fetch('/api/rule-groups', { headers: { 'X-Config-Path': this.pathValue } })
+        const json = await res.json()
+        const group = (json.data||[]).find(g => g.name === name)
+        if (!group) return alert('找不到规则组')
+        const modal = document.getElementById('modal')
+        const modalCtrl = this.application.getControllerForElementAndIdentifier(modal, 'modal')
+        const form = document.createElement('div')
+        form.innerHTML = `<label>规则组名称<input type="text" id="rg_name" value="${group.name}" /></label><label>规则<textarea id="rg_rules">${JSON.stringify(group.rules||[],null,2)}</textarea></label>`
+        modalCtrl.open('编辑规则组', form, async () => {
+          const updated = { name: form.querySelector('#rg_name').value.trim(), rules: JSON.parse(form.querySelector('#rg_rules').value || '[]') }
+          const r = await fetch('/api/rule-groups/update', { method: 'PUT', headers:{ 'Content-Type':'application/json','X-Config-Path':this.pathValue }, body: JSON.stringify(updated) })
+          if (!r.ok) return alert('更新失败')
+          this.loadRuleGroups()
+        })
+      }
+
+      // ---------------- Rule Mappings ----------------
+      async loadRuleMappings() {
+        this.ruleMappingsListTarget.textContent = '加载中...'
+        try {
+          const res = await fetch('/api/rule-mappings', { headers: { 'X-Config-Path': this.pathValue } })
+          const json = await res.json()
+          const mappings = json.data || []
+          if (mappings.length === 0) { this.ruleMappingsListTarget.innerHTML = '<div class="muted">暂无规则映射</div>'; return }
+          const table = document.createElement('table')
+          table.innerHTML = `<thead><tr><th>名称</th><th>类型</th><th>引用规则组</th><th>操作</th></tr></thead>`
+          const tbody = document.createElement('tbody')
+          mappings.forEach(m => {
+            const tr = document.createElement('tr')
+            tr.innerHTML = `<td><strong>${m.name||''}</strong></td><td>${m.mapping_type||''}</td><td>${m.rule_group_ref||'—'}</td><td><button class="secondary" data-action="click->config#deleteRuleMapping" data-name="${m.name}">删除</button></td>`
+            tbody.appendChild(tr)
+          })
+          table.appendChild(tbody)
+          this.ruleMappingsListTarget.innerHTML = ''
+          this.ruleMappingsListTarget.appendChild(table)
+        } catch (err) { this.ruleMappingsListTarget.innerHTML = `<div class="contrast">${err.message}</div>` }
+      }
+
+      openCreateRuleMapping() {
+        // need rule groups for select
+        fetch('/api/rule-groups', { headers:{ 'X-Config-Path': this.pathValue } }).then(r=>r.json()).then(j=>{
+          const groups = j.data||[]
+          const modal = document.getElementById('modal')
+          const modalCtrl = this.application.getControllerForElementAndIdentifier(modal, 'modal')
+          const content = document.createElement('div')
+          content.innerHTML = `<label>名称<input id="rm_name" /></label><label>类型<select id="rm_type"><option value="users">用户映射</option><option value="public">公共规则</option><option value="input_chain">输入链</option><option value="input_chain_ip_set">输入链 IP 集合</option></select></label><label>引用规则组<select id="rm_group">${groups.map(g=>`<option value="${g.name}">${g.name}</option>`).join('')}</select></label>`
+          modalCtrl.open('新增规则映射', content, async () => {
+            const mapping = { name: content.querySelector('#rm_name').value.trim(), mapping_type: content.querySelector('#rm_type').value, rule_group_ref: content.querySelector('#rm_group').value }
+            const res = await fetch('/api/rule-mappings/create', { method: 'POST', headers: {'Content-Type':'application/json','X-Config-Path':this.pathValue }, body: JSON.stringify(mapping) })
+            if (!res.ok) return alert('创建失败')
+            this.loadRuleMappings()
+          })
+        })
+      }
+
+      async deleteRuleMapping(e) {
+        const name = e.currentTarget.dataset.name
+        if (!confirm(`确定删除映射 ${name} ?`)) return
+        const res = await fetch(`/api/rule-mappings/delete?name=${encodeURIComponent(name)}`, { method: 'DELETE', headers: { 'X-Config-Path': this.pathValue } })
+        if (!res.ok) return alert('删除失败')
+        this.loadRuleMappings()
+      }
+
+      // ---------------- VPN Access ----------------
+      async loadVpnAccess() {
+        this.vpnAccessListTarget.textContent = '加载中...'
+        try {
+          const res = await fetch('/api/vpn-access-rules', { headers: { 'X-Config-Path': this.pathValue } })
+          const json = await res.json()
+          const rules = json.data || []
+          if (rules.length === 0) { this.vpnAccessListTarget.innerHTML = '<div class="muted">暂无 VPN 访问规则</div>'; return }
+          const table = document.createElement('table')
+          table.innerHTML = `<thead><tr><th>用户</th><th>远程 IP 白名单</th><th>时间范围</th></tr></thead>`
+          const tbody = document.createElement('tbody')
+          rules.forEach(r => {
+            const tr = document.createElement('tr')
+            tr.innerHTML = `<td>${(r.users||[]).join(', ')}</td><td>${(r.remote_ip_whitelist||[]).join(', ')}</td><td>${r.time_range ? `${r.time_range.start||''} - ${r.time_range.end||''}` : '全天'}</td>`
+            tbody.appendChild(tr)
+          })
+          table.appendChild(tbody)
+          this.vpnAccessListTarget.innerHTML = ''
+          this.vpnAccessListTarget.appendChild(table)
+        } catch (err) { this.vpnAccessListTarget.innerHTML = `<div class="contrast">${err.message}</div>` }
+      }
+
+      openVpnAccess() {
+        // open modal for editing list
+        fetch('/api/vpn-access-rules', { headers:{ 'X-Config-Path': this.pathValue } }).then(r=>r.json()).then(j=>{
+          const rules = j.data || []
+          const modal = document.getElementById('modal')
+          const modalCtrl = this.application.getControllerForElementAndIdentifier(modal, 'modal')
+          const content = document.createElement('div')
+          const list = document.createElement('div')
+          rules.forEach(rule => {
+            const el = document.createElement('div')
+            el.className = 'card'
+            el.innerHTML = `<label>用户<textarea class="vpn-users">${(rule.users||[]).join('\n')}</textarea></label><label>IP 白名单<textarea class="vpn-ips">${(rule.remote_ip_whitelist||[]).join('\n')}</textarea></label><label>开始时间<input class="vpn-start" value="${rule.time_range?.start||''}" /></label><label>结束时间<input class="vpn-end" value="${rule.time_range?.end||''}" /></label><hr/>`
+            list.appendChild(el)
+          })
+          const addBtn = document.createElement('button')
+          addBtn.className = 'secondary'
+          addBtn.textContent = '+ 添加规则'
+          addBtn.addEventListener('click', () => {
+            const el = document.createElement('div')
+            el.className = 'card'
+            el.innerHTML = `<label>用户<textarea class="vpn-users"></textarea></label><label>IP 白名单<textarea class="vpn-ips"></textarea></label><label>开始时间<input class="vpn-start" /></label><label>结束时间<input class="vpn-end" /></label><hr/>`
+            list.appendChild(el)
+          })
+          content.appendChild(list)
+          content.appendChild(addBtn)
+
+          modalCtrl.open('编辑 VPN 访问规则', content, async () => {
+            const out = []
+            list.querySelectorAll('.card').forEach(card => {
+              const users = Array.from(card.querySelector('.vpn-users').value.split('\n')).map(s=>s.trim()).filter(Boolean)
+              const ips = Array.from(card.querySelector('.vpn-ips').value.split('\n')).map(s=>s.trim()).filter(Boolean)
+              const start = card.querySelector('.vpn-start').value.trim()
+              const end = card.querySelector('.vpn-end').value.trim()
+              if (users.length > 0) {
+                const rule = { users, remote_ip_whitelist: ips.length>0?ips:undefined }
+                if (start || end) rule.time_range = { start, end }
+                out.push(rule)
+              }
+            })
+            const res = await fetch('/api/vpn-access-rules/update', { method: 'POST', headers: {'Content-Type':'application/json','X-Config-Path':this.pathValue}, body: JSON.stringify(out) })
+            if (!res.ok) return alert('保存失败')
+            this.loadVpnAccess()
+          })
+        })
+      }
+
+      // ---------------- Backups ----------------
+      async loadBackups() {
+        this.backupsListTarget.textContent = '加载中...'
+        try {
+          const res = await fetch('/api/backups')
+          const json = await res.json()
+          const backups = json.data || []
+          if (backups.length === 0) { this.backupsListTarget.innerHTML = '<div class="muted">暂无备份</div>'; return }
+          const table = document.createElement('table')
+          table.innerHTML = `<thead><tr><th>文件名</th><th>大小</th><th>修改时间</th><th>操作</th></tr></thead>`
+          const tbody = document.createElement('tbody')
+          backups.forEach(b => {
+            const tr = document.createElement('tr')
+            tr.innerHTML = `<td>${b.filename}</td><td>${b.size}</td><td>${b.modified}</td><td><button class="secondary" data-action="click->config#restoreBackup" data-name="${b.filename}">恢复</button></td>`
+            tbody.appendChild(tr)
+          })
+          table.appendChild(tbody)
+          this.backupsListTarget.innerHTML = ''
+          this.backupsListTarget.appendChild(table)
+        } catch (err) { this.backupsListTarget.innerHTML = `<div class="contrast">${err.message}</div>` }
+      }
+
+      async refreshBackups() { this.loadBackups() }
+
+      async restoreBackup(e) {
+        const name = e.currentTarget.dataset.name
+        if (!confirm(`确定要恢复备份 ${name} ?`)) return
+        const res = await fetch(`/api/backups/restore?filename=${encodeURIComponent(name)}`, { method: 'POST' })
+        if (!res.ok) return alert('恢复失败')
+        this.loadBackups()
+      }
+    })
+  })()
+})()
+</script>
+{{ end }}

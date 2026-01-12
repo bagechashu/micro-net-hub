@@ -1,0 +1,24 @@
+{{ if not . }}
+<tr>
+  <td colspan="7" style="color:#999">
+    暂无在线用户
+  </td>
+</tr>
+{{ end }}
+
+{{ range . }}
+<tr>
+  <td>{{.ID}}</td>
+  <td>{{.Username}}</td>
+  <td>{{.Groupname}}</td>
+  <td>{{.State}}</td>
+  <td>{{.RemoteIP}}</td>
+  <td>{{.UserAgent}}</td>
+  <td>{{.RXHuman}}</td>
+  <td>{{.TXHuman}}</td>
+  <td>{{.AverageRX}}</td>
+  <td>{{.AverageTX}}</td>
+  <td><span class="utc-time" data-utc="{{.ConnectedAt}}">{{.ConnectedAt}}</span></td>
+  <td>{{.ConnectedFor}}</td>
+</tr>
+{{ end }}

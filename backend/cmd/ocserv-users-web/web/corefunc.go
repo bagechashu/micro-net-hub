@@ -1,0 +1,50 @@
+package web
+
+import (
+	"fmt"
+	"net/http"
+	"ocserv-users/internal"
+)
+
+func nftablesHandler(w http.ResponseWriter, r *http.Request) {
+	// 只接受 POST 请求
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// 执行一次 nftables 规则更新
+	err := internal.UpdateNftablesRulesWithSessions(internal.Global_UsersRules)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("nft updated failed: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// 返回成功响应
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("nft updated successfully\n"))
+
+	// w.Header().Set("Content-Type", "application/json")
+	// json.NewEncoder(w).Encode(map[string]string{
+	// 	"status":  "success",
+	// 	"message": "nft updated successfully",
+	// })
+}
+
+func vpnAccessHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// 执行一次 EnforceVpnAccess 规则检查
+	err := internal.EnforceVpnAccess(internal.Global_VpnAccessRules)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("vpn access enforcement failed: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// 返回成功响应
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("vpn access enforced\n"))
+}

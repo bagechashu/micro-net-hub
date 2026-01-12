@@ -1,0 +1,96 @@
+/* ========== Layout / Container ========== */
+
+main.container {
+  max-width: none;
+  padding: 1.5rem 2rem;
+}
+
+body {
+  background: var(--pico-background-color);
+}
+
+/* ========== Header ========== */
+
+header.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  margin: -1.5rem -2rem 1.5rem -2rem;
+  border-bottom: 1px solid var(--pico-muted-border-color);
+  background: var(--pico-card-background-color);
+}
+
+header.app-header h3 {
+  margin: 0;
+  font-weight: 600;
+}
+
+header.app-header nav a[role="button"] {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  margin-left: 0.5rem;
+}
+
+/* ========== Content Sections ========== */
+
+section,
+article {
+  width: 100%;
+  background: var(--pico-card-background-color);
+  padding: 1.25rem 1.5rem;
+  border-radius: var(--pico-border-radius);
+  box-shadow: var(--pico-card-box-shadow);
+  margin-bottom: 1.5rem;
+}
+
+section > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+section > header h4 {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* ========== Tables ========== */
+
+table {
+  width: 100%;
+  font-size: 0.85rem;
+}
+
+thead th {
+  white-space: nowrap;
+  background: var(--pico-muted-background-color);
+}
+
+tbody tr:hover {
+  background: var(--pico-muted-background-color);
+}
+
+table td small {
+  color: var(--pico-muted-color);
+}
+
+/* ========== Action Buttons ========== */
+
+.actions button {
+  margin-right: 0.5rem;
+}
+
+/* ========== Ultra-wide Screens ========== */
+
+@media (min-width: 1600px) {
+  main.container {
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+
+  table {
+    font-size: 0.8rem;
+  }
+}

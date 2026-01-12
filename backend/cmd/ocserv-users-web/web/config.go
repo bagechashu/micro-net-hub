@@ -11,6 +11,10 @@ import (
 	"strings"
 )
 
+
+func configHandler(w http.ResponseWriter, r *http.Request) {
+	renderWithLayout(w, "config.html", nil)
+}
 // Global config manager (will be initialized in main.go)
 var GlobalConfigManager *internal.ConfigManager
 
@@ -58,6 +62,65 @@ func GetRuleGroupsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sendSuccess(w, "rule groups retrieved", config.RuleGroups)
+}
+
+// RuleGroupsPartialHandler serves the HTML partial for HTMX
+func RuleGroupsPartialHandler(w http.ResponseWriter, r *http.Request) {
+	cfgPath := r.Header.Get("X-Config-Path")
+	if cfgPath == "" {
+		cfgPath = "rules.yaml"
+	}
+
+	config, err := internal.LoadConfig(cfgPath)
+	if err != nil {
+		http.Error(w, "failed to load config", http.StatusInternalServerError)
+		return
+	}
+
+	render(w, "partials/rule_groups.html", config.RuleGroups)
+}
+
+// RuleMappingsPartialHandler serves the HTMX partial for rule mappings
+func RuleMappingsPartialHandler(w http.ResponseWriter, r *http.Request) {
+	cfgPath := r.Header.Get("X-Config-Path")
+	if cfgPath == "" {
+		cfgPath = "rules.yaml"
+	}
+
+	config, err := internal.LoadConfig(cfgPath)
+	if err != nil {
+		http.Error(w, "failed to load config", http.StatusInternalServerError)
+		return
+	}
+
+	render(w, "partials/rule_mappings.html", config.RuleMappings)
+}
+
+// VpnAccessPartialHandler serves the HTMX partial for VPN access rules
+func VpnAccessPartialHandler(w http.ResponseWriter, r *http.Request) {
+	cfgPath := r.Header.Get("X-Config-Path")
+	if cfgPath == "" {
+		cfgPath = "rules.yaml"
+	}
+
+	config, err := internal.LoadConfig(cfgPath)
+	if err != nil {
+		http.Error(w, "failed to load config", http.StatusInternalServerError)
+		return
+	}
+
+	render(w, "partials/vpn_access.html", config.VpnAccessRules)
+}
+
+// BackupsPartialHandler serves the HTMX partial for backups
+func BackupsPartialHandler(w http.ResponseWriter, r *http.Request) {
+	backups, err := GlobalConfigManager.GetBackupList()
+	if err != nil {
+		http.Error(w, "failed to get backups", http.StatusInternalServerError)
+		return
+	}
+
+	render(w, "partials/backups.html", backups)
 }
 
 // CreateRuleGroup creates a new rule group

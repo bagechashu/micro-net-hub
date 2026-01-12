@@ -1,0 +1,16 @@
+{{ if not . }}
+<tr>
+  <td colspan="4" style="text-align:center;color:#999">暂无备份文件</td>
+</tr>
+{{ end }}
+
+{{ range . }}
+<tr>
+  <td>{{ .filename }}</td>
+  <td>{{ .size }}</td>
+  <td>{{ .modified }}</td>
+  <td>
+    <button class="secondary" data-action="click->config#restoreBackup" data-name="{{ .filename }}">恢复</button>
+  </td>
+</tr>
+{{ end }}
