@@ -1,96 +1,126 @@
-/* ========== Layout / Container ========== */
-
-main.container {
-  max-width: none;
-  padding: 1.5rem 2rem;
-}
-
 body {
-  background: var(--pico-background-color);
+  margin: 0;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background: #f5f5f5;
 }
-
-/* ========== Header ========== */
-
+main.container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 1.5rem;
+}
 header.app-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 1rem 2rem;
-  margin: -1.5rem -2rem 1.5rem -2rem;
-  border-bottom: 1px solid var(--pico-muted-border-color);
-  background: var(--pico-card-background-color);
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid #ddd;
 }
-
 header.app-header h3 {
   margin: 0;
-  font-weight: 600;
 }
-
-header.app-header nav a[role="button"] {
-  padding: 0.35rem 0.75rem;
-  font-size: 0.85rem;
+header.app-header nav a {
+  text-decoration: none;
+  padding: 0.5rem 1rem;
   margin-left: 0.5rem;
+  border-radius: 4px;
+}
+header.app-header nav a.secondary {
+  background-color: #e6e6e6;
+  color: #333;
+}
+header.app-header nav a:hover {
+  background-color: #ddd;
 }
 
-/* ========== Content Sections ========== */
-
-section,
-article {
+/* ======================= Modal Overlay ======================= */
+.modal {
+  position: fixed;
+  top: 0; left: 0;
   width: 100%;
-  background: var(--pico-card-background-color);
-  padding: 1.25rem 1.5rem;
-  border-radius: var(--pico-border-radius);
-  box-shadow: var(--pico-card-box-shadow);
-  margin-bottom: 1.5rem;
-}
-
-section > header {
-  display: flex;
-  justify-content: space-between;
+  height: 100%;
+  display: none; /* hidden by default */
   align-items: center;
-  margin-bottom: 1rem;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3); /* 更浅的遮罩，协调主背景 */
+  z-index: 1000;
 }
 
-section > header h4 {
-  margin: 0;
-  font-weight: 600;
+/* 显示 modal */
+.modal.show {
+  display: flex;
 }
 
-/* ========== Tables ========== */
-
-table {
-  width: 100%;
-  font-size: 0.85rem;
+/* ======================= Modal Container ======================= */
+.modal__container {
+  background: #f5f5f5; /* 白色背景，和 Pure.css 表格、按钮协调 */
+  border-radius: 0;  /* 无圆角 */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  padding: 1.5em;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-thead th {
-  white-space: nowrap;
-  background: var(--pico-muted-background-color);
+/* ======================= Modal Title ======================= */
+.modal__title {
+  font-size: 1.25em;
+  font-weight: bold;
+  margin-bottom: 1em;
+  border-bottom: 1px solid #ddd; /* 边界颜色协调主页面表格 */
+  padding-bottom: 0.5em;
 }
 
-tbody tr:hover {
-  background: var(--pico-muted-background-color);
+/* ======================= Modal Body ======================= */
+.modal__body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  margin-bottom: 1em;
+  font-size: 0.95em;
+  color: #333;
 }
 
-table td small {
-  color: var(--pico-muted-color);
+/* ======================= Modal Footer / Buttons ======================= */
+.modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5em;
 }
 
-/* ========== Action Buttons ========== */
-
-.actions button {
-  margin-right: 0.5rem;
+.modal__footer .pure-button {
+  min-width: 80px;
 }
 
-/* ========== Ultra-wide Screens ========== */
+/* ======================= Close Button (top-right) ======================= */
+.modal__close {
+  position: absolute;
+  top: 0.5em;
+  right: 0.5em;
+  background: transparent;
+  border: none;
+  font-size: 1.2em;
+  cursor: pointer;
+  line-height: 1;
+  color: #888;
+  transition: color 0.2s;
+}
 
-@media (min-width: 1600px) {
-  main.container {
-    padding-left: 3rem;
-    padding-right: 3rem;
-  }
+.modal__close:hover {
+  color: #000;
+}
 
-  table {
-    font-size: 0.8rem;
-  }
+/* ======================= Scrollbar for Modal Body ======================= */
+.modal__body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal__body::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.15);
+  border-radius: 0; /* 无圆角 */
+}
+
+.modal__body::-webkit-scrollbar-track {
+  background: transparent;
 }

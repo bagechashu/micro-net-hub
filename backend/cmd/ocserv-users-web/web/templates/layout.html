@@ -1,6 +1,6 @@
 {{ define "layout" }}
 <!DOCTYPE html>
-<html lang="zh" data-theme="light">
+<html lang="zh">
 <head>
   <meta charset="UTF-8" />
   <title>{{ block "title" . }}VPN 管理{{ end }}</title>
@@ -12,11 +12,9 @@
   <!-- Stimulus -->
   <script src="https://unpkg.com/@hotwired/stimulus/dist/stimulus.umd.js"></script>
 
-  <!-- Pico.css -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/@picocss/pico@1.5.10/css/pico.min.css"
-  />
+  <!-- Pure.css -->
+  <link rel="stylesheet" href="https://unpkg.com/purecss@2.1.0/build/pure-min.css">
+  <link rel="stylesheet" href="https://unpkg.com/purecss@2.1.0/build/grids-responsive-min.css">
 
   <!-- App CSS -->
   <link rel="stylesheet" href="/static/app.css" />
@@ -28,8 +26,8 @@
 <header class="app-header">
   <h3>VPN 管理面板</h3>
   <nav>
-    <a href="/" role="button">用户</a>
-    <a href="/config.html" role="button" class="secondary">配置</a>
+    <a href="/" role="button" class="pure-button">用户</a>
+    <a href="/config.html" role="button" class="pure-button pure-button-secondary">配置</a>
   </nav>
 </header>
 

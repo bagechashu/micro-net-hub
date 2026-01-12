@@ -10,8 +10,10 @@
   <td>{{ .Type }}</td>
   <td>{{ .RuleGroupRef }}</td>
   <td>
-    <button class="secondary" data-action="click->config#editRuleMapping" data-name="{{ .Name }}">编辑</button>
-    <button class="danger" data-action="click->config#deleteRuleMapping" data-name="{{ .Name }}">删除</button>
+    <div role="group">
+      <button class="secondary" data-action="click->config#editRuleMapping" data-name="{{ .Name }}">编辑</button>
+      <button class="danger" data-action="click->config#deleteRuleMapping" data-name="{{ .Name }}">删除</button>
+    </div>
   </td>
 </tr>
 {{ end }}

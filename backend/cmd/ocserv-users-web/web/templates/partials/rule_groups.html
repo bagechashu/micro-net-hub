@@ -9,8 +9,10 @@
   <td><strong>{{ .Name }}</strong></td>
   <td>{{ len .Rules }}</td>
   <td>
-    <button class="secondary" data-action="click->config#editRuleGroup" data-name="{{ .Name }}">编辑</button>
-    <button class="danger" data-action="click->config#deleteRuleGroup" data-name="{{ .Name }}">删除</button>
+    <div role="group">
+      <button class="secondary" data-action="click->config#editRuleGroup" data-name="{{ .Name }}">编辑</button>
+      <button class="danger" data-action="click->config#deleteRuleGroup" data-name="{{ .Name }}">删除</button>
+    </div>
   </td>
 </tr>
 {{ end }}

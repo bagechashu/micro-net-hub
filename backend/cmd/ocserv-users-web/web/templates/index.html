@@ -2,8 +2,8 @@
 
 {{ define "content" }}
 <section>
-  <h3 slot="header">在线用户</h3>
-  <table width="100%">
+  <h3>在线用户</h3>
+  <table class="pure-table pure-table-bordered pure-table-striped" width="100%">
     <thead>
       <tr>
         <th>ID</th>
@@ -25,7 +25,9 @@
       hx-get="/partials/users.html"
       hx-trigger="load, every 30s"
       hx-swap="innerHTML">
-      <tr><td colspan="7">加载中...</td></tr>
+      <tr>
+        <td colspan="12" style="text-align:center;color:#999">加载中...</td>
+      </tr>
     </tbody>
   </table>
 </section>
@@ -34,15 +36,17 @@
 {{ define "script" }}
 <script>
 (() => {
-  const app = Stimulus.Application.start()
+  const app = Stimulus.Application.start();
+
+  // UTC 时间格式化
   app.register("utc", class extends Stimulus.Controller {
     connect() {
-      const raw = this.element.dataset.utc
-      if (!raw) return
-      const d = new Date(raw.replace(" ", "T") + "Z")
-      if (!isNaN(d)) this.element.textContent = d.toLocaleString("zh-CN")
+      const raw = this.element.dataset.utc;
+      if (!raw) return;
+      const d = new Date(raw.replace(" ", "T") + "Z");
+      if (!isNaN(d)) this.element.textContent = d.toLocaleString("zh-CN");
     }
-  })
-})()
+  });
+})();
 </script>
 {{ end }}
