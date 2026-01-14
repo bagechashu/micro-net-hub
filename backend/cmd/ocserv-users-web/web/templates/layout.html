@@ -18,11 +18,15 @@
 
   <!-- App CSS -->
   <link rel="stylesheet" href="/static/app.css" />
+
+  <!-- Initialize global Stimulus app -->
+  <script>
+    window.App = Stimulus.Application.start()
+  </script>
 </head>
 
 <body>
 <main class="container">
-
 <header class="app-header">
   <h3>VPN 管理面板</h3>
   <nav>
@@ -33,9 +37,10 @@
 
 {{ block "content" . }}{{ end }}
 
+</main>
+
 {{ block "script" . }}{{ end }}
 
-</main>
 </body>
 </html>
 {{ end }}

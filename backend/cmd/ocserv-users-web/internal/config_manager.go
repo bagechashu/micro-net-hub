@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"sigs.k8s.io/yaml"
@@ -144,15 +145,47 @@ func (cfg *Config) setRuleDefaults() {
 type ConfigManager struct {
 	ConfigPath    string
 	BackupDirPath string
+	// In-memory cache of current config
+	mu     sync.RWMutex
+	config *Config
 }
 
 // NewConfigManager creates a new config manager
 func NewConfigManager(configPath string) *ConfigManager {
 	backupDir := filepath.Join(filepath.Dir(configPath), ".config_backups")
-	return &ConfigManager{
+	cm := &ConfigManager{
 		ConfigPath:    configPath,
 		BackupDirPath: backupDir,
 	}
+	// Load initial config
+	if cfg, err := LoadConfig(configPath); err == nil {
+		cm.config = cfg
+	} else {
+		log.Printf("[config] failed to load initial config: %v", err)
+		cm.config = &Config{}
+	}
+	return cm
+}
+
+// GetConfig returns a copy of the current in-memory config
+func (cm *ConfigManager) GetConfig() *Config {
+	cm.mu.RLock()
+	defer cm.mu.RUnlock()
+	if cm.config == nil {
+		return &Config{}
+	}
+	// Return a deep copy to prevent external modifications
+	data, _ := json.Marshal(cm.config)
+	var cfg Config
+	json.Unmarshal(data, &cfg)
+	return &cfg
+}
+
+// UpdateConfig updates the in-memory config (without saving to disk yet)
+func (cm *ConfigManager) UpdateConfig(config *Config) {
+	cm.mu.Lock()
+	defer cm.mu.Unlock()
+	cm.config = config
 }
 
 // EnsureBackupDir creates the backup directory if it doesn't exist
@@ -191,14 +224,25 @@ func (cm *ConfigManager) BackupConfig() (string, error) {
 // SaveConfig saves the configuration to file, creating a backup first
 // Empty fields (zeros values) are omitted from the output
 func (cm *ConfigManager) SaveConfig(config *Config) error {
-	// Create backup before modifying
-	_, err := cm.BackupConfig()
-	if err != nil {
-		return fmt.Errorf("failed to backup config: %w", err)
+	return cm.SaveConfigWithBackup(config, true)
+}
+
+// SaveConfigWithBackup saves the configuration to file with optional backup
+func (cm *ConfigManager) SaveConfigWithBackup(config *Config, createBackup bool) error {
+	if createBackup {
+		// Create backup before modifying
+		_, err := cm.BackupConfig()
+		if err != nil {
+			return fmt.Errorf("failed to backup config: %w", err)
+		}
 	}
+
+	// Update in-memory cache
+	cm.UpdateConfig(config)
 
 	// Marshal the config to the appropriate format
 	var data []byte
+	var err error
 	ext := strings.ToLower(filepath.Ext(cm.ConfigPath))
 
 	switch ext {

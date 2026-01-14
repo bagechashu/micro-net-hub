@@ -38,16 +38,15 @@ header.app-header nav a:hover {
   top: 0; left: 0;
   width: 100%;
   height: 100%;
-  display: none; /* hidden by default */
+  display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.3); /* 更浅的遮罩，协调主背景 */
   z-index: 1000;
 }
 
-/* 显示 modal */
-.modal.show {
-  display: flex;
+.modal[hidden] {
+  display: none;
 }
 
 /* ======================= Modal Container ======================= */
@@ -123,4 +122,40 @@ header.app-header nav a:hover {
 
 .modal__body::-webkit-scrollbar-track {
   background: transparent;
+}
+/* ======================= Small Button ======================= */
+.pure-button-sm {
+  padding: 0.3em 0.6em;
+  font-size: 0.85em;
+}
+
+/* ======================= Table Section ======================= */
+.table-section {
+  background: white;
+  padding: 1em;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* 移动端顺滑滚动 */
+}
+
+.table-section h4 {
+  margin-top: 0;
+  margin-bottom: 1em;
+  color: #333;
+  border-bottom: 2px solid #e67e22;
+  padding-bottom: 0.5em;
+}
+
+/* ======================= Responsive Table Wrapper ======================= */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* 移动端顺滑滚动 */
+}
+
+.table-wrapper table {
+  min-width: 100%;      /* 至少占满容器 */
+  white-space: nowrap; /* 防止单元格自动换行 */
 }

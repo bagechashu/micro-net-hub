@@ -3,18 +3,23 @@ package web
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"ocserv-users/internal"
-	"path/filepath"
-	"strings"
-)
+	"time"
 
+	"sigs.k8s.io/yaml"
+)
 
 func configHandler(w http.ResponseWriter, r *http.Request) {
 	renderWithLayout(w, "config.html", nil)
 }
+
+// ConfigEditorPageHandler serves the configuration editor page
+func configEditorPageHandler(w http.ResponseWriter, r *http.Request) {
+	renderWithLayout(w, "config-editor.html", nil)
+}
+
 // Global config manager (will be initialized in main.go)
 var GlobalConfigManager *internal.ConfigManager
 
@@ -25,513 +30,36 @@ type Response struct {
 	Data    interface{} `json:"data,omitempty"`
 }
 
-// Helper functions
-func sendJSON(w http.ResponseWriter, code int, resp Response) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	json.NewEncoder(w).Encode(resp)
+// ConfigPreviewRequest is used for config preview/validation
+type ConfigPreviewRequest struct {
+	Content string `json:"content"`
+	Format  string `json:"format"` // "json" or "yaml"
 }
 
-func sendError(w http.ResponseWriter, code int, message string) {
-	sendJSON(w, code, Response{Code: code, Message: message})
+// ConfigChangesSummary shows what changed in a config
+type ConfigChangesSummary struct {
+	Added    int      `json:"added"`
+	Modified int      `json:"modified"`
+	Deleted  int      `json:"deleted"`
+	Changes  []string `json:"changes"`
 }
 
-func sendSuccess(w http.ResponseWriter, message string, data interface{}) {
-	sendJSON(w, http.StatusOK, Response{Code: 0, Message: message, Data: data})
+// BackupInfo contains metadata about a backup
+type BackupInfo struct {
+	Filename    string    `json:"filename"`
+	Size        int64     `json:"size"`
+	ModTime     time.Time `json:"mod_time"`
+	Description string    `json:"description,omitempty"`
 }
 
-// ==================== Rule Groups APIs ====================
-
-// GetRuleGroups returns all rule groups
-func GetRuleGroupsHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
-		return
-	}
-
-	// Load config to get rule groups
-	cfgPath := r.Header.Get("X-Config-Path")
-	if cfgPath == "" {
-		cfgPath = "rules.yaml"
-	}
-
-	config, err := internal.LoadConfig(cfgPath)
-	if err != nil {
-		sendError(w, http.StatusInternalServerError, fmt.Sprintf("failed to load config: %v", err))
-		return
-	}
-
-	sendSuccess(w, "rule groups retrieved", config.RuleGroups)
-}
-
-// RuleGroupsPartialHandler serves the HTML partial for HTMX
-func RuleGroupsPartialHandler(w http.ResponseWriter, r *http.Request) {
-	cfgPath := r.Header.Get("X-Config-Path")
-	if cfgPath == "" {
-		cfgPath = "rules.yaml"
-	}
-
-	config, err := internal.LoadConfig(cfgPath)
-	if err != nil {
-		http.Error(w, "failed to load config", http.StatusInternalServerError)
-		return
-	}
-
-	render(w, "partials/rule_groups.html", config.RuleGroups)
-}
-
-// RuleMappingsPartialHandler serves the HTMX partial for rule mappings
-func RuleMappingsPartialHandler(w http.ResponseWriter, r *http.Request) {
-	cfgPath := r.Header.Get("X-Config-Path")
-	if cfgPath == "" {
-		cfgPath = "rules.yaml"
-	}
-
-	config, err := internal.LoadConfig(cfgPath)
-	if err != nil {
-		http.Error(w, "failed to load config", http.StatusInternalServerError)
-		return
-	}
-
-	render(w, "partials/rule_mappings.html", config.RuleMappings)
-}
-
-// VpnAccessPartialHandler serves the HTMX partial for VPN access rules
-func VpnAccessPartialHandler(w http.ResponseWriter, r *http.Request) {
-	cfgPath := r.Header.Get("X-Config-Path")
-	if cfgPath == "" {
-		cfgPath = "rules.yaml"
-	}
-
-	config, err := internal.LoadConfig(cfgPath)
-	if err != nil {
-		http.Error(w, "failed to load config", http.StatusInternalServerError)
-		return
-	}
-
-	render(w, "partials/vpn_access.html", config.VpnAccessRules)
-}
-
-// BackupsPartialHandler serves the HTMX partial for backups
-func BackupsPartialHandler(w http.ResponseWriter, r *http.Request) {
-	backups, err := GlobalConfigManager.GetBackupList()
-	if err != nil {
-		http.Error(w, "failed to get backups", http.StatusInternalServerError)
-		return
-	}
-
-	render(w, "partials/backups.html", backups)
-}
-
-// CreateRuleGroup creates a new rule group
-func CreateRuleGroupHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
-		return
-	}
-
-	cfgPath := r.Header.Get("X-Config-Path")
-	if cfgPath == "" {
-		cfgPath = "rules.yaml"
-	}
-
-	// Load current config
-	config, err := internal.LoadConfig(cfgPath)
-	if err != nil {
-		sendError(w, http.StatusInternalServerError, fmt.Sprintf("failed to load config: %v", err))
-		return
-	}
-
-	// Parse request body
-	var ruleGroup internal.RuleGroup
-	if err := json.NewDecoder(r.Body).Decode(&ruleGroup); err != nil {
-		sendError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %v", err))
-		return
-	}
-
-	// Check for duplicate names
-	for _, g := range config.RuleGroups {
-		if strings.ToLower(g.Name) == strings.ToLower(ruleGroup.Name) {
-			sendError(w, http.StatusConflict, "rule group with same name already exists")
-			return
-		}
-	}
-
-	// Add new rule group
-	config.RuleGroups = append(config.RuleGroups, ruleGroup)
-
-	// Save config
-	if err := GlobalConfigManager.SaveConfig(config); err != nil {
-		sendError(w, http.StatusInternalServerError, fmt.Sprintf("failed to save config: %v", err))
-		return
-	}
-
-	sendSuccess(w, "rule group created", ruleGroup)
-}
-
-// UpdateRuleGroup updates an existing rule group
-func UpdateRuleGroupHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPut {
-		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
-		return
-	}
-
-	cfgPath := r.Header.Get("X-Config-Path")
-	if cfgPath == "" {
-		cfgPath = "rules.yaml"
-	}
-
-	// Load current config
-	config, err := internal.LoadConfig(cfgPath)
-	if err != nil {
-		sendError(w, http.StatusInternalServerError, fmt.Sprintf("failed to load config: %v", err))
-		return
-	}
-
-	// Parse request body
-	var updatedGroup internal.RuleGroup
-	if err := json.NewDecoder(r.Body).Decode(&updatedGroup); err != nil {
-		sendError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %v", err))
-		return
-	}
-
-	// Find and update rule group
-	found := false
-	for i, g := range config.RuleGroups {
-		if strings.ToLower(g.Name) == strings.ToLower(updatedGroup.Name) {
-			config.RuleGroups[i] = updatedGroup
-			found = true
-			break
-		}
-	}
-
-	if !found {
-		sendError(w, http.StatusNotFound, "rule group not found")
-		return
-	}
-
-	// Save config
-	if err := GlobalConfigManager.SaveConfig(config); err != nil {
-		sendError(w, http.StatusInternalServerError, fmt.Sprintf("failed to save config: %v", err))
-		return
-	}
-
-	sendSuccess(w, "rule group updated", updatedGroup)
-}
-
-// DeleteRuleGroup deletes a rule group
-func DeleteRuleGroupHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodDelete {
-		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
-		return
-	}
-
-	cfgPath := r.Header.Get("X-Config-Path")
-	if cfgPath == "" {
-		cfgPath = "rules.yaml"
-	}
-
-	name := r.URL.Query().Get("name")
-	if name == "" {
-		sendError(w, http.StatusBadRequest, "name parameter is required")
-		return
-	}
-
-	// Load current config
-	config, err := internal.LoadConfig(cfgPath)
-	if err != nil {
-		sendError(w, http.StatusInternalServerError, fmt.Sprintf("failed to load config: %v", err))
-		return
-	}
-
-	// Find and remove rule group
-	found := false
-	for i, g := range config.RuleGroups {
-		if strings.ToLower(g.Name) == strings.ToLower(name) {
-			config.RuleGroups = append(config.RuleGroups[:i], config.RuleGroups[i+1:]...)
-			found = true
-			break
-		}
-	}
-
-	if !found {
-		sendError(w, http.StatusNotFound, "rule group not found")
-		return
-	}
-
-	// Save config
-	if err := GlobalConfigManager.SaveConfig(config); err != nil {
-		sendError(w, http.StatusInternalServerError, fmt.Sprintf("failed to save config: %v", err))
-		return
-	}
-
-	sendSuccess(w, "rule group deleted", nil)
-}
-
-// ==================== Rule Mappings APIs ====================
-
-// GetRuleMappings returns all rule mappings
-func GetRuleMappingsHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
-		return
-	}
-
-	cfgPath := r.Header.Get("X-Config-Path")
-	if cfgPath == "" {
-		cfgPath = "rules.yaml"
-	}
-
-	config, err := internal.LoadConfig(cfgPath)
-	if err != nil {
-		sendError(w, http.StatusInternalServerError, fmt.Sprintf("failed to load config: %v", err))
-		return
-	}
-
-	sendSuccess(w, "rule mappings retrieved", config.RuleMappings)
-}
-
-// CreateRuleMapping creates a new rule mapping
-func CreateRuleMappingHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
-		return
-	}
-
-	cfgPath := r.Header.Get("X-Config-Path")
-	if cfgPath == "" {
-		cfgPath = "rules.yaml"
-	}
-
-	// Load current config
-	config, err := internal.LoadConfig(cfgPath)
-	if err != nil {
-		sendError(w, http.StatusInternalServerError, fmt.Sprintf("failed to load config: %v", err))
-		return
-	}
-
-	// Parse request body
-	var ruleMapping internal.RuleMapping
-	if err := json.NewDecoder(r.Body).Decode(&ruleMapping); err != nil {
-		sendError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %v", err))
-		return
-	}
-
-	// Add new rule mapping
-	config.RuleMappings = append(config.RuleMappings, ruleMapping)
-
-	// Save config
-	if err := GlobalConfigManager.SaveConfig(config); err != nil {
-		sendError(w, http.StatusInternalServerError, fmt.Sprintf("failed to save config: %v", err))
-		return
-	}
-
-	sendSuccess(w, "rule mapping created", ruleMapping)
-}
-
-// UpdateRuleMapping updates an existing rule mapping
-func UpdateRuleMappingHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPut {
-		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
-		return
-	}
-
-	cfgPath := r.Header.Get("X-Config-Path")
-	if cfgPath == "" {
-		cfgPath = "rules.yaml"
-	}
-
-	// Load current config
-	config, err := internal.LoadConfig(cfgPath)
-	if err != nil {
-		sendError(w, http.StatusInternalServerError, fmt.Sprintf("failed to load config: %v", err))
-		return
-	}
-
-	// Parse request body
-	var updatedMapping internal.RuleMapping
-	if err := json.NewDecoder(r.Body).Decode(&updatedMapping); err != nil {
-		sendError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %v", err))
-		return
-	}
-
-	// Find and update rule mapping
-	found := false
-	for i, m := range config.RuleMappings {
-		if strings.ToLower(m.Name) == strings.ToLower(updatedMapping.Name) {
-			config.RuleMappings[i] = updatedMapping
-			found = true
-			break
-		}
-	}
-
-	if !found {
-		sendError(w, http.StatusNotFound, "rule mapping not found")
-		return
-	}
-
-	// Save config
-	if err := GlobalConfigManager.SaveConfig(config); err != nil {
-		sendError(w, http.StatusInternalServerError, fmt.Sprintf("failed to save config: %v", err))
-		return
-	}
-
-	sendSuccess(w, "rule mapping updated", updatedMapping)
-}
-
-// DeleteRuleMapping deletes a rule mapping
-func DeleteRuleMappingHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodDelete {
-		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
-		return
-	}
-
-	cfgPath := r.Header.Get("X-Config-Path")
-	if cfgPath == "" {
-		cfgPath = "rules.yaml"
-	}
-
-	name := r.URL.Query().Get("name")
-	if name == "" {
-		sendError(w, http.StatusBadRequest, "name parameter is required")
-		return
-	}
-
-	// Load current config
-	config, err := internal.LoadConfig(cfgPath)
-	if err != nil {
-		sendError(w, http.StatusInternalServerError, fmt.Sprintf("failed to load config: %v", err))
-		return
-	}
-
-	// Find and remove rule mapping
-	found := false
-	for i, m := range config.RuleMappings {
-		if strings.ToLower(m.Name) == strings.ToLower(name) {
-			config.RuleMappings = append(config.RuleMappings[:i], config.RuleMappings[i+1:]...)
-			found = true
-			break
-		}
-	}
-
-	if !found {
-		sendError(w, http.StatusNotFound, "rule mapping not found")
-		return
-	}
-
-	// Save config
-	if err := GlobalConfigManager.SaveConfig(config); err != nil {
-		sendError(w, http.StatusInternalServerError, fmt.Sprintf("failed to save config: %v", err))
-		return
-	}
-
-	sendSuccess(w, "rule mapping deleted", nil)
-}
-
-// ==================== VPN Access Rules APIs ====================
-
-// GetVpnAccessRules returns all VPN access rules
-func GetVpnAccessRulesHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
-		return
-	}
-
-	if len(internal.Global_VpnAccessRules) == 0 {
-		sendSuccess(w, "vpn access rules retrieved", []interface{}{})
-		return
-	}
-
-	sendSuccess(w, "vpn access rules retrieved", internal.Global_VpnAccessRules)
-}
-
-// UpdateVpnAccessRules updates VPN access rules
-func UpdateVpnAccessRulesHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
-		return
-	}
-
-	cfgPath := r.Header.Get("X-Config-Path")
-	if cfgPath == "" {
-		cfgPath = "rules.yaml"
-	}
-
-	// Parse request body
-	var vpnRules []internal.VpnAccessRule
-	body, _ := io.ReadAll(r.Body)
-	if err := json.Unmarshal(body, &vpnRules); err != nil {
-		sendError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %v", err))
-		return
-	}
-
-	// Save config
-	if err := GlobalConfigManager.SaveVpnAccessConfig(vpnRules); err != nil {
-		sendError(w, http.StatusInternalServerError, fmt.Sprintf("failed to save config: %v", err))
-		return
-	}
-
-	// Update global rules
-	internal.Global_VpnAccessRules = vpnRules
-
-	sendSuccess(w, "vpn access rules updated", vpnRules)
-}
-
-// ==================== Backup APIs ====================
-
-// GetBackupList returns a list of backups
-func GetBackupListHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
-		return
-	}
-
-	backups, err := GlobalConfigManager.GetBackupList()
-	if err != nil {
-		sendError(w, http.StatusInternalServerError, fmt.Sprintf("failed to get backup list: %v", err))
-		return
-	}
-
-	sendSuccess(w, "backup list retrieved", backups)
-}
-
-// RestoreBackupHandler restores from a backup
-func RestoreBackupHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
-		return
-	}
-
-	backupFilename := r.URL.Query().Get("filename")
-	if backupFilename == "" {
-		sendError(w, http.StatusBadRequest, "filename parameter is required")
-		return
-	}
-
-	backupPath := filepath.Join(GlobalConfigManager.BackupDirPath, backupFilename)
-
-	if err := GlobalConfigManager.RestoreBackup(backupPath); err != nil {
-		sendError(w, http.StatusInternalServerError, fmt.Sprintf("failed to restore backup: %v", err))
-		return
-	}
-
-	// Reload configs
-	var err error
-	internal.Global_UsersRules, err = reloadUserRules()
-	if err != nil {
-		log.Printf("[api] failed to reload user rules: %v", err)
-	}
-
-	internal.Global_VpnAccessRules, err = reloadVpnAccessRules()
-	if err != nil {
-		log.Printf("[api] failed to reload vpn access rules: %v", err)
-	}
-
-	sendSuccess(w, "backup restored successfully", nil)
+// ConfigDiff shows the difference between two versions
+type ConfigDiff struct {
+	OldFile string `json:"old_file"`
+	NewFile string `json:"new_file"`
+	Diff    string `json:"diff"`
 }
 
 // ==================== Config Export/Import APIs ====================
-
 // ExportConfigHandler exports the entire config as JSON
 func ExportConfigHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -539,17 +67,8 @@ func ExportConfigHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cfgPath := r.Header.Get("X-Config-Path")
-	if cfgPath == "" {
-		cfgPath = "rules.yaml"
-	}
-
-	// Load config to get all data
-	config, err := internal.LoadConfig(cfgPath)
-	if err != nil {
-		sendError(w, http.StatusInternalServerError, fmt.Sprintf("failed to load config: %v", err))
-		return
-	}
+	// Load config from cache
+	config := GlobalConfigManager.GetConfig()
 
 	type ExportData struct {
 		RuleGroups     []internal.RuleGroup     `json:"rule_groups"`
@@ -573,20 +92,373 @@ func ExportConfigHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(exportData)
 }
 
-// Helper function to reload user rules
-func reloadUserRules() (map[string][]internal.Rule, error) {
-	config, err := internal.LoadConfig("rules.yaml")
-	if err != nil {
-		return nil, err
+// ==================== Unified Config View API ====================
+// ConfigViewHandler returns complete config with relationships
+func ConfigViewHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
+		return
 	}
-	return internal.GetUserRulesMapping(config), nil
+
+	cfg := GlobalConfigManager.GetConfig()
+
+	sendSuccess(w, "unified config view", cfg)
 }
 
-// Helper function to reload VPN access rules
-func reloadVpnAccessRules() ([]internal.VpnAccessRule, error) {
-	cfg, err := internal.LoadConfig("rules.yaml")
-	if err != nil {
-		return nil, err
+// ConfigValidateHandler validates a configuration
+func ConfigValidateHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
+		return
 	}
-	return cfg.VpnAccessRules, nil
+
+	var req ConfigPreviewRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		sendError(w, http.StatusBadRequest, fmt.Sprintf("invalid request: %v", err))
+		return
+	}
+
+	// Parse and validate the configuration
+	var cfg internal.Config
+
+	if req.Format == "yaml" {
+		if err := yaml.Unmarshal([]byte(req.Content), &cfg); err != nil {
+			sendError(w, http.StatusBadRequest, fmt.Sprintf("YAML parse error: %v", err))
+			return
+		}
+	} else {
+		if err := json.Unmarshal([]byte(req.Content), &cfg); err != nil {
+			sendError(w, http.StatusBadRequest, fmt.Sprintf("JSON parse error: %v", err))
+			return
+		}
+	}
+
+	// Run validation
+	if err := cfg.Check(); err != nil {
+		sendError(w, http.StatusBadRequest, fmt.Sprintf("validation error: %v", err))
+		return
+	}
+
+	sendSuccess(w, "validation passed", nil)
+}
+
+// ConfigPreviewHandler shows what would change in a configuration
+func ConfigPreviewHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
+		return
+	}
+
+	var req ConfigPreviewRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		sendError(w, http.StatusBadRequest, fmt.Sprintf("invalid request: %v", err))
+		return
+	}
+
+	// Parse new configuration
+	var newConfig internal.Config
+
+	if req.Format == "yaml" {
+		if err := yaml.Unmarshal([]byte(req.Content), &newConfig); err != nil {
+			sendError(w, http.StatusBadRequest, fmt.Sprintf("YAML parse error: %v", err))
+			return
+		}
+	} else {
+		if err := json.Unmarshal([]byte(req.Content), &newConfig); err != nil {
+			sendError(w, http.StatusBadRequest, fmt.Sprintf("JSON parse error: %v", err))
+			return
+		}
+	}
+
+	// Calculate changes
+	oldConfig := GlobalConfigManager.GetConfig()
+	summary := calculateConfigChanges(oldConfig, &newConfig)
+
+	sendSuccess(w, "preview generated", summary)
+}
+
+// ConfigSaveHandler saves a new configuration
+func ConfigSaveHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
+		return
+	}
+
+	var req ConfigPreviewRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		sendError(w, http.StatusBadRequest, fmt.Sprintf("invalid request: %v", err))
+		return
+	}
+
+	// Parse configuration
+	var cfg internal.Config
+
+	if req.Format == "yaml" {
+		if err := yaml.Unmarshal([]byte(req.Content), &cfg); err != nil {
+			sendError(w, http.StatusBadRequest, fmt.Sprintf("YAML parse error: %v", err))
+			return
+		}
+	} else {
+		if err := json.Unmarshal([]byte(req.Content), &cfg); err != nil {
+			sendError(w, http.StatusBadRequest, fmt.Sprintf("JSON parse error: %v", err))
+			return
+		}
+	}
+
+	// Validate
+	if err := cfg.Check(); err != nil {
+		sendError(w, http.StatusBadRequest, fmt.Sprintf("validation error: %v", err))
+		return
+	}
+
+	// Save configuration with backup
+	if err := GlobalConfigManager.SaveConfigWithBackup(&cfg, true); err != nil {
+		sendError(w, http.StatusInternalServerError, fmt.Sprintf("save error: %v", err))
+		return
+	}
+
+	// Update global rules
+	internal.Global_UsersRules = internal.GetUserRulesMapping(&cfg)
+	internal.Global_VpnAccessRules = cfg.VpnAccessRules
+
+	// Reinitialize nftables
+	publicRules := internal.GetPublicRules(&cfg)
+	inputChainRules := internal.GetInputChainRules(&cfg)
+	srcIpSets, inputChainIpSetRules := internal.GetInputChainIpSetRules(&cfg)
+	if err := internal.InitNftables(publicRules, inputChainRules, inputChainIpSetRules, srcIpSets); err != nil {
+		log.Printf("[nft] 初始化失败: %v", err)
+		sendError(w, http.StatusInternalServerError, fmt.Sprintf("nftables init error: %v", err))
+		return
+	}
+
+	sendSuccess(w, "config saved successfully", nil)
+}
+
+// ruleEqual compares two Rule objects for equality
+func ruleEqual(a, b internal.Rule) bool {
+	return a.DestIp == b.DestIp &&
+		a.DestPort == b.DestPort &&
+		a.Protocol == b.Protocol &&
+		a.ToLocal == b.ToLocal &&
+		a.Action == b.Action &&
+		a.SrcIp == b.SrcIp &&
+		a.SrcIpSetName == b.SrcIpSetName
+}
+
+// ruleGroupEqual compares two RuleGroup objects for equality
+func ruleGroupEqual(a, b internal.RuleGroup) bool {
+	if a.Name != b.Name || len(a.Rules) != len(b.Rules) {
+		return false
+	}
+	
+	// Compare each rule
+	for i := range a.Rules {
+		if !ruleEqual(a.Rules[i], b.Rules[i]) {
+			return false
+		}
+	}
+	
+	return true
+}
+
+// ruleMappingEqual compares two RuleMapping objects for equality
+func ruleMappingEqual(a, b internal.RuleMapping) bool {
+	if a.Name != b.Name || a.Type != b.Type || a.RuleGroupRef != b.RuleGroupRef {
+		return false
+	}
+	
+	// Compare SrcIps slices
+	if len(a.SrcIps) != len(b.SrcIps) {
+		return false
+	}
+	srcIpsMap := make(map[string]bool)
+	for _, ip := range a.SrcIps {
+		srcIpsMap[ip] = true
+	}
+	for _, ip := range b.SrcIps {
+		if !srcIpsMap[ip] {
+			return false
+		}
+	}
+	
+	// Compare Users slices
+	if len(a.Users) != len(b.Users) {
+		return false
+	}
+	usersMap := make(map[string]bool)
+	for _, user := range a.Users {
+		usersMap[user] = true
+	}
+	for _, user := range b.Users {
+		if !usersMap[user] {
+			return false
+		}
+	}
+	
+	// Compare SrcIpSet
+	if (a.SrcIpSet == nil) != (b.SrcIpSet == nil) {
+		return false
+	}
+	if a.SrcIpSet != nil && b.SrcIpSet != nil {
+		if a.SrcIpSet.Name != b.SrcIpSet.Name || len(a.SrcIpSet.Ips) != len(b.SrcIpSet.Ips) {
+			return false
+		}
+		ipsMap := make(map[string]bool)
+		for _, ip := range a.SrcIpSet.Ips {
+			ipsMap[ip] = true
+		}
+		for _, ip := range b.SrcIpSet.Ips {
+			if !ipsMap[ip] {
+				return false
+			}
+		}
+	}
+	
+	return true
+}
+
+// vpnAccessRuleEqual compares two VpnAccessRule objects for equality
+func vpnAccessRuleEqual(a, b internal.VpnAccessRule) bool {
+	// Compare Users slices
+	if len(a.Users) != len(b.Users) {
+		return false
+	}
+	usersMap := make(map[string]bool)
+	for _, user := range a.Users {
+		usersMap[user] = true
+	}
+	for _, user := range b.Users {
+		if !usersMap[user] {
+			return false
+		}
+	}
+	
+	// Compare RemoteIPWhiteList slices
+	if len(a.RemoteIPWhiteList) != len(b.RemoteIPWhiteList) {
+		return false
+	}
+	ipMap := make(map[string]bool)
+	for _, ip := range a.RemoteIPWhiteList {
+		ipMap[ip] = true
+	}
+	for _, ip := range b.RemoteIPWhiteList {
+		if !ipMap[ip] {
+			return false
+		}
+	}
+	
+	// Compare TimeRange
+	if (a.TimeRange == nil) != (b.TimeRange == nil) {
+		return false
+	}
+	if a.TimeRange != nil && b.TimeRange != nil {
+		// Compare Start
+		if (a.TimeRange.Start == nil) != (b.TimeRange.Start == nil) {
+			return false
+		}
+		if a.TimeRange.Start != nil && b.TimeRange.Start != nil {
+			if a.TimeRange.Start.Hour != b.TimeRange.Start.Hour || a.TimeRange.Start.Minute != b.TimeRange.Start.Minute {
+				return false
+			}
+		}
+		// Compare End
+		if (a.TimeRange.End == nil) != (b.TimeRange.End == nil) {
+			return false
+		}
+		if a.TimeRange.End != nil && b.TimeRange.End != nil {
+			if a.TimeRange.End.Hour != b.TimeRange.End.Hour || a.TimeRange.End.Minute != b.TimeRange.End.Minute {
+				return false
+			}
+		}
+	}
+	
+	return true
+}
+
+// getVpnAccessRuleKey generates a unique key for a VPN access rule based on its users
+func getVpnAccessRuleKey(rule internal.VpnAccessRule) string {
+	users := make([]string, len(rule.Users))
+	copy(users, rule.Users)
+	return fmt.Sprintf("%v", users)
+}
+
+// calculateConfigChanges compares two configurations and returns a summary
+func calculateConfigChanges(oldCfg, newCfg *internal.Config) ConfigChangesSummary {
+	summary := ConfigChangesSummary{
+		Changes: make([]string, 0),
+	}
+
+	// Rule groups changes
+	oldRuleGroupMap := make(map[string]internal.RuleGroup)
+	for _, rg := range oldCfg.RuleGroups {
+		oldRuleGroupMap[rg.Name] = rg
+	}
+
+	for _, rg := range newCfg.RuleGroups {
+		if old, exists := oldRuleGroupMap[rg.Name]; !exists {
+			summary.Added++
+			summary.Changes = append(summary.Changes, fmt.Sprintf("Added rule group: %s (%d rules)", rg.Name, len(rg.Rules)))
+		} else if !ruleGroupEqual(old, rg) {
+			summary.Modified++
+			summary.Changes = append(summary.Changes, fmt.Sprintf("Modified rule group: %s (%d → %d rules)", rg.Name, len(old.Rules), len(rg.Rules)))
+		}
+		delete(oldRuleGroupMap, rg.Name)
+	}
+
+	for name := range oldRuleGroupMap {
+		summary.Deleted++
+		summary.Changes = append(summary.Changes, fmt.Sprintf("Deleted rule group: %s", name))
+	}
+
+	// Rule mappings changes
+	oldMappingMap := make(map[string]internal.RuleMapping)
+	for _, m := range oldCfg.RuleMappings {
+		oldMappingMap[m.Name] = m
+	}
+
+	for _, m := range newCfg.RuleMappings {
+		if old, exists := oldMappingMap[m.Name]; !exists {
+			summary.Added++
+			summary.Changes = append(summary.Changes, fmt.Sprintf("Added mapping: %s (%s)", m.Name, m.Type))
+		} else if !ruleMappingEqual(old, m) {
+			summary.Modified++
+			summary.Changes = append(summary.Changes, fmt.Sprintf("Modified mapping: %s", m.Name))
+		}
+		delete(oldMappingMap, m.Name)
+	}
+
+	for name := range oldMappingMap {
+		summary.Deleted++
+		summary.Changes = append(summary.Changes, fmt.Sprintf("Deleted mapping: %s", name))
+	}
+
+	// VPN access rules changes
+	oldVpnRulesMap := make(map[string]internal.VpnAccessRule)
+	for _, rule := range oldCfg.VpnAccessRules {
+		key := getVpnAccessRuleKey(rule)
+		oldVpnRulesMap[key] = rule
+	}
+
+	for _, rule := range newCfg.VpnAccessRules {
+		key := getVpnAccessRuleKey(rule)
+		if old, exists := oldVpnRulesMap[key]; !exists {
+			summary.Added++
+			userList := fmt.Sprintf("%v", rule.Users)
+			summary.Changes = append(summary.Changes, fmt.Sprintf("Added VPN access rule for users: %s", userList))
+		} else if !vpnAccessRuleEqual(old, rule) {
+			summary.Modified++
+			userList := fmt.Sprintf("%v", rule.Users)
+			summary.Changes = append(summary.Changes, fmt.Sprintf("Modified VPN access rule for users: %s", userList))
+		}
+		delete(oldVpnRulesMap, key)
+	}
+
+	for key := range oldVpnRulesMap {
+		summary.Deleted++
+		rule := oldVpnRulesMap[key]
+		userList := fmt.Sprintf("%v", rule.Users)
+		summary.Changes = append(summary.Changes, fmt.Sprintf("Deleted VPN access rule for users: %s", userList))
+	}
+
+	return summary
 }

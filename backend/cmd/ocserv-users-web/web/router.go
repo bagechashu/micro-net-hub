@@ -16,32 +16,19 @@ func RunWebServer(addr string) {
 	// index
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/partials/users.html", usersPartialHandler)
-	http.HandleFunc("/partials/rule-groups.html", RuleGroupsPartialHandler)
-	http.HandleFunc("/partials/rule-mappings.html", RuleMappingsPartialHandler)
-	http.HandleFunc("/partials/vpn-access.html", VpnAccessPartialHandler)
-	http.HandleFunc("/partials/backups.html", BackupsPartialHandler)
 
-	// Config Management APIs
+	// config pages
 	http.HandleFunc("/config.html", configHandler)
-	http.HandleFunc("/api/rule-groups", GetRuleGroupsHandler)
-	http.HandleFunc("/api/rule-groups/create", CreateRuleGroupHandler)
-	http.HandleFunc("/api/rule-groups/update", UpdateRuleGroupHandler)
-	http.HandleFunc("/api/rule-groups/delete", DeleteRuleGroupHandler)
-
-	http.HandleFunc("/api/rule-mappings", GetRuleMappingsHandler)
-	http.HandleFunc("/api/rule-mappings/create", CreateRuleMappingHandler)
-	http.HandleFunc("/api/rule-mappings/update", UpdateRuleMappingHandler)
-	http.HandleFunc("/api/rule-mappings/delete", DeleteRuleMappingHandler)
-
-	http.HandleFunc("/api/vpn-access-rules", GetVpnAccessRulesHandler)
-	http.HandleFunc("/api/vpn-access-rules/update", UpdateVpnAccessRulesHandler)
-
-	// Backup APIs
-	http.HandleFunc("/api/backups", GetBackupListHandler)
-	http.HandleFunc("/api/backups/restore", RestoreBackupHandler)
+	http.HandleFunc("/config-editor.html", configEditorPageHandler)
 
 	// Export APIs
 	http.HandleFunc("/api/config/export", ExportConfigHandler)
+
+	// Unified Config APIs (Phase 1 & 2)
+	http.HandleFunc("/api/config/view", ConfigViewHandler)
+	http.HandleFunc("/api/config/validate", ConfigValidateHandler)
+	http.HandleFunc("/api/config/preview", ConfigPreviewHandler)
+	http.HandleFunc("/api/config/save", ConfigSaveHandler)
 
 	go func() {
 		log.Printf("[web] 服务运行中: http://%s", addr)

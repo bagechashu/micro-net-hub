@@ -3,6 +3,7 @@
 {{ define "content" }}
 <section>
   <h3>在线用户</h3>
+  <div class="table-section" style="margin-bottom: 2em;">
   <table class="pure-table pure-table-bordered pure-table-striped" width="100%">
     <thead>
       <tr>
@@ -30,21 +31,20 @@
       </tr>
     </tbody>
   </table>
+  </div>
 </section>
 {{ end }}
 
 {{ define "script" }}
 <script>
 (() => {
-  const app = Stimulus.Application.start();
-
   // UTC 时间格式化
-  app.register("utc", class extends Stimulus.Controller {
+  window.App.register("utc", class extends Stimulus.Controller {
     connect() {
       const raw = this.element.dataset.utc;
       if (!raw) return;
       const d = new Date(raw.replace(" ", "T") + "Z");
-      if (!isNaN(d)) this.element.textContent = d.toLocaleString("zh-CN");
+      if (!isNaN(d)) this.element.textContent = d.toLocaleString();
     }
   });
 })();
