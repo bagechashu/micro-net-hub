@@ -1,7 +1,7 @@
 {{ define "title" }}配置管理 - VPN 规则{{ end }}
 
 {{ define "content" }}
-<section>
+<section data-controller="config">
   <h3>VPN 规则配置管理</h3>
 
   <div style="margin: 1em 0;">
@@ -17,15 +17,15 @@
   </div>
 
   <!-- Loading indicator -->
-  <div id="loading" style="text-align: center; color: #999; display: none; padding: 2em;">
+  <div data-config-target="loading" style="text-align: center; color: #999; display: none; padding: 2em;">
     加载中...
   </div>
 
   <!-- Error message -->
-  <div id="error" style="color: #d32f2f; padding: 1em; display: none; background: #ffebee; border-radius: 4px; margin-bottom: 1em;"></div>
+  <div data-config-target="error" style="color: #d32f2f; padding: 1em; display: none; background: #ffebee; border-radius: 4px; margin-bottom: 1em;"></div>
 
   <!-- Config data container -->
-  <div id="config-container">
+  <div data-config-target="container">
 
     <!-- Rule Groups Table -->
     <div class="table-section" style="margin-bottom: 2em;">
@@ -38,7 +38,7 @@
               <th>规则详情</th>
             </tr>
           </thead>
-          <tbody id="table-rule-groups">
+          <tbody data-config-target="ruleGroups">
             <tr>
               <td colspan="2" style="text-align: center; color: #999;">加载中...</td>
             </tr>
@@ -60,7 +60,7 @@
               <th>应用于</th>
             </tr>
           </thead>
-          <tbody id="table-rule-mappings">
+          <tbody data-config-target="ruleMappings">
             <tr>
               <td colspan="4" style="text-align: center; color: #999;">加载中...</td>
             </tr>
@@ -81,7 +81,7 @@
               <th>时间范围</th>
             </tr>
           </thead>
-          <tbody id="table-vpn-access">
+          <tbody data-config-target="vpnAccess">
             <tr>
               <td colspan="3" style="text-align: center; color: #999;">加载中...</td>
             </tr>
@@ -94,12 +94,12 @@
 </section>
 
 <!-- Rule Detail Modal -->
-<div id="modal-rule-detail" class="modal" hidden aria-hidden="true">
+<div data-controller="modal" data-modal-target="container" class="modal" hidden aria-hidden="true">
   <div class="modal__container">
-    <div class="modal__title"></div>
-    <div class="modal__body" style="max-height: 400px; overflow-y: auto;"></div>
+    <div data-modal-target="title" class="modal__title"></div>
+    <div data-modal-target="body" class="modal__body" style="max-height: 400px; overflow-y: auto;"></div>
     <div style="margin-top: 1rem;">
-      <button class="pure-button pure-button-secondary" onclick="this.closest('.modal').hidden = true">关闭</button>
+      <button class="pure-button pure-button-secondary" data-action="click->modal#close">关闭</button>
     </div>
   </div>
 </div>
@@ -108,178 +108,226 @@
 
 {{ define "script" }}
 <script>
-document.addEventListener('DOMContentLoaded', async () => {
-  const container = document.getElementById('config-container');
-  const loading = document.getElementById('loading');
-  const error = document.getElementById('error');
+(() => {
+  // Config Controller - 管理配置数据加载和表格渲染
+  window.App.register("config", class extends Stimulus.Controller {
+    static targets = ["loading", "error", "container", "ruleGroups", "ruleMappings", "vpnAccess"]
 
-  try {
-    loading.style.display = 'block';
-    const response = await fetch('/api/config/view');
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+    connect() {
+      this.configData = null;
+      this.loadConfig();
     }
 
-    const result = await response.json();
-    if (result.code !== 0) {
-      throw new Error(result.message);
+    async loadConfig() {
+      try {
+        this.showLoading();
+        const response = await fetch('/api/config/view');
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const result = await response.json();
+        if (result.code !== 0) {
+          throw new Error(result.message);
+        }
+
+        this.configData = result.data;
+        this.renderRuleGroups(this.configData.rule_groups);
+        this.renderRuleMappings(this.configData.rule_mappings);
+        this.renderVpnAccess(this.configData.vpn_access_rules);
+        
+        this.hideLoading();
+      } catch (err) {
+        console.error('Failed to load config:', err);
+        this.showError(`加载失败: ${err.message}`);
+      }
     }
 
-    const config = result.data;
+    renderRuleGroups(ruleGroups) {
+      if (!ruleGroups || ruleGroups.length === 0) {
+        this.ruleGroupsTarget.innerHTML = '<tr><td colspan="2" style="text-align: center; color: #999;">暂无规则组</td></tr>';
+        return;
+      }
 
-    // Render tables
-    renderRuleGroupsTable(config.rule_groups);
-    renderRuleMappingsTable(config.rule_mappings);
-    renderVpnAccessTable(config.vpn_access_rules);
+      const rows = ruleGroups.map(item => {
+        const { name, rules } = item;
+        const ruleSummary = rules ? rules
+          .slice(0, 3)
+          .map((r) => `${r.dest_ip}${r.dest_port ? ':'+r.dest_port : ''}/${r.protocol || 'tcp'}/${r.action || 'accept'}`)
+          .join('; ') + (rules.length > 3 ? `... (total ${rules.length} rules)` : '') : '-';
 
-    loading.style.display = 'none';
-  } catch (err) {
-    console.error('Failed to load config:', err);
-    error.textContent = `加载失败: ${err.message}`;
-    error.style.display = 'block';
-    loading.style.display = 'none';
-  }
-});
-
-function renderRuleGroupsTable(ruleGroups) {
-  const tbody = document.getElementById('table-rule-groups');
-
-  if (!ruleGroups || ruleGroups.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: #999;">暂无规则组</td></tr>';
-    return;
-  }
-
-  const rows = ruleGroups.map(item => {
-    const { name, rules } = item;
-    const ruleSummary = rules ? rules
-      .slice(0,3)
-      .map((r) => `${r.dest_ip}${r.dest_port ? ':'+r.dest_port : ''}/${r.protocol || 'tcp'}/${r.action || 'accept'}`)
-      .join('; ') + (rules.length > 3 ? `... (total ${rules.length} rules)` : '') : '-';
-
-    return `
-      <tr>
-        <td><strong>${escapeHtml(name)}</strong></td>
-        <td>
-          <span style="color: #666;">${escapeHtml(ruleSummary)}</span>
-          ${rules.length > 0 ? `<br><small><a href="#" onclick="showRuleDetail('${escapeHtml(name)}', ${JSON.stringify(rules).replace(/"/g, '&quot;')}); return false;">查看全部</a></small>` : ''}
-        </td>
-      </tr>
-    `;
-  });
-
-  tbody.innerHTML = rows.join('');
-}
-
-function renderRuleMappingsTable(ruleMappings) {
-  const tbody = document.getElementById('table-rule-mappings');
-
-  if (!ruleMappings || ruleMappings.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #999;">暂无规则映射</td></tr>';
-    return;
-  }
-
-  const rows = ruleMappings.map(item => {
-    const { name, mapping_type, rule_group_ref, users, src_ips, src_ip_set } = item;
-    let target = '-';
-    switch (mapping_type) {
-      case 'users':
-        target = users ? users.join(', ') : '-';
-        break;
-      case 'public':
-        target = 'all users';
-        break;
-      case 'input_chain':
-        target = src_ips ? src_ips.join(', ') : '-';
-        break;
-      case 'input_chain_ip_set':
-          target = src_ip_set ? `${src_ip_set.name} [${src_ip_set.ips.join(', ')}]` : '-';
-          break;
-      default:
-        target = '-';
-    }
-
-    return `
-      <tr>
-        <td><strong>${escapeHtml(name || '-')}</strong></td>
-        <td>${escapeHtml(mapping_type)}</td>
-        <td>${escapeHtml(rule_group_ref)}</td>
-        <td>${escapeHtml(target)}</td>
-      </tr>
-    `;
-  });
-
-  tbody.innerHTML = rows.join('');
-}
-
-function renderVpnAccessTable(vpnRules) {
-  const tbody = document.getElementById('table-vpn-access');
-
-  if (!vpnRules || vpnRules.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #999;">暂无 VPN 访问规则</td></tr>';
-    return;
-  }
-
-  const rows = vpnRules.map((rule, idx) => {
-    const users = rule.users ? rule.users.join(', ') : '-';
-    const ips = rule.remote_ip_whitelist ? rule.remote_ip_whitelist.join(', ') : '-';
-    const timeRange = rule.time_range && rule.time_range.start && rule.time_range.end
-      ? `${rule.time_range.start} - ${rule.time_range.end}`
-      : '全天';
-
-    return `
-      <tr>
-        <td>${escapeHtml(users)}</td>
-        <td>${escapeHtml(ips)}</td>
-        <td>${escapeHtml(timeRange)}</td>
-      </tr>
-    `;
-  });
-
-  tbody.innerHTML = rows.join('');
-}
-
-function showRuleDetail(title, rules) {
-  const modal = document.getElementById('modal-rule-detail');
-  const titleEl = modal.querySelector('.modal__title');
-  const bodyEl = modal.querySelector('.modal__body');
-
-  titleEl.textContent = `规则详情: ${title}`;
-
-  const html = `
-    <table class="pure-table pure-table-bordered pure-table-striped" width="100%">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>目标 IP</th>
-          <th>协议</th>
-          <th>端口</th>
-          <th>动作</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${rules.map((r, i) => `
+        return `
           <tr>
-            <td>${i + 1}</td>
-            <td>${escapeHtml(r.dest_ip)}</td>
-            <td>${escapeHtml(r.protocol || 'tcp')}</td>
-            <td>${r.dest_port ? r.dest_port : '-'}</td>
-            <td>${escapeHtml(r.action || 'accept')}</td>
+            <td><strong>${this.escapeHtml(name)}</strong></td>
+            <td>
+              <span style="color: #666;">${this.escapeHtml(ruleSummary)}</span>
+              ${rules.length > 0 ? `<br><small><a href="#" data-action="click->config#showRuleDetail" data-config-group-name-param="${this.escapeHtml(name)}">查看全部</a></small>` : ''}
+            </td>
           </tr>
-        `).join('')}
-      </tbody>
-    </table>
-  `;
+        `;
+      });
 
-  bodyEl.innerHTML = html;
-  modal.removeAttribute('hidden');
-  modal.setAttribute('aria-hidden', 'false');
-}
+      this.ruleGroupsTarget.innerHTML = rows.join('');
+    }
 
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
+    renderRuleMappings(ruleMappings) {
+      if (!ruleMappings || ruleMappings.length === 0) {
+        this.ruleMappingsTarget.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #999;">暂无规则映射</td></tr>';
+        return;
+      }
+
+      const rows = ruleMappings.map(item => {
+        const { name, mapping_type, rule_group_ref, users, src_ips, src_ip_set } = item;
+        let target = '-';
+        switch (mapping_type) {
+          case 'users':
+            target = users ? users.join(', ') : '-';
+            break;
+          case 'public':
+            target = 'all users';
+            break;
+          case 'input_chain':
+            target = src_ips ? src_ips.join(', ') : '-';
+            break;
+          case 'input_chain_ip_set':
+            target = src_ip_set ? `${src_ip_set.name} [${src_ip_set.ips.join(', ')}]` : '-';
+            break;
+          default:
+            target = '-';
+        }
+
+        return `
+          <tr>
+            <td><strong>${this.escapeHtml(name || '-')}</strong></td>
+            <td>${this.escapeHtml(mapping_type)}</td>
+            <td>${this.escapeHtml(rule_group_ref)}</td>
+            <td>${this.escapeHtml(target)}</td>
+          </tr>
+        `;
+      });
+
+      this.ruleMappingsTarget.innerHTML = rows.join('');
+    }
+
+    renderVpnAccess(vpnRules) {
+      if (!vpnRules || vpnRules.length === 0) {
+        this.vpnAccessTarget.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #999;">暂无 VPN 访问规则</td></tr>';
+        return;
+      }
+
+      const rows = vpnRules.map((rule) => {
+        const users = rule.users ? rule.users.join(', ') : '-';
+        const ips = rule.remote_ip_whitelist ? rule.remote_ip_whitelist.join(', ') : '-';
+        const timeRange = rule.time_range && rule.time_range.start && rule.time_range.end
+          ? `${rule.time_range.start} - ${rule.time_range.end}`
+          : '全天';
+
+        return `
+          <tr>
+            <td>${this.escapeHtml(users)}</td>
+            <td>${this.escapeHtml(ips)}</td>
+            <td>${this.escapeHtml(timeRange)}</td>
+          </tr>
+        `;
+      });
+
+      this.vpnAccessTarget.innerHTML = rows.join('');
+    }
+
+    showRuleDetail(event) {
+      event.preventDefault();
+      const groupName = event.params.groupName;
+      
+      if (!this.configData || !this.configData.rule_groups) {
+        console.error('Config data not loaded');
+        return;
+      }
+
+      const ruleGroup = this.configData.rule_groups.find(g => g.name === groupName);
+      if (!ruleGroup || !ruleGroup.rules) {
+        console.error('Rule group not found:', groupName);
+        return;
+      }
+
+      const modal = document.querySelector('[data-controller="modal"]');
+      const modalController = this.application.getControllerForElementAndIdentifier(modal, 'modal');
+      
+      if (modalController) {
+        modalController.show(groupName, ruleGroup.rules);
+      }
+    }
+
+    showLoading() {
+      this.loadingTarget.style.display = 'block';
+      this.errorTarget.style.display = 'none';
+    }
+
+    hideLoading() {
+      this.loadingTarget.style.display = 'none';
+    }
+
+    showError(message) {
+      this.errorTarget.textContent = message;
+      this.errorTarget.style.display = 'block';
+      this.loadingTarget.style.display = 'none';
+    }
+
+    escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  });
+
+  // Modal Controller - 管理模态框显示
+  window.App.register("modal", class extends Stimulus.Controller {
+    static targets = ["container", "title", "body"]
+
+    show(title, rules) {
+      this.titleTarget.textContent = `规则详情: ${title}`;
+
+      const html = `
+        <table class="pure-table pure-table-bordered pure-table-striped" width="100%">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>目标 IP</th>
+              <th>协议</th>
+              <th>端口</th>
+              <th>动作</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rules.map((r, i) => `
+              <tr>
+                <td>${i + 1}</td>
+                <td>${this.escapeHtml(r.dest_ip)}</td>
+                <td>${this.escapeHtml(r.protocol || 'tcp')}</td>
+                <td>${r.dest_port ? r.dest_port : '-'}</td>
+                <td>${this.escapeHtml(r.action || 'accept')}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+
+      this.bodyTarget.innerHTML = html;
+      this.containerTarget.removeAttribute('hidden');
+      this.containerTarget.setAttribute('aria-hidden', 'false');
+    }
+
+    close() {
+      this.containerTarget.setAttribute('hidden', '');
+      this.containerTarget.setAttribute('aria-hidden', 'true');
+    }
+
+    escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  });
+})();
 </script>
 {{ end }}
