@@ -3,39 +3,107 @@
     {
       "name": "admin_access",
       "rules": [
-        { "dest_ip": "10.12.0.11/32", "protocol": "tcp", "dest_port": 22 },
-        { "dest_ip": "10.12.0.216", "protocol": "tcp", "dest_port": 22 },
-        { "dest_ip": "10.12.0.0/16", "protocol": "icmp", "dest_port": 22 },
-        { "dest_ip": "8.8.4.4", "dest_port": 53, "action": "drop" }
+        {
+          "dest_ip": "10.12.0.11/32",
+          "dest_port": 22,
+          "protocol": "tcp",
+          "action": "accept"
+        },
+        {
+          "dest_ip": "10.12.0.216",
+          "dest_port": 22,
+          "protocol": "tcp",
+          "action": "accept"
+        },
+        {
+          "dest_ip": "10.12.0.0/16",
+          "dest_port": 22,
+          "protocol": "icmp",
+          "action": "accept"
+        },
+        {
+          "dest_ip": "8.8.4.4",
+          "dest_port": 53,
+          "protocol": "tcp",
+          "action": "drop"
+        }
       ]
     },
     {
       "name": "user_network",
-      "rules": [{ "dest_ip": "10.12.0.0/16", "protocol": "tcp" }]
+      "rules": [
+        {
+          "dest_ip": "10.12.0.0/16",
+          "protocol": "tcp",
+          "action": "accept"
+        }
+      ]
     },
     {
       "name": "dev_rules",
       "rules": [
-        { "dest_ip": "192.168.1.0/24", "protocol": "tcp", "dest_port": 8080 },
-        { "dest_ip": "192.168.2.0/24", "protocol": "udp", "dest_port": 53 }
+        {
+          "dest_ip": "192.168.1.0/24",
+          "dest_port": 8080,
+          "protocol": "tcp",
+          "action": "accept"
+        },
+        {
+          "dest_ip": "192.168.2.0/24",
+          "dest_port": 53,
+          "protocol": "udp",
+          "action": "accept"
+        }
       ]
     },
     {
       "name": "public_dns",
       "rules": [
-        { "dest_ip": "8.8.8.8", "protocol": "tcp", "dest_port": 53 },
-        { "dest_ip": "1.1.1.0/24", "protocol": "udp" }
+        {
+          "dest_ip": "8.8.8.8",
+          "dest_port": 53,
+          "protocol": "tcp",
+          "action": "accept"
+        },
+        {
+          "dest_ip": "1.1.1.0/24",
+          "protocol": "udp",
+          "action": "accept"
+        }
       ]
     },
     {
       "name": "input_rules",
-      "rules": [{ "dest_ip": "10.12.0.11", "protocol": "tcp", "dest_port": 443 }]
+      "rules": [
+        {
+          "dest_ip": "10.12.0.11",
+          "dest_port": 443,
+          "protocol": "tcp",
+          "action": "accept"
+        }
+      ]
     },
     {
       "name": "allow_access_ocserv",
       "rules": [
-        { "dest_ip": "0.0.0.0/0", "protocol": "tcp", "dest_port": 443 },
-        { "dest_ip": "0.0.0.0/0", "protocol": "udp", "dest_port": 443 }
+        {
+          "dest_ip": "0.0.0.0/0",
+          "dest_port": 443,
+          "protocol": "tcp",
+          "action": "accept"
+        },
+        {
+          "dest_ip": "0.0.0.0/0",
+          "dest_port": 443,
+          "protocol": "udp",
+          "action": "accept"
+        },
+        {
+          "dest_ip": "0.0.0.0/0",
+          "dest_port": 8080,
+          "protocol": "tcp",
+          "action": "accept"
+        }
       ]
     }
   ],
@@ -43,19 +111,29 @@
     {
       "name": "admins",
       "mapping_type": "users",
-      "users": ["user1", "admin1"],
+      "users": [
+        "user1",
+        "admin1"
+      ],
       "rule_group_ref": "admin_access"
     },
     {
       "name": "developers",
       "mapping_type": "users",
-      "users": ["user1", "user2", "dev1", "dev2"],
+      "users": [
+        "user1",
+        "user2",
+        "dev1",
+        "dev2"
+      ],
       "rule_group_ref": "user_network"
     },
     {
       "name": "testers",
       "mapping_type": "users",
-      "users": ["tester1"],
+      "users": [
+        "tester1"
+      ],
       "rule_group_ref": "dev_rules"
     },
     {
@@ -66,7 +144,9 @@
     {
       "name": "input",
       "mapping_type": "input_chain",
-      "src_ips": ["10.12.0.0/16"],
+      "src_ips": [
+        "10.12.0.0/16"
+      ],
       "rule_group_ref": "input_rules"
     },
     {
@@ -74,9 +154,38 @@
       "mapping_type": "input_chain_ip_set",
       "src_ip_set": {
         "name": "allow_access_ocserv",
-        "ips": ["0.0.0.0/0"]
+        "ips": [
+          "0.0.0.0/0"
+        ]
       },
       "rule_group_ref": "allow_access_ocserv"
+    }
+  ],
+  "vpn_access_rules": [
+    {
+      "users": [
+        "user1",
+        "user2"
+      ],
+      "remote_ip_whitelist": [
+        "1.2.3.4"
+      ],
+      "time_range": {
+        "start": "08:00",
+        "end": "12:00"
+      }
+    },
+    {
+      "users": [
+        "user1"
+      ],
+      "remote_ip_whitelist": [
+        "0.0.0.0/0"
+      ],
+      "time_range": {
+        "start": "08:00",
+        "end": "20:00"
+      }
     }
   ]
 }

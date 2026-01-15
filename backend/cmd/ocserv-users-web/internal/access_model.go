@@ -16,14 +16,14 @@ var (
 // TimeRange defines a daily time range in HH:MM format, e.g. {"start":"08:00","end":"18:00"}
 // It matches time-of-day and supports ranges that wrap over midnight (e.g., 22:00-06:00).
 type TimeRange struct {
-	Start *TimeOfDay `json:"start,omitempty"`
-	End   *TimeOfDay `json:"end,omitempty"`
+	Start *TimeOfDay `json:"start,omitempty" yaml:"start,omitempty"`
+	End   *TimeOfDay `json:"end,omitempty" yaml:"end,omitempty"`
 }
 
 // TimeOfDay represents a time-of-day in 24-hour HH:MM format (hours 0-23).
 type TimeOfDay struct {
-	Hour   int `json:"-"`
-	Minute int `json:"-"`
+	Hour   int `json:"-" yaml:"-"`
+	Minute int `json:"-" yaml:"-"`
 }
 
 // String returns HH:MM
@@ -47,6 +47,21 @@ func (t *TimeOfDay) parse(s string) error {
 	return nil
 }
 
+// MarshalJSON implements json.Marshaler
+func (t TimeOfDay) MarshalJSON() ([]byte, error) {
+	return json.Marshal(t.String())
+}
+
+// MarshalText implements encoding.TextMarshaler for YAML
+func (t TimeOfDay) MarshalText() ([]byte, error) {
+	return []byte(t.String()), nil
+}
+
+// MarshalYAML implements yaml.Marshaler for gopkg.in/yaml.v3
+func (t TimeOfDay) MarshalYAML() (interface{}, error) {
+	return t.String(), nil
+}
+
 // UnmarshalJSON implements json.Unmarshaler
 func (t *TimeOfDay) UnmarshalJSON(b []byte) error {
 	var s string
@@ -56,17 +71,12 @@ func (t *TimeOfDay) UnmarshalJSON(b []byte) error {
 	return t.parse(s)
 }
 
-// MarshalJSON implements json.Marshaler
-func (t TimeOfDay) MarshalJSON() ([]byte, error) {
-	return json.Marshal(t.String())
-}
-
 // UnmarshalText for yaml
 func (t *TimeOfDay) UnmarshalText(b []byte) error {
 	return t.parse(string(b))
 }
 
-// UnmarshalYAML for sigs.k8s.io/yaml
+// UnmarshalYAML for gopkg.in/yaml.v3
 func (t *TimeOfDay) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var s string
 	if err := unmarshal(&s); err != nil {
@@ -106,9 +116,9 @@ func (tr TimeRange) Contains(now time.Time) (bool, error) {
 
 // VpnAccessRule describes access constraints for a set of users.
 type VpnAccessRule struct {
-	Users             []string   `json:"users,omitempty"`
-	RemoteIPWhiteList []string   `json:"remote_ip_whitelist,omitempty"`
-	TimeRange         *TimeRange `json:"time_range,omitempty"` // e.g. "08:00-18:00"
+	Users             []string   `json:"users,omitempty" yaml:"users,omitempty"`
+	RemoteIPWhiteList []string   `json:"remote_ip_whitelist,omitempty" yaml:"remote_ip_whitelist,omitempty"`
+	TimeRange         *TimeRange `json:"time_range,omitempty" yaml:"time_range,omitempty"` // e.g. "08:00-18:00"
 }
 
 // matchesUser checks whether username is listed in rule.Users (case-insensitive)

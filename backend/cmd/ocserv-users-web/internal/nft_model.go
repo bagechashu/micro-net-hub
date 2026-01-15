@@ -11,34 +11,34 @@ var (
 )
 
 type Rule struct {
-	DestIp   string       `json:"dest_ip,omitempty"`
-	DestPort uint16       `json:"dest_port,omitempty"`
-	Protocol ProtocolType `json:"protocol,omitempty"` // tcp | udp | icmp, 默认 tcp
-	ToLocal  bool         `json:"to_local,omitempty"` // 是否访问宿主机本地服务, 默认 false
-	Action   ActionType   `json:"action,omitempty"`   // accept | drop，默认 accept
+	DestIp   string       `json:"dest_ip,omitempty" yaml:"dest_ip,omitempty"`
+	DestPort uint16       `json:"dest_port,omitempty" yaml:"dest_port,omitempty"`
+	Protocol ProtocolType `json:"protocol,omitempty" yaml:"protocol,omitempty"` // tcp | udp | icmp, 默认 tcp
+	ToLocal  bool         `json:"to_local,omitempty" yaml:"to_local,omitempty"` // 是否访问宿主机本地服务, 默认 false
+	Action   ActionType   `json:"action,omitempty" yaml:"action,omitempty"`     // accept | drop，默认 accept
 
 	// SrcIp, SrcIpSetName 默认不配置, 通过 RuleMapping 去补充
-	SrcIp        string `json:"src_ip,omitempty"`
-	SrcIpSetName string `json:"src_ip_set_name,omitempty"`
+	SrcIp        string `json:"src_ip,omitempty" yaml:"src_ip,omitempty"`
+	SrcIpSetName string `json:"src_ip_set_name,omitempty" yaml:"src_ip_set_name,omitempty"`
 }
 
 type RuleGroup struct {
-	Name  string `json:"name"`
-	Rules []Rule `json:"rules,omitempty"`
+	Name  string `json:"name" yaml:"name"`
+	Rules []Rule `json:"rules,omitempty" yaml:"rules,omitempty"`
 }
 
 type SrcIpSet struct {
-	Name string   `json:"name,omitempty"`
-	Ips  []string `json:"ips,omitempty"`
+	Name string   `json:"name,omitempty" yaml:"name,omitempty"`
+	Ips  []string `json:"ips,omitempty" yaml:"ips,omitempty"`
 }
 
 type RuleMapping struct {
-	Name         string       `json:"name,omitempty"`
-	Type         MappingType  `json:"mapping_type"` // [users | public | input_chain | input_chain_ip_set]
-	SrcIps       []string     `json:"src_ips,omitempty"`
-	SrcIpSet     *SrcIpSet    `json:"src_ip_set,omitempty"`
-	Users        []string     `json:"users,omitempty"`
-	RuleGroupRef string       `json:"rule_group_ref,omitempty"` // 引用的规则组名称
+	Name         string       `json:"name,omitempty" yaml:"name,omitempty"`
+	Type         MappingType  `json:"mapping_type" yaml:"mapping_type"` // [users | public | input_chain | input_chain_ip_set]
+	SrcIps       []string     `json:"src_ips,omitempty" yaml:"src_ips,omitempty"`
+	SrcIpSet     *SrcIpSet    `json:"src_ip_set,omitempty" yaml:"src_ip_set,omitempty"`
+	Users        []string     `json:"users,omitempty" yaml:"users,omitempty"`
+	RuleGroupRef string       `json:"rule_group_ref,omitempty" yaml:"rule_group_ref,omitempty"` // 引用的规则组名称
 }
 
 type ProtocolType string

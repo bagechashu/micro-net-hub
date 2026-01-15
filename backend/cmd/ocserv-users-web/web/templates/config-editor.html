@@ -39,7 +39,7 @@
         <button class="pure-button pure-button-primary" id="btn-save" disabled style="width: 100%;">
           💾 保存变更
         </button>
-        <a href="/config" class="pure-button pure-button-secondary" style="margin-top: 0.5em; width: 100%; text-align: center; display: block;">
+        <a href="/config.html" class="pure-button pure-button-secondary" style="margin-top: 0.5em; width: 100%; text-align: center; display: block;">
           ← 返回查看
         </a>
       </div>
@@ -204,7 +204,7 @@ async function saveConfig() {
 
     if (result.code === 0) {
       alert('配置已保存！');
-      window.location.href = '/config';
+      window.location.href = '/config.html';
     } else {
       alert('保存失败: ' + result.message);
     }
@@ -253,6 +253,12 @@ document.getElementById('btn-format-yaml')?.addEventListener('click', async () =
     alert('格式化失败: ' + err.message);
   }
 });
+
+// Validate button
+document.getElementById('btn-validate')?.addEventListener('click', validateConfig);
+
+// Save button
+document.getElementById('btn-save')?.addEventListener('click', saveConfig);
 
 function escapeHtml(text) {
   const div = document.createElement('div');

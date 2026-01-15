@@ -8,7 +8,7 @@ import (
 	"ocserv-users/internal"
 	"time"
 
-	"sigs.k8s.io/yaml"
+	"gopkg.in/yaml.v3"
 )
 
 func configHandler(w http.ResponseWriter, r *http.Request) {

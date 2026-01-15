@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -10,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"sigs.k8s.io/yaml"
+	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
@@ -247,18 +248,26 @@ func (cm *ConfigManager) SaveConfigWithBackup(config *Config, createBackup bool)
 
 	switch ext {
 	case ".yaml", ".yml":
-		// Use YAML marshaling with proper ordering
-		data, err = yaml.Marshal(config)
+		// Use YAML marshaling with proper ordering and 2-space indentation
+		var buf bytes.Buffer
+		encoder := yaml.NewEncoder(&buf)
+		encoder.SetIndent(2)
+		if err = encoder.Encode(config); err != nil {
+			return fmt.Errorf("failed to marshal config: %w", err)
+		}
+		data = buf.Bytes()
 	case ".json":
 		// Marshal to JSON, then unmarshal and re-marshal to remove null values
 		data, err = json.MarshalIndent(config, "", "  ")
 	default:
 		// Default to YAML
-		data, err = yaml.Marshal(config)
-	}
-
-	if err != nil {
-		return fmt.Errorf("failed to marshal config: %w", err)
+		var buf bytes.Buffer
+		encoder := yaml.NewEncoder(&buf)
+		encoder.SetIndent(2)
+		if err = encoder.Encode(config); err != nil {
+			return fmt.Errorf("failed to marshal config: %w", err)
+		}
+		data = buf.Bytes()
 	}
 
 	// Write to file
