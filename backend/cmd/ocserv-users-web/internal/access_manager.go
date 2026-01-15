@@ -10,7 +10,7 @@ import (
 
 // EnforceVpnAccess checks all sessions and disconnects those that violate access rules.
 func EnforceVpnAccess(cfg []VpnAccessRule) error {
-	sessions, err := GetSessions()
+	sessions, err := OcctlGetSessions()
 	if err != nil {
 		return fmt.Errorf("[access] 获取会话失败: %v", err)
 	}
@@ -24,7 +24,7 @@ func EnforceVpnAccess(cfg []VpnAccessRule) error {
 		}
 		if !allowed {
 			log.Printf("[access] 会话不符合规则，断开: id=%d user=%s remote=%s", s.ID, s.Username, s.RemoteIP)
-			if err := s.Disconnect(); err != nil {
+			if err := OcctlDisconnectUserByID(fmt.Sprintf("%d", s.ID)); err != nil {
 				log.Printf("[access] 断开会话失败 id=%d: %v", s.ID, err)
 			}
 		}
@@ -34,7 +34,7 @@ func EnforceVpnAccess(cfg []VpnAccessRule) error {
 
 // EnforceVpnAccessTimeOnly checks sessions and disconnects those that violate time-range rules only.
 func EnforceVpnAccessTime(cfg []VpnAccessRule) error {
-	sessions, err := GetSessions()
+	sessions, err := OcctlGetSessions()
 	if err != nil {
 		return fmt.Errorf("[access] 获取会话失败: %v", err)
 	}
@@ -48,7 +48,7 @@ func EnforceVpnAccessTime(cfg []VpnAccessRule) error {
 		}
 		if !allowed {
 			log.Printf("[access] 会话超出允许时间范围，断开: id=%d user=%s remote=%s", s.ID, s.Username, s.RemoteIP)
-			if err := s.Disconnect(); err != nil {
+			if err := OcctlDisconnectUserByID(fmt.Sprintf("%d", s.ID)); err != nil {
 				log.Printf("[access] 断开会话失败 id=%d: %v", s.ID, err)
 			}
 		}

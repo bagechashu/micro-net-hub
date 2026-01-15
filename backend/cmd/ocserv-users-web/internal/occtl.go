@@ -35,13 +35,13 @@ type Session struct {
 	TXHuman string `json:"TXHuman"`
 }
 
-func (s Session) Disconnect() error {
-	cmd := exec.Command("occtl", "disconnect", "id", strconv.Itoa(s.ID))
+func OcctlDisconnectUserByID(id string) error {
+	cmd := exec.Command("occtl", "disconnect", "id", id)
 	return cmd.Run()
 }
 
 // GetSessions 使用 occtl 获取当前会话列表
-func GetSessions() ([]Session, error) {
+func OcctlGetSessions() ([]Session, error) {
 	time.Sleep(500 * time.Millisecond) // 等待 ocserv 稳定
 	cmd := exec.Command("occtl", "-j", "show", "users")
 	output, err := cmd.Output()

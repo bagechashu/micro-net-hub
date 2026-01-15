@@ -79,7 +79,7 @@ func InitNftables(publicRules, inputChainRules, inputChainIpSetRules map[string]
 
 // UpdateNftablesRulesWithSessions 支持多设备，tag = username:ip:ruleIndex
 func UpdateNftablesRulesWithSessions(usersDestRules map[string][]Rule) error {
-	sessions, err := GetSessions()
+	sessions, err := OcctlGetSessions()
 	if err != nil {
 		log.Printf("[nft] 获取会话失败: %v", err)
 		return err

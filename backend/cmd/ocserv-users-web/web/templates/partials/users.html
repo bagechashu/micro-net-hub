@@ -1,6 +1,6 @@
 {{ if not . }}
 <tr>
-  <td colspan="12" style="text-align:center;color:#999">
+  <td colspan="11" style="text-align:center;color:#999">
     暂无在线用户
   </td>
 </tr>
@@ -8,10 +8,18 @@
 
 {{ range . }}
 <tr>
+  <td>
+    <button class="btn-disconnect" 
+      hx-get="/api/occtl/disconnect/{{.ID}}"
+      hx-on::after-request="if (event.detail.xhr.status === 200) { htmx.remove(htmx.closest(this, 'tr')) } else { alert('Failed to disconnect user') }"
+      data-tooltip="disconnect">
+      🔓
+    </button>
+  </td>
   <td>{{.ID}}</td>
   <td>{{.Username}}</td>
-  <td>{{.Groupname}}</td>
-  <td>{{.State}}</td>
+  <!-- <td>{{.Groupname}}</td>
+  <td>{{.State}}</td> -->
   <td>{{.RemoteIP}}</td>
   <td>{{.UserAgent}}</td>
   <td>{{.RXHuman}}</td>

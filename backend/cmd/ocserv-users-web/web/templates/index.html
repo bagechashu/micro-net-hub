@@ -7,10 +7,11 @@
   <table class="pure-table pure-table-bordered pure-table-striped" width="100%">
     <thead>
       <tr>
+        <th>Action</th>
         <th>ID</th>
         <th>Username</th>
-        <th>Groupname</th>
-        <th>State</th>
+        <!-- <th>Groupname</th>
+        <th>State</th> -->
         <th>IPAddr</th>
         <th>UserAgent</th>
         <th>RX</th>
@@ -27,7 +28,7 @@
       hx-trigger="load, every 30s"
       hx-swap="innerHTML">
       <tr>
-        <td colspan="12" style="text-align:center;color:#999">加载中...</td>
+        <td colspan="11" style="text-align:center;color:#999">加载中...</td>
       </tr>
     </tbody>
   </table>

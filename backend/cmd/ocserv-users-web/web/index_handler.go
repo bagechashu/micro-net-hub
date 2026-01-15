@@ -10,7 +10,7 @@ func indexWebHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func usersPartialWebHandler(w http.ResponseWriter, r *http.Request) {
-	sessions, err := internal.GetSessions()
+	sessions, err := internal.OcctlGetSessions()
 	if err != nil {
 		http.Error(w, "failed to load sessions", 500)
 		return

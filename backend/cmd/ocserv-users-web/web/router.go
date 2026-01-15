@@ -21,6 +21,9 @@ func RunWebServer(addr string) {
 	http.HandleFunc("/nft.html", nftWebHandler)
 	http.HandleFunc("/partials/nftlistruleset.html", nftPartialWebHandler)
 
+	// occtl APIs
+	http.HandleFunc("/api/occtl/disconnect/{id}", occtlDisconnectUserHandler)
+
 	// config pages
 	http.HandleFunc("/config.html", configWebHandler)
 	http.HandleFunc("/config-editor.html", configEditorWebHandler)
@@ -33,6 +36,7 @@ func RunWebServer(addr string) {
 	http.HandleFunc("/api/config/validate", ConfigValidateHandler)
 	http.HandleFunc("/api/config/preview", ConfigPreviewHandler)
 	http.HandleFunc("/api/config/save", ConfigSaveHandler)
+
 
 	go func() {
 		log.Printf("[web] 服务运行中: http://%s", addr)

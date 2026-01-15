@@ -129,6 +129,63 @@ header.app-header nav a:hover {
   font-size: 0.85em;
 }
 
+/* ======================= Action Buttons ======================= */
+.btn-disconnect {
+  background-color: #0079e8;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.4em 0.7em;
+  font-size: 0.9em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.5s ease;
+  box-shadow: 0 2px 4px rgba(47, 122, 224, 0.2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3em;
+  min-width: 32px;
+  min-height: 32px;
+  position: relative;
+}
+
+.btn-disconnect:hover {
+  background-color: #2d89df;
+  box-shadow: 0 3px 6px rgba(47, 122, 224, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-disconnect:active {
+  background-color: #1f618d;
+  box-shadow: 0 1px 3px rgba(52, 152, 219, 0.2);
+  transform: translateY(0);
+}
+
+/* 自定义 tooltip */
+.btn-disconnect::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 0.4em 0.8em;
+  border-radius: 3px;
+  font-size: 0.85em;
+  white-space: nowrap;
+  margin-bottom: 0.5em;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+  z-index: 1001;
+}
+
+.btn-disconnect:hover::after {
+  opacity: 1;
+}
+
 /* ======================= Table Section ======================= */
 .table-section {
   background: white;
