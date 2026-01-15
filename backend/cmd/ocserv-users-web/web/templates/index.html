@@ -40,8 +40,11 @@
 (() => {
   // UTC 时间格式化
   window.App.register("utc", class extends Stimulus.Controller {
+    static values = {
+      connectAt: String  // 声明 data-utc-connect-at-value 属性
+    }
     connect() {
-      const raw = this.element.getAttribute("connect-at");
+      const raw = this.connectAtValue;
       if (!raw) return;
       const d = new Date(raw.replace(" ", "T") + "Z");
       if (!isNaN(d)) this.element.textContent = d.toLocaleString();
