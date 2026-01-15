@@ -201,7 +201,7 @@
           <tr>
             <td><strong>${this.escapeHtml(name || '-')}</strong></td>
             <td>${this.escapeHtml(mapping_type)}</td>
-            <td>${this.escapeHtml(rule_group_ref)}</td>
+            <td><a href="#" data-action="click->config#showRuleDetail" data-config-group-name-param="${this.escapeHtml(rule_group_ref)}">${this.escapeHtml(rule_group_ref)}</a></td>
             <td>${this.escapeHtml(target)}</td>
           </tr>
         `;
