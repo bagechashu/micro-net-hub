@@ -41,8 +41,7 @@
   // UTC 时间格式化
   window.App.register("utc", class extends Stimulus.Controller {
     connect() {
-      // this.element.dataset.utc: 标准 DOM API
-      const raw = this.element.dataset.utc;
+      const raw = this.element.getAttribute("connect-at");
       if (!raw) return;
       const d = new Date(raw.replace(" ", "T") + "Z");
       if (!isNaN(d)) this.element.textContent = d.toLocaleString();
