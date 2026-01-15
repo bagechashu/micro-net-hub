@@ -6,7 +6,7 @@ import (
 	"ocserv-users/internal"
 )
 
-func nftablesHandler(w http.ResponseWriter, r *http.Request) {
+func nftCheckTriggerHandler(w http.ResponseWriter, r *http.Request) {
 	// 只接受 POST 请求
 	if r.Method != http.MethodPost {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
@@ -31,7 +31,7 @@ func nftablesHandler(w http.ResponseWriter, r *http.Request) {
 	// })
 }
 
-func vpnAccessHandler(w http.ResponseWriter, r *http.Request) {
+func vpnAccessCheckTriggerHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return

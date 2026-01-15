@@ -370,3 +370,13 @@ func diffIPs(oldIPs, newIPs []string) (added, removed []string) {
 
 	return
 }
+
+// GetNftAllRules 获取当前 nftable 规则集
+func GetNftAllRules() (out string,err error) {
+	cmd := exec.Command("nft", "list", "ruleset")
+	outBytes, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", err
+	}
+	return string(outBytes), nil
+}

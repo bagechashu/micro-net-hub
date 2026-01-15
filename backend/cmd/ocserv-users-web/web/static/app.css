@@ -159,3 +159,34 @@ header.app-header nav a:hover {
   min-width: 100%;      /* 至少占满容器 */
   white-space: nowrap; /* 防止单元格自动换行 */
 }
+
+/* ======================= Code Block Style ======================= */
+code {
+  background: white;
+  color: #333;
+  padding: 1em;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.8em;
+  line-height: 1.4em;
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  white-space: pre;
+  word-wrap: break-word;
+  border-top: 2px solid #e67e22;
+}
+
+code::-webkit-scrollbar {
+  height: 6px;
+}
+
+code::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 0;
+}
+
+code::-webkit-scrollbar-track {
+  background: transparent;
+}

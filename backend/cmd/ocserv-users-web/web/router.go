@@ -7,24 +7,28 @@ import (
 
 func RunWebServer(addr string) {
 	// corefunc
-	http.HandleFunc("/nftables", nftablesHandler)
-	http.HandleFunc("/vpnaccess", vpnAccessHandler)
+	http.HandleFunc("/core/nft", nftCheckTriggerHandler)
+	http.HandleFunc("/core/vpnaccess", vpnAccessCheckTriggerHandler)
 
 	// static
 	registerStatic()
 
 	// index
-	http.HandleFunc("/", indexHandler)
-	http.HandleFunc("/partials/users.html", usersPartialHandler)
+	http.HandleFunc("/", indexWebHandler)
+	http.HandleFunc("/partials/users.html", usersPartialWebHandler)
+
+	// nft
+	http.HandleFunc("/nft.html", nftWebHandler)
+	http.HandleFunc("/partials/nftlistruleset.html", nftPartialWebHandler)
 
 	// config pages
-	http.HandleFunc("/config.html", configHandler)
-	http.HandleFunc("/config-editor.html", configEditorPageHandler)
+	http.HandleFunc("/config.html", configWebHandler)
+	http.HandleFunc("/config-editor.html", configEditorWebHandler)
 
-	// Export APIs
+	// Config Export APIs
 	http.HandleFunc("/api/config/export", ExportConfigHandler)
 
-	// Unified Config APIs (Phase 1 & 2)
+	// Config APIs (Phase 1 & 2)
 	http.HandleFunc("/api/config/view", ConfigViewHandler)
 	http.HandleFunc("/api/config/validate", ConfigValidateHandler)
 	http.HandleFunc("/api/config/preview", ConfigPreviewHandler)

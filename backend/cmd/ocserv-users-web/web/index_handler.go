@@ -5,11 +5,11 @@ import (
 	"ocserv-users/internal"
 )
 
-func indexHandler(w http.ResponseWriter, r *http.Request) {
+func indexWebHandler(w http.ResponseWriter, r *http.Request) {
 	renderWithLayout(w, "index.html", nil)
 }
 
-func usersPartialHandler(w http.ResponseWriter, r *http.Request) {
+func usersPartialWebHandler(w http.ResponseWriter, r *http.Request) {
 	sessions, err := internal.GetSessions()
 	if err != nil {
 		http.Error(w, "failed to load sessions", 500)

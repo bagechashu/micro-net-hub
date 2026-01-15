@@ -1,0 +1,38 @@
+{{ define "title" }}Nft Ruleset{{ end }}
+
+{{ define "content" }}
+<section>
+  <h3>Nft Ruleset</h3>
+
+  <div style="margin: 1em 0;">
+    <button class="pure-button pure-button-secondary" id="btn-nftlist" style="margin-left: 0.5em;">
+      🔄 刷新规则
+    </button>
+    <pre
+      hx-get="/partials/nftlistruleset.html"
+      hx-trigger="load, click"
+      hx-swap="innerHTML"
+      id="nft-ruleset">
+      点击刷新, 查看最新NFT规则...
+    </pre>
+  </div>
+  
+</section>
+{{ end }}
+
+{{ define "script" }}
+<script>
+(() => {
+  const btn = document.getElementById('btn-nftlist');
+  const pre = document.getElementById('nft-ruleset');
+  if (btn && pre) {
+    btn.addEventListener('click', () => {
+      htmx.ajax('GET', '/partials/nftlistruleset.html', {
+        target: pre,
+        swap: 'innerHTML'
+      });
+    });
+  }
+})();
+</script>
+{{ end }}

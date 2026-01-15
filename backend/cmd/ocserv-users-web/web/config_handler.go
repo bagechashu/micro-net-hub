@@ -11,12 +11,12 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func configHandler(w http.ResponseWriter, r *http.Request) {
+func configWebHandler(w http.ResponseWriter, r *http.Request) {
 	renderWithLayout(w, "config.html", nil)
 }
 
-// ConfigEditorPageHandler serves the configuration editor page
-func configEditorPageHandler(w http.ResponseWriter, r *http.Request) {
+// ConfigEditorWebHandler serves the configuration editor page
+func configEditorWebHandler(w http.ResponseWriter, r *http.Request) {
 	renderWithLayout(w, "config-editor.html", nil)
 }
 
