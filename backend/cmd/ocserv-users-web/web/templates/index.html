@@ -4,7 +4,7 @@
 <section>
   <h3>在线用户</h3>
   <div class="table-section" style="margin-bottom: 2em;">
-  <table class="pure-table pure-table-bordered pure-table-striped" width="100%" data-controller="utc">
+  <table class="pure-table pure-table-bordered pure-table-striped" width="100%">
     <thead>
       <tr>
         <th>ID</th>
@@ -41,6 +41,7 @@
   // UTC 时间格式化
   window.App.register("utc", class extends Stimulus.Controller {
     connect() {
+      // this.element.dataset.utc: 标准 DOM API
       const raw = this.element.dataset.utc;
       if (!raw) return;
       const d = new Date(raw.replace(" ", "T") + "Z");

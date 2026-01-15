@@ -18,7 +18,8 @@
   <td>{{.TXHuman}}</td>
   <td>{{.AverageRX}}</td>
   <td>{{.AverageTX}}</td>
-  <td><span class="utc-time" data-utc="{{.ConnectedAt}}">{{.ConnectedAt}}</span></td>
+  <!-- data-utc, 使用 <span>.dataset.utc 获取, 是标准 DOM API -->
+  <td><span class="utc-time" data-controller="utc" data-utc="{{.ConnectedAt}}">{{.ConnectedAt}}</span></td>
   <td>{{.ConnectedFor}}</td>
 </tr>
 {{ end }}
