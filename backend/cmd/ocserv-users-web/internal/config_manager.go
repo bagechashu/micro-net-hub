@@ -205,8 +205,9 @@ func (cm *ConfigManager) UpdateConfig(config *Config) {
 }
 
 // EnsureBackupDir creates the backup directory if it doesn't exist
+// Uses 0700 permissions to restrict access to the owner only (sensitive config backups)
 func (cm *ConfigManager) EnsureBackupDir() error {
-	return os.MkdirAll(cm.BackupDirPath, 0755)
+	return os.MkdirAll(cm.BackupDirPath, 0700)
 }
 
 // BackupConfig creates a timestamped backup of the current config file
@@ -228,8 +229,8 @@ func (cm *ConfigManager) BackupConfig() (string, error) {
 	basename := strings.TrimSuffix(filepath.Base(cm.ConfigPath), ext)
 	backupPath := filepath.Join(cm.BackupDirPath, fmt.Sprintf("%s_%s%s", basename, timestamp, ext))
 
-	// Write backup file
-	if err := os.WriteFile(backupPath, data, 0644); err != nil {
+	// Write backup file with restricted permissions (0600: owner read/write only)
+	if err := os.WriteFile(backupPath, data, 0600); err != nil {
 		return "", fmt.Errorf("failed to write backup file: %w", err)
 	}
 
@@ -240,11 +241,11 @@ func (cm *ConfigManager) BackupConfig() (string, error) {
 // SaveConfig saves the configuration to file, creating a backup first
 // Empty fields (zeros values) are omitted from the output
 func (cm *ConfigManager) SaveConfig(config *Config) error {
-	return cm.SaveConfigWithBackup(config, true)
+	return cm.saveConfigWithBackup(config, true)
 }
 
 // SaveConfigWithBackup saves the configuration to file with optional backup
-func (cm *ConfigManager) SaveConfigWithBackup(config *Config, createBackup bool) error {
+func (cm *ConfigManager) saveConfigWithBackup(config *Config, createBackup bool) error {
 	if createBackup {
 		// Create backup before modifying
 		_, err := cm.BackupConfig()
@@ -285,8 +286,9 @@ func (cm *ConfigManager) SaveConfigWithBackup(config *Config, createBackup bool)
 		data = buf.Bytes()
 	}
 
-	// Write to file
-	if err := os.WriteFile(cm.ConfigPath, data, 0644); err != nil {
+	// Write to file with restricted permissions (0600: owner read/write only)
+	// This prevents other users from reading sensitive configuration data
+	if err := os.WriteFile(cm.ConfigPath, data, 0600); err != nil {
 		return fmt.Errorf("failed to write config file: %w", err)
 	}
 
@@ -307,6 +309,42 @@ func (cm *ConfigManager) SaveVpnAccessConfig(rules []VpnAccessRule) error {
 
 	// Use SaveConfig to save the complete config
 	return cm.SaveConfig(fullConfig)
+}
+
+// SaveAndApplyConfig atomically saves config and applies rules
+// If any step fails, the config is restored from backup
+// This ensures consistency between disk config and in-memory rules
+func (cm *ConfigManager) SaveAndApplyConfig(config *Config, applyFunc func(*Config) error) error {
+	// Step 1: Validate configuration
+	if err := config.Check(); err != nil {
+		return fmt.Errorf("validation error: %w", err)
+	}
+
+	// Step 2: Create backup of current state
+	backupPath, err := cm.BackupConfig()
+	if err != nil {
+		return fmt.Errorf("backup failed: %w", err)
+	}
+
+	// Step 3: Save config to disk
+	if err := cm.saveConfigWithBackup(config, false); err != nil {
+		return fmt.Errorf("save config failed: %w", err)
+	}
+
+	// Step 4: Apply rules (nftables, global rules, etc.)
+	if err := applyFunc(config); err != nil {
+		// ROLLBACK: Restore from backup on failure
+		if restoreErr := cm.RestoreBackup(backupPath); restoreErr != nil {
+			log.Printf("[config] CRITICAL: restore from backup failed: %v (config may be in inconsistent state)", restoreErr)
+			return fmt.Errorf("apply failed and recovery failed: apply err: %w, recovery err: %w", err, restoreErr)
+		}
+		log.Printf("[config] rollback successful, restored from: %s", backupPath)
+		return fmt.Errorf("apply rules failed (rolled back): %w", err)
+	}
+
+	// Step 5: Update in-memory cache (already done by saveConfigWithBackup)
+	log.Printf("[config] config saved and rules applied successfully")
+	return nil
 }
 
 // GetBackupList returns a list of backup files

@@ -11,6 +11,8 @@ import (
 var (
 	// Global_VpnAccessRules 全局 VPN 访问控制规则
 	Global_VpnAccessRules []VpnAccessRule
+	// Global_TimeLocation 用于时间检查的全局时区，由 main 初始化
+	Global_TimeLocation *time.Location = time.UTC
 )
 
 // TimeRange defines a daily time range in HH:MM format, e.g. {"start":"08:00","end":"18:00"}
@@ -86,15 +88,21 @@ func (t *TimeOfDay) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 // Contains reports whether the provided time (local) falls into the time range.
-func (tr TimeRange) Contains(now time.Time) (bool) {
+// Uses the global timezone setting (Global_TimeLocation) for consistency.
+func (tr TimeRange) Contains(now time.Time) bool {
 	if tr.Start == nil || tr.End == nil {
 		return true
 	}
+
+	// Convert to the designated timezone for consistent time checking
+	now = now.In(Global_TimeLocation)
+
 	y := now.Year()
 	m := now.Month()
 	d := now.Day()
-	startT := time.Date(y, m, d, tr.Start.Hour, tr.Start.Minute, 0, 0, now.Location())
-	endT := time.Date(y, m, d, tr.End.Hour, tr.End.Minute, 0, 0, now.Location())
+	startT := time.Date(y, m, d, tr.Start.Hour, tr.Start.Minute, 0, 0, Global_TimeLocation)
+	endT := time.Date(y, m, d, tr.End.Hour, tr.End.Minute, 0, 0, Global_TimeLocation)
+
 	if !startT.Before(endT) { // wraps over midnight
 		// allowed if now >= start (same day) or now <= end (next day)
 		if now.Equal(startT) || now.After(startT) {
@@ -106,8 +114,7 @@ func (tr TimeRange) Contains(now time.Time) (bool) {
 		return false
 	}
 
-	// log.Printf("[access] 检查时间范围: now=%s start=%s end=%s", now.Format("15:04"), startT.Format("15:04"), endT.Format("15:04"))
-	// normal case
+	// normal case: start < end on same day
 	if (now.Equal(startT) || now.After(startT)) && (now.Equal(endT) || now.Before(endT)) {
 		return true
 	}

@@ -18,9 +18,30 @@ func EnforceVpnAccessOnlyByTime(cfg []VpnAccessRule) error {
 	return enforceVpnAccess(cfg, true)
 }
 
+// InitializeTimeLocation sets the global timezone for VPN access time checks.
+// This must be called once during initialization to ensure consistent time checking across all rules.
+func InitializeTimeLocation(timezoneName string) error {
+	var loc *time.Location
+	var err error
+
+	if timezoneName == "" || timezoneName == "UTC" {
+		loc = time.UTC
+	} else {
+		// Try to load the specified timezone
+		loc, err = time.LoadLocation(timezoneName)
+		if err != nil {
+			return fmt.Errorf("failed to load timezone %q: %w", timezoneName, err)
+		}
+	}
+
+	Global_TimeLocation = loc
+	log.Printf("[access] initialized timezone for time checks: %s (location: %s)", timezoneName, loc)
+	return nil
+}
+
 // RunVpnAccessTimeEnforcer periodically enforces time-range rules only.
 func RunVpnAccessTimeEnforcer(ctx context.Context, refresh time.Duration) {
-	log.Printf("[access] 启动 VPN 访问时间控制器 (refresh=%s) — **使用服务器时区**", refresh.String())
+	log.Printf("[access] 启动 VPN 访问时间控制器 (refresh=%s, timezone=%s)", refresh.String(), Global_TimeLocation)
 	ticker := time.NewTicker(refresh)
 	defer ticker.Stop()
 

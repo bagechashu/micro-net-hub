@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os/exec"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -35,9 +36,28 @@ type Session struct {
 	TXHuman string `json:"TXHuman"`
 }
 
+// ValidateSessionID validates that a session ID contains only numeric characters
+func ValidateSessionID(id string) error {
+	if id == "" {
+		return fmt.Errorf("session id cannot be empty")
+	}
+	// Session ID must be numeric only
+	if !regexp.MustCompile(`^\d+$`).MatchString(id) {
+		return fmt.Errorf("invalid session id: must contain only digits, got %q", id)
+	}
+	return nil
+}
+
 func OcctlDisconnectUserByID(id string) error {
+	// Validate input before executing command
+	if err := ValidateSessionID(id); err != nil {
+		return fmt.Errorf("invalid session id: %w", err)
+	}
 	cmd := exec.Command("occtl", "disconnect", "id", id)
-	return cmd.Run()
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to disconnect session %s: %w", id, err)
+	}
+	return nil
 }
 
 // GetSessions 使用 occtl 获取当前会话列表

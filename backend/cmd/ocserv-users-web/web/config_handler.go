@@ -205,29 +205,29 @@ func ConfigSaveHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Validate
-	if err := cfg.Check(); err != nil {
-		sendError(w, http.StatusBadRequest, fmt.Sprintf("validation error: %v", err))
-		return
+	// Define atomic apply function
+	applyFunc := func(applyCfg *internal.Config) error {
+		// Prepare rules
+		publicRules := internal.GetPublicRules(applyCfg)
+		inputChainRules := internal.GetInputChainRules(applyCfg)
+		srcIpSets, inputChainIpSetRules := internal.GetInputChainIpSetRules(applyCfg)
+
+		// Reinitialize nftables
+		if err := internal.InitNftables(publicRules, inputChainRules, inputChainIpSetRules, srcIpSets); err != nil {
+			return fmt.Errorf("nftables init failed: %w", err)
+		}
+
+		// Update global rules (after nftables succeeds)
+		internal.Global_UsersRules = internal.GetUserRulesMapping(applyCfg)
+		internal.Global_VpnAccessRules = applyCfg.VpnAccessRules
+
+		return nil
 	}
 
-	// Save configuration with backup
-	if err := GlobalConfigManager.SaveConfigWithBackup(&cfg, true); err != nil {
-		sendError(w, http.StatusInternalServerError, fmt.Sprintf("save error: %v", err))
-		return
-	}
-
-	// Update global rules
-	internal.Global_UsersRules = internal.GetUserRulesMapping(&cfg)
-	internal.Global_VpnAccessRules = cfg.VpnAccessRules
-
-	// Reinitialize nftables
-	publicRules := internal.GetPublicRules(&cfg)
-	inputChainRules := internal.GetInputChainRules(&cfg)
-	srcIpSets, inputChainIpSetRules := internal.GetInputChainIpSetRules(&cfg)
-	if err := internal.InitNftables(publicRules, inputChainRules, inputChainIpSetRules, srcIpSets); err != nil {
-		log.Printf("[nft] 初始化失败: %v", err)
-		sendError(w, http.StatusInternalServerError, fmt.Sprintf("nftables init error: %v", err))
+	// Save config and apply rules atomically
+	if err := GlobalConfigManager.SaveAndApplyConfig(&cfg, applyFunc); err != nil {
+		log.Printf("[config] save and apply failed: %v", err)
+		sendError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -250,14 +250,14 @@ func ruleGroupEqual(a, b internal.RuleGroup) bool {
 	if a.Name != b.Name || len(a.Rules) != len(b.Rules) {
 		return false
 	}
-	
+
 	// Compare each rule
 	for i := range a.Rules {
 		if !ruleEqual(a.Rules[i], b.Rules[i]) {
 			return false
 		}
 	}
-	
+
 	return true
 }
 
@@ -266,7 +266,7 @@ func ruleMappingEqual(a, b internal.RuleMapping) bool {
 	if a.Name != b.Name || a.Type != b.Type || a.RuleGroupRef != b.RuleGroupRef {
 		return false
 	}
-	
+
 	// Compare SrcIps slices
 	if len(a.SrcIps) != len(b.SrcIps) {
 		return false
@@ -280,7 +280,7 @@ func ruleMappingEqual(a, b internal.RuleMapping) bool {
 			return false
 		}
 	}
-	
+
 	// Compare Users slices
 	if len(a.Users) != len(b.Users) {
 		return false
@@ -294,7 +294,7 @@ func ruleMappingEqual(a, b internal.RuleMapping) bool {
 			return false
 		}
 	}
-	
+
 	// Compare SrcIpSet
 	if (a.SrcIpSet == nil) != (b.SrcIpSet == nil) {
 		return false
@@ -313,7 +313,7 @@ func ruleMappingEqual(a, b internal.RuleMapping) bool {
 			}
 		}
 	}
-	
+
 	return true
 }
 
@@ -332,7 +332,7 @@ func vpnAccessRuleEqual(a, b internal.VpnAccessRule) bool {
 			return false
 		}
 	}
-	
+
 	// Compare RemoteIPWhiteList slices
 	if len(a.RemoteIPWhiteList) != len(b.RemoteIPWhiteList) {
 		return false
@@ -346,7 +346,7 @@ func vpnAccessRuleEqual(a, b internal.VpnAccessRule) bool {
 			return false
 		}
 	}
-	
+
 	// Compare TimeRange
 	if (a.TimeRange == nil) != (b.TimeRange == nil) {
 		return false
@@ -371,7 +371,7 @@ func vpnAccessRuleEqual(a, b internal.VpnAccessRule) bool {
 			}
 		}
 	}
-	
+
 	return true
 }
 
