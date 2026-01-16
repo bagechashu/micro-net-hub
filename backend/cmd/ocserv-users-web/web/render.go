@@ -13,7 +13,7 @@ import (
 //go:embed templates/*
 var templatesFS embed.FS
 
-//go:embed static/*
+//go:embed static/*/* static/*/*/* static/*/*/*/*
 var staticFS embed.FS
 
 // HTMLEscape safely escapes JSON output for use in HTML context

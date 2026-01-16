@@ -77,7 +77,7 @@ func enforceVpnAccess(cfg []VpnAccessRule, onlyCheckTime ...bool) error {
 
 	now := time.Now()
 	for _, s := range sessions {
-		allow, action := checkSession(cfg, s, now, check)
+		allow, action, reason := checkSession(cfg, s, now, check)
 
 		if allow {
 			continue
@@ -94,9 +94,17 @@ func enforceVpnAccess(cfg []VpnAccessRule, onlyCheckTime ...bool) error {
 			if err := OcctlDisconnectUserByID(fmt.Sprintf("%d", s.ID)); err != nil {
 				return fmt.Errorf("[access] 断开会话失败 id=%d: %v", s.ID, err)
 			}
-			log.Printf("[access] 会话不符合规则，断开: id=%d user=%s remote=%s action=block", s.ID, s.Username, s.RemoteIP)
+			// Record violation to database
+			if err := RecordViolation(s.Username, s.RemoteIP, string(VpnActionBlock), reason); err != nil {
+				log.Printf("[violation] failed to record violation: %v", err)
+			}
+			log.Printf("[access] 会话不符合规则，断开: id=%d user=%s remote=%s action=block reason=%s", s.ID, s.Username, s.RemoteIP, reason)
 		case VpnActionLogOnly:
-			log.Printf("[access] 会话不符合规则，仅记录: id=%d user=%s remote=%s action=logonly", s.ID, s.Username, s.RemoteIP)
+			// Record violation to database
+			if err := RecordViolation(s.Username, s.RemoteIP, string(VpnActionLogOnly), reason); err != nil {
+				log.Printf("[violation] failed to record violation: %v", err)
+			}
+			log.Printf("[access] 会话不符合规则，仅记录: id=%d user=%s remote=%s action=logonly reason=%s", s.ID, s.Username, s.RemoteIP, reason)
 		}
 	}
 	return nil
@@ -106,10 +114,11 @@ func enforceVpnAccess(cfg []VpnAccessRule, onlyCheckTime ...bool) error {
 // Policy: if any rule that matches the session's username exists and its predicates pass, session is allowed.
 // If there are rules for the user but none of them permit the session, it is disallowed.
 // onlyCheckTime determines whether to only check time range (true) or check IP+time (false, default).
-// Returns (allow, matchedRule, err) where matchedRule is the rule that was checked (or nil if no rule matched the user).
-func checkSession(cfg []VpnAccessRule, s Session, now time.Time, onlyCheckTime bool) (allow bool, action *VpnActionType) {
+// Returns (allow, action, reason) where action is the rule action (or nil if no rule matched the user).
+func checkSession(cfg []VpnAccessRule, s Session, now time.Time, onlyCheckTime bool) (allow bool, action *VpnActionType, reason string) {
 	u := strings.ToLower(s.Username)
 	hasRule := false
+	var lastReason string
 
 	for _, r := range cfg {
 		if !r.matchesUser(u) {
@@ -122,6 +131,7 @@ func checkSession(cfg []VpnAccessRule, s Session, now time.Time, onlyCheckTime b
 			ipOk := r.ipInWhitelist(s.RemoteIP)
 			if !ipOk {
 				action = &r.Action
+				lastReason = fmt.Sprintf("IP %s not in whitelist", s.RemoteIP)
 				// IP not in whitelist, mean this rule not matched, check next rule
 				continue
 			}
@@ -131,16 +141,21 @@ func checkSession(cfg []VpnAccessRule, s Session, now time.Time, onlyCheckTime b
 		timeOk := r.isWithinTimeRange(now)
 		if timeOk {
 			// allowed by this rule
-			return true, nil
+			return true, nil, ""
 		}
 		action = &r.Action
+		if r.TimeRange != nil {
+			lastReason = fmt.Sprintf("outside allowed time range %s-%s", r.TimeRange.Start.String(), r.TimeRange.End.String())
+		} else {
+			lastReason = "time check failed"
+		}
 	}
 
 	// no rule for user -> not managed by access control (allow)
 	if !hasRule {
-		return true, nil
+		return true, nil, ""
 	}
 
 	// had rules but none matched
-	return false, action
+	return false, action, lastReason
 }

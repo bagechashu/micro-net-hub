@@ -18,6 +18,10 @@ func RunWebServer(addr string) {
 	http.HandleFunc("/", securityHeadersMiddleware(indexWebHandler))
 	http.HandleFunc("/partials/users.html", securityHeadersMiddleware(usersPartialWebHandler))
 
+	// violations (规则违规日志)
+	http.HandleFunc("/api/violations", securityHeadersMiddleware(corsMiddleware(GetViolationsHandler)))
+	http.HandleFunc("/api/violations/stats", securityHeadersMiddleware(corsMiddleware(GetViolationStatsHandler)))
+
 	// nft
 	http.HandleFunc("/nft.html", securityHeadersMiddleware(nftWebHandler))
 	http.HandleFunc("/partials/nftlistruleset.html", securityHeadersMiddleware(nftPartialWebHandler))

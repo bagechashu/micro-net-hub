@@ -79,11 +79,12 @@
               <th>用户</th>
               <th>远程 IP 白名单</th>
               <th>时间范围</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody data-config-target="vpnAccess">
             <tr>
-              <td colspan="3" style="text-align: center; color: #999;">加载中...</td>
+              <td colspan="4" style="text-align: center; color: #999;">加载中...</td>
             </tr>
           </tbody>
         </table>
@@ -212,7 +213,7 @@
 
     renderVpnAccess(vpnRules) {
       if (!vpnRules || vpnRules.length === 0) {
-        this.vpnAccessTarget.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #999;">暂无 VPN 访问规则</td></tr>';
+        this.vpnAccessTarget.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #999;">暂无 VPN 访问规则</td></tr>';
         return;
       }
 
@@ -222,12 +223,14 @@
         const timeRange = rule.time_range && rule.time_range.start && rule.time_range.end
           ? `${rule.time_range.start} - ${rule.time_range.end}`
           : '全天';
+        const action = rule.action === 'block' ? '阻止' : (rule.action === 'logonly' ? '仅记录' : '-');
 
         return `
           <tr>
             <td>${this.escapeHtml(users)}</td>
             <td>${this.escapeHtml(ips)}</td>
             <td>${this.escapeHtml(timeRange)}</td>
+            <td>${this.escapeHtml(action)}</td>
           </tr>
         `;
       });

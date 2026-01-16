@@ -29,6 +29,12 @@ func main() {
 		log.Fatalf("[main] 时区初始化失败: %v", err)
 	}
 
+	// 初始化违规日志数据库
+	if err := internal.InitializeViolationDB("data/violations"); err != nil {
+		log.Fatalf("[main] 违规日志数据库初始化失败: %v", err)
+	}
+	defer internal.CloseViolationDB()
+
 	// 加载配置（包含防火墙规则和 VPN 访问控制规则）
 	cfg, err := internal.LoadConfig(*config)
 	if err != nil {

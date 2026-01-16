@@ -105,6 +105,7 @@ vpn_access_rules:
     time_range:
       start: "08:00"
       end: "12:00"
+    action: block
   - users:
       - user1
     remote_ip_whitelist:
@@ -112,3 +113,4 @@ vpn_access_rules:
     time_range:
       start: "08:00"
       end: "20:00"
+    action: logonly

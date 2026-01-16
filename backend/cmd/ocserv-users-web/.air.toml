@@ -9,7 +9,7 @@ tmp_dir = "tmp"
   bin = "./tmp/main"
   cmd = "go build -o ./tmp/main ."
   delay = 1000
-  entrypoint = ["./tmp/main"]
+  entrypoint = ["./tmp/main", "-timezone=Asia/Dubai", "-config=./rules.yaml"]
   exclude_dir = ["assets", "tmp", "vendor", "testdata", ".config_backups"]
   exclude_file = ["ocserv-user", "ocserv-users-web", "rules.json", "rules.yaml"]
   exclude_regex = ["_test.go"]
