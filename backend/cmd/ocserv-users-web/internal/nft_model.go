@@ -3,12 +3,37 @@ package internal
 import (
 	"log"
 	"strings"
+	"sync"
 )
 
 var (
-	// Global_UsersRules 全局用户目标规则映射
-	Global_UsersRules map[string][]Rule
+	// globalUsersRules 全局用户目标规则映射，受 globalUsersRulesMu 保护
+	globalUsersRules map[string][]Rule
+	// globalUsersRulesMu 保护全局规则变量的并发访问
+	globalUsersRulesMu sync.RWMutex
 )
+
+// GetUserRules returns a thread-safe copy of the global user rules
+func GetUserRules() map[string][]Rule {
+	globalUsersRulesMu.RLock()
+	defer globalUsersRulesMu.RUnlock()
+	// Return a copy to prevent external modifications
+	if globalUsersRules == nil {
+		return nil
+	}
+	rules := make(map[string][]Rule)
+	for k, v := range globalUsersRules {
+		rules[k] = v
+	}
+	return rules
+}
+
+// UpdateUserRules safely updates the global user rules
+func UpdateUserRules(rules map[string][]Rule) {
+	globalUsersRulesMu.Lock()
+	defer globalUsersRulesMu.Unlock()
+	globalUsersRules = rules
+}
 
 type Rule struct {
 	DestIp   string       `json:"dest_ip,omitempty" yaml:"dest_ip,omitempty"`

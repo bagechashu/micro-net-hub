@@ -45,14 +45,15 @@ func main() {
 	}
 
 	// 启动后初始化所有用户的规则
-	internal.Global_UsersRules = internal.GetUserRulesMapping(cfg)
-	if err := internal.UpdateNftablesRulesWithSessions(internal.Global_UsersRules); err != nil {
+	userRules := internal.GetUserRulesMapping(cfg)
+	internal.UpdateUserRules(userRules)
+	if err := internal.UpdateNftablesRulesWithSessions(userRules); err != nil {
 		log.Printf("[nft] 更新规则失败: %v", err)
 	}
 
 	// 启动VPN访问控制器
 	if len(cfg.VpnAccessRules) > 0 {
-		internal.Global_VpnAccessRules = cfg.VpnAccessRules
+		internal.UpdateVpnAccessRules(cfg.VpnAccessRules)
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 		go internal.RunVpnAccessTimeEnforcer(ctx, *refresh)

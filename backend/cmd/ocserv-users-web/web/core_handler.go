@@ -13,8 +13,11 @@ func nftCheckTriggerHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get a thread-safe copy of user rules
+	userRules := internal.GetUserRules()
+	
 	// 执行一次 nftables 规则更新
-	err := internal.UpdateNftablesRulesWithSessions(internal.Global_UsersRules)
+	err := internal.UpdateNftablesRulesWithSessions(userRules)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("nft updated failed: %v", err), http.StatusInternalServerError)
 		return
@@ -37,8 +40,11 @@ func vpnAccessCheckTriggerHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get a thread-safe copy of VPN access rules
+	vpnRules := internal.GetVpnAccessRules()
+	
 	// 执行一次 EnforceVpnAccess 规则检查
-	err := internal.EnforceVpnAccess(internal.Global_VpnAccessRules)
+	err := internal.EnforceVpnAccess(vpnRules)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("vpn access enforcement failed: %v", err), http.StatusInternalServerError)
 		return

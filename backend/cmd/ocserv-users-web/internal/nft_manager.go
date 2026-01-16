@@ -159,7 +159,7 @@ func RunNftablesManager(ctx context.Context, refresh time.Duration) {
 			log.Println("[nft] 停止nftables管理器")
 			return
 		case <-ticker.C:
-			if err := UpdateNftablesRulesWithSessions(Global_UsersRules); err != nil {
+			if err := UpdateNftablesRulesWithSessions(globalUsersRules); err != nil {
 				log.Printf("[nft] 更新规则失败: %v", err)
 				continue
 			}

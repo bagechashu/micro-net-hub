@@ -34,14 +34,14 @@ func InitializeTimeLocation(timezoneName string) error {
 		}
 	}
 
-	Global_TimeLocation = loc
+	globalTimeLocation = loc
 	log.Printf("[access] initialized timezone for time checks: %s (location: %s)", timezoneName, loc)
 	return nil
 }
 
 // RunVpnAccessTimeEnforcer periodically enforces time-range rules only.
 func RunVpnAccessTimeEnforcer(ctx context.Context, refresh time.Duration) {
-	log.Printf("[access] 启动 VPN 访问时间控制器 (refresh=%s, timezone=%s)", refresh.String(), Global_TimeLocation)
+	log.Printf("[access] 启动 VPN 访问时间控制器 (refresh=%s, timezone=%s)", refresh.String(), globalTimeLocation)
 	ticker := time.NewTicker(refresh)
 	defer ticker.Stop()
 
@@ -51,7 +51,9 @@ func RunVpnAccessTimeEnforcer(ctx context.Context, refresh time.Duration) {
 			log.Println("[access] 停止访问控制器")
 			return
 		case <-ticker.C:
-			if err := EnforceVpnAccessOnlyByTime(Global_VpnAccessRules); err != nil {
+			// Get a thread-safe copy of the rules
+			rules := GetVpnAccessRules()
+			if err := enforceVpnAccess(rules, true); err != nil {
 				log.Printf("[access] 强制访问失败: %v", err)
 				continue
 			}

@@ -76,9 +76,9 @@ func ExportConfigHandler(w http.ResponseWriter, r *http.Request) {
 		VpnAccessRules []internal.VpnAccessRule `json:"vpn_access_rules,omitempty"`
 	}
 
-	vpnRules := []internal.VpnAccessRule{}
-	if internal.Global_VpnAccessRules != nil {
-		vpnRules = internal.Global_VpnAccessRules
+	vpnRules := internal.GetVpnAccessRules()
+	if vpnRules == nil {
+		vpnRules = []internal.VpnAccessRule{}
 	}
 
 	exportData := ExportData{
@@ -218,8 +218,8 @@ func ConfigSaveHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Update global rules (after nftables succeeds)
-		internal.Global_UsersRules = internal.GetUserRulesMapping(applyCfg)
-		internal.Global_VpnAccessRules = applyCfg.VpnAccessRules
+		internal.UpdateUserRules(internal.GetUserRulesMapping(applyCfg))
+		internal.UpdateVpnAccessRules(applyCfg.VpnAccessRules)
 
 		return nil
 	}

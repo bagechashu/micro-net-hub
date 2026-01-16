@@ -5,15 +5,38 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"sync"
 	"time"
 )
 
 var (
-	// Global_VpnAccessRules 全局 VPN 访问控制规则
-	Global_VpnAccessRules []VpnAccessRule
-	// Global_TimeLocation 用于时间检查的全局时区，由 main 初始化
-	Global_TimeLocation *time.Location = time.UTC
+	// globalVpnAccessRules 全局 VPN 访问控制规则，受 globalVpnAccessRulesMu 保护
+	globalVpnAccessRules []VpnAccessRule
+	// globalVpnAccessRulesMu 保护全局 VPN 规则的并发访问
+	globalVpnAccessRulesMu sync.RWMutex
+	// globalTimeLocation 用于时间检查的全局时区，由 main 初始化
+	globalTimeLocation *time.Location = time.UTC
 )
+
+// GetVpnAccessRules returns a thread-safe copy of the global VPN access rules
+func GetVpnAccessRules() []VpnAccessRule {
+	globalVpnAccessRulesMu.RLock()
+	defer globalVpnAccessRulesMu.RUnlock()
+	// Return a copy to prevent external modifications
+	if globalVpnAccessRules == nil {
+		return nil
+	}
+	rules := make([]VpnAccessRule, len(globalVpnAccessRules))
+	copy(rules, globalVpnAccessRules)
+	return rules
+}
+
+// UpdateVpnAccessRules safely updates the global VPN access rules
+func UpdateVpnAccessRules(rules []VpnAccessRule) {
+	globalVpnAccessRulesMu.Lock()
+	defer globalVpnAccessRulesMu.Unlock()
+	globalVpnAccessRules = rules
+}
 
 // TimeRange defines a daily time range in HH:MM format, e.g. {"start":"08:00","end":"18:00"}
 // It matches time-of-day and supports ranges that wrap over midnight (e.g., 22:00-06:00).
@@ -88,20 +111,20 @@ func (t *TimeOfDay) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 // Contains reports whether the provided time (local) falls into the time range.
-// Uses the global timezone setting (Global_TimeLocation) for consistency.
+// Uses the global timezone setting (globalTimeLocation) for consistency.
 func (tr TimeRange) Contains(now time.Time) bool {
 	if tr.Start == nil || tr.End == nil {
 		return true
 	}
 
 	// Convert to the designated timezone for consistent time checking
-	now = now.In(Global_TimeLocation)
+	now = now.In(globalTimeLocation)
 
 	y := now.Year()
 	m := now.Month()
 	d := now.Day()
-	startT := time.Date(y, m, d, tr.Start.Hour, tr.Start.Minute, 0, 0, Global_TimeLocation)
-	endT := time.Date(y, m, d, tr.End.Hour, tr.End.Minute, 0, 0, Global_TimeLocation)
+	startT := time.Date(y, m, d, tr.Start.Hour, tr.Start.Minute, 0, 0, globalTimeLocation)
+	endT := time.Date(y, m, d, tr.End.Hour, tr.End.Minute, 0, 0, globalTimeLocation)
 
 	if !startT.Before(endT) { // wraps over midnight
 		// allowed if now >= start (same day) or now <= end (next day)
