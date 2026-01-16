@@ -44,7 +44,7 @@ fi
 
 CONNECT_INFO="[notice] $USERNAME\($IP_REAL\) $IP_REMOTE $REASON_COLOR Ocserv VPN"
 
-/usr/bin/curl --connect-timeout 5 -XPOST "http://:9000/webhook/raw/ding?secret=securitykey" -d "${CONNECT_INFO}" >/dev/null 2>&1
+(/usr/bin/curl --connect-timeout 5 -XPOST "http://:9000/webhook/raw/ding?secret=securitykey" -d "${CONNECT_INFO}" >/dev/null 2>&1 &)
 
 /usr/bin/curl -XPOST http://127.0.0.1:8080/core/vpnaccess 2>/dev/null
 sleep 3

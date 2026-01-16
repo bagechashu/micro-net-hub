@@ -86,9 +86,9 @@ func (t *TimeOfDay) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 // Contains reports whether the provided time (local) falls into the time range.
-func (tr TimeRange) Contains(now time.Time) (bool, error) {
+func (tr TimeRange) Contains(now time.Time) (bool) {
 	if tr.Start == nil || tr.End == nil {
-		return true, nil
+		return true
 	}
 	y := now.Year()
 	m := now.Month()
@@ -98,27 +98,44 @@ func (tr TimeRange) Contains(now time.Time) (bool, error) {
 	if !startT.Before(endT) { // wraps over midnight
 		// allowed if now >= start (same day) or now <= end (next day)
 		if now.Equal(startT) || now.After(startT) {
-			return true, nil
+			return true
 		}
 		if now.Before(endT) || now.Equal(endT) {
-			return true, nil
+			return true
 		}
-		return false, nil
+		return false
 	}
 
 	// log.Printf("[access] 检查时间范围: now=%s start=%s end=%s", now.Format("15:04"), startT.Format("15:04"), endT.Format("15:04"))
 	// normal case
 	if (now.Equal(startT) || now.After(startT)) && (now.Equal(endT) || now.Before(endT)) {
-		return true, nil
+		return true
 	}
-	return false, nil
+	return false
 }
 
 // VpnAccessRule describes access constraints for a set of users.
 type VpnAccessRule struct {
-	Users             []string   `json:"users,omitempty" yaml:"users,omitempty"`
-	RemoteIPWhiteList []string   `json:"remote_ip_whitelist,omitempty" yaml:"remote_ip_whitelist,omitempty"`
-	TimeRange         *TimeRange `json:"time_range,omitempty" yaml:"time_range,omitempty"` // e.g. "08:00-18:00"
+	Users             []string      `json:"users,omitempty" yaml:"users,omitempty"`
+	RemoteIPWhiteList []string      `json:"remote_ip_whitelist,omitempty" yaml:"remote_ip_whitelist,omitempty"`
+	TimeRange         *TimeRange    `json:"time_range,omitempty" yaml:"time_range,omitempty"` // e.g. "08:00-18:00"
+	Action            VpnActionType `json:"action,omitempty" yaml:"action,omitempty"`         // "block" or "logonly"
+}
+
+type VpnActionType string
+
+const (
+	VpnActionBlock   VpnActionType = "block"
+	VpnActionLogOnly VpnActionType = "logonly"
+)
+
+func (t VpnActionType) Valid() bool {
+	switch t {
+	case VpnActionBlock, VpnActionLogOnly:
+		return true
+	default:
+		return false
+	}
 }
 
 // matchesUser checks whether username is listed in rule.Users (case-insensitive)
@@ -175,9 +192,9 @@ func (r VpnAccessRule) ipInWhitelist(remoteIP string) bool {
 }
 
 // isWithinTimeRange checks time constraint (or allows if no time range specified)
-func (r VpnAccessRule) isWithinTimeRange(now time.Time) (bool, error) {
+func (r VpnAccessRule) isWithinTimeRange(now time.Time) (bool) {
 	if r.TimeRange == nil {
-		return true, nil
+		return true
 	}
 	return r.TimeRange.Contains(now)
 }

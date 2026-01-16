@@ -76,12 +76,12 @@ func (cfg Config) Check() error {
 		}
 		seenGroups[k] = true
 
-		for ri, r := range g.Rules {
+		for _, r := range g.Rules {
 			if !r.Protocol.Valid() {
-				return fmt.Errorf("invalid protocol %q in rule group %q rule index %d", r.Protocol, g.Name, ri)
+				return fmt.Errorf("invalid protocol %q [tcp | udp | icmp]", r.Protocol)
 			}
 			if !r.Action.Valid() {
-				return fmt.Errorf("invalid action %q in rule group %q rule index %d", r.Action, g.Name, ri)
+				return fmt.Errorf("invalid action %q [accept | drop]", r.Action)
 			}
 		}
 	}
@@ -91,7 +91,7 @@ func (cfg Config) Check() error {
 
 	for _, mapping := range cfg.RuleMappings {
 		if !mapping.Type.Valid() {
-			return fmt.Errorf("无效的规则映射类型: %s", mapping.Type)
+			return fmt.Errorf("invalid mapping type: %s [users | public | input_chain | input_chain_ip_set]", mapping.Type)
 		}
 
 		// check SrcIpSet name uniqueness when present
@@ -116,6 +116,12 @@ func (cfg Config) Check() error {
 		}
 		seenMappingByType[mapping.Type][nameKey] = true
 	}
+
+	for _, r := range cfg.VpnAccessRules {
+		if !r.Action.Valid() {
+			return fmt.Errorf("invalid VPN action %q [block | logonly]", r.Action)
+		}
+	}
 	return nil
 }
 
@@ -138,6 +144,15 @@ func (cfg *Config) setRuleDefaults() {
 			} else {
 				r.Action = ActionType(strings.ToLower(string(r.Action)))
 			}
+		}
+	}
+	for vi := range cfg.VpnAccessRules {
+		r := &cfg.VpnAccessRules[vi]
+		// default action to drop and normalize to lower-case
+		if r.Action == "" {
+			r.Action = VpnActionBlock
+		} else {
+			r.Action = VpnActionType(strings.ToLower(string(r.Action)))
 		}
 	}
 }
