@@ -3,6 +3,7 @@ package web
 import (
 	"embed"
 	"encoding/json"
+	"html"
 	"html/template"
 	"io/fs"
 	"net/http"
@@ -15,16 +16,34 @@ var templatesFS embed.FS
 //go:embed static/*
 var staticFS embed.FS
 
-// Marshal converts an interface to JSON string
-func marshal(v interface{}) (string, error) {
+// HTMLEscape safely escapes JSON output for use in HTML context
+// Converts a value to JSON and then HTML-escapes the result
+func htmlEscapeJSON(v interface{}) (template.HTML, error) {
 	data, err := json.MarshalIndent(v, "", "  ")
-	return string(data), err
+	if err != nil {
+		return "", err
+	}
+	// HTML-escape the JSON string for safe inclusion in HTML
+	escaped := html.EscapeString(string(data))
+	return template.HTML(escaped), nil
 }
 
 // Template functions map
 var funcMap = template.FuncMap{
-	"marshal": marshal,
+	// safeJSON provides HTML-escaped JSON for safe template usage
+	"safeJSON": htmlEscapeJSON,
 }
+
+// <!-- 安全方式 1：在 HTML 属性中 -->
+// <div data-config="{{ safeJSON .UserData }}"></div>
+
+// <!-- 安全方式 2：在脚本中用 html 过滤器 -->
+// <script>
+//   var config = {{ .Config | html }};
+// </script>
+
+// <!-- 安全方式 3：在文本内容中 -->
+// <pre>{{ safeJSON .RuleData }}</pre>
 
 // render 渲染模板
 func renderWithLayout(w http.ResponseWriter, name string, data any) {

@@ -379,7 +379,7 @@ func (cm *ConfigManager) GetBackupList() ([]map[string]string, error) {
 
 // RestoreBackup restores config from a backup file
 func (cm *ConfigManager) RestoreBackup(backupPath string) error {
-	// Verify backup path is within backup directory (security check)
+	// Verify backup path is within backup directory (strict security check)
 	absBackupPath, err := filepath.Abs(backupPath)
 	if err != nil {
 		return err
@@ -390,8 +390,20 @@ func (cm *ConfigManager) RestoreBackup(backupPath string) error {
 		return err
 	}
 
-	if !strings.HasPrefix(absBackupPath, absBackupDir) {
-		return fmt.Errorf("invalid backup path")
+	// Use filepath.Rel() for secure path validation to prevent path traversal
+	// This prevents directory traversal attacks like /config escaping via /config-evil prefix
+	relPath, err := filepath.Rel(absBackupDir, absBackupPath)
+	if err != nil || strings.HasPrefix(relPath, "..") {
+		return fmt.Errorf("invalid backup path: path escapes backup directory")
+	}
+
+	// Verify the resolved path is actually within the backup directory
+	// (additional validation to catch symbolic link attacks)
+	if !strings.HasPrefix(absBackupPath, absBackupDir+string(filepath.Separator)) {
+		// Check if it's the backup dir itself (not valid)
+		if absBackupPath != absBackupDir {
+			return fmt.Errorf("invalid backup path: must be inside backup directory")
+		}
 	}
 
 	// Read backup file
@@ -406,8 +418,8 @@ func (cm *ConfigManager) RestoreBackup(backupPath string) error {
 		return fmt.Errorf("failed to backup current config: %w", err)
 	}
 
-	// Write to config file
-	if err := os.WriteFile(cm.ConfigPath, data, 0644); err != nil {
+	// Write to config file with restricted permissions (0600: owner read/write only)
+	if err := os.WriteFile(cm.ConfigPath, data, 0600); err != nil {
 		return fmt.Errorf("failed to restore config: %w", err)
 	}
 

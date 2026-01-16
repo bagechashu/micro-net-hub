@@ -112,6 +112,9 @@ func ConfigValidateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Limit request body size to 10MB to prevent DoS attacks
+	r.Body = http.MaxBytesReader(w, r.Body, 10*1024*1024)
+
 	var req ConfigPreviewRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		sendError(w, http.StatusBadRequest, fmt.Sprintf("invalid request: %v", err))
@@ -149,6 +152,9 @@ func ConfigPreviewHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Limit request body size to 10MB to prevent DoS attacks
+	r.Body = http.MaxBytesReader(w, r.Body, 10*1024*1024)
+
 	var req ConfigPreviewRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		sendError(w, http.StatusBadRequest, fmt.Sprintf("invalid request: %v", err))
@@ -183,6 +189,9 @@ func ConfigSaveHandler(w http.ResponseWriter, r *http.Request) {
 		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
 		return
 	}
+
+	// Limit request body size to 10MB to prevent DoS attacks
+	r.Body = http.MaxBytesReader(w, r.Body, 10*1024*1024)
 
 	var req ConfigPreviewRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

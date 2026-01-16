@@ -182,7 +182,7 @@ func (r VpnAccessRule) matchesUser(username string) bool {
 // ipInWhitelist checks whether remote ip matches any whitelist entry (CIDR or single IP)
 func (r VpnAccessRule) ipInWhitelist(remoteIP string) bool {
 	if len(r.RemoteIPWhiteList) == 0 {
-		return true // no whitelist means allow any IP
+		return false // empty whitelist means no IP is allowed
 	}
 	if remoteIP == "" {
 		return false

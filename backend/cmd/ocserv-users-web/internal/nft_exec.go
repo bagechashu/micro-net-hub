@@ -3,11 +3,65 @@ package internal
 import (
 	"fmt"
 	"log"
+	"net"
 	"os/exec"
 	"time"
 
 	"strings"
 )
+
+// ==================== Input Validation Functions ====================
+
+// validateIP validates if a string is a valid IPv4 address or CIDR notation
+// Accepts formats like: 192.168.1.1, 10.0.0.0/24, 0.0.0.0/0
+func validateIP(ip string) error {
+	if ip == "" {
+		return fmt.Errorf("IP address cannot be empty")
+	}
+
+	// Try parsing as CIDR first (e.g., 192.168.0.0/24)
+	if _, _, err := net.ParseCIDR(ip); err == nil {
+		return nil
+	}
+
+	// Try parsing as single IP address (e.g., 192.168.1.1)
+	if parsedIP := net.ParseIP(ip); parsedIP != nil {
+		// Ensure it's IPv4, not IPv6
+		if parsedIP.To4() != nil {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("invalid IP address or CIDR: %s (must be valid IPv4 or CIDR notation)", ip)
+}
+
+// validatePort validates if a port number is in valid range
+// Port 0 is allowed (means all ports), valid range is 0-65535
+func validatePort(port uint16) error {
+	// Port 0 is special (means all ports), any uint16 is valid
+	// uint16 cannot exceed 65535, so no validation needed
+	return nil
+}
+
+// validateProtocol validates if a protocol is supported
+func validateProtocol(protocol ProtocolType) error {
+	switch protocol {
+	case ProtocolTcp, ProtocolUdp, ProtocolIcmp:
+		return nil
+	default:
+		return fmt.Errorf("invalid protocol: %s (must be tcp, udp, or icmp)", protocol)
+	}
+}
+
+// validateAction validates if an action is valid
+func validateAction(action ActionType) error {
+	switch action {
+	case ActionAccept, ActionDrop:
+		return nil
+	default:
+		return fmt.Errorf("invalid action: %s (must be accept or drop)", action)
+	}
+}
 
 func addNatTableAndChain() error {
 	table := "nat"
@@ -153,6 +207,28 @@ func addSshAccept30MinRuleAfterRestart(tableName, inputChainName string) {
 // toLocal: 是否要添加到 input 链(目标是本机)
 // tag: 规则标签，用于后续删除
 func addNftRule(table, chain, srcIP, dstIP string, protocol ProtocolType, dstport uint16, action ActionType, tag string) {
+	// Validate all input parameters before executing nftables command
+	if err := validateIP(srcIP); err != nil {
+		log.Printf("[nft] Invalid source IP %q for tag %s: %v", srcIP, tag, err)
+		return
+	}
+	if err := validateIP(dstIP); err != nil {
+		log.Printf("[nft] Invalid destination IP %q for tag %s: %v", dstIP, tag, err)
+		return
+	}
+	if err := validatePort(dstport); err != nil {
+		log.Printf("[nft] Invalid port %d for tag %s: %v", dstport, tag, err)
+		return
+	}
+	if err := validateProtocol(protocol); err != nil {
+		log.Printf("[nft] Invalid protocol for tag %s: %v", tag, err)
+		return
+	}
+	if err := validateAction(action); err != nil {
+		log.Printf("[nft] Invalid action for tag %s: %v", tag, err)
+		return
+	}
+
 	// 默认使用 add
 	args := []string{"add", "rule", "ip", table, chain}
 	if action == ActionDrop {
@@ -217,6 +293,28 @@ func deleteNftRules(table string, chains []string, tag string) {
 
 // AddIpSetRules 添加允许指定 IP 集合访问 ocserv 443 的规则
 func addNftRulesIpSet(table, chain, srcIpSetname, dstIP string, protocol ProtocolType, dstport uint16, action ActionType, tag string) {
+	// Validate all input parameters before executing nftables command
+	if srcIpSetname == "" {
+		log.Printf("[nft] Invalid IP set name (empty) for tag %s", tag)
+		return
+	}
+	if err := validateIP(dstIP); err != nil {
+		log.Printf("[nft] Invalid destination IP %q for tag %s: %v", dstIP, tag, err)
+		return
+	}
+	if err := validatePort(dstport); err != nil {
+		log.Printf("[nft] Invalid port %d for tag %s: %v", dstport, tag, err)
+		return
+	}
+	if err := validateProtocol(protocol); err != nil {
+		log.Printf("[nft] Invalid protocol for tag %s: %v", tag, err)
+		return
+	}
+	if err := validateAction(action); err != nil {
+		log.Printf("[nft] Invalid action for tag %s: %v", tag, err)
+		return
+	}
+
 	// 默认使用 add
 	args := []string{"add", "rule", "ip", table, chain}
 	if action == ActionDrop {
