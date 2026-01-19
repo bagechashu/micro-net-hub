@@ -63,6 +63,7 @@ func RunVpnAccessTimeEnforcer(ctx context.Context, refresh time.Duration) {
 
 // enforceVpnAccess is the common enforcement logic for all access rules.
 // checkIPWhitelist determines whether to also check IP whitelist.
+// Improved error handling with partial failure tolerance.
 func enforceVpnAccess(cfg []VpnAccessRule, onlyCheckTime ...bool) error {
 	// Set default value: onlyCheckTime = false
 	check := false
@@ -76,6 +77,9 @@ func enforceVpnAccess(cfg []VpnAccessRule, onlyCheckTime ...bool) error {
 	}
 
 	now := time.Now()
+	successCount := 0
+	failureCount := 0
+
 	for _, s := range sessions {
 		allow, action, reason := checkSession(cfg, s, now, check)
 
@@ -85,6 +89,7 @@ func enforceVpnAccess(cfg []VpnAccessRule, onlyCheckTime ...bool) error {
 
 		if action == nil {
 			log.Printf("[access] action null pointer: id=%d user=%s remote=%s", s.ID, s.Username, s.RemoteIP)
+			failureCount++
 			continue
 		}
 
@@ -92,21 +97,33 @@ func enforceVpnAccess(cfg []VpnAccessRule, onlyCheckTime ...bool) error {
 		switch *action {
 		case VpnActionBlock:
 			if err := OcctlDisconnectUserByID(fmt.Sprintf("%d", s.ID)); err != nil {
-				return fmt.Errorf("[access] 断开会话失败 id=%d: %v", s.ID, err)
+				log.Printf("[access] 断开会话失败 id=%d: %v", s.ID, err)
+				failureCount++
+				continue
 			}
-			// Record violation to database
+			// Record violation to database (non-blocking now)
 			if err := RecordViolation(s.Username, s.RemoteIP, string(VpnActionBlock), reason); err != nil {
 				log.Printf("[violation] failed to record violation: %v", err)
+				// Don't fail the entire operation for logging failures
 			}
 			log.Printf("[access] 会话不符合规则，断开: id=%d user=%s remote=%s action=block reason=%s", s.ID, s.Username, s.RemoteIP, reason)
+			successCount++
 		case VpnActionLogOnly:
-			// Record violation to database
+			// Record violation to database (non-blocking now)
 			if err := RecordViolation(s.Username, s.RemoteIP, string(VpnActionLogOnly), reason); err != nil {
 				log.Printf("[violation] failed to record violation: %v", err)
+				// Don't fail the entire operation for logging failures
 			}
 			log.Printf("[access] 会话不符合规则，仅记录: id=%d user=%s remote=%s action=logonly reason=%s", s.ID, s.Username, s.RemoteIP, reason)
+			successCount++
 		}
 	}
+
+	// Log summary
+	if failureCount > 0 && len(sessions) > 0 {
+		log.Printf("[access] 访问校验完成: 总计=%d, 成功=%d, 失败=%d", len(sessions), successCount, failureCount)
+	}
+
 	return nil
 }
 

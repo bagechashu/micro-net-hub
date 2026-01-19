@@ -1,116 +1,163 @@
-{{ define "title" }}在线用户{{ end }}
+{{ define "title" }}用户管理{{ end }}
 
 {{ define "content" }}
 <section>
-  <h3>在线用户</h3>
-  <div class="table-section" style="margin-bottom: 2em;">
-  <table class="pure-table pure-table-bordered pure-table-striped" width="100%">
-    <thead>
-      <tr>
-        <th>Action</th>
-        <th>ID</th>
-        <th>Username</th>
-        <!-- <th>Groupname</th>
-        <th>State</th> -->
-        <th>IPAddr</th>
-        <th>UserAgent</th>
-        <th>RX</th>
-        <th>TX</th>
-        <th>AverageRX</th>
-        <th>AverageTX</th>
-        <th>ConnectedAt</th>
-        <th>ConnectedFor</th>
-      </tr>
-    </thead>
+  <h3>用户管理</h3>
 
-    <tbody
-      hx-get="/partials/users.html"
-      hx-trigger="load, every 30s"
-      hx-swap="innerHTML">
-      <tr>
-        <td colspan="11" style="text-align:center;color:#999">加载中...</td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="table-section" style="margin-bottom: 2em;">
+    <h4>在线用户</h4>
+    <div class="table-wrapper">
+      <table class="pure-table pure-table-bordered pure-table-striped" width="100%">
+        <thead>
+          <tr>
+            <th>Action</th>
+            <th>ID</th>
+            <th>Username</th>
+            <!-- <th>Groupname</th>
+            <th>State</th> -->
+            <th>IPAddr</th>
+            <th>UserAgent</th>
+            <th>RX</th>
+            <th>TX</th>
+            <th>AverageRX</th>
+            <th>AverageTX</th>
+            <th>ConnectedAt</th>
+            <th>ConnectedFor</th>
+          </tr>
+        </thead>
+    
+        <tbody
+          hx-get="/partials/users.html"
+          hx-trigger="load, every 30s"
+          hx-swap="innerHTML">
+          <tr>
+            <td colspan="11" style="text-align:center;color:#999">加载中...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section data-controller="user-stats">
+  <!-- 用户统计表 -->
+  <div class="table-section" style="margin-bottom: 2em;">
+    <h4>用户违规排行榜</h4>
+    <div class="table-wrapper">
+      <!-- 用户统计过滤器 -->
+      <div class="filter-section" style="padding-bottom: 1em;">
+        <form data-action="submit->user-stats#applyFilters" style="display: flex; gap: 1em; flex-wrap: wrap; align-items: center;">
+          <div>
+            <label for="userStatsDays">时间范围（天）:</label>
+            <select id="userStatsDays" data-user-stats-target="daysSelect" style="margin-left: 0.5em;">
+              <option value="1">1天</option>
+              <option value="7" selected>1周</option>
+              <option value="30">1个月</option>
+              <option value="90">3个月</option>
+              <option value="0">全部</option>
+            </select>
+          </div>
+          <button type="submit" class="pure-button pure-button-primary">查询</button>
+        </form>
+      </div>
+
+      <table class="pure-table pure-table-bordered pure-table-striped" width="100%">
+        <thead>
+          <tr>
+            <th>排名</th>
+            <th>用户名</th>
+            <th>总违规数</th>
+            <th>阻止</th>
+            <th>仅记录</th>
+          </tr>
+        </thead>
+        <tbody data-user-stats-target="tableBody">
+          <tr>
+            <td colspan="5" style="text-align:center;color:#999">加载中...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </section>
 
 <section data-controller="violations">
-  <h3>不符合规则的登录</h3>
-  
-  <!-- 查询过滤器 -->
-  <div class="filter-section" style="margin-bottom: 2em; padding: 1em; background-color: #f5f5f5; border-radius: 4px;">
-    <form data-action="submit->violations#applyFilters" style="display: flex; gap: 1em; flex-wrap: wrap; align-items: center;">
-      <div>
-        <label for="filterDays">时间范围（天）:</label>
-        <select id="filterDays" data-violations-target="daysSelect" style="margin-left: 0.5em;">
-          <option value="1">1天</option>
-          <option value="7" selected>1周</option>
-          <option value="30">1个月</option>
-          <option value="90">3个月</option>
-          <option value="0">全部</option>
-        </select>
+  <div class="table-section" data-violations-target="tableContainer" style="margin-bottom: 2em;">
+    <h4>不符合规则的登录</h4>
+    <div class="table-wrapper">
+      <!-- 查询过滤器 -->
+      <div class="filter-section" style="padding-bottom: 1em;">
+        <form data-action="submit->violations#applyFilters" style="display: flex; gap: 1em; flex-wrap: wrap; align-items: center;">
+          <div>
+            <label for="filterDays">时间范围（天）:</label>
+            <select id="filterDays" data-violations-target="daysSelect" style="margin-left: 0.5em;">
+              <option value="1">1天</option>
+              <option value="7" selected>1周</option>
+              <option value="30">1个月</option>
+              <option value="90">3个月</option>
+              <option value="0">全部</option>
+            </select>
+          </div>
+          <div>
+            <label for="filterAction">动作:</label>
+            <select id="filterAction" data-violations-target="actionSelect" style="margin-left: 0.5em;">
+              <option value="">全部</option>
+              <option value="block">阻止</option>
+              <option value="logonly">仅记录</option>
+            </select>
+          </div>
+          <div>
+            <label for="filterUsername">用户名:</label>
+            <input type="text" id="filterUsername" data-violations-target="usernameInput" placeholder="输入用户名搜索" style="margin-left: 0.5em; padding: 0.3em;">
+          </div>
+          <button type="submit" class="pure-button pure-button-primary">查询</button>
+          <button type="button" data-action="click->violations#clearFilters" class="pure-button">清空</button>
+          <!-- 加载状态指示 -->
+          <!-- <div id="loadingIndicator" style="display: none; text-align: center; padding: 1em; color: #666;"> -->
+          <div id="loadingIndicator" style="display: none; color: #666;">
+            <span>⏳ 加载中...</span>
+          </div>
+        </form>
       </div>
-      <div>
-        <label for="filterUsername">用户名:</label>
-        <input type="text" id="filterUsername" data-violations-target="usernameInput" placeholder="输入用户名搜索" style="margin-left: 0.5em; padding: 0.3em;">
-      </div>
-      <div>
-        <label for="filterAction">操作:</label>
-        <select id="filterAction" data-violations-target="actionSelect" style="margin-left: 0.5em;">
-          <option value="">全部</option>
-          <option value="block">阻止</option>
-          <option value="logonly">仅记录</option>
-        </select>
-      </div>
-      <button type="submit" class="pure-button pure-button-primary">查询</button>
-      <button type="button" data-action="click->violations#clearFilters" class="pure-button">清空</button>
-    </form>
-  </div>
 
-  <!-- 统计信息 -->
-  <div id="statsContainer" style="margin-bottom: 2em;">
-    <div style="display: flex; gap: 2em; flex-wrap: wrap;">
-      <div style="padding: 1em; background-color: #fff3cd; border-radius: 4px;">
-        <strong>总违规数:</strong> <span data-violations-target="totalViolations">0</span>
-      </div>
-      <div style="padding: 1em; background-color: #f8d7da; border-radius: 4px;">
-        <strong>阻止:</strong> <span data-violations-target="blockCount">0</span>
-      </div>
-      <div style="padding: 1em; background-color: #d1ecf1; border-radius: 4px;">
-        <strong>仅记录:</strong> <span data-violations-target="logonlyCount">0</span>
-      </div>
-      <div style="padding: 1em; background-color: #e7f3ff; border-radius: 4px;">
-        <strong>近24小时:</strong> <span data-violations-target="violations24h">0</span>
-      </div>
+      <!-- 统计信息表格 -->
+      <table class="pure-table pure-table-bordered pure-table-striped" width="100%" id="statsContainer" style="margin-bottom: 1em;">
+        <thead>
+          <tr>
+            <th>总违规数</th>
+            <th>阻止</th>
+            <th>仅记录</th>
+            <th>近24小时</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong><span style="background-color: #ffe284; padding: 0.2em 0.5em; border-radius: 3px; color: #664d00;" data-violations-target="totalViolations">0</span></strong></td>
+            <td><strong><span style="background-color: #f8d7da; padding: 0.2em 0.5em; border-radius: 3px; color: #721c24;" data-violations-target="blockCount">0</span></strong></td>
+            <td><strong><span style="background-color: #d1ecf1; padding: 0.2em 0.5em; border-radius: 3px; color: #0c5460;" data-violations-target="logonlyCount">0</span></strong></td>
+            <td><strong><span style="background-color: #7db8f2; padding: 0.2em 0.5em; border-radius: 3px; color: #003d7a;" data-violations-target="violations24h">0</span></strong></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- 违规列表 -->
+      <table class="pure-table pure-table-bordered pure-table-striped" width="100%">
+        <thead>
+          <tr>
+            <th>用户名</th>
+            <th>远程IP</th>
+            <th>动作</th>
+            <th>原因</th>
+            <th>时间</th>
+          </tr>
+        </thead>
+        <tbody data-violations-target="tableBody">
+          <tr>
+            <td colspan="5" style="text-align:center;color:#999">加载中...</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-  </div>
-
-  <!-- 加载状态指示 -->
-  <div id="loadingIndicator" style="display: none; text-align: center; padding: 1em; color: #666;">
-    <span>⏳ 加载中...</span>
-  </div>
-
-  <!-- 违规列表 -->
-  <div class="table-section" data-violations-target="tableContainer">
-    <table class="pure-table pure-table-bordered pure-table-striped" width="100%">
-      <thead>
-        <tr>
-          <th>用户名</th>
-          <th>远程IP</th>
-          <th>操作</th>
-          <th>原因</th>
-          <th>时间</th>
-        </tr>
-      </thead>
-      <tbody data-violations-target="tableBody">
-        <tr>
-          <td colspan="5" style="text-align:center;color:#999">加载中...</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
   <!-- 分页 -->
   <div data-violations-target="pagination" style="margin-top: 1em; text-align: center;">
     <!-- 分页内容将动态生成 -->
@@ -134,7 +181,73 @@
       if (!isNaN(d)) this.element.textContent = d.toLocaleString();
     }
   });
-  
+
+  // 用户统计控制器
+  window.App.register("user-stats", class extends Stimulus.Controller {
+    static targets = ["daysSelect", "tableBody"];
+
+    static values = {
+      days: { type: Number, default: 7 }
+    }
+
+    connect() {
+      this.loadUserStats();
+    }
+
+    applyFilters(event) {
+      event.preventDefault();
+      this.daysValue = parseInt(this.daysSelectTarget.value) || 7;
+      this.loadUserStats();
+    }
+
+    async loadUserStats() {
+      try {
+        const params = new URLSearchParams();
+        if (this.daysValue > 0) params.append("days", this.daysValue);
+
+        const response = await fetch(`/api/violations/users?${params}`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        
+        const { data } = await response.json();
+        this.renderUserStats(data);
+      } catch (err) {
+        console.error("Failed to load user stats:", err);
+        this.tableBodyTarget.innerHTML = `<tr><td colspan="5" style="text-align:center;color:red;">加载失败: ${err.message}</td></tr>`;
+      }
+    }
+
+    renderUserStats(data) {
+      const users = data.users || [];
+      
+      if (!users || users.length === 0) {
+        this.tableBodyTarget.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#999;">暂无数据</td></tr>`;
+        return;
+      }
+
+      let html = "";
+      users.forEach((user, index) => {
+        const blockCount = user.by_action?.block || 0;
+        const logonlyCount = user.by_action?.logonly || 0;
+        
+        html += `<tr>
+          <td>${index + 1}</td>
+          <td>${this.escapeHtml(user.username)}</td>
+          <td><strong>${user.total}</strong></td>
+          <td><span style="background-color: #f8d7da; padding: 0.2em 0.5em; border-radius: 3px; color: #721c24; font-weight: bold;">${blockCount}</span></td>
+          <td><span style="background-color: #d1ecf1; padding: 0.2em 0.5em; border-radius: 3px; color: #0c5460; font-weight: bold;">${logonlyCount}</span></td>
+        </tr>`;
+      });
+
+      this.tableBodyTarget.innerHTML = html;
+    }
+
+    escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  });
+
   // Violations 管理控制器
   window.App.register("violations", class extends Stimulus.Controller {
     static targets = ["daysSelect", "usernameInput", "actionSelect", "tableBody", "pagination", "totalViolations", "blockCount", "logonlyCount", "violations24h", "tableContainer"];
@@ -198,30 +311,30 @@
       const response = await fetch(`/api/violations?${params}`);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       
-      const data = await response.json();
+      const { data } = await response.json();
       this.renderViolations(data);
     }
 
     async loadStats() {
       const params = new URLSearchParams();
       if (this.daysValue > 0) params.append("days", this.daysValue);
+      if (this.usernameValue) params.append("username", this.usernameValue);
 
       const response = await fetch(`/api/violations/stats?${params}`);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      
-      const stats = await response.json();
-      this.renderStats(stats);
+      const { data }= await response.json();
+      this.renderStats(data);
     }
 
     renderViolations(data) {
-      if (!data.data || data.data.length === 0) {
+      if (!data.violations || data.violations.length === 0) {
         this.tableBodyTarget.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#999;">暂无数据</td></tr>`;
         this.paginationTarget.innerHTML = "";
         return;
       }
 
       let html = "";
-      data.data.forEach(v => {
+      data.violations.forEach(v => {
         const actionBadge = v.action === "block" 
           ? '<span style="background-color: #f8d7da; padding: 0.2em 0.5em; border-radius: 3px; color: #721c24; font-weight: bold;">阻止</span>'
           : '<span style="background-color: #d1ecf1; padding: 0.2em 0.5em; border-radius: 3px; color: #0c5460; font-weight: bold;">仅记录</span>';

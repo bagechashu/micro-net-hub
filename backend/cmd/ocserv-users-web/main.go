@@ -17,6 +17,7 @@ import (
 func main() {
 	var (
 		config    = flag.String("config", "rules.yaml", "配置文件路径 (json|yaml)")
+		dbPath    = flag.String("db", "data", "违规日志数据库路径")
 		refresh   = flag.Duration("refresh", 30*time.Second, "刷新间隔")
 		webListenAddr = flag.String("webaddr", ":8080", "Web服务监听地址")
 		timezone  = flag.String("timezone", "UTC", "时区设置用于时间检查 (如: UTC, Asia/Shanghai)")
@@ -30,7 +31,7 @@ func main() {
 	}
 
 	// 初始化违规日志数据库
-	if err := internal.InitializeViolationDB("data/violations"); err != nil {
+	if err := internal.InitializeViolationDB(*dbPath); err != nil {
 		log.Fatalf("[main] 违规日志数据库初始化失败: %v", err)
 	}
 	defer internal.CloseViolationDB()

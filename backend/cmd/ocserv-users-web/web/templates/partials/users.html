@@ -8,7 +8,7 @@
 
 {{ range . }}
 <tr>
-  <td>
+  <td style="text-align: center;">
     <button class="btn-disconnect" 
       hx-get="/api/occtl/disconnect/{{.ID}}"
       hx-on::after-request="if (event.detail.xhr.status === 200) { htmx.remove(htmx.closest(this, 'tr')) } else { alert('Failed to disconnect user') }"

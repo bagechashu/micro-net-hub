@@ -1,11 +1,11 @@
 package web
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 	"ocserv-users/internal"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -21,7 +21,7 @@ type ViolationResponse struct {
 
 // ViolationsListResponse represents paginated violations response
 type ViolationsListResponse struct {
-	Data       []ViolationResponse `json:"data"`
+	Violations []ViolationResponse `json:"violations"`
 	Total      int64               `json:"total"`
 	Limit      int                 `json:"limit"`
 	Offset     int                 `json:"offset"`
@@ -29,61 +29,35 @@ type ViolationsListResponse struct {
 	Message    string              `json:"message,omitempty"`
 }
 
-// ErrorResponse represents an API error response
-type ErrorResponse struct {
-	Error   string `json:"error"`
-	Message string `json:"message,omitempty"`
+// Cache for stats queries with TTL
+type StatsCache struct {
+	data      map[string]interface{}
+	timestamp time.Time
+	mu        sync.RWMutex
 }
+
+var (
+	statsCache = &StatsCache{}
+	statsTTL   = 30 * time.Second
+)
 
 // GetViolationsHandler handles API requests to retrieve violations with pagination
 func GetViolationsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		respondError(w, http.StatusMethodNotAllowed, "method not allowed")
+		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
 		return
 	}
 
 	// Parse and validate query parameters
 	username := r.URL.Query().Get("username")
 	action := r.URL.Query().Get("action")
-
 	daysStr := r.URL.Query().Get("days")
-	days := 7
-	if daysStr != "" {
-		if d, err := strconv.Atoi(daysStr); err == nil && d >= 0 {
-			if d > 365 { // Max 1 year
-				d = 365
-			}
-			if d == 0 { // 0 means all
-				days = 0
-			} else {
-				days = d
-			}
-		}
-	}
-
 	limitStr := r.URL.Query().Get("limit")
-	limit := 20
-	if limitStr != "" {
-		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 {
-			if l > 1000 {
-				l = 1000
-			}
-			limit = l
-		}
-	}
-
 	offsetStr := r.URL.Query().Get("offset")
-	offset := 0
-	if offsetStr != "" {
-		if o, err := strconv.Atoi(offsetStr); err == nil && o >= 0 {
-			offset = o
-		}
-	}
 
-	timeBack := time.Duration(0)
-	if days > 0 {
-		timeBack = time.Duration(days*24) * time.Hour
-	}
+	timeBack := parseDays(daysStr)
+	limit := parseLimit(limitStr)
+	offset := parseOffset(offsetStr)
 
 	query := internal.ViolationQuery{
 		TimeBack: timeBack,
@@ -96,7 +70,7 @@ func GetViolationsHandler(w http.ResponseWriter, r *http.Request) {
 	violations, total, err := internal.GetViolations(query)
 	if err != nil {
 		log.Printf("[api] failed to get violations: %v", err)
-		respondError(w, http.StatusInternalServerError, "failed to retrieve violations")
+		sendError(w, http.StatusInternalServerError, "failed to retrieve violations")
 		return
 	}
 
@@ -115,65 +89,148 @@ func GetViolationsHandler(w http.ResponseWriter, r *http.Request) {
 
 	pageCount := (total + int64(limit) - 1) / int64(limit)
 	listResp := ViolationsListResponse{
-		Data:      responses,
-		Total:     total,
-		Limit:     limit,
-		Offset:    offset,
-		PageCount: pageCount,
+		Violations: responses,
+		Total:      total,
+		Limit:      limit,
+		Offset:     offset,
+		PageCount:  pageCount,
 	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(listResp); err != nil {
-		log.Printf("[api] failed to encode response: %v", err)
-	}
+	sendSuccess(w, "success", listResp)
 }
 
-// GetViolationStatsHandler returns violation statistics
+// GetViolationStatsHandler returns action-based violation statistics
+// Optionally filters by username with caching for improved performance
 func GetViolationStatsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		respondError(w, http.StatusMethodNotAllowed, "method not allowed")
+		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
 		return
 	}
 
 	daysStr := r.URL.Query().Get("days")
-	days := 7
-	if daysStr != "" {
-		if d, err := strconv.Atoi(daysStr); err == nil && d >= 0 {
-			if d > 365 {
-				d = 365
-			}
-			if d == 0 {
-				days = 365
-			} else {
-				days = d
-			}
+	username := r.URL.Query().Get("username")
+
+	// Check cache only if no username filter (user-specific stats are more volatile)
+	if username == "" {
+		statsCache.mu.RLock()
+		if time.Since(statsCache.timestamp) < statsTTL && statsCache.data != nil {
+			defer statsCache.mu.RUnlock()
+			sendSuccess(w, "success", statsCache.data)
+			return
 		}
+		statsCache.mu.RUnlock()
 	}
 
-	timeBack := time.Duration(days*24) * time.Hour
-
-	stats, err := internal.GetViolationStats(timeBack)
+	timeBack := parseDays(daysStr)
+	stats, err := internal.GetViolationStats(timeBack, username)
 	if err != nil {
-		log.Printf("[api] failed to get stats: %v", err)
-		respondError(w, http.StatusInternalServerError, "failed to retrieve statistics")
+		log.Printf("[api] failed to get violation stats: %v", err)
+		sendError(w, http.StatusInternalServerError, "failed to retrieve statistics")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(stats); err != nil {
-		log.Printf("[api] failed to encode response: %v", err)
+	// Update cache if no username filter
+	if username == "" {
+		statsCache.mu.Lock()
+		statsCache.data = stats
+		statsCache.timestamp = time.Now()
+		statsCache.mu.Unlock()
 	}
+
+	sendSuccess(w, "success", stats)
 }
 
-// respondError sends a standardized error response
-func respondError(w http.ResponseWriter, statusCode int, message string) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
-	resp := ErrorResponse{
-		Error:   http.StatusText(statusCode),
-		Message: message,
+// GetViolationUsersHandler returns top users with their action breakdown
+func GetViolationUsersHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
+		return
 	}
-	json.NewEncoder(w).Encode(resp)
+
+	daysStr := r.URL.Query().Get("days")
+	timeBack := parseDays(daysStr)
+
+	stats, err := internal.GetViolationUsers(timeBack)
+	if err != nil {
+		log.Printf("[api] failed to get user stats: %v", err)
+		sendError(w, http.StatusInternalServerError, "failed to retrieve user statistics")
+		return
+	}
+	sendSuccess(w, "success", stats)
+}
+
+func ClearViolationOldDataHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
+		return
+	}
+
+	daysStr := r.URL.Query().Get("days")
+	timeBack := parseDays(daysStr)
+
+	err := internal.ClearOldViolations(timeBack)
+	if err != nil {
+		log.Printf("[api] violation cleared old data failed: %v", err)
+		sendError(w, http.StatusInternalServerError, "violation cleared old data failed")
+		return
+	}
+	sendSuccess(w, "violation cleared old data successfully", nil)
+}
+
+func VacuumViolationDBHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
+		return
+	}
+
+	err := internal.VacuumViolationDB()
+	if err != nil {
+		log.Printf("[api] violation database vacuum failed: %v", err)
+		sendError(w, http.StatusInternalServerError, "violation database vacuum failed")
+		return
+	}
+	sendSuccess(w, "violation database vacuumed successfully", nil)
+}
+
+// parseDays parses the days query parameter and returns a time.Duration
+func parseDays(daysStr string) time.Duration {
+	if daysStr == "" {
+		return time.Duration(0)
+	}
+
+	days, err := strconv.Atoi(daysStr)
+	if err != nil && days <= 0 {
+		return time.Duration(0)
+	}
+
+	return time.Duration(days*24) * time.Hour
+}
+
+func parseLimit(limitStr string) int {
+	if limitStr == "" {
+		return 20
+	}
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 {
+		return 20
+	}
+
+	if limit > 1000 {
+		limit = 1000
+	}
+
+	return limit
+}
+
+func parseOffset(offsetStr string) int {
+	if offsetStr == "" {
+		return 0
+	}
+
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil || offset < 0 {
+		return 0
+	}
+
+	return offset
 }

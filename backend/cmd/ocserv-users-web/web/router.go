@@ -21,6 +21,9 @@ func RunWebServer(addr string) {
 	// violations (规则违规日志)
 	http.HandleFunc("/api/violations", securityHeadersMiddleware(corsMiddleware(GetViolationsHandler)))
 	http.HandleFunc("/api/violations/stats", securityHeadersMiddleware(corsMiddleware(GetViolationStatsHandler)))
+	http.HandleFunc("/api/violations/users", securityHeadersMiddleware(corsMiddleware(GetViolationUsersHandler)))
+	http.HandleFunc("/api/violations/clearold", securityHeadersMiddleware(corsMiddleware(ClearViolationOldDataHandler)))
+	http.HandleFunc("/api/violations/vacuum", securityHeadersMiddleware(corsMiddleware(VacuumViolationDBHandler)))
 
 	// nft
 	http.HandleFunc("/nft.html", securityHeadersMiddleware(nftWebHandler))
