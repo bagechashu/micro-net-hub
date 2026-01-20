@@ -73,12 +73,14 @@ func addNatTableAndChain() error {
 	}
 
 	// nat POSTROUTING 添加 masquerade 规则
+	// 排除本地环回流量，避免干扰本地服务相互访问
 	out, err := exec.Command("nft", "list", "chain", "ip", table, chain).CombinedOutput()
 	if err != nil {
 		return err
 	}
 	if !strings.Contains(string(out), "masquerade") {
-		return exec.Command("nft", "add", "rule", "ip", table, chain, "masquerade").Run()
+		// masquerade 规则应排除 loopback 接口和本地地址
+		return exec.Command("nft", "add", "rule", "ip", table, chain, "oif", "!=", "lo", "masquerade").Run()
 	}
 	return nil
 }

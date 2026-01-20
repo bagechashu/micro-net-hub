@@ -4,46 +4,72 @@ import (
 	"log"
 	"net/http"
 	"strings"
+
+	"ocserv-users/internal"
 )
 
-func RunWebServer(addr string) {
-	// corefunc
+func RunWebServer(addr string, cfg *internal.Config) {
+	if err := InitAuth(&cfg.Auth); err != nil {
+		log.Fatalf("[auth] 初始化失败: %v", err)
+	}
+
+	// Create middleware wrapper for protected routes
+	protectedMiddleware := protectedMiddlewareWrapper(globalSessionStore)
+
+	// corefunc (登录时的触发器, 暂时不需要认证)
 	http.HandleFunc("/core/nft", securityHeadersMiddleware(nftCheckTriggerHandler))
 	http.HandleFunc("/core/vpnaccess", securityHeadersMiddleware(vpnAccessCheckTriggerHandler))
+
+	// Authentication routes (always available)
+	http.HandleFunc("/login.html", securityHeadersMiddleware(loginWebHandler))
+	http.HandleFunc("/api/auth/login", securityHeadersMiddleware(corsMiddleware(loginAPIHandler)))
+	http.HandleFunc("/api/auth/logout", securityHeadersMiddleware(corsMiddleware(logoutAPIHandler)))
+	http.HandleFunc("/api/auth/session", securityHeadersMiddleware(corsMiddleware(SessionInfoHandler)))
 
 	// static
 	registerStatic()
 
-	// index
-	http.HandleFunc("/", securityHeadersMiddleware(indexWebHandler))
-	http.HandleFunc("/partials/users.html", securityHeadersMiddleware(usersPartialWebHandler))
+	// index (公开)
+	http.HandleFunc("/", protectedMiddleware(indexWebHandler, false))
+	http.HandleFunc("/partials/users.html", protectedMiddleware(usersPartialWebHandler, false))
 
-	// violations (规则违规日志)
-	http.HandleFunc("/api/violations", securityHeadersMiddleware(corsMiddleware(GetViolationsHandler)))
-	http.HandleFunc("/api/violations/stats", securityHeadersMiddleware(corsMiddleware(GetViolationStatsHandler)))
-	http.HandleFunc("/api/violations/users", securityHeadersMiddleware(corsMiddleware(GetViolationUsersHandler)))
-	http.HandleFunc("/api/violations/clearold", securityHeadersMiddleware(corsMiddleware(ClearViolationOldDataHandler)))
-	http.HandleFunc("/api/violations/vacuum", securityHeadersMiddleware(corsMiddleware(VacuumViolationDBHandler)))
+	// violations (规则违规日志) - 需要管理员权限
+	http.HandleFunc("/api/violations", protectedMiddleware(
+		func(w http.ResponseWriter, r *http.Request) { corsMiddleware(GetViolationsHandler)(w, r) }, true))
+	http.HandleFunc("/api/violations/stats", protectedMiddleware(
+		func(w http.ResponseWriter, r *http.Request) { corsMiddleware(GetViolationStatsHandler)(w, r) }, true))
+	http.HandleFunc("/api/violations/users", protectedMiddleware(
+		func(w http.ResponseWriter, r *http.Request) { corsMiddleware(GetViolationUsersHandler)(w, r) }, true))
+	http.HandleFunc("/api/violations/clearold", protectedMiddleware(
+		func(w http.ResponseWriter, r *http.Request) { corsMiddleware(ClearViolationOldDataHandler)(w, r) }, true))
+	http.HandleFunc("/api/violations/vacuum", protectedMiddleware(
+		func(w http.ResponseWriter, r *http.Request) { corsMiddleware(VacuumViolationDBHandler)(w, r) }, true))
 
-	// nft
-	http.HandleFunc("/nft.html", securityHeadersMiddleware(nftWebHandler))
-	http.HandleFunc("/partials/nftlistruleset.html", securityHeadersMiddleware(nftPartialWebHandler))
+	// nft (需要管理员权限)
+	http.HandleFunc("/nft.html", protectedMiddleware(nftWebHandler, true))
+	http.HandleFunc("/partials/nftlistruleset.html", protectedMiddleware(nftPartialWebHandler, true))
 
-	// occtl APIs
-	http.HandleFunc("/api/occtl/disconnect/{id}", securityHeadersMiddleware(corsMiddleware(occtlDisconnectUserHandler)))
+	// occtl APIs (需要管理员权限)
+	http.HandleFunc("/api/occtl/disconnect/{id}", protectedMiddleware(
+		func(w http.ResponseWriter, r *http.Request) { corsMiddleware(occtlDisconnectUserHandler)(w, r) }, true))
 
-	// config pages
-	http.HandleFunc("/config.html", securityHeadersMiddleware(configWebHandler))
-	http.HandleFunc("/config-editor.html", securityHeadersMiddleware(configEditorWebHandler))
+	// config pages (需要管理员权限)
+	http.HandleFunc("/config.html", protectedMiddleware(configWebHandler, true))
+	http.HandleFunc("/config-editor.html", protectedMiddleware(configEditorWebHandler, true))
 
-	// Config Export APIs
-	http.HandleFunc("/api/config/export", securityHeadersMiddleware(corsMiddleware(ExportConfigHandler)))
+	// Config Export APIs (需要管理员权限)
+	http.HandleFunc("/api/config/export", protectedMiddleware(
+		func(w http.ResponseWriter, r *http.Request) { corsMiddleware(ExportConfigHandler)(w, r) }, true))
 
-	// Config APIs (Phase 1 & 2)
-	http.HandleFunc("/api/config/view", securityHeadersMiddleware(corsMiddleware(ConfigViewHandler)))
-	http.HandleFunc("/api/config/validate", securityHeadersMiddleware(corsMiddleware(ConfigValidateHandler)))
-	http.HandleFunc("/api/config/preview", securityHeadersMiddleware(corsMiddleware(ConfigPreviewHandler)))
-	http.HandleFunc("/api/config/save", securityHeadersMiddleware(corsMiddleware(ConfigSaveHandler)))
+	// Config APIs (需要管理员权限)
+	http.HandleFunc("/api/config/view", protectedMiddleware(
+		func(w http.ResponseWriter, r *http.Request) { corsMiddleware(ConfigViewHandler)(w, r) }, true))
+	http.HandleFunc("/api/config/validate", protectedMiddleware(
+		func(w http.ResponseWriter, r *http.Request) { corsMiddleware(ConfigValidateHandler)(w, r) }, true))
+	http.HandleFunc("/api/config/preview", protectedMiddleware(
+		func(w http.ResponseWriter, r *http.Request) { corsMiddleware(ConfigPreviewHandler)(w, r) }, true))
+	http.HandleFunc("/api/config/save", protectedMiddleware(
+		func(w http.ResponseWriter, r *http.Request) { corsMiddleware(ConfigSaveHandler)(w, r) }, true))
 
 	go func() {
 		log.Printf("[web] 服务运行中: http://%s", addr)
@@ -51,6 +77,21 @@ func RunWebServer(addr string) {
 			log.Fatal(err)
 		}
 	}()
+}
+
+// protectedMiddlewareWrapper returns a middleware wrapper for protected routes
+func protectedMiddlewareWrapper(sessionStore *internal.AuthSessionStore) (protectedMiddleware func(http.HandlerFunc, bool) http.HandlerFunc) {
+	if sessionStore != nil {
+		return func(handler http.HandlerFunc, requireAdmin bool) http.HandlerFunc {
+			authMW := AuthMiddleware(sessionStore, authConfig.Session.CookieName, requireAdmin)
+			return authMW(securityHeadersMiddleware(handler))
+		}
+	}
+	// If auth is disabled, just apply security headers
+	return func(handler http.HandlerFunc, _ bool) http.HandlerFunc {
+		return securityHeadersMiddleware(handler)
+	}
+
 }
 
 // securityHeadersMiddleware adds essential security headers to HTTP responses

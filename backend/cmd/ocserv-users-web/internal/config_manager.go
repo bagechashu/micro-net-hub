@@ -15,8 +15,9 @@ import (
 )
 
 type Config struct {
-	RuleGroups     []RuleGroup    `json:"rule_groups,omitempty" yaml:"rule_groups,omitempty"`
-	RuleMappings   []RuleMapping  `json:"rule_mappings,omitempty" yaml:"rule_mappings,omitempty"`
+	Auth           AuthConfig      `json:"auth,omitempty" yaml:"auth,omitempty"`
+	RuleGroups     []RuleGroup     `json:"rule_groups,omitempty" yaml:"rule_groups,omitempty"`
+	RuleMappings   []RuleMapping   `json:"rule_mappings,omitempty" yaml:"rule_mappings,omitempty"`
 	VpnAccessRules []VpnAccessRule `json:"vpn_access_rules,omitempty" yaml:"vpn_access_rules,omitempty"`
 }
 
@@ -49,7 +50,8 @@ func LoadConfig(path string) (*Config, error) {
 			return nil, fmt.Errorf("failed to parse config %q as json or yaml: json: %v; yaml: %v", path, err, err2)
 		}
 	}
-
+	// set default values for auth
+	cfg.Auth.setDefaults()
 	// set default values for rules
 	cfg.setRuleDefaults()
 
