@@ -26,8 +26,8 @@ func InitAuth(cfg *internal.AuthConfig) error {
 
 	authConfig = cfg
 
-	sessionStore := internal.NewAuthSessionStore(time.Duration(cfg.Session.TimeoutMinutes) * time.Minute)
-	globalSessionStore = sessionStore
+	// Initialize global session store
+	globalSessionStore = internal.NewAuthSessionStore(time.Duration(cfg.Session.TimeoutMinutes) * time.Minute)
 
 	// Build admin users map for quick lookup
 	adminUsersList = make(map[string]bool)
@@ -109,7 +109,7 @@ func loginAPIHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	timeout := time.Duration(authConfig.Session.TimeoutMinutes) * time.Minute
-	http.SetCookie(w, CreateSessionCookie(session.ID, authConfig.Session.CookieName, timeout))
+	http.SetCookie(w, createSessionCookie(session.ID, authConfig.Session.CookieName, timeout))
 
 	log.Printf("[auth] user %s logged in (isAdmin: %v)", req.Username, isAdmin)
 
@@ -147,7 +147,7 @@ func logoutAPIHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Delete session cookie
-	http.SetCookie(w, DeleteSessionCookie(authConfig.Session.CookieName))
+	http.SetCookie(w, deleteSessionCookie(authConfig.Session.CookieName))
 
 	log.Printf("[auth] user %s logged out", username)
 
@@ -185,4 +185,30 @@ func SessionInfoHandler(w http.ResponseWriter, r *http.Request) {
 		"username": session.Username,
 		"isAdmin":  session.IsAdmin,
 	})
+}
+
+// CreateSessionCookie creates a session cookie
+func createSessionCookie(sessionID string, cookieName string, timeout time.Duration) *http.Cookie {
+	return &http.Cookie{
+		Name:     cookieName,
+		Value:    sessionID,
+		Path:     "/",
+		Expires:  time.Now().Add(timeout),
+		HttpOnly: true,
+		Secure:   false,                   // Set to true in production with HTTPS
+		SameSite: http.SameSiteStrictMode, // 改为 Strict 以支持同站点导航时的 cookie
+	}
+}
+
+// DeleteSessionCookie creates a cookie to delete the session
+func deleteSessionCookie(cookieName string) *http.Cookie {
+	return &http.Cookie{
+		Name:     cookieName,
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
+	}
 }

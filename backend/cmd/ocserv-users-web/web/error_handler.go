@@ -1,29 +1,22 @@
 package web
 
 import (
-	"embed"
 	"net/http"
 )
 
-//go:embed templates/404.html
-var errorTemplateFS embed.FS
-
 // notFoundHandler handles 404 errors for undefined routes
 func notFoundHandler(w http.ResponseWriter, r *http.Request) {
-	data := map[string]string{
-		"RequestPath": r.URL.Path,
-	}
-
 	w.WriteHeader(http.StatusNotFound)
-	renderWithLayout(w, "404.html", data)
+	renderWithLayout(w, "404.html", nil)
+}
+
+// methodNotAllowedHandler handles 405 errors for undefined routes
+func methodNotAllowedHandler(w http.ResponseWriter, r *http.Request) {
+	sendJSON(w, http.StatusMethodNotAllowed, Response{Message: "Method Not Allowed"})
 }
 
 // forbiddenHandler handles 403 errors
 func forbiddenHandler(w http.ResponseWriter, r *http.Request) {
-	data := map[string]string{
-		"RequestPath": r.URL.Path,
-	}
-
 	w.WriteHeader(http.StatusForbidden)
-	renderWithLayout(w, "403.html", data)
+	renderWithLayout(w, "403.html", nil)
 }

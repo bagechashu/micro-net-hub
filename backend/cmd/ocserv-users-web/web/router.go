@@ -3,9 +3,14 @@ package web
 import (
 	"log"
 	"net/http"
-	"strings"
+	"time"
 
 	"ocserv-users/internal"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
+	"github.com/go-chi/httprate"
 )
 
 func RunWebServer(addr string, cfg *internal.Config) {
@@ -13,177 +18,91 @@ func RunWebServer(addr string, cfg *internal.Config) {
 		log.Fatalf("[auth] 初始化失败: %v", err)
 	}
 
-	// Create middleware wrapper for protected routes
-	protectedMiddleware := protectedMiddlewareWrapper(globalSessionStore)
+	// Initialize chi router
+	r := chi.NewRouter()
 
-	// corefunc (登录时的触发器, 暂时不需要认证)
-	http.HandleFunc("/core/nft", securityHeadersMiddleware(nftCheckTriggerHandler))
-	http.HandleFunc("/core/vpnaccess", securityHeadersMiddleware(vpnAccessCheckTriggerHandler))
+	// Apply global middlewares
+	// r.Use(middleware.Logger)
+	r.Use(httprate.LimitByIP(60, 1*time.Minute))
+	r.Use(middleware.Timeout(time.Second * 60))
+	r.Use(middleware.Recoverer)
+
+	// Apply CORS middleware using chi/cors
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"https://*", "http://*"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "X-Requested-With"},
+		ExposedHeaders:   []string{"Link"},
+		MaxAge:           300,
+		AllowCredentials: true, // Allow cookies
+	}))
+
+	// Apply security headers middleware
+	r.Use(securityHeadersMiddleware)
+
+	// register Static file routes
+	registerStatic(r)
+
+	// Core routes (no auth required)
+	r.Post("/core/nft", nftCheckTriggerHandler)
+	r.Post("/core/vpnaccess", vpnAccessCheckTriggerHandler)
 
 	// Authentication routes (always available)
-	http.HandleFunc("/api/auth/login", securityHeadersMiddleware(corsMiddleware(loginAPIHandler)))
-	http.HandleFunc("/api/auth/session", securityHeadersMiddleware(corsMiddleware(SessionInfoHandler)))
-	// http.HandleFunc("/api/auth/logout", securityHeadersMiddleware(corsMiddleware(logoutAPIHandler)))
-	http.HandleFunc("/api/auth/logout", protectedMiddleware(
-		func(w http.ResponseWriter, r *http.Request) { corsMiddleware(logoutAPIHandler)(w, r) }, false))
+	r.Post("/api/auth/login", loginAPIHandler)
+	r.Get("/api/auth/session", SessionInfoHandler)
 
-	// static
-	registerStatic()
+	// Protected routes (require auth)
+	r.Group(func(r chi.Router) {
+		r.Use(authMiddleware)
+		r.Post("/api/auth/logout", logoutAPIHandler)
 
-	// index (公开)
-	http.HandleFunc("/", protectedMiddleware(indexWebHandler, false))
-	http.HandleFunc("/partials/users.html", protectedMiddleware(usersPartialWebHandler, false))
+		// Public routes
+		r.Get("/", indexWebHandler)
+		r.Get("/partials/users.html", usersPartialWebHandler)
 
-	// violations (规则违规日志) - 需要管理员权限
-	http.HandleFunc("/api/violations", protectedMiddleware(
-		func(w http.ResponseWriter, r *http.Request) { corsMiddleware(GetViolationsHandler)(w, r) }, true))
-	http.HandleFunc("/api/violations/stats", protectedMiddleware(
-		func(w http.ResponseWriter, r *http.Request) { corsMiddleware(GetViolationStatsHandler)(w, r) }, true))
-	http.HandleFunc("/api/violations/users", protectedMiddleware(
-		func(w http.ResponseWriter, r *http.Request) { corsMiddleware(GetViolationUsersHandler)(w, r) }, true))
-	http.HandleFunc("/api/violations/clearold", protectedMiddleware(
-		func(w http.ResponseWriter, r *http.Request) { corsMiddleware(ClearViolationOldDataHandler)(w, r) }, true))
-	http.HandleFunc("/api/violations/vacuum", protectedMiddleware(
-		func(w http.ResponseWriter, r *http.Request) { corsMiddleware(VacuumViolationDBHandler)(w, r) }, true))
+		// Admin-only routes
+		r.Group(func(r chi.Router) {
+			r.Use(adminMiddleware)
 
-	// nft (需要管理员权限)
-	http.HandleFunc("/nft.html", protectedMiddleware(nftWebHandler, true))
-	http.HandleFunc("/partials/nftlistruleset.html", protectedMiddleware(nftPartialWebHandler, true))
+			// NFT management
+			r.Get("/nft.html", nftWebHandler)
+			r.Get("/partials/nftlistruleset.html", nftPartialWebHandler)
 
-	// occtl APIs (需要管理员权限)
-	http.HandleFunc("/api/occtl/disconnect/{id}", protectedMiddleware(
-		func(w http.ResponseWriter, r *http.Request) { corsMiddleware(occtlDisconnectUserHandler)(w, r) }, true))
+			// Config pages
+			r.Get("/config.html", configWebHandler)
+			r.Get("/config-editor.html", configEditorWebHandler)
 
-	// config pages (需要管理员权限)
-	http.HandleFunc("/config.html", protectedMiddleware(configWebHandler, true))
-	http.HandleFunc("/config-editor.html", protectedMiddleware(configEditorWebHandler, true))
+			r.Route("/api", func(r chi.Router) {
+				// Violations API
+				r.Get("/violations", GetViolationsHandler)
+				r.Get("/violations/stats", GetViolationStatsHandler)
+				r.Get("/violations/users", GetViolationUsersHandler)
+				r.Post("/violations/clearold", ClearViolationOldDataHandler)
+				r.Post("/violations/vacuum", VacuumViolationDBHandler)
 
-	// Config Export APIs (需要管理员权限)
-	http.HandleFunc("/api/config/export", protectedMiddleware(
-		func(w http.ResponseWriter, r *http.Request) { corsMiddleware(ExportConfigHandler)(w, r) }, true))
+				// OCCTL APIs
+				r.Post("/occtl/disconnect/{id}", occtlDisconnectUserHandler)
 
-	// Config APIs (需要管理员权限)
-	http.HandleFunc("/api/config/view", protectedMiddleware(
-		func(w http.ResponseWriter, r *http.Request) { corsMiddleware(ConfigViewHandler)(w, r) }, true))
-	http.HandleFunc("/api/config/validate", protectedMiddleware(
-		func(w http.ResponseWriter, r *http.Request) { corsMiddleware(ConfigValidateHandler)(w, r) }, true))
-	http.HandleFunc("/api/config/preview", protectedMiddleware(
-		func(w http.ResponseWriter, r *http.Request) { corsMiddleware(ConfigPreviewHandler)(w, r) }, true))
-	http.HandleFunc("/api/config/save", protectedMiddleware(
-		func(w http.ResponseWriter, r *http.Request) { corsMiddleware(ConfigSaveHandler)(w, r) }, true))
+				// Config APIs
+				r.Get("/config/export", ExportConfigHandler)
+				r.Get("/config/view", ConfigViewHandler)
+				r.Post("/config/validate", ConfigValidateHandler)
+				r.Post("/config/preview", ConfigPreviewHandler)
+				r.Post("/config/save", ConfigSaveHandler)
+			})
+		})
+	})
+
+	// Custom 404 handler
+	r.NotFound(notFoundHandler)
+
+	// Custom 405 handler
+	r.MethodNotAllowed(methodNotAllowedHandler)
 
 	go func() {
 		log.Printf("[web] 服务运行中: http://%s", addr)
-		if err := http.ListenAndServe(addr, nil); err != nil {
+		if err := http.ListenAndServe(addr, r); err != nil {
 			log.Fatal(err)
 		}
 	}()
-}
-
-// protectedMiddlewareWrapper returns a middleware wrapper for protected routes
-func protectedMiddlewareWrapper(sessionStore *internal.AuthSessionStore) (protectedMiddleware func(http.HandlerFunc, bool) http.HandlerFunc) {
-	if sessionStore != nil {
-		return func(handler http.HandlerFunc, requireAdmin bool) http.HandlerFunc {
-			authMW := AuthMiddleware(sessionStore, authConfig.Session.CookieName, requireAdmin)
-			return authMW(securityHeadersMiddleware(handler))
-		}
-	}
-	// If auth is disabled, just apply security headers
-	return func(handler http.HandlerFunc, _ bool) http.HandlerFunc {
-		return securityHeadersMiddleware(handler)
-	}
-
-}
-
-// securityHeadersMiddleware adds essential security headers to HTTP responses
-func securityHeadersMiddleware(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// Prevent clickjacking attacks
-		w.Header().Set("X-Frame-Options", "DENY")
-
-		// Prevent MIME type sniffing
-		w.Header().Set("X-Content-Type-Options", "nosniff")
-
-		// Enable XSS protection in older browsers
-		w.Header().Set("X-XSS-Protection", "1; mode=block")
-
-		// Prevent browsers from caching sensitive data
-		w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
-		w.Header().Set("Pragma", "no-cache")
-		w.Header().Set("Expires", "0")
-
-		// Referrer policy: minimize referrer information leakage
-		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
-
-		// Content Security Policy: restrict resource loading
-		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'")
-
-		next(w, r)
-	}
-}
-
-// corsMiddleware handles CORS for API endpoints
-// Only allows same-origin requests and handles preflight requests
-func corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		origin := r.Header.Get("Origin")
-
-		// Only allow requests from the same origin or localhost in development
-		// In production, restrict to specific allowed origins
-		allowedOrigins := map[string]bool{
-			"":     true, // same-origin requests have empty Origin header
-			"null": true, // file:// URLs have Origin: null
-		}
-
-		// For development/internal use, you can add specific origins:
-		// allowedOrigins["https://trusted-domain.com"] = true
-
-		if isLocalhost(origin) {
-			// Allow localhost in development
-			allowedOrigins[origin] = true
-		}
-
-		if allowedOrigins[origin] && origin != "" {
-			w.Header().Set("Access-Control-Allow-Origin", origin)
-			w.Header().Set("Access-Control-Allow-Credentials", "true")
-		}
-
-		// Specify allowed methods
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-
-		// Specify allowed headers
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
-
-		// Preflight cache duration (5 minutes)
-		w.Header().Set("Access-Control-Max-Age", "300")
-
-		// Handle preflight requests
-		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-
-		next(w, r)
-	}
-}
-
-// isLocalhost checks if the origin is a localhost URL
-func isLocalhost(origin string) bool {
-	if origin == "" {
-		return false
-	}
-	localhostPatterns := []string{
-		"http://localhost",
-		"http://127.0.0.1",
-		"http://[::1]",
-		"https://localhost",
-		"https://127.0.0.1",
-		"https://[::1]",
-	}
-	for _, pattern := range localhostPatterns {
-		if strings.HasPrefix(origin, pattern) {
-			return true
-		}
-	}
-	return false
 }

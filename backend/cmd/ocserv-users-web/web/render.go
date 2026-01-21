@@ -8,6 +8,8 @@ import (
 	"io/fs"
 	"net/http"
 	"path/filepath"
+
+	"github.com/go-chi/chi/v5"
 )
 
 //go:embed templates/*
@@ -76,12 +78,11 @@ func render(w http.ResponseWriter, name string, data any) {
 	}
 }
 
-// 注册静态文件路由
-func registerStatic() {
+// registerStatic registers static file routes for chi
+func registerStatic(r chi.Router) {
 	fsys, _ := fs.Sub(staticFS, "static")
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(fsys))))
+	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.FS(fsys))))
 }
-
 
 // Response helper functions
 func sendJSON(w http.ResponseWriter, code int, resp Response) {
