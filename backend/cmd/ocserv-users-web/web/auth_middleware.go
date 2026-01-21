@@ -39,7 +39,8 @@ func AuthMiddleware(sessionStore *internal.AuthSessionStore, sessionCookieName s
 
 			// Check admin requirement
 			if requireAdmin && !session.IsAdmin {
-				http.Error(w, "Only Admins allowed", http.StatusForbidden)
+				w.WriteHeader(http.StatusForbidden)
+				renderWithLayout(w, "403.html", nil)
 				return
 			}
 
@@ -51,14 +52,6 @@ func AuthMiddleware(sessionStore *internal.AuthSessionStore, sessionCookieName s
 			next(w, r)
 		}
 	}
-}
-
-// boolToString converts bool to string
-func boolToString(b bool) string {
-	if b {
-		return "true"
-	}
-	return "false"
 }
 
 // CreateSessionCookie creates a session cookie

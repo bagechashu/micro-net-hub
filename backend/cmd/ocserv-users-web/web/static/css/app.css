@@ -3,11 +3,13 @@ body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   background: #f5f5f5;
 }
+
 main.container {
   max-width: 1200px;
   margin: auto;
   padding: 1.5rem;
 }
+
 header.app-header {
   display: flex;
   justify-content: space-between;
@@ -15,15 +17,18 @@ header.app-header {
   padding: 1rem 0;
   border-bottom: 1px solid #ddd;
 }
+
 header.app-header h3 {
   margin: 0;
 }
+
 header.app-header nav {
   display: flex;
   gap: 0.5rem;
   align-items: center;
   flex-wrap: wrap;
 }
+
 header.app-header nav a,
 header.app-header nav button {
   text-decoration: none;
@@ -31,15 +36,18 @@ header.app-header nav button {
   border-radius: 4px;
   white-space: nowrap;
 }
+
 header.app-header nav a.secondary,
 header.app-header nav button.secondary {
   background-color: #e6e6e6;
   color: #333;
 }
+
 header.app-header nav a:hover,
 header.app-header nav button:hover {
   background-color: #ddd;
 }
+
 header.app-header nav button {
   border: none;
   cursor: pointer;
@@ -50,13 +58,15 @@ header.app-header nav button {
 /* ======================= Modal Overlay ======================= */
 .modal {
   position: fixed;
-  top: 0; left: 0;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.3); /* 更浅的遮罩，协调主背景 */
+  /* 更浅的遮罩，协调主背景 */
+  background: rgba(0, 0, 0, 0.3);
   z-index: 1000;
 }
 
@@ -66,9 +76,12 @@ header.app-header nav button {
 
 /* ======================= Modal Container ======================= */
 .modal__container {
-  background: #f5f5f5; /* 白色背景，和 Pure.css 表格、按钮协调 */
-  border-radius: 0;  /* 无圆角 */
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  /* 白色背景，和 Pure.css 表格、按钮协调 */
+  background: #f5f5f5;
+  /* 无圆角 */
+  border-radius: 0;
+
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   padding: 1.5em;
   max-width: 600px;
   width: 90%;
@@ -83,7 +96,8 @@ header.app-header nav button {
   font-size: 1.25em;
   font-weight: bold;
   margin-bottom: 1em;
-  border-bottom: 1px solid #ddd; /* 边界颜色协调主页面表格 */
+  /* 边界颜色协调主页面表格 */
+  border-bottom: 1px solid #ddd;
   padding-bottom: 0.5em;
 }
 
@@ -131,8 +145,9 @@ header.app-header nav button {
 }
 
 .modal__body::-webkit-scrollbar-thumb {
-  background: rgba(0,0,0,0.15);
-  border-radius: 0; /* 无圆角 */
+  background: rgba(0, 0, 0, 0.15);
+  /* 无圆角 */
+  border-radius: 0;
 }
 
 .modal__body::-webkit-scrollbar-track {
@@ -183,6 +198,7 @@ header.app-header nav button {
   border-radius: 3px;
   font-size: 0.95em;
 }
+
 /* ======================= Small Button ======================= */
 .pure-button-sm {
   padding: 0.3em 0.6em;
@@ -254,7 +270,8 @@ header.app-header nav button {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   width: 100%;
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch; /* 移动端顺滑滚动 */
+  /* 移动端顺滑滚动 */
+  -webkit-overflow-scrolling: touch;
 }
 
 .table-section h4 {
@@ -269,12 +286,15 @@ header.app-header nav button {
 .table-wrapper {
   width: 100%;
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch; /* 移动端顺滑滚动 */
+  /* 移动端顺滑滚动 */
+  -webkit-overflow-scrolling: touch;
 }
 
 .table-wrapper table {
-  min-width: 100%;      /* 至少占满容器 */
-  white-space: nowrap; /* 防止单元格自动换行 */
+  /* 至少占满容器 */
+  min-width: 100%;
+  /* 防止单元格自动换行 */
+  white-space: nowrap;
 }
 
 /* ======================= Code Block Style ======================= */
@@ -306,4 +326,55 @@ code::-webkit-scrollbar-thumb {
 
 code::-webkit-scrollbar-track {
   background: transparent;
+}
+
+/* ======================= Error Page Styles ======================= */
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  text-align: center;
+  padding: 2em;
+}
+
+.error-code {
+  font-size: 8em;
+  font-weight: bold;
+  color: #d9534f;
+  margin: 0;
+  line-height: 1;
+}
+
+.error-title {
+  font-size: 2em;
+  color: #333;
+  margin: 0.5em 0;
+}
+
+.error-message {
+  font-size: 1.2em;
+  color: #666;
+  margin: 1em 0 2em 0;
+  max-width: 500px;
+}
+
+.error-path {
+  background-color: #f5f5f5;
+  padding: 1em;
+  border-radius: 4px;
+  margin: 1em 0;
+  word-break: break-all;
+  font-family: monospace;
+  color: #555;
+}
+
+.button-group {
+  margin-top: 2em;
+}
+
+.button-group a,
+.button-group button {
+  margin: 0 0.5em;
 }
