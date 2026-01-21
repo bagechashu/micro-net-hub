@@ -49,21 +49,6 @@ func InitAuth(cfg *internal.AuthConfig) error {
 	return nil
 }
 
-// loginWebHandler serves the login page
-func loginWebHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		sendError(w, http.StatusMethodNotAllowed, "Method not allowed")
-		return
-	}
-
-	redirect := r.URL.Query().Get("redirect")
-	if redirect == "" {
-		redirect = "/"
-	}
-
-	renderWithLayout(w, "login.html", nil)
-}
-
 // loginAPIHandler handles login API requests
 func loginAPIHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -117,14 +102,14 @@ func loginAPIHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Set session cookie
-	cookieName := "ocserv_session"
-	if authConfig.Session.CookieName != "" {
-		cookieName = authConfig.Session.CookieName
+	// session cookie
+	if authConfig.Session.CookieName == "" {
+		sendError(w, http.StatusInternalServerError, "session cookie name is not configured")
+		return
 	}
 
 	timeout := time.Duration(authConfig.Session.TimeoutMinutes) * time.Minute
-	http.SetCookie(w, CreateSessionCookie(session.ID, cookieName, timeout))
+	http.SetCookie(w, CreateSessionCookie(session.ID, authConfig.Session.CookieName, timeout))
 
 	log.Printf("[auth] user %s logged in (isAdmin: %v)", req.Username, isAdmin)
 
@@ -144,20 +129,26 @@ func logoutAPIHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cookieName := "ocserv_session"
-	if authConfig.Session.CookieName != "" {
-		cookieName = authConfig.Session.CookieName
+	// session cookie
+	if authConfig.Session.CookieName == "" {
+		sendError(w, http.StatusInternalServerError, "session cookie name is not configured")
+		return
 	}
 
-	cookie, err := r.Cookie(cookieName)
-	if err == nil {
-		globalSessionStore.DeleteSession(cookie.Value)
+	cookie, err := r.Cookie(authConfig.Session.CookieName)
+	if err != nil {
+		sendError(w, http.StatusUnauthorized, "not logged in")
+		return
+	}
+
+	username, err := globalSessionStore.DeleteSession(cookie.Value)
+	if err != nil {
+		log.Printf("[auth] failed to delete '%s' session: %v", username, err)
 	}
 
 	// Delete session cookie
-	http.SetCookie(w, DeleteSessionCookie(cookieName))
+	http.SetCookie(w, DeleteSessionCookie(authConfig.Session.CookieName))
 
-	username := r.Header.Get("X-Username")
 	log.Printf("[auth] user %s logged out", username)
 
 	sendSuccess(w, "logged out successfully", nil)
@@ -170,16 +161,28 @@ func SessionInfoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	username := r.Header.Get("X-Username")
-	isAdmin := r.Header.Get("X-Is-Admin") == "true"
+	// session cookie
+	if authConfig.Session.CookieName == "" {
+		sendError(w, http.StatusInternalServerError, "session cookie name is not configured")
+		return
+	}
 
-	if username == "" {
-		sendError(w, http.StatusUnauthorized, "Unauthorized")
+	// Get session cookie
+	cookie, err := r.Cookie(authConfig.Session.CookieName)
+	if err != nil {
+		sendError(w, http.StatusUnauthorized, "not logged in")
+		return
+	}
+
+	// Get session from store
+	session, err := globalSessionStore.GetSession(cookie.Value)
+	if err != nil {
+		sendError(w, http.StatusUnauthorized, "session invalid or expired")
 		return
 	}
 
 	sendSuccess(w, "account info", map[string]interface{}{
-		"username": username,
-		"isAdmin":  isAdmin,
+		"username": session.Username,
+		"isAdmin":  session.IsAdmin,
 	})
 }

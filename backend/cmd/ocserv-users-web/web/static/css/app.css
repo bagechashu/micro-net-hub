@@ -18,18 +18,33 @@ header.app-header {
 header.app-header h3 {
   margin: 0;
 }
-header.app-header nav a {
+header.app-header nav {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+header.app-header nav a,
+header.app-header nav button {
   text-decoration: none;
   padding: 0.5rem 1rem;
-  margin-left: 0.5rem;
   border-radius: 4px;
+  white-space: nowrap;
 }
-header.app-header nav a.secondary {
+header.app-header nav a.secondary,
+header.app-header nav button.secondary {
   background-color: #e6e6e6;
   color: #333;
 }
-header.app-header nav a:hover {
+header.app-header nav a:hover,
+header.app-header nav button:hover {
   background-color: #ddd;
+}
+header.app-header nav button {
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
 }
 
 /* ======================= Modal Overlay ======================= */
@@ -122,6 +137,51 @@ header.app-header nav a:hover {
 
 .modal__body::-webkit-scrollbar-track {
   background: transparent;
+}
+
+/* ======================= Form Styles for Modal ======================= */
+.form-group {
+  margin-bottom: 1.5em;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5em;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-group input[type="text"],
+.form-group input[type="password"] {
+  width: 100%;
+  padding: 0.5em;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  font-size: 1em;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="password"]:focus {
+  outline: none;
+  border-color: #2d89df;
+  box-shadow: 0 0 0 2px rgba(45, 137, 223, 0.1);
+}
+
+.pure-input-1 {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ======================= Error Message ======================= */
+.error-message {
+  color: #d32f2f;
+  background-color: #ffebee;
+  border: 1px solid #ef5350;
+  padding: 0.75em;
+  border-radius: 3px;
+  font-size: 0.95em;
 }
 /* ======================= Small Button ======================= */
 .pure-button-sm {

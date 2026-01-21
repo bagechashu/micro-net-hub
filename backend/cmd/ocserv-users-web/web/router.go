@@ -21,10 +21,11 @@ func RunWebServer(addr string, cfg *internal.Config) {
 	http.HandleFunc("/core/vpnaccess", securityHeadersMiddleware(vpnAccessCheckTriggerHandler))
 
 	// Authentication routes (always available)
-	http.HandleFunc("/login.html", securityHeadersMiddleware(loginWebHandler))
 	http.HandleFunc("/api/auth/login", securityHeadersMiddleware(corsMiddleware(loginAPIHandler)))
-	http.HandleFunc("/api/auth/logout", securityHeadersMiddleware(corsMiddleware(logoutAPIHandler)))
 	http.HandleFunc("/api/auth/session", securityHeadersMiddleware(corsMiddleware(SessionInfoHandler)))
+	// http.HandleFunc("/api/auth/logout", securityHeadersMiddleware(corsMiddleware(logoutAPIHandler)))
+	http.HandleFunc("/api/auth/logout", protectedMiddleware(
+		func(w http.ResponseWriter, r *http.Request) { corsMiddleware(logoutAPIHandler)(w, r) }, false))
 
 	// static
 	registerStatic()

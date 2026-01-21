@@ -110,16 +110,18 @@ func (ss *AuthSessionStore) RenewSession(sessionID string) error {
 }
 
 // DeleteSession removes a session
-func (ss *AuthSessionStore) DeleteSession(sessionID string) error {
+func (ss *AuthSessionStore) DeleteSession(sessionID string) (username string, err error) {
 	ss.mu.Lock()
 	defer ss.mu.Unlock()
 
-	if _, exists := ss.sessions[sessionID]; !exists {
-		return fmt.Errorf("session not found")
+	session, exists := ss.sessions[sessionID]
+	if !exists {
+		return "", fmt.Errorf("session not found")
 	}
-
+	username = session.Username
 	delete(ss.sessions, sessionID)
-	return nil
+
+	return username, nil
 }
 
 // cleanupExpiredSessions periodically removes expired sessions

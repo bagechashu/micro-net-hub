@@ -31,16 +31,283 @@
 <main class="container">
 <header class="app-header">
   <h3>VPN 管理面板</h3>
-  <nav>
-    <a href="/" role="button" class="pure-button">用户</a>
-    <a href="/nft.html" role="button" class="pure-button pure-button-secondary">NFT</a>
-    <a href="/config.html" role="button" class="pure-button pure-button-secondary">配置</a>
+  <nav id="mainNav">
+    <a href="/" role="button" class="pure-button" id="usersBtn" style="visibility: hidden; position: absolute; width: 0;">用户</a>
+    <a href="/nft.html" role="button" class="pure-button pure-button-secondary" id="nftBtn" style="visibility: hidden; position: absolute; width: 0;">NFT</a>
+    <a href="/config.html" role="button" class="pure-button pure-button-secondary" id="configBtn" style="visibility: hidden; position: absolute; width: 0;">配置</a>
+    <button role="button" class="pure-button" id="loginBtn" onclick="openLoginModal()" style="visibility: visible;">登录</button>
+    <button role="button" class="pure-button pure-button-secondary" id="logoutBtn" onclick="handleLogout()" style="visibility: hidden; position: absolute; width: 0;">登出</button>
   </nav>
 </header>
+
+<!-- Login Modal -->
+<div id="loginModal" class="modal" hidden aria-hidden="true">
+  <div class="modal__container">
+    <button class="modal__close" onclick="closeLoginModal()">&times;</button>
+    <div class="modal__title">用户登录</div>
+    
+    <div class="modal__body">
+      <div id="loginErrorMessage" class="error-message" style="display: none; margin-bottom: 1em;"></div>
+      
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="username">用户名</label>
+          <input 
+            type="text" 
+            id="username" 
+            name="username" 
+            required 
+            autocomplete="username"
+            placeholder="输入用户名"
+            class="pure-input-1"
+          >
+        </div>
+        
+        <div class="form-group">
+          <label for="password">密码</label>
+          <input 
+            type="password" 
+            id="password" 
+            name="password" 
+            required 
+            autocomplete="current-password"
+            placeholder="输入密码"
+            class="pure-input-1"
+          >
+        </div>
+      </form>
+    </div>
+    
+    <div class="modal__footer">
+      <button type="button" class="pure-button" onclick="closeLoginModal()">取消</button>
+      <button type="submit" form="loginForm" class="pure-button pure-button-primary" id="loginSubmitBtn">登录</button>
+    </div>
+  </div>
+</div>
 
 {{ block "content" . }}{{ end }}
 
 </main>
+
+<!-- Auth Scripts -->
+<script>
+const cookieName = 'ocauth_session';
+
+// 初始化页面 - 检查登录状态
+async function initializePage() {
+  console.log(`[DEBUG] initializePage() called`);
+  
+  // 先恢复上次缓存的状态，避免初始抖动
+  const cachedLoginState = localStorage.getItem('userLoginState');
+  if (cachedLoginState !== null) {
+    const isLoggedIn = JSON.parse(cachedLoginState);
+    console.log(`[DEBUG] Restoring cached login state: ${isLoggedIn}`);
+    updateNavigation(isLoggedIn);
+  }
+  
+  try {
+    // 调用后端 API 检查会话状态
+    // credentials: 'include' 确保请求会携带 cookie
+    const response = await fetch('/api/auth/session', {
+      method: 'GET',
+      credentials: 'include',
+    });
+    
+    console.log(`[DEBUG] Session check response status: ${response.status}`);
+    
+    const isLoggedIn = response.ok;
+    if (isLoggedIn) {
+      const data = await response.json();
+      console.log(`[DEBUG] Session data:`, data);
+      console.log(`[DEBUG] User is logged in`);
+    } else {
+      console.log(`[DEBUG] User is NOT logged in (status: ${response.status})`);
+    }
+    
+    // 缓存登录状态
+    localStorage.setItem('userLoginState', JSON.stringify(isLoggedIn));
+    updateNavigation(isLoggedIn);
+  } catch (error) {
+    console.error(`[DEBUG] Session check error:`, error);
+    updateNavigation(false);
+  }
+}
+
+// 从 cookie 中获取值（不再使用，保留用于调试）
+function getCookie(name) {
+  const nameEQ = name + "=";
+  const ca = document.cookie.split(';');
+  console.log(`[DEBUG] getCookie('${name}') - document.cookie is empty or HttpOnly`, document.cookie);
+  for(let i = 0; i < ca.length; i++) {
+    let c = ca[i].trim();
+    if (c.indexOf(nameEQ) === 0) {
+      const value = c.substring(nameEQ.length);
+      console.log(`[DEBUG] Found cookie '${name}': "${value}"`);
+      return value;
+    }
+  }
+  console.log(`[DEBUG] Cookie '${name}' not found (这是正常的，因为 HttpOnly 标志设置了)`);
+  return null;
+}
+
+// 更新导航栏显示
+function updateNavigation(isLoggedIn) {
+  const usersBtn = document.getElementById('usersBtn');
+  const nftBtn = document.getElementById('nftBtn');
+  const configBtn = document.getElementById('configBtn');
+  const loginBtn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  
+  if (isLoggedIn) {
+    // 已登录：显示所有功能按钮和登出，隐藏登录
+    usersBtn.style.visibility = 'visible';
+    usersBtn.style.position = 'static';
+    usersBtn.style.width = 'auto';
+    
+    nftBtn.style.visibility = 'visible';
+    nftBtn.style.position = 'static';
+    nftBtn.style.width = 'auto';
+    
+    configBtn.style.visibility = 'visible';
+    configBtn.style.position = 'static';
+    configBtn.style.width = 'auto';
+    
+    loginBtn.style.visibility = 'hidden';
+    loginBtn.style.position = 'absolute';
+    loginBtn.style.width = '0';
+    
+    logoutBtn.style.visibility = 'visible';
+    logoutBtn.style.position = 'static';
+    logoutBtn.style.width = 'auto';
+  } else {
+    // 未登录：仅显示用户管理和登录，隐藏其他
+    usersBtn.style.visibility = 'hidden';
+    usersBtn.style.position = 'absolute';
+    usersBtn.style.width = '0';
+    
+    nftBtn.style.visibility = 'hidden';
+    nftBtn.style.position = 'absolute';
+    nftBtn.style.width = '0';
+    
+    configBtn.style.visibility = 'hidden';
+    configBtn.style.position = 'absolute';
+    configBtn.style.width = '0';
+    
+    loginBtn.style.visibility = 'visible';
+    loginBtn.style.position = 'static';
+    loginBtn.style.width = 'auto';
+    
+    logoutBtn.style.visibility = 'hidden';
+    logoutBtn.style.position = 'absolute';
+    logoutBtn.style.width = '0';
+  }
+}
+
+// 打开登录 modal
+function openLoginModal() {
+  const modal = document.getElementById('loginModal');
+  modal.hidden = false;
+  modal.setAttribute('aria-hidden', 'false');
+  document.getElementById('username').focus();
+}
+
+// 关闭登录 modal
+function closeLoginModal() {
+  const modal = document.getElementById('loginModal');
+  modal.hidden = true;
+  modal.setAttribute('aria-hidden', 'true');
+  document.getElementById('loginForm').reset();
+  document.getElementById('loginErrorMessage').style.display = 'none';
+}
+
+// 处理登录
+async function handleLogin(event) {
+  event.preventDefault();
+  
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+  const errorDiv = document.getElementById('loginErrorMessage');
+  const submitBtn = document.getElementById('loginSubmitBtn');
+  
+  // 清除之前的错误
+  errorDiv.style.display = 'none';
+  submitBtn.disabled = true;
+  submitBtn.textContent = '登录中...';
+  
+  try {
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, password }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || '登录失败');
+    }
+    // 可选：登录成功，关闭 modal 并更新导航
+    // closeLoginModal();
+    // updateNavigation(true);
+
+    // 跳转到首页或其他页面
+    window.location.href = '/';
+  } catch (error) {
+    errorDiv.textContent = error.message;
+    errorDiv.style.display = 'block';
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = '登录';
+  }
+}
+
+// 处理登出
+async function handleLogout() {
+  if (!confirm('确定要登出吗？')) return;
+  
+  try {
+    const response = await fetch('/api/auth/logout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', // 确保请求携带 cookie
+    });
+    
+    if (response.ok) {
+      // 清除缓存的登录状态
+      localStorage.removeItem('userLoginState');
+      updateNavigation(false);
+      window.location.href = '/';
+    } else {
+      alert('登出失败');
+    }
+  } catch (error) {
+    alert('登出出错: ' + error.message);
+  }
+}
+
+// 点击 modal 外部关闭
+document.addEventListener('DOMContentLoaded', function() {
+  initializePage();
+  
+  const modal = document.getElementById('loginModal');
+  modal.addEventListener('click', function(event) {
+    if (event.target === modal) {
+      closeLoginModal();
+    }
+  });
+  
+  // ESC 键关闭 modal
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+      closeLoginModal();
+    }
+  });
+});
+</script>
 
 {{ block "script" . }}{{ end }}
 

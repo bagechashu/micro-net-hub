@@ -17,7 +17,7 @@ func AuthMiddleware(sessionStore *internal.AuthSessionStore, sessionCookieName s
 			cookie, err := r.Cookie(sessionCookieName)
 			if err != nil {
 				if requireAdmin {
-					http.Redirect(w, r, "/login.html?redirect="+r.URL.Path, http.StatusSeeOther)
+					http.Redirect(w, r, "/?redirect="+r.URL.Path, http.StatusSeeOther)
 					return
 				}
 				// If auth is not required but enabled, proceed with guest status
@@ -28,9 +28,9 @@ func AuthMiddleware(sessionStore *internal.AuthSessionStore, sessionCookieName s
 			// Validate session
 			session, err := sessionStore.GetSession(cookie.Value)
 			if err != nil {
-				log.Printf("[auth] 无效的会话 ID: %v", err)
+				log.Printf("[auth] Invalid session ID: %v", err)
 				if requireAdmin {
-					http.Redirect(w, r, "/login.html?redirect="+r.URL.Path, http.StatusSeeOther)
+					http.Redirect(w, r, "/?redirect="+r.URL.Path, http.StatusSeeOther)
 					return
 				}
 				next(w, r)
@@ -39,30 +39,18 @@ func AuthMiddleware(sessionStore *internal.AuthSessionStore, sessionCookieName s
 
 			// Check admin requirement
 			if requireAdmin && !session.IsAdmin {
-				http.Error(w, "管理员权限必需", http.StatusForbidden)
+				http.Error(w, "Only Admins allowed", http.StatusForbidden)
 				return
 			}
 
 			// Renew session
 			if err := sessionStore.RenewSession(cookie.Value); err != nil {
-				log.Printf("[auth] 会话更新失败: %v", err)
+				log.Printf("[auth] Session renewal failed: %v", err)
 			}
-
-			// Store session info in request context for handlers to use
-			r.Header.Set("X-Username", session.Username)
-			r.Header.Set("X-Is-Admin", boolToString(session.IsAdmin))
-			r.Header.Set("X-Session-ID", session.ID)
 
 			next(w, r)
 		}
 	}
-}
-
-// GetSessionFromRequest extracts session info from request headers
-func GetSessionFromRequest(r *http.Request) (username string, isAdmin bool) {
-	username = r.Header.Get("X-Username")
-	isAdmin = r.Header.Get("X-Is-Admin") == "true"
-	return
 }
 
 // boolToString converts bool to string
@@ -82,7 +70,7 @@ func CreateSessionCookie(sessionID string, cookieName string, timeout time.Durat
 		Expires:  time.Now().Add(timeout),
 		HttpOnly: true,
 		Secure:   false, // Set to true in production with HTTPS
-		SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteStrictMode,  // 改为 Strict 以支持同站点导航时的 cookie
 	}
 }
 
