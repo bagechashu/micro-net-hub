@@ -6,7 +6,7 @@ import (
 )
 
 func ocUsersWebHandler(w http.ResponseWriter, r *http.Request) {
-	renderWithLayout(w, "ocusers.html", nil)
+	renderWithLayout(w, "ocusers.html", ocUsersTable["ocusers"], "partials/ocusers-table.html")
 }
 
 func ocUsersPartialWebHandler(w http.ResponseWriter, r *http.Request) {
@@ -20,7 +20,7 @@ func ocUsersPartialWebHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func indexWebHandler(w http.ResponseWriter, r *http.Request) {
-	renderWithLayout(w, "index.html", nil)
+	renderWithLayout(w, "index.html", ocUsersTable["index"], "partials/ocusers-table.html")
 }
 
 func indexOcUsersPartialWebHandler(w http.ResponseWriter, r *http.Request) {
@@ -32,3 +32,26 @@ func indexOcUsersPartialWebHandler(w http.ResponseWriter, r *http.Request) {
 
 	render(w, "partials/ocusers-index.html", sessions)
 }
+
+// TableConfig 定义表格配置
+type ocUsersTableTemplateData struct {
+	Title        string   `json:"title"`
+	Columns      []string `json:"columns"`
+	DataEndpoint string   `json:"dataEndpoint"`
+}
+
+// ocUsersTable 在线用户表格配置集
+var ocUsersTable = map[string]ocUsersTableTemplateData{
+	"index": {
+		Title:        "在线用户",
+		Columns:      []string{"Username", "IPAddr", "ConnectedFor", "ConnectedAt", "UserAgent"},
+		DataEndpoint: "/partials/ocusers-index.html",
+	},
+	"ocusers": {
+		Title:        "在线用户",
+		Columns:      []string{"Action", "ID", "Username", "IPAddr", "ConnectedFor", "ConnectedAt", "UserAgent", "RX", "TX", "AverageRX", "AverageTX"},
+		DataEndpoint: "/partials/ocusers.html",
+	},
+}
+
+// Columns: []string{"Action", "ID", "Username", "Groupname", "State", "IPAddr", "ConnectedFor", "ConnectedAt", "UserAgent", "RX", "TX", "AverageRX", "AverageTX"}

@@ -47,14 +47,22 @@ var funcMap = template.FuncMap{
 // <!-- 安全方式 3：在文本内容中 -->
 // <pre>{{ safeJSON .RuleData }}</pre>
 
-// render 渲染模板
-func renderWithLayout(w http.ResponseWriter, name string, data any) {
+// renderWithLayout 渲染带布局的模板
+// name: 主模板文件名 (如 "index.html")
+// data: 传递给模板的数据
+// tmplPaths: 可选的额外模板路径 (如 "partials/custom.html")
+func renderWithLayout(w http.ResponseWriter, name string, data any, tmplPaths ...string) {
+	paths := []string{
+		"templates/layout.html",
+		"templates/" + name,
+	}
+
+	for _, path := range tmplPaths {
+		paths = append(paths, "templates/"+path)
+	}
+
 	tmpl := template.Must(
-		template.New("").Funcs(funcMap).ParseFS(
-			templatesFS,
-			"templates/layout.html",
-			"templates/"+name,
-		),
+		template.New("").Funcs(funcMap).ParseFS(templatesFS, paths...),
 	)
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -63,13 +71,21 @@ func renderWithLayout(w http.ResponseWriter, name string, data any) {
 	}
 }
 
-// render 渲染模板
-func render(w http.ResponseWriter, name string, data any) {
+// render 渲染单个模板
+// name: 模板文件名 (如 "partials/ocusers.html")
+// data: 传递给模板的数据
+// tmplPaths: 可选的额外模板路径
+func render(w http.ResponseWriter, name string, data any, tmplPaths ...string) {
+	paths := []string{
+		"templates/" + name,
+	}
+
+	for _, path := range tmplPaths {
+		paths = append(paths, "templates/"+path)
+	}
+
 	tmpl := template.Must(
-		template.New(filepath.Base(name)).Funcs(funcMap).ParseFS(
-			templatesFS,
-			"templates/"+name,
-		),
+		template.New(filepath.Base(name)).Funcs(funcMap).ParseFS(templatesFS, paths...),
 	)
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")

@@ -6,36 +6,7 @@
 
   <div class="table-section" style="margin-bottom: 2em;">
     <h4>在线用户</h4>
-    <div class="table-wrapper">
-      <table class="pure-table pure-table-bordered pure-table-striped" width="100%">
-        <thead>
-          <tr>
-            <th>Action</th>
-            <th>ID</th>
-            <th>Username</th>
-            <!-- <th>Groupname</th>
-            <th>State</th> -->
-            <th>IPAddr</th>
-            <th>ConnectedFor</th>
-            <th>ConnectedAt</th>
-            <th>UserAgent</th>
-            <th>RX</th>
-            <th>TX</th>
-            <th>AverageRX</th>
-            <th>AverageTX</th>
-          </tr>
-        </thead>
-    
-        <tbody
-          hx-get="/partials/ocusers.html"
-          hx-trigger="load, every 30s"
-          hx-swap="innerHTML">
-          <tr>
-            <td colspan="11" style="text-align:center;color:#999">加载中...</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    {{ template "ocusers-table" . }}
   </div>
 </section>
 
