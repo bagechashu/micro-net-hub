@@ -7,12 +7,6 @@ import (
 )
 
 func nftCheckTriggerHandler(w http.ResponseWriter, r *http.Request) {
-	// 只接受 POST 请求
-	if r.Method != http.MethodPost {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	// Get a thread-safe copy of user rules
 	userRules := internal.GetUserRules()
 	
@@ -35,11 +29,6 @@ func nftCheckTriggerHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func vpnAccessCheckTriggerHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	// Get a thread-safe copy of VPN access rules
 	vpnRules := internal.GetVpnAccessRules()
 	

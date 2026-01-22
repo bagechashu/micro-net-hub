@@ -43,11 +43,6 @@ var (
 
 // GetViolationsHandler handles API requests to retrieve violations with pagination
 func GetViolationsHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
-		return
-	}
-
 	// Parse and validate query parameters
 	username := r.URL.Query().Get("username")
 	action := r.URL.Query().Get("action")
@@ -101,11 +96,6 @@ func GetViolationsHandler(w http.ResponseWriter, r *http.Request) {
 // GetViolationStatsHandler returns action-based violation statistics
 // Optionally filters by username with caching for improved performance
 func GetViolationStatsHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
-		return
-	}
-
 	daysStr := r.URL.Query().Get("days")
 	username := r.URL.Query().Get("username")
 
@@ -141,11 +131,6 @@ func GetViolationStatsHandler(w http.ResponseWriter, r *http.Request) {
 
 // GetViolationUsersHandler returns top users with their action breakdown
 func GetViolationUsersHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
-		return
-	}
-
 	daysStr := r.URL.Query().Get("days")
 	timeBack := parseDays(daysStr)
 
@@ -159,11 +144,6 @@ func GetViolationUsersHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func ClearViolationOldDataHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
-		return
-	}
-
 	daysStr := r.URL.Query().Get("days")
 	timeBack := parseDays(daysStr)
 
@@ -177,11 +157,6 @@ func ClearViolationOldDataHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func VacuumViolationDBHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
-		return
-	}
-
 	err := internal.VacuumViolationDB()
 	if err != nil {
 		log.Printf("[api] violation database vacuum failed: %v", err)

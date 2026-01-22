@@ -3,7 +3,7 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8" />
-  <title>{{ block "title" . }}VPN 管理{{ end }}</title>
+  <title>{{ block "title" . }}Ocserv 用户管理{{ end }}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <!-- htmx -->
@@ -30,9 +30,9 @@
 <body>
 <main class="container">
 <header class="app-header">
-  <h3>VPN 管理面板</h3>
+  <h3>Ocserv 用户管理</h3>
   <nav id="mainNav">
-    <a href="/" role="button" class="pure-button" id="usersBtn" style="visibility: hidden; position: absolute; width: 0;">用户</a>
+    <a href="/ocusers.html" role="button" class="pure-button" id="usersBtn" style="visibility: hidden; position: absolute; width: 0;">用户</a>
     <a href="/nft.html" role="button" class="pure-button pure-button-secondary" id="nftBtn" style="visibility: hidden; position: absolute; width: 0;">NFT</a>
     <a href="/config.html" role="button" class="pure-button pure-button-secondary" id="configBtn" style="visibility: hidden; position: absolute; width: 0;">配置</a>
     <button role="button" class="pure-button" id="loginBtn" onclick="openLoginModal()" style="visibility: visible;">登录</button>
@@ -91,18 +91,14 @@
 
 <!-- Auth Scripts -->
 <script>
-const cookieName = 'ocauth_session';
-
 // 初始化页面 - 检查登录状态
 async function initializePage() {
-  console.log(`[DEBUG] initializePage() called`);
-  
   // 先恢复上次缓存的状态，避免初始抖动
-  const cachedLoginState = localStorage.getItem('userLoginState');
-  if (cachedLoginState !== null) {
-    const isLoggedIn = JSON.parse(cachedLoginState);
-    console.log(`[DEBUG] Restoring cached login state: ${isLoggedIn}`);
-    updateNavigation(isLoggedIn);
+  const cachedUserInfo = localStorage.getItem('userInfo');
+  if (cachedUserInfo !== null) {
+    const userInfo = JSON.parse(cachedUserInfo);
+    // console.log(`[DEBUG] Restoring cached user info:`, userInfo);
+    updateNavigation(userInfo);
   }
   
   try {
@@ -113,26 +109,35 @@ async function initializePage() {
       credentials: 'include',
     });
     
-    console.log(`[DEBUG] Session check response status: ${response.status}`);
+    const data = await response.json();
     
-    const isLoggedIn = response.ok;
-    if (isLoggedIn) {
-      const data = await response.json();
-      console.log(`[DEBUG] Session data:`, data);
-      console.log(`[DEBUG] User is logged in`);
+    let userInfo = null;
+    if (response.ok && data.code === 0) {
+      // 已登录
+      userInfo = {
+        isLoggedIn: true,
+        username: data.data.username,
+        isAdmin: data.data.isAdmin
+      };
+      // console.log(`[DEBUG] User is logged in:`, userInfo);
     } else {
-      console.log(`[DEBUG] User is NOT logged in (status: ${response.status})`);
+      // 未登录
+      userInfo = {
+        isLoggedIn: false
+      };
+      // console.log(`[DEBUG] User is NOT logged in`);
     }
     
-    // 缓存登录状态
-    localStorage.setItem('userLoginState', JSON.stringify(isLoggedIn));
-    updateNavigation(isLoggedIn);
+    // 缓存用户信息
+    localStorage.setItem('userInfo', JSON.stringify(userInfo));
+    updateNavigation(userInfo);
   } catch (error) {
-    console.error(`[DEBUG] Session check error:`, error);
-    updateNavigation(false);
+    console.error(`Session check error:`, error);
+    updateNavigation({ isLoggedIn: false });
   }
 }
 
+const cookieName = 'ocauth_session';
 // 从 cookie 中获取值（不再使用，保留用于调试）
 function getCookie(name) {
   const nameEQ = name + "=";
@@ -151,36 +156,49 @@ function getCookie(name) {
 }
 
 // 更新导航栏显示
-function updateNavigation(isLoggedIn) {
+function updateNavigation(userInfo) {
   const usersBtn = document.getElementById('usersBtn');
   const nftBtn = document.getElementById('nftBtn');
   const configBtn = document.getElementById('configBtn');
   const loginBtn = document.getElementById('loginBtn');
   const logoutBtn = document.getElementById('logoutBtn');
   
-  if (isLoggedIn) {
-    // 已登录：显示所有功能按钮和登出，隐藏登录
+  if (userInfo.isLoggedIn) {
+    // 已登录：显示用户按钮和登出
     usersBtn.style.visibility = 'visible';
     usersBtn.style.position = 'static';
     usersBtn.style.width = 'auto';
     
-    nftBtn.style.visibility = 'visible';
-    nftBtn.style.position = 'static';
-    nftBtn.style.width = 'auto';
+    logoutBtn.style.visibility = 'visible';
+    logoutBtn.style.position = 'static';
+    logoutBtn.style.width = 'auto';
     
-    configBtn.style.visibility = 'visible';
-    configBtn.style.position = 'static';
-    configBtn.style.width = 'auto';
-    
+    // 隐藏登录按钮
     loginBtn.style.visibility = 'hidden';
     loginBtn.style.position = 'absolute';
     loginBtn.style.width = '0';
     
-    logoutBtn.style.visibility = 'visible';
-    logoutBtn.style.position = 'static';
-    logoutBtn.style.width = 'auto';
+    if (userInfo.isAdmin) {
+      // 管理员：显示所有功能按钮
+      nftBtn.style.visibility = 'visible';
+      nftBtn.style.position = 'static';
+      nftBtn.style.width = 'auto';
+      
+      configBtn.style.visibility = 'visible';
+      configBtn.style.position = 'static';
+      configBtn.style.width = 'auto';
+    } else {
+      // 普通用户：隐藏 NFT 和配置按钮
+      nftBtn.style.visibility = 'hidden';
+      nftBtn.style.position = 'absolute';
+      nftBtn.style.width = '0';
+      
+      configBtn.style.visibility = 'hidden';
+      configBtn.style.position = 'absolute';
+      configBtn.style.width = '0';
+    }
   } else {
-    // 未登录：仅显示用户管理和登录，隐藏其他
+    // 未登录：仅显示登录按钮
     usersBtn.style.visibility = 'hidden';
     usersBtn.style.position = 'absolute';
     usersBtn.style.width = '0';
@@ -253,7 +271,7 @@ async function handleLogin(event) {
     // updateNavigation(true);
 
     // 跳转到首页或其他页面
-    window.location.href = '/';
+    window.location.href = '/ocusers.html';
   } catch (error) {
     errorDiv.textContent = error.message;
     errorDiv.style.display = 'block';
@@ -277,9 +295,9 @@ async function handleLogout() {
     });
     
     if (response.ok) {
-      // 清除缓存的登录状态
-      localStorage.removeItem('userLoginState');
-      updateNavigation(false);
+      // 清除缓存的用户信息
+      localStorage.removeItem('userInfo');
+      updateNavigation({ isLoggedIn: false });
       window.location.href = '/';
     } else {
       alert('登出失败');

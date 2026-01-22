@@ -1,0 +1,17 @@
+{{ if not . }}
+<tr>
+  <td colspan="11" style="text-align:center;color:#999">
+    暂无在线用户
+  </td>
+</tr>
+{{ end }}
+
+{{ range . }}
+<tr>
+  <td>{{.Username}}</td>
+  <td>{{.RemoteIP}}</td>
+  <td>{{.ConnectedFor}}</td>
+  <td><span class="utc-time" data-controller="utc" data-utc-connect-at-value="{{.ConnectedAt}}"></span></td>
+  <td>{{.UserAgent}}</td>
+</tr>
+{{ end }}

@@ -62,11 +62,6 @@ type ConfigDiff struct {
 // ==================== Config Export/Import APIs ====================
 // ExportConfigHandler exports the entire config as JSON
 func ExportConfigHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
-		return
-	}
-
 	// Load config from cache
 	config := GlobalConfigManager.GetConfig()
 
@@ -95,11 +90,6 @@ func ExportConfigHandler(w http.ResponseWriter, r *http.Request) {
 // ==================== Unified Config View API ====================
 // ConfigViewHandler returns complete config with relationships
 func ConfigViewHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
-		return
-	}
-
 	cfg := GlobalConfigManager.GetConfig()
 
 	sendSuccess(w, "unified config view", cfg)
@@ -107,11 +97,6 @@ func ConfigViewHandler(w http.ResponseWriter, r *http.Request) {
 
 // ConfigValidateHandler validates a configuration
 func ConfigValidateHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
-		return
-	}
-
 	// Limit request body size to 10MB to prevent DoS attacks
 	r.Body = http.MaxBytesReader(w, r.Body, 10*1024*1024)
 
@@ -147,11 +132,6 @@ func ConfigValidateHandler(w http.ResponseWriter, r *http.Request) {
 
 // ConfigPreviewHandler shows what would change in a configuration
 func ConfigPreviewHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
-		return
-	}
-
 	// Limit request body size to 10MB to prevent DoS attacks
 	r.Body = http.MaxBytesReader(w, r.Body, 10*1024*1024)
 
@@ -185,10 +165,6 @@ func ConfigPreviewHandler(w http.ResponseWriter, r *http.Request) {
 
 // ConfigSaveHandler saves a new configuration
 func ConfigSaveHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		sendError(w, http.StatusMethodNotAllowed, "method not allowed")
-		return
-	}
 
 	// Limit request body size to 10MB to prevent DoS attacks
 	r.Body = http.MaxBytesReader(w, r.Body, 10*1024*1024)

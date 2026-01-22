@@ -15,8 +15,9 @@ func authMiddleware(next http.Handler) http.Handler {
 		// Get session cookie
 		cookie, err := r.Cookie(authConfig.Session.CookieName)
 		if err != nil {
-			// If auth is not required but enabled, proceed with guest status
-			next.ServeHTTP(w, r)
+			log.Printf("[auth] Invalid cookie: %v", err)
+			w.WriteHeader(http.StatusForbidden)
+			renderWithLayout(w, "403.html", nil)
 			return
 		}
 
@@ -24,7 +25,8 @@ func authMiddleware(next http.Handler) http.Handler {
 		session, err := globalSessionStore.GetSession(cookie.Value)
 		if err != nil {
 			log.Printf("[auth] Invalid session ID: %v", err)
-			next.ServeHTTP(w, r)
+			w.WriteHeader(http.StatusForbidden)
+			renderWithLayout(w, "403.html", nil)
 			return
 		}
 

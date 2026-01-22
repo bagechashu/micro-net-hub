@@ -51,11 +51,6 @@ func InitAuth(cfg *internal.AuthConfig) error {
 
 // loginAPIHandler handles login API requests
 func loginAPIHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		sendError(w, http.StatusMethodNotAllowed, "Method not allowed")
-		return
-	}
-
 	var req struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
@@ -124,11 +119,6 @@ func loginAPIHandler(w http.ResponseWriter, r *http.Request) {
 
 // logoutAPIHandler handles logout API requests
 func logoutAPIHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		sendError(w, http.StatusMethodNotAllowed, "Method not allowed")
-		return
-	}
-
 	// session cookie
 	if authConfig.Session.CookieName == "" {
 		sendError(w, http.StatusInternalServerError, "session cookie name is not configured")
@@ -156,11 +146,6 @@ func logoutAPIHandler(w http.ResponseWriter, r *http.Request) {
 
 // SessionInfoHandler returns current session info
 func SessionInfoHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		sendError(w, http.StatusMethodNotAllowed, "Method not allowed")
-		return
-	}
-
 	// session cookie
 	if authConfig.Session.CookieName == "" {
 		sendError(w, http.StatusInternalServerError, "session cookie name is not configured")

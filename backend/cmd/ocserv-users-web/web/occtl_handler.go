@@ -3,10 +3,12 @@ package web
 import (
 	"net/http"
 	"ocserv-users/internal"
+
+	"github.com/go-chi/chi/v5"
 )
 
 func occtlDisconnectUserHandler(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Path[len("/api/occtl/disconnect/"):]
+	id := chi.URLParam(r, "id")
 
 	// Validate session ID format before processing
 	if err := internal.ValidateSessionID(id); err != nil {

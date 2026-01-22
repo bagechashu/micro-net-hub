@@ -10,7 +10,7 @@
 <tr>
   <td style="text-align: center;">
     <button class="btn-disconnect" 
-      hx-get="/api/occtl/disconnect/{{.ID}}"
+      hx-post="/api/occtl/disconnect/{{.ID}}"
       hx-on::after-request="if (event.detail.xhr.status === 200) { htmx.remove(htmx.closest(this, 'tr')) } else { alert('Failed to disconnect user') }"
       data-tooltip="disconnect">
       🔓
@@ -21,12 +21,12 @@
   <!-- <td>{{.Groupname}}</td>
   <td>{{.State}}</td> -->
   <td>{{.RemoteIP}}</td>
+  <td>{{.ConnectedFor}}</td>
+  <td><span class="utc-time" data-controller="utc" data-utc-connect-at-value="{{.ConnectedAt}}"></span></td>
   <td>{{.UserAgent}}</td>
   <td>{{.RXHuman}}</td>
   <td>{{.TXHuman}}</td>
   <td>{{.AverageRX}}</td>
   <td>{{.AverageTX}}</td>
-  <td><span class="utc-time" data-controller="utc" data-utc-connect-at-value="{{.ConnectedAt}}"></span></td>
-  <td>{{.ConnectedFor}}</td>
 </tr>
 {{ end }}

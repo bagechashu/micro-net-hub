@@ -2,77 +2,31 @@
 
 {{ define "content" }}
 <section>
-  <h3>用户管理</h3>
-
+  <h3>当前时间
+    <span data-controller="current-time" data-current-time-target="timeDisplay"
+          style="padding: 1em; font-weight: bold;">
+    --:--:--
+    </span>
+  </h3>
   <div class="table-section" style="margin-bottom: 2em;">
     <h4>在线用户</h4>
     <div class="table-wrapper">
       <table class="pure-table pure-table-bordered pure-table-striped" width="100%">
         <thead>
           <tr>
-            <th>Action</th>
-            <th>ID</th>
             <th>Username</th>
-            <!-- <th>Groupname</th>
-            <th>State</th> -->
             <th>IPAddr</th>
-            <th>UserAgent</th>
-            <th>RX</th>
-            <th>TX</th>
-            <th>AverageRX</th>
-            <th>AverageTX</th>
-            <th>ConnectedAt</th>
             <th>ConnectedFor</th>
+            <th>ConnectedAt</th>
+            <th>UserAgent</th>
           </tr>
         </thead>
     
         <tbody
-          hx-get="/partials/users.html"
+          hx-get="/partials/ocusers-index.html"
           hx-trigger="load, every 30s"
           hx-swap="innerHTML">
           <tr>
-            <td colspan="11" style="text-align:center;color:#999">加载中...</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<section data-controller="user-stats">
-  <!-- 用户统计表 -->
-  <div class="table-section" style="margin-bottom: 2em;">
-    <h4>违规登录统计</h4>
-    <div class="table-wrapper">
-      <!-- 用户统计过滤器 -->
-      <div class="filter-section" style="padding-bottom: 1em;">
-        <form data-action="submit->user-stats#applyFilters" style="display: flex; gap: 1em; flex-wrap: wrap; align-items: center;">
-          <div>
-            <label for="userStatsDays">时间范围（天）:</label>
-            <select id="userStatsDays" data-user-stats-target="daysSelect" style="margin-left: 0.5em;">
-              <option value="1">1天</option>
-              <option value="7" selected>1周</option>
-              <option value="30">1个月</option>
-              <option value="90">3个月</option>
-              <option value="0">全部</option>
-            </select>
-          </div>
-          <button type="submit" class="pure-button pure-button-primary">查询</button>
-        </form>
-      </div>
-
-      <table class="pure-table pure-table-bordered pure-table-striped" width="100%">
-        <thead>
-          <tr>
-            <th>排名</th>
-            <th>用户名</th>
-            <th>总违规数</th>
-            <th>阻止</th>
-            <th>仅记录</th>
-          </tr>
-        </thead>
-        <tbody data-user-stats-target="tableBody">
-          <tr>
             <td colspan="5" style="text-align:center;color:#999">加载中...</td>
           </tr>
         </tbody>
@@ -80,90 +34,6 @@
     </div>
   </div>
 </section>
-
-<section data-controller="violations">
-  <div class="table-section" data-violations-target="tableContainer" style="margin-bottom: 2em;">
-    <h4>违规登录事件</h4>
-    <div class="table-wrapper">
-      <!-- 查询过滤器 -->
-      <div class="filter-section" style="padding-bottom: 1em;">
-        <form data-action="submit->violations#applyFilters" style="display: flex; gap: 1em; flex-wrap: wrap; align-items: center;">
-          <div>
-            <label for="filterDays">时间范围（天）:</label>
-            <select id="filterDays" data-violations-target="daysSelect" style="margin-left: 0.5em;">
-              <option value="1">1天</option>
-              <option value="7" selected>1周</option>
-              <option value="30">1个月</option>
-              <option value="90">3个月</option>
-              <option value="0">全部</option>
-            </select>
-          </div>
-          <div>
-            <label for="filterAction">动作:</label>
-            <select id="filterAction" data-violations-target="actionSelect" style="margin-left: 0.5em;">
-              <option value="">全部</option>
-              <option value="block">阻止</option>
-              <option value="logonly">仅记录</option>
-            </select>
-          </div>
-          <div>
-            <label for="filterUsername">用户名:</label>
-            <input type="text" id="filterUsername" data-violations-target="usernameInput" placeholder="输入用户名搜索" style="margin-left: 0.5em; padding: 0.3em;">
-          </div>
-          <button type="submit" class="pure-button pure-button-primary">查询</button>
-          <button type="button" data-action="click->violations#clearFilters" class="pure-button">清空</button>
-          <!-- 加载状态指示 -->
-          <!-- <div id="loadingIndicator" style="display: none; text-align: center; padding: 1em; color: #666;"> -->
-          <div id="loadingIndicator" style="display: none; color: #666;">
-            <span>⏳ 加载中...</span>
-          </div>
-        </form>
-      </div>
-
-      <!-- 统计信息表格 -->
-      <table class="pure-table pure-table-bordered pure-table-striped" width="100%" id="statsContainer" style="margin-bottom: 1em;">
-        <thead>
-          <tr>
-            <th>总违规数</th>
-            <th>阻止</th>
-            <th>仅记录</th>
-            <th>近24小时</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong><span style="background-color: #ffe284; padding: 0.2em 0.5em; border-radius: 3px; color: #664d00;" data-violations-target="totalViolations">0</span></strong></td>
-            <td><strong><span style="background-color: #f8d7da; padding: 0.2em 0.5em; border-radius: 3px; color: #721c24;" data-violations-target="blockCount">0</span></strong></td>
-            <td><strong><span style="background-color: #d1ecf1; padding: 0.2em 0.5em; border-radius: 3px; color: #0c5460;" data-violations-target="logonlyCount">0</span></strong></td>
-            <td><strong><span style="background-color: #7db8f2; padding: 0.2em 0.5em; border-radius: 3px; color: #003d7a;" data-violations-target="violations24h">0</span></strong></td>
-          </tr>
-        </tbody>
-      </table>
-
-      <!-- 违规列表 -->
-      <table class="pure-table pure-table-bordered pure-table-striped" width="100%">
-        <thead>
-          <tr>
-            <th>用户名</th>
-            <th>远程IP</th>
-            <th>动作</th>
-            <th>原因</th>
-            <th>时间</th>
-          </tr>
-        </thead>
-        <tbody data-violations-target="tableBody">
-          <tr>
-            <td colspan="5" style="text-align:center;color:#999">加载中...</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  <!-- 分页 -->
-  <div data-violations-target="pagination" style="margin-top: 1em; text-align: center;">
-    <!-- 分页内容将动态生成 -->
-  </div>
-</section>
-
 {{ end }}
 
 {{ define "script" }}
@@ -182,258 +52,25 @@
     }
   });
 
-  // 用户统计控制器
-  window.App.register("user-stats", class extends Stimulus.Controller {
-    static targets = ["daysSelect", "tableBody"];
-
-    static values = {
-      days: { type: Number, default: 7 }
-    }
+  // 当前时间显示
+  window.App.register("current-time", class extends Stimulus.Controller {
+    static targets = ["timeDisplay"];
 
     connect() {
-      this.loadUserStats();
+      this.updateTime();
+      this.interval = setInterval(() => this.updateTime(), 1000);
     }
 
-    applyFilters(event) {
-      event.preventDefault();
-      this.daysValue = parseInt(this.daysSelectTarget.value) || 7;
-      this.loadUserStats();
+    disconnect() {
+      if (this.interval) clearInterval(this.interval);
     }
 
-    async loadUserStats() {
-      try {
-        const params = new URLSearchParams();
-        if (this.daysValue > 0) params.append("days", this.daysValue);
-
-        const response = await fetch(`/api/violations/users?${params}`);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        
-        const { data } = await response.json();
-        this.renderUserStats(data);
-      } catch (err) {
-        console.error("Failed to load user stats:", err);
-        this.tableBodyTarget.innerHTML = `<tr><td colspan="5" style="text-align:center;color:red;">加载失败: ${err.message}</td></tr>`;
-      }
-    }
-
-    renderUserStats(data) {
-      const users = data.users || [];
-      
-      if (!users || users.length === 0) {
-        this.tableBodyTarget.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#999;">暂无数据</td></tr>`;
-        return;
-      }
-
-      let html = "";
-      users.forEach((user, index) => {
-        const blockCount = user.by_action?.block || 0;
-        const logonlyCount = user.by_action?.logonly || 0;
-        
-        html += `<tr>
-          <td>${index + 1}</td>
-          <td>${this.escapeHtml(user.username)}</td>
-          <td><strong>${user.total}</strong></td>
-          <td><span style="background-color: #f8d7da; padding: 0.2em 0.5em; border-radius: 3px; color: #721c24; font-weight: bold;">${blockCount}</span></td>
-          <td><span style="background-color: #d1ecf1; padding: 0.2em 0.5em; border-radius: 3px; color: #0c5460; font-weight: bold;">${logonlyCount}</span></td>
-        </tr>`;
-      });
-
-      this.tableBodyTarget.innerHTML = html;
-    }
-
-    escapeHtml(text) {
-      const div = document.createElement("div");
-      div.textContent = text;
-      return div.innerHTML;
-    }
-  });
-
-  // Violations 管理控制器
-  window.App.register("violations", class extends Stimulus.Controller {
-    static targets = ["daysSelect", "usernameInput", "actionSelect", "tableBody", "pagination", "totalViolations", "blockCount", "logonlyCount", "violations24h", "tableContainer"];
-
-    static values = {
-      limit: { type: Number, default: 20 },
-      offset: { type: Number, default: 0 },
-      days: { type: Number, default: 7 },
-      username: { type: String, default: "" },
-      action: { type: String, default: "" }
-    }
-
-    connect() {
-      this.loadData();
-    }
-
-    applyFilters(event) {
-      event.preventDefault();
-      this.offsetValue = 0;
-      this.daysValue = parseInt(this.daysSelectTarget.value) || 7;
-      this.usernameValue = this.usernameInputTarget.value.trim();
-      this.actionValue = this.actionSelectTarget.value;
-      this.loadData();
-    }
-
-    clearFilters(event) {
-      event.preventDefault();
-      this.daysSelectTarget.value = "7";
-      this.usernameInputTarget.value = "";
-      this.actionSelectTarget.value = "";
-      this.offsetValue = 0;
-      this.daysValue = 7;
-      this.usernameValue = "";
-      this.actionValue = "";
-      this.loadData();
-    }
-
-    async loadData() {
-      this.showLoading(true);
-      try {
-        await Promise.all([
-          this.loadViolations(),
-          this.loadStats()
-        ]);
-      } catch (err) {
-        console.error("Failed to load data:", err);
-        this.showError("加载数据失败: " + err.message);
-      } finally {
-        this.showLoading(false);
-      }
-    }
-
-    async loadViolations() {
-      const params = new URLSearchParams();
-      if (this.daysValue > 0) params.append("days", this.daysValue);
-      if (this.usernameValue) params.append("username", this.usernameValue);
-      if (this.actionValue) params.append("action", this.actionValue);
-      params.append("limit", this.limitValue);
-      params.append("offset", this.offsetValue);
-
-      const response = await fetch(`/api/violations?${params}`);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      
-      const { data } = await response.json();
-      this.renderViolations(data);
-    }
-
-    async loadStats() {
-      const params = new URLSearchParams();
-      if (this.daysValue > 0) params.append("days", this.daysValue);
-      if (this.usernameValue) params.append("username", this.usernameValue);
-
-      const response = await fetch(`/api/violations/stats?${params}`);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const { data }= await response.json();
-      this.renderStats(data);
-    }
-
-    renderViolations(data) {
-      if (!data.violations || data.violations.length === 0) {
-        this.tableBodyTarget.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#999;">暂无数据</td></tr>`;
-        this.paginationTarget.innerHTML = "";
-        return;
-      }
-
-      let html = "";
-      data.violations.forEach(v => {
-        const actionBadge = v.action === "block" 
-          ? '<span style="background-color: #f8d7da; padding: 0.2em 0.5em; border-radius: 3px; color: #721c24; font-weight: bold;">阻止</span>'
-          : '<span style="background-color: #d1ecf1; padding: 0.2em 0.5em; border-radius: 3px; color: #0c5460; font-weight: bold;">仅记录</span>';
-        
-        html += `<tr>
-          <td>${this.escapeHtml(v.username)}</td>
-          <td>${this.escapeHtml(v.remote_ip)}</td>
-          <td>${actionBadge}</td>
-          <td>${this.escapeHtml(v.reason)}</td>
-          <td>${this.escapeHtml(v.timestamp)}</td>
-        </tr>`;
-      });
-
-      this.tableBodyTarget.innerHTML = html;
-      this.renderPagination(data);
-    }
-
-    renderPagination(data) {
-      const { total, limit, offset, page_count } = data;
-      
-      if (page_count <= 1) {
-        this.paginationTarget.innerHTML = "";
-        return;
-      }
-
-      const currentPage = Math.floor(offset / limit) + 1;
-      let html = `<div style="padding: 1em;">`;
-      
-      if (currentPage > 1) {
-        html += `<button class="pure-button" data-action="click->violations#previousPage">← 上一页</button> `;
-      }
-
-      const startPage = Math.max(1, currentPage - 2);
-      const endPage = Math.min(page_count, currentPage + 2);
-
-      if (startPage > 1) {
-        html += `<button class="pure-button" data-action="click->violations#goToPage" data-page="1">1</button> `;
-        if (startPage > 2) html += `<span style="padding: 0 0.5em;">...</span>`;
-      }
-
-      for (let i = startPage; i <= endPage; i++) {
-        if (i === currentPage) {
-          html += `<strong style="padding: 0.3em 0.5em;">${i}</strong> `;
-        } else {
-          html += `<button class="pure-button" data-action="click->violations#goToPage" data-page="${i}">${i}</button> `;
-        }
-      }
-
-      if (endPage < page_count) {
-        if (endPage < page_count - 1) html += `<span style="padding: 0 0.5em;">...</span>`;
-        html += `<button class="pure-button" data-action="click->violations#goToPage" data-page="${page_count}">${page_count}</button> `;
-      }
-
-      if (currentPage < page_count) {
-        html += `<button class="pure-button" data-action="click->violations#nextPage">下一页 →</button>`;
-      }
-
-      html += `<span style="margin-left: 1em; color: #666;">第 ${currentPage}/${page_count} 页</span>`;
-      html += `</div>`;
-      
-      this.paginationTarget.innerHTML = html;
-    }
-
-    renderStats(stats) {
-      this.totalViolationsTarget.textContent = stats.total_violations || 0;
-      this.blockCountTarget.textContent = stats.by_action?.block || 0;
-      this.logonlyCountTarget.textContent = stats.by_action?.logonly || 0;
-      this.violations24hTarget.textContent = stats.violations_24h || 0;
-    }
-
-    previousPage() {
-      this.offsetValue = Math.max(0, this.offsetValue - this.limitValue);
-      this.loadViolations();
-    }
-
-    nextPage() {
-      this.offsetValue += this.limitValue;
-      this.loadViolations();
-    }
-
-    goToPage(event) {
-      const page = parseInt(event.currentTarget.dataset.page);
-      this.offsetValue = (page - 1) * this.limitValue;
-      this.loadViolations();
-    }
-
-    showLoading(show) {
-      const indicator = document.getElementById("loadingIndicator");
-      if (indicator) indicator.style.display = show ? "block" : "none";
-    }
-
-    showError(message) {
-      this.tableBodyTarget.innerHTML = `<tr><td colspan="5" style="text-align:center;color:red;">${this.escapeHtml(message)}</td></tr>`;
-    }
-
-    escapeHtml(text) {
-      const div = document.createElement("div");
-      div.textContent = text;
-      return div.innerHTML;
+    updateTime() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      this.timeDisplayTarget.textContent = `${hours}:${minutes}:${seconds}`;
     }
   });
 })();

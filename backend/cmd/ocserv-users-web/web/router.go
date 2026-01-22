@@ -23,7 +23,7 @@ func RunWebServer(addr string, cfg *internal.Config) {
 
 	// Apply global middlewares
 	// r.Use(middleware.Logger)
-	r.Use(httprate.LimitByIP(60, 1*time.Minute))
+	r.Use(httprate.LimitByIP(60, 5*time.Second))
 	r.Use(middleware.Timeout(time.Second * 60))
 	r.Use(middleware.Recoverer)
 
@@ -47,18 +47,22 @@ func RunWebServer(addr string, cfg *internal.Config) {
 	r.Post("/core/nft", nftCheckTriggerHandler)
 	r.Post("/core/vpnaccess", vpnAccessCheckTriggerHandler)
 
+	// index page
+	r.Get("/", indexWebHandler)
+	r.Get("/partials/ocusers-index.html", indexOcUsersPartialWebHandler)
+
 	// Authentication routes (always available)
 	r.Post("/api/auth/login", loginAPIHandler)
 	r.Get("/api/auth/session", SessionInfoHandler)
+	r.Post("/api/auth/logout", logoutAPIHandler)
 
 	// Protected routes (require auth)
 	r.Group(func(r chi.Router) {
 		r.Use(authMiddleware)
-		r.Post("/api/auth/logout", logoutAPIHandler)
 
-		// Public routes
-		r.Get("/", indexWebHandler)
-		r.Get("/partials/users.html", usersPartialWebHandler)
+		// ocUsers management
+		r.Get("/ocusers.html", ocUsersWebHandler)
+		r.Get("/partials/ocusers.html", ocUsersPartialWebHandler)
 
 		// Admin-only routes
 		r.Group(func(r chi.Router) {
@@ -71,21 +75,29 @@ func RunWebServer(addr string, cfg *internal.Config) {
 			// Config pages
 			r.Get("/config.html", configWebHandler)
 			r.Get("/config-editor.html", configEditorWebHandler)
+		})
 
-			r.Route("/api", func(r chi.Router) {
-				// Violations API
-				r.Get("/violations", GetViolationsHandler)
-				r.Get("/violations/stats", GetViolationStatsHandler)
-				r.Get("/violations/users", GetViolationUsersHandler)
-				r.Post("/violations/clearold", ClearViolationOldDataHandler)
-				r.Post("/violations/vacuum", VacuumViolationDBHandler)
+		// API routes
+		r.Route("/api", func(r chi.Router) {
+			// Violations API
+			r.Get("/violations", GetViolationsHandler)
+			r.Get("/violations/stats", GetViolationStatsHandler)
+			r.Get("/violations/users", GetViolationUsersHandler)
+
+			// Admin-only routes
+			r.Group(func(r chi.Router) {
+				r.Use(adminMiddleware)
 
 				// OCCTL APIs
 				r.Post("/occtl/disconnect/{id}", occtlDisconnectUserHandler)
 
+				// Violations API
+				r.Post("/violations/clearold", ClearViolationOldDataHandler)
+				r.Post("/violations/vacuum", VacuumViolationDBHandler)
+
 				// Config APIs
-				r.Get("/config/export", ExportConfigHandler)
 				r.Get("/config/view", ConfigViewHandler)
+				r.Get("/config/export", ExportConfigHandler)
 				r.Post("/config/validate", ConfigValidateHandler)
 				r.Post("/config/preview", ConfigPreviewHandler)
 				r.Post("/config/save", ConfigSaveHandler)
