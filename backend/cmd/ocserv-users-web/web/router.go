@@ -22,7 +22,6 @@ func RunWebServer(addr string, cfg *internal.Config) {
 	r := chi.NewRouter()
 
 	// Apply global middlewares
-	// r.Use(middleware.Logger)
 	r.Use(httprate.LimitByIP(60, 5*time.Second))
 	r.Use(middleware.Timeout(time.Second * 60))
 	r.Use(middleware.Recoverer)
@@ -52,12 +51,16 @@ func RunWebServer(addr string, cfg *internal.Config) {
 	r.Get("/partials/ocusers-index.html", indexOcUsersPartialWebHandler)
 
 	// Authentication routes (always available)
-	r.Post("/api/auth/login", loginAPIHandler)
-	r.Get("/api/auth/session", SessionInfoHandler)
-	r.Post("/api/auth/logout", logoutAPIHandler)
+	r.Group(func(r chi.Router) {
+		r.Use(middleware.Logger)
+		r.Post("/api/auth/login", loginAPIHandler)
+		r.Get("/api/auth/session", SessionInfoHandler)
+		r.Post("/api/auth/logout", logoutAPIHandler)
+	})
 
 	// Protected routes (require auth)
 	r.Group(func(r chi.Router) {
+		r.Use(middleware.Logger)
 		r.Use(authMiddleware)
 
 		// ocUsers management

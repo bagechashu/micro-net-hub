@@ -170,7 +170,8 @@ type ConfigManager struct {
 
 // NewConfigManager creates a new config manager
 func NewConfigManager(configPath string) *ConfigManager {
-	backupDir := filepath.Join(filepath.Dir(configPath), ".config_backups")
+	backupRelativeDir := ".config_backups"
+	backupDir := filepath.Join(filepath.Dir(configPath), backupRelativeDir)
 	cm := &ConfigManager{
 		ConfigPath:    configPath,
 		BackupDirPath: backupDir,
