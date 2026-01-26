@@ -125,17 +125,17 @@ vpn_access_rules:
   - users:
       - user1
       - user2
-    remote_ip_whitelist:
+    remote_ips:
       - 1.2.3.4
     time_range:
       start: "08:00"
       end: "12:00"
-    action: block
+    action_on_violation: block
   - users:
       - user1
-    remote_ip_whitelist:
+    remote_ips:
       - 0.0.0.0/0
     time_range:
       start: "08:00"
       end: "20:00"
-    action: logonly
+    action_on_violation: logonly

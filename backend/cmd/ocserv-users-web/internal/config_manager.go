@@ -120,8 +120,8 @@ func (cfg Config) Check() error {
 	}
 
 	for _, r := range cfg.VpnAccessRules {
-		if !r.Action.Valid() {
-			return fmt.Errorf("invalid VPN action %q [block | logonly]", r.Action)
+		if !r.ActionOnViolation.Valid() {
+			return fmt.Errorf("invalid VPN action on violation %q [block | logonly]", r.ActionOnViolation)
 		}
 	}
 	return nil
@@ -151,10 +151,10 @@ func (cfg *Config) setRuleDefaults() {
 	for vi := range cfg.VpnAccessRules {
 		r := &cfg.VpnAccessRules[vi]
 		// default action to drop and normalize to lower-case
-		if r.Action == "" {
-			r.Action = VpnActionBlock
+		if r.ActionOnViolation == "" {
+			r.ActionOnViolation = VpnActionBlock
 		} else {
-			r.Action = VpnActionType(strings.ToLower(string(r.Action)))
+			r.ActionOnViolation = VpnActionType(strings.ToLower(string(r.ActionOnViolation)))
 		}
 	}
 }

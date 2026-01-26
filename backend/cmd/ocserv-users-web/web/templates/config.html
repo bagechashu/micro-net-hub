@@ -77,9 +77,9 @@
           <thead>
             <tr>
               <th>用户</th>
-              <th>远程 IP 白名单</th>
+              <th>远程 IP</th>
               <th>时间范围</th>
-              <th>Action</th>
+              <th>Action On Violation</th>
             </tr>
           </thead>
           <tbody data-config-target="vpnAccess">
@@ -219,18 +219,18 @@
 
       const rows = vpnRules.map((rule) => {
         const users = rule.users ? rule.users.join(', ') : '-';
-        const ips = rule.remote_ip_whitelist ? rule.remote_ip_whitelist.join(', ') : '-';
+        const remote_ips = rule.remote_ips ? rule.remote_ips.join(', ') : '-';
         const timeRange = rule.time_range && rule.time_range.start && rule.time_range.end
           ? `${rule.time_range.start} - ${rule.time_range.end}`
           : '全天';
-        const action = rule.action === 'block' ? '阻止' : (rule.action === 'logonly' ? '仅记录' : '-');
+        const action_on_violation = rule.action_on_violation === 'block' ? '阻止' : (rule.action_on_violation === 'logonly' ? '仅记录' : '-');
 
         return `
           <tr>
             <td>${this.escapeHtml(users)}</td>
-            <td>${this.escapeHtml(ips)}</td>
+            <td>${this.escapeHtml(remote_ips)}</td>
             <td>${this.escapeHtml(timeRange)}</td>
-            <td>${this.escapeHtml(action)}</td>
+            <td>${this.escapeHtml(action_on_violation)}</td>
           </tr>
         `;
       });

@@ -145,22 +145,22 @@ func checkSession(cfg []VpnAccessRule, s Session, now time.Time, onlyCheckTime b
 
 		// check other predicates if not only checking time
 		if !onlyCheckTime {
-			ipOk := r.ipInWhitelist(s.RemoteIP)
+			ipOk := r.isInRemoteIps(s.RemoteIP)
 			if !ipOk {
-				action = &r.Action
-				lastReason = fmt.Sprintf("IP %s not in whitelist", s.RemoteIP)
-				// IP not in whitelist, mean this rule not matched, check next rule
+				action = &r.ActionOnViolation
+				lastReason = fmt.Sprintf("IP %s not in remote IPs list", s.RemoteIP)
+				// IP not in remote IPs list, mean this rule not matched, check next rule
 				continue
 			}
 		}
 
 		// Check time range
-		timeOk := r.isWithinTimeRange(now)
+		timeOk := r.isInTimeRange(now)
 		if timeOk {
 			// allowed by this rule
 			return true, nil, ""
 		}
-		action = &r.Action
+		action = &r.ActionOnViolation
 		if r.TimeRange != nil {
 			lastReason = fmt.Sprintf("outside allowed time range %s-%s", r.TimeRange.Start.String(), r.TimeRange.End.String())
 		} else {

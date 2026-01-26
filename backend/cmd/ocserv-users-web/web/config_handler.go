@@ -318,15 +318,15 @@ func vpnAccessRuleEqual(a, b internal.VpnAccessRule) bool {
 		}
 	}
 
-	// Compare RemoteIPWhiteList slices
-	if len(a.RemoteIPWhiteList) != len(b.RemoteIPWhiteList) {
+	// Compare RemoteIPs slices
+	if len(a.RemoteIPs) != len(b.RemoteIPs) {
 		return false
 	}
 	ipMap := make(map[string]bool)
-	for _, ip := range a.RemoteIPWhiteList {
+	for _, ip := range a.RemoteIPs {
 		ipMap[ip] = true
 	}
-	for _, ip := range b.RemoteIPWhiteList {
+	for _, ip := range b.RemoteIPs {
 		if !ipMap[ip] {
 			return false
 		}

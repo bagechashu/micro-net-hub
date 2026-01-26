@@ -147,9 +147,9 @@ func (tr TimeRange) Contains(now time.Time) bool {
 // VpnAccessRule describes access constraints for a set of users.
 type VpnAccessRule struct {
 	Users             []string      `json:"users,omitempty" yaml:"users,omitempty"`
-	RemoteIPWhiteList []string      `json:"remote_ip_whitelist,omitempty" yaml:"remote_ip_whitelist,omitempty"`
-	TimeRange         *TimeRange    `json:"time_range,omitempty" yaml:"time_range,omitempty"` // e.g. "08:00-18:00"
-	Action            VpnActionType `json:"action,omitempty" yaml:"action,omitempty"`         // "block" or "logonly"
+	RemoteIPs         []string      `json:"remote_ips,omitempty" yaml:"remote_ips,omitempty"`
+	TimeRange         *TimeRange    `json:"time_range,omitempty" yaml:"time_range,omitempty"`                   // e.g. "08:00-18:00"
+	ActionOnViolation VpnActionType `json:"action_on_violation,omitempty" yaml:"action_on_violation,omitempty"` // "block" or "logonly" - action when user matches but violates constraints
 }
 
 type VpnActionType string
@@ -179,10 +179,10 @@ func (r VpnAccessRule) matchesUser(username string) bool {
 	return false
 }
 
-// ipInWhitelist checks whether remote ip matches any whitelist entry (CIDR or single IP)
-func (r VpnAccessRule) ipInWhitelist(remoteIP string) bool {
-	if len(r.RemoteIPWhiteList) == 0 {
-		return false // empty whitelist means no IP is allowed
+// isInRemoteIpsList checks whether remote ip matches any allowed IP entry (CIDR or single IP)
+func (r VpnAccessRule) isInRemoteIps(remoteIP string) bool {
+	if len(r.RemoteIPs) == 0 {
+		return false // empty list means no IP is allowed
 	}
 	if remoteIP == "" {
 		return false
@@ -198,7 +198,7 @@ func (r VpnAccessRule) ipInWhitelist(remoteIP string) bool {
 		}
 	}
 
-	for _, entry := range r.RemoteIPWhiteList {
+	for _, entry := range r.RemoteIPs {
 		// log.Printf("[access] 检查远程 IP %s 是否匹配白名单条目 %s", remoteIP, entry)
 		entry = strings.TrimSpace(entry)
 		if entry == "" {
@@ -221,8 +221,8 @@ func (r VpnAccessRule) ipInWhitelist(remoteIP string) bool {
 	return false
 }
 
-// isWithinTimeRange checks time constraint (or allows if no time range specified)
-func (r VpnAccessRule) isWithinTimeRange(now time.Time) (bool) {
+// isInTimeRange checks time constraint (or allows if no time range specified)
+func (r VpnAccessRule) isInTimeRange(now time.Time) bool {
 	if r.TimeRange == nil {
 		return true
 	}
