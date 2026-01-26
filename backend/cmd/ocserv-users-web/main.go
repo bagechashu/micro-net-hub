@@ -16,11 +16,11 @@ import (
 
 func main() {
 	var (
-		config    = flag.String("config", "rules.yaml", "配置文件路径 (json|yaml)")
-		dbPath    = flag.String("dbpath", "data", "违规日志数据库路径")
-		refresh   = flag.Duration("refresh", 30*time.Second, "刷新间隔")
+		config        = flag.String("config", "rules.yaml", "配置文件路径 (json|yaml)")
+		dbPath        = flag.String("dbpath", "data", "违规日志数据库路径")
+		refresh       = flag.Duration("refresh", 30*time.Second, "刷新间隔")
 		webListenAddr = flag.String("webaddr", ":8080", "Web服务监听地址")
-		timezone  = flag.String("timezone", "UTC", "时区设置用于时间检查 (如: UTC, Asia/Shanghai)")
+		timezone      = flag.String("timezone", "UTC", "时区设置用于时间检查 (如: UTC, Asia/Shanghai)")
 	)
 
 	flag.Parse()
@@ -44,17 +44,29 @@ func main() {
 
 	// 初始化 nftables
 	log.Println("[nft] nftables 初始化")
-	publicRules := internal.GetPublicRules(cfg)
-	inputChainRules := internal.GetInputChainRules(cfg)
-	srcIpSets, inputChainIpSetRules := internal.GetInputChainIpSetRules(cfg)
+	publicRules, err := internal.GetPublicRules(cfg)
+	if err != nil {
+		log.Fatalf("[main] 获取公共规则失败: %v", err)
+	}
+	inputChainRules, err := internal.GetInputChainRules(cfg)
+	if err != nil {
+		log.Fatalf("[main] 获取输入链规则失败: %v", err)
+	}
+	srcIpSets, inputChainIpSetRules, err := internal.GetInputChainIpSetRules(cfg)
+	if err != nil {
+		log.Fatalf("[main] 获取输入链 IP 集规则失败: %v", err)
+	}
 	if err := internal.InitNftables(publicRules, inputChainRules, inputChainIpSetRules, srcIpSets); err != nil {
 		log.Fatalf("[main] nftables 初始化失败: %v", err)
 	}
 
 	// 启动后初始化所有用户的规则
-	userRules := internal.GetUserRulesMapping(cfg)
+	userRules, err := internal.GetUserRulesMapping(cfg)
+	if err != nil {
+		log.Fatalf("[main] 获取用户规则映射失败: %v", err)
+	}
 	internal.UpdateUserRules(userRules)
-	if err := internal.UpdateNftablesRulesWithSessions(userRules); err != nil {
+	if err := internal.InitUsersNftablesRules(userRules); err != nil {
 		log.Printf("[nft] 更新规则失败: %v", err)
 	}
 

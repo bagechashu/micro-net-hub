@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"sync"
 	"time"
 )
 
@@ -22,13 +21,6 @@ func getChain(ip string, tolocal bool) (chain string) {
 	}
 	return filterForwardChainName
 }
-
-// -------------------- 全局状态 --------------------
-
-var (
-	onlineUsers = make(map[string][]string) // username -> []IPv4
-	mu          sync.Mutex
-)
 
 // -------------------- Nftables Manager --------------------
 
@@ -77,74 +69,66 @@ func InitNftables(publicRules, inputChainRules, inputChainIpSetRules map[string]
 	return nil
 }
 
-// UpdateNftablesRulesWithSessions 支持多设备，tag = username:ip:ruleIndex
-func UpdateNftablesRulesWithSessions(usersDestRules map[string][]Rule) error {
-	sessions, err := OcctlGetSessions()
+// UpdateUsersNftablesRules 支持多设备，tag = username:ip:ruleIndex
+func UpdateUsersNftablesRules(usersDestRules map[string][]Rule) error {
+	// 更新在线用户状态和 nftables 规则
+	addedSessions, removedSessions, err := checkOcSessions()
 	if err != nil {
-		log.Printf("[nft] 获取会话失败: %v", err)
 		return err
 	}
-
-	mu.Lock()
-	defer mu.Unlock()
-
-	// 当前在线用户映射 username -> []IPv4
-	current := make(map[string][]string)
-	for _, s := range sessions {
-		if s.Username == "" || s.IPv4 == "" {
-			continue
-		}
-		current[s.Username] = append(current[s.Username], s.IPv4)
-	}
-
-	for username, ips := range current {
-		oldIPs := onlineUsers[username]
-
-		added, removed := diffIPs(oldIPs, ips)
-		if len(added) > 0 {
-			log.Printf("[diff] 用户 %s 新上线 IP: %v", username, added)
-		}
-		if len(removed) > 0 {
-			log.Printf("[diff] 用户 %s 下线 IP: %v", username, removed)
-		}
-
-		// 处理新增 IP
-		for _, ip := range added {
-			for j, r := range usersDestRules[username] {
-				tag := fmt.Sprintf("user:%s:%s:%d", username, ip, j)
-				chain := getChain(r.DestIp, r.ToLocal)
-				addNftRule(filterTableName, chain, ip, r.DestIp, r.Protocol, r.DestPort, r.Action, tag)
-			}
-			clearConntrack(ip)
-		}
-
-		// 处理下线 IP
-		for _, ip := range removed {
-			for j := range usersDestRules[username] {
-				tag := fmt.Sprintf("user:%s:%s:%d", username, ip, j)
-				deleteNftRules(filterTableName, []string{filterForwardChainName, filterInputChainName}, tag)
-			}
-			clearConntrack(ip)
-		}
-	}
-
-	// 处理完全下线用户
-	for username, oldIPs := range onlineUsers {
-		if _, ok := current[username]; !ok {
-			log.Printf("[diff] 用户 %s 完全下线，移除所有 IP: %v", username, oldIPs)
-			for _, ip := range oldIPs {
-				for j := range usersDestRules[username] {
-					tag := fmt.Sprintf("user:%s:%s:%d", username, ip, j)
-					deleteNftRules(filterTableName, []string{filterForwardChainName, filterInputChainName}, tag)
-				}
-				clearConntrack(ip)
-			}
-		}
-	}
-
-	// 更新全局在线用户映射
-	onlineUsers = current
+	updateUsersNftRules(addedSessions, removedSessions, usersDestRules)
 	return nil
+}
+
+// UpdateUsersNftablesRules 支持多设备，tag = username:ip:ruleIndex
+func InitUsersNftablesRules(usersDestRules map[string][]Rule) error {
+	offlineAllSessions()
+	// 更新在线用户状态和 nftables 规则
+	addedSessions, _, err := checkOcSessions()
+	if err != nil {
+		return err
+	}
+	updateUsersNftRules(addedSessions, nil, usersDestRules)
+	return nil
+}
+
+// updateOnlineUsers 根据当前在线用户映射更新全局状态和 nftables 规则
+func updateUsersNftRules(addedSessions, removedSessions map[string][]string, usersDestRules map[string][]Rule) {
+	// 先下线再上线，避免冲突
+	for username, removed := range removedSessions {
+		if len(removed) > 0 {
+			handleRemovedIPs(username, removed, usersDestRules)
+		}
+	}
+
+	for username, added := range addedSessions {
+		if len(added) > 0 {
+			handleAddedIPs(username, added, usersDestRules)
+		}
+	}
+}
+
+// handleAddedIPs 处理新增 IP：添加 nftables 规则并清除连接跟踪
+func handleAddedIPs(username string, added []string, usersDestRules map[string][]Rule) {
+	for _, ip := range added {
+		for j, r := range usersDestRules[username] {
+			tag := fmt.Sprintf("user:%s:%s:%d", username, ip, j)
+			chain := getChain(r.DestIp, r.ToLocal)
+			addNftRule(filterTableName, chain, ip, r.DestIp, r.Protocol, r.DestPort, r.Action, tag)
+		}
+		clearConntrack(ip)
+	}
+}
+
+// handleRemovedIPs 处理下线 IP：删除 nftables 规则并清除连接跟踪
+func handleRemovedIPs(username string, removed []string, usersDestRules map[string][]Rule) {
+	for _, ip := range removed {
+		for j := range usersDestRules[username] {
+			tag := fmt.Sprintf("user:%s:%s:%d", username, ip, j)
+			deleteNftRules(filterTableName, []string{filterForwardChainName, filterInputChainName}, tag)
+		}
+		clearConntrack(ip)
+	}
 }
 
 // RunNftablesManager 启动nftables管理器，定期更新规则
@@ -159,7 +143,7 @@ func RunNftablesManager(ctx context.Context, refresh time.Duration) {
 			log.Println("[nft] 停止nftables管理器")
 			return
 		case <-ticker.C:
-			if err := UpdateNftablesRulesWithSessions(globalUsersRules); err != nil {
+			if err := UpdateUsersNftablesRules(globalUsersRules); err != nil {
 				log.Printf("[nft] 更新规则失败: %v", err)
 				continue
 			}

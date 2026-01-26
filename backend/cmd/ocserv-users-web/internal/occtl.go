@@ -3,12 +3,113 @@ package internal
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
+
+// -------------------- 全局状态 --------------------
+
+var (
+	globalOnlineOcUsers   = make(map[string][]string) // username -> []IPv4
+	globalOnlineOcUsersMu sync.Mutex
+)
+
+// 支持多设备，tag = username:ip:ruleIndex
+func checkOcSessions() (addedSessions, removedSessions map[string][]string, err error) {
+	addedSessions = make(map[string][]string)
+	removedSessions = make(map[string][]string)
+
+	sessions, err := OcctlGetSessions()
+	if err != nil {
+		log.Printf("[nft] 获取会话失败: %v", err)
+		return nil, nil, err
+	}
+
+	// 当前在线用户映射 username -> []IPv4
+	currentUsers := buildCurrentOcUsersFromSessions(sessions)
+
+	globalOnlineOcUsersMu.Lock()
+	defer globalOnlineOcUsersMu.Unlock()
+
+	// 处理现有在线用户的 IP 变化
+	for username, ips := range currentUsers {
+		oldIPs := globalOnlineOcUsers[username]
+
+		added, removed := diffIPs(oldIPs, ips)
+		if len(added) > 0 {
+			log.Printf("[diff] 用户 %s 上线 IP: %v", username, added)
+			addedSessions[username] = append(addedSessions[username], added...)
+		}
+		if len(removed) > 0 {
+			log.Printf("[diff] 用户 %s 下线 IP: %v", username, removed)
+			removedSessions[username] = append(removedSessions[username], removed...)
+		}
+	}
+
+	// 完全下线用户
+	for username, offlineIps := range globalOnlineOcUsers {
+		if _, ok := currentUsers[username]; !ok {
+			log.Printf("[diff] 用户 %s 完全下线，IP: %v", username, offlineIps)
+			removedSessions[username] = append(removedSessions[username], offlineIps...)
+		}
+	}
+
+	// 更新全局在线用户映射
+	globalOnlineOcUsers = currentUsers
+
+	return addedSessions, removedSessions, nil
+}
+
+// OfflineAllSessions 清空所有在线用户状态（用于重置）
+func offlineAllSessions() {
+	globalOnlineOcUsersMu.Lock()
+	defer globalOnlineOcUsersMu.Unlock()
+
+	globalOnlineOcUsers = make(map[string][]string)
+}
+
+// buildCurrentOcUsersFromSessions 从会话数据构建当前在线用户映射
+func buildCurrentOcUsersFromSessions(sessions []Session) map[string][]string {
+	current := make(map[string][]string)
+	for _, s := range sessions {
+		if s.Username == "" || s.IPv4 == "" {
+			continue
+		}
+		current[s.Username] = append(current[s.Username], s.IPv4)
+	}
+	return current
+}
+
+// diffIPs 对比两个 IP 列表，返回新增和移除的 IP
+func diffIPs(oldIPs, newIPs []string) (added, removed []string) {
+	oldMap := make(map[string]struct{}, len(oldIPs))
+	newMap := make(map[string]struct{}, len(newIPs))
+
+	for _, ip := range oldIPs {
+		oldMap[ip] = struct{}{}
+	}
+	for _, ip := range newIPs {
+		newMap[ip] = struct{}{}
+	}
+
+	for ip := range newMap {
+		if _, ok := oldMap[ip]; !ok {
+			added = append(added, ip)
+		}
+	}
+	for ip := range oldMap {
+		if _, ok := newMap[ip]; !ok {
+			removed = append(removed, ip)
+		}
+	}
+
+	return
+}
 
 // -------------------- Session Manager --------------------
 type Session struct {

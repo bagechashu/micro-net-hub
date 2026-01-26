@@ -1,7 +1,7 @@
 package internal
 
 import (
-	"log"
+	"fmt"
 	"strings"
 	"sync"
 )
@@ -58,12 +58,12 @@ type SrcIpSet struct {
 }
 
 type RuleMapping struct {
-	Name         string       `json:"name,omitempty" yaml:"name,omitempty"`
-	Type         MappingType  `json:"mapping_type" yaml:"mapping_type"` // [users | public | input_chain | input_chain_ip_set]
-	SrcIps       []string     `json:"src_ips,omitempty" yaml:"src_ips,omitempty"`
-	SrcIpSet     *SrcIpSet    `json:"src_ip_set,omitempty" yaml:"src_ip_set,omitempty"`
-	Users        []string     `json:"users,omitempty" yaml:"users,omitempty"`
-	RuleGroupRef string       `json:"rule_group_ref,omitempty" yaml:"rule_group_ref,omitempty"` // 引用的规则组名称
+	Name         string      `json:"name,omitempty" yaml:"name,omitempty"`
+	Type         MappingType `json:"mapping_type" yaml:"mapping_type"` // [users | public | input_chain | input_chain_ip_set]
+	SrcIps       []string    `json:"src_ips,omitempty" yaml:"src_ips,omitempty"`
+	SrcIpSet     *SrcIpSet   `json:"src_ip_set,omitempty" yaml:"src_ip_set,omitempty"`
+	Users        []string    `json:"users,omitempty" yaml:"users,omitempty"`
+	RuleGroupRef string      `json:"rule_group_ref,omitempty" yaml:"rule_group_ref,omitempty"` // 引用的规则组名称
 }
 
 type ProtocolType string
@@ -118,9 +118,8 @@ func (t MappingType) Valid() bool {
 }
 
 // GetUserRulesMapping 构建用户到规则的映射
-func GetUserRulesMapping(config *Config) map[string][]Rule {
+func GetUserRulesMapping(config *Config) (map[string][]Rule, error) {
 	usersRules := make(map[string][]Rule)
-
 	for _, rgm := range config.RuleMappings {
 		// 为每个用户组构建规则映射
 		if rgm.Type != MappingUsers {
@@ -129,8 +128,7 @@ func GetUserRulesMapping(config *Config) map[string][]Rule {
 		// 查找该用户组引用的规则组
 		rg := resolveRuleGroup(config.RuleGroups, rgm.RuleGroupRef)
 		if rg == nil {
-			log.Printf("[init] 未找到规则组: %s", rgm.RuleGroupRef)
-			continue
+			return nil, fmt.Errorf("未找到规则组: %s", rgm.RuleGroupRef)
 		}
 
 		// 为该组中的每个用户分配规则
@@ -141,11 +139,11 @@ func GetUserRulesMapping(config *Config) map[string][]Rule {
 		}
 	}
 
-	return usersRules
+	return usersRules, nil
 }
 
 // GetPublicRules 获取公共规则
-func GetPublicRules(config *Config) map[string][]Rule {
+func GetPublicRules(config *Config) (map[string][]Rule, error) {
 	publicRules := make(map[string][]Rule)
 	for _, rulemapping := range config.RuleMappings {
 		if rulemapping.Type != MappingPublic {
@@ -153,8 +151,7 @@ func GetPublicRules(config *Config) map[string][]Rule {
 		}
 		ruleGroup := resolveRuleGroup(config.RuleGroups, rulemapping.RuleGroupRef)
 		if ruleGroup == nil {
-			log.Printf("[init] 未找到公共规则组: %s", rulemapping.RuleGroupRef)
-			continue
+			return nil, fmt.Errorf("未找到规则组: %s", rulemapping.RuleGroupRef)
 		}
 
 		rulemappingName := strings.ToLower(rulemapping.Name) // 用户名转小写，保持一致性
@@ -162,11 +159,11 @@ func GetPublicRules(config *Config) map[string][]Rule {
 		publicRules[rulemappingName] = append(publicRules[rulemappingName], ruleGroup.Rules...)
 	}
 
-	return publicRules
+	return publicRules, nil
 }
 
 // GetInputChainRules 获取InputChain规则
-func GetInputChainRules(config *Config) map[string][]Rule {
+func GetInputChainRules(config *Config) (map[string][]Rule, error) {
 	inputChainRules := make(map[string][]Rule)
 	for _, rulemapping := range config.RuleMappings {
 		if rulemapping.Type != MappingInputChain {
@@ -174,8 +171,7 @@ func GetInputChainRules(config *Config) map[string][]Rule {
 		}
 		ruleGroup := resolveRuleGroup(config.RuleGroups, rulemapping.RuleGroupRef)
 		if ruleGroup == nil {
-			log.Printf("[init] 未找到规则组: %s", rulemapping.RuleGroupRef)
-			continue
+			return nil, fmt.Errorf("未找到规则组: %s", rulemapping.RuleGroupRef)
 		}
 
 		rulemappingName := strings.ToLower(rulemapping.Name)
@@ -194,11 +190,11 @@ func GetInputChainRules(config *Config) map[string][]Rule {
 		}
 	}
 
-	return inputChainRules
+	return inputChainRules, nil
 }
 
 // GetInputChainIpSetRules 获取InputChainIpSet规则
-func GetInputChainIpSetRules(config *Config) ([]SrcIpSet, map[string][]Rule) {
+func GetInputChainIpSetRules(config *Config) ([]SrcIpSet, map[string][]Rule, error) {
 	srcIpSets := []SrcIpSet{}
 	inputChainIpSetRules := make(map[string][]Rule)
 	for _, rulemapping := range config.RuleMappings {
@@ -210,8 +206,7 @@ func GetInputChainIpSetRules(config *Config) ([]SrcIpSet, map[string][]Rule) {
 		}
 		ruleGroup := resolveRuleGroup(config.RuleGroups, rulemapping.RuleGroupRef)
 		if ruleGroup == nil {
-			log.Printf("[init] 未找到规则组: %s", rulemapping.RuleGroupRef)
-			continue
+			return nil, nil, fmt.Errorf("未找到规则组: %s", rulemapping.RuleGroupRef)
 		}
 
 		rulemappingName := strings.ToLower(rulemapping.Name)
@@ -229,7 +224,7 @@ func GetInputChainIpSetRules(config *Config) ([]SrcIpSet, map[string][]Rule) {
 		inputChainIpSetRules[rulemappingName] = append(inputChainIpSetRules[rulemappingName], rulesWithSrcIpSetName...)
 	}
 
-	return srcIpSets, inputChainIpSetRules
+	return srcIpSets, inputChainIpSetRules, nil
 }
 
 // resolveRuleGroup 根据规则组名称查找规则组

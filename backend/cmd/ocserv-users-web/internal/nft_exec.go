@@ -445,34 +445,8 @@ func getNftRuleHandle(table, chain string, keyword string) (handles []string, er
 	return handles, nil
 }
 
-// diffIPs 对比两个 IP 列表，返回新增和移除的 IP
-func diffIPs(oldIPs, newIPs []string) (added, removed []string) {
-	oldMap := make(map[string]struct{}, len(oldIPs))
-	newMap := make(map[string]struct{}, len(newIPs))
-
-	for _, ip := range oldIPs {
-		oldMap[ip] = struct{}{}
-	}
-	for _, ip := range newIPs {
-		newMap[ip] = struct{}{}
-	}
-
-	for ip := range newMap {
-		if _, ok := oldMap[ip]; !ok {
-			added = append(added, ip)
-		}
-	}
-	for ip := range oldMap {
-		if _, ok := newMap[ip]; !ok {
-			removed = append(removed, ip)
-		}
-	}
-
-	return
-}
-
 // GetNftAllRules 获取当前 nftable 规则集
-func GetNftAllRules() (out string,err error) {
+func GetNftAllRules() (out string, err error) {
 	cmd := exec.Command("nft", "list", "ruleset")
 	outBytes, err := cmd.CombinedOutput()
 	if err != nil {

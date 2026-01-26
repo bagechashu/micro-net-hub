@@ -193,17 +193,35 @@ func ConfigSaveHandler(w http.ResponseWriter, r *http.Request) {
 	// Define atomic apply function
 	applyFunc := func(applyCfg *internal.Config) error {
 		// Prepare rules
-		publicRules := internal.GetPublicRules(applyCfg)
-		inputChainRules := internal.GetInputChainRules(applyCfg)
-		srcIpSets, inputChainIpSetRules := internal.GetInputChainIpSetRules(applyCfg)
+		publicRules, err := internal.GetPublicRules(applyCfg)
+		if err != nil {
+			return fmt.Errorf("failed to get public rules: %w", err)
+		}
+		inputChainRules, err := internal.GetInputChainRules(applyCfg)
+		if err != nil {
+			return fmt.Errorf("failed to get input chain rules: %w", err)
+		}
+		srcIpSets, inputChainIpSetRules, err := internal.GetInputChainIpSetRules(applyCfg)
+		if err != nil {
+			return fmt.Errorf("failed to get input chain ip set rules: %w", err)
+		}
 
 		// Reinitialize nftables
 		if err := internal.InitNftables(publicRules, inputChainRules, inputChainIpSetRules, srcIpSets); err != nil {
 			return fmt.Errorf("nftables init failed: %w", err)
 		}
 
-		// Update global rules (after nftables succeeds)
-		internal.UpdateUserRules(internal.GetUserRulesMapping(applyCfg))
+		// Update user rules and session-related nftables rules
+		userRules, err := internal.GetUserRulesMapping(applyCfg)
+		if err != nil {
+			return fmt.Errorf("failed to get user rules mapping: %w", err)
+		}
+		internal.UpdateUserRules(userRules)
+		if err := internal.InitUsersNftablesRules(userRules); err != nil {
+			return fmt.Errorf("update nftables with sessions failed: %w", err)
+		}
+
+		// Update VPN access rules
 		internal.UpdateVpnAccessRules(applyCfg.VpnAccessRules)
 
 		return nil

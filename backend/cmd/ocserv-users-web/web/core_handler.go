@@ -11,7 +11,7 @@ func nftCheckTriggerHandler(w http.ResponseWriter, r *http.Request) {
 	userRules := internal.GetUserRules()
 	
 	// 执行一次 nftables 规则更新
-	err := internal.UpdateNftablesRulesWithSessions(userRules)
+	err := internal.UpdateUsersNftablesRules(userRules)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("nft updated failed: %v", err), http.StatusInternalServerError)
 		return

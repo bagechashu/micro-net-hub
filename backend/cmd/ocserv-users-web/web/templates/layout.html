@@ -363,10 +363,10 @@ document.addEventListener('htmx:afterSwap', function() {
 });
 
 // 备选方案：监听 htmx:load 事件（某些版本的 HTMX）
-document.addEventListener('htmx:load', function() {
-  initializePage();
-  setupPageListeners();
-});
+// document.addEventListener('htmx:load', function() {
+//   initializePage();
+//   setupPageListeners();
+// });
 </script>
 
 {{ block "script" . }}{{ end }}
