@@ -17,6 +17,11 @@ func authMiddleware(next http.Handler) http.Handler {
 		if err != nil {
 			log.Printf("[auth] Invalid cookie: %v", err)
 			w.WriteHeader(http.StatusForbidden)
+			// If this is an HTMX request, redirect instead of rendering error page
+			if r.Header.Get("HX-Request") == "true" {
+				w.Header().Set("HX-Redirect", "/")
+				return
+			}
 			renderWithLayout(w, "403.html", nil)
 			return
 		}
@@ -26,6 +31,11 @@ func authMiddleware(next http.Handler) http.Handler {
 		if err != nil {
 			log.Printf("[auth] Invalid session ID: %v", err)
 			w.WriteHeader(http.StatusForbidden)
+			// If this is an HTMX request, redirect instead of rendering error page
+			if r.Header.Get("HX-Request") == "true" {
+				w.Header().Set("HX-Redirect", "/")
+				return
+			}
 			renderWithLayout(w, "403.html", nil)
 			return
 		}

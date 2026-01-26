@@ -9,9 +9,12 @@
 {{ range . }}
 <tr>
   <td style="text-align: center;">
-    <button class="btn-disconnect" 
+    <button class="btn-disconnect"
+      data-controller="disconnect"
+      data-action="click->disconnect#handleClick"
       hx-post="/api/occtl/disconnect/{{.ID}}"
-      hx-on::after-request="if (event.detail.xhr.status === 200) { htmx.remove(htmx.closest(this, 'tr')) } else { alert('Failed to disconnect user') }"
+      hx-target="closest tr"
+      hx-swap="delete"
       data-tooltip="disconnect">
       🔓
     </button>

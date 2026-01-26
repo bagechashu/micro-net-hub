@@ -2,7 +2,12 @@
 
 {{ define "content" }}
 <section>
-  <h3>用户管理</h3>
+  <div style="display: flex; justify-content: space-between; align-items: center; gap: 1em;">
+    <h3 style="flex-shrink: 0;">用户管理</h3>
+    <div id="page-message"
+        style="display:none; flex: 1; text-align: center; max-width: 500px; font-size:0.8rem; padding: 1em; border-radius:1px;">
+    </div>
+  </div>
 
   <div class="table-section" style="margin-bottom: 2em;">
     <h4>在线用户</h4>
@@ -405,6 +410,72 @@
       const div = document.createElement("div");
       div.textContent = text;
       return div.innerHTML;
+    }
+  });
+
+  // 断开连接控制器 - 处理单个按钮
+  window.App.register("disconnect", class extends Stimulus.Controller {
+    static MESSAGE_CONFIG = {
+      TIMEOUT: 3000,
+      STYLES: {
+        success: {
+          background: "#e6fffa",
+          border: "1px solid #81e6d9",
+          color: "#065f46"
+        },
+        error: {
+          background: "#fff5f5",
+          border: "1px solid #feb2b2",
+          color: "#7f1d1d"
+        }
+      }
+    };
+
+    connect() {
+      // 在按钮上监听 HTMX 事件（事件委托）
+      this.element.addEventListener("htmx:afterRequest", (e) => this.onAfterRequest(e));
+      this.element.addEventListener("htmx:responseError", (e) => this.onResponseError(e));
+    }
+
+    handleClick(event) {
+      if (!confirm("Are you sure to disconnect this user?")) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    }
+
+    onAfterRequest(event) {
+      const status = event.detail?.xhr?.status;
+      if (status >= 200 && status < 300) {
+        this.showMessage("User disconnected successfully", true);
+      }
+    }
+
+    onResponseError(event) {
+      const status = event.detail?.xhr?.status;
+      this.showMessage(`Failed to disconnect (HTTP ${status})`, false);
+    }
+
+    showMessage(text, isSuccess) {
+      const msgBox = document.getElementById("page-message");
+      if (!msgBox) return;
+
+      const styles = isSuccess
+        ? this.constructor.MESSAGE_CONFIG.STYLES.success
+        : this.constructor.MESSAGE_CONFIG.STYLES.error;
+
+      msgBox.textContent = text;
+      msgBox.style.cssText = `
+        display: block;
+        background: ${styles.background};
+        border: ${styles.border};
+        color: ${styles.color};
+      `;
+
+      clearTimeout(msgBox._timer);
+      msgBox._timer = setTimeout(() => {
+        msgBox.style.display = "none";
+      }, this.constructor.MESSAGE_CONFIG.TIMEOUT);
     }
   });
 })();

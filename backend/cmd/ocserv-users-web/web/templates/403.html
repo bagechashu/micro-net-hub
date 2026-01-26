@@ -10,5 +10,24 @@
     <a href="/" class="pure-button pure-button-primary">返回首页</a>
     <button class="pure-button" onclick="window.history.back()">返回上一页</button>
 </div>
+
+<p style="margin-top: 2em; text-align: center; color: #666;">
+  <span id="countdown">3</span> 秒后自动返回首页...
+</p>
 </div>
+
+<script>
+  let seconds = 3;
+  const countdownEl = document.getElementById('countdown');
+  
+  const timer = setInterval(() => {
+    seconds--;
+    countdownEl.textContent = seconds;
+    
+    if (seconds <= 0) {
+      clearInterval(timer);
+      window.location.replace('/');
+    }
+  }, 1000);
+</script>
 {{ end }}
