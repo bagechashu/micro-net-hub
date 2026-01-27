@@ -25,35 +25,10 @@
   <script>
     window.App = Stimulus.Application.start()
   </script>
-
-  <!-- HTMX Configuration and Error Handling -->
-  <script>
-    // Handle HTMX errors (e.g., 403 Forbidden due to session expiration)
-    document.addEventListener('htmx:responseError', function(event) {
-      const xhr = event.detail.xhr;
-      
-      // If we get a 403 or 401, the session has likely expired
-      if (xhr.status === 403 || xhr.status === 401) {
-        // Clear cached user info
-        localStorage.removeItem('userInfo');
-        // Redirect to home page (login page)
-        window.location.href = '/';
-      }
-    });
-
-    // Also handle htmx:afterSwap to check for authentication errors
-    document.addEventListener('htmx:afterSwap', function(event) {
-      const xhr = event.detail.xhr;
-      if (xhr && (xhr.status === 403 || xhr.status === 401)) {
-        localStorage.removeItem('userInfo');
-        window.location.href = '/';
-      }
-    });
-  </script>
 </head>
 
 <body>
-<main hx-boost="true" class="container">
+<main class="container">
 <header class="app-header">
   <h3>Ocserv 用户管理</h3>
   <nav id="mainNav">
@@ -291,11 +266,12 @@ async function handleLogin(event) {
     if (!response.ok) {
       throw new Error(data.message || '登录失败');
     }
-    // 登录成功，清除缓存并跳转
-    // localStorage.removeItem('userInfo');
-    closeLoginModal();
-    // 使用 replace 确保不会在历史记录中留下登录失败的状态
-    window.location.replace('/ocusers.html');
+    // 可选：登录成功，关闭 modal 并更新导航
+    // closeLoginModal();
+    // updateNavigation(true);
+
+    // 跳转到首页或其他页面
+    window.location.href = '/ocusers.html';
   } catch (error) {
     errorDiv.textContent = error.message;
     errorDiv.style.display = 'block';
@@ -322,7 +298,7 @@ async function handleLogout() {
       // 清除缓存的用户信息
       localStorage.removeItem('userInfo');
       updateNavigation({ isLoggedIn: false });
-      window.location.replace('/');
+      window.location.href = '/';
     } else {
       alert('登出失败');
     }
@@ -331,16 +307,16 @@ async function handleLogout() {
   }
 }
 
-// 初始化函数
-function setupPageListeners() {
+// 点击 modal 外部关闭
+document.addEventListener('DOMContentLoaded', function() {
+  initializePage();
+  
   const modal = document.getElementById('loginModal');
-  if (modal) {
-    modal.addEventListener('click', function(event) {
-      if (event.target === modal) {
-        closeLoginModal();
-      }
-    });
-  }
+  modal.addEventListener('click', function(event) {
+    if (event.target === modal) {
+      closeLoginModal();
+    }
+  });
   
   // ESC 键关闭 modal
   document.addEventListener('keydown', function(event) {
@@ -348,25 +324,7 @@ function setupPageListeners() {
       closeLoginModal();
     }
   });
-}
-
-// 页面初始化
-document.addEventListener('DOMContentLoaded', function() {
-  initializePage();
-  setupPageListeners();
 });
-
-// HTMX 导航完成后重新初始化（用于 hx-boost）
-document.addEventListener('htmx:afterSwap', function() {
-  initializePage();
-  setupPageListeners();
-});
-
-// 备选方案：监听 htmx:load 事件（某些版本的 HTMX）
-// document.addEventListener('htmx:load', function() {
-//   initializePage();
-//   setupPageListeners();
-// });
 </script>
 
 {{ block "script" . }}{{ end }}
