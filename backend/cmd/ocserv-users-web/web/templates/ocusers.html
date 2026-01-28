@@ -30,7 +30,7 @@
               <option value="7" selected>1周</option>
               <option value="30">1个月</option>
               <option value="90">3个月</option>
-              <option value="0">全部</option>
+              <option value="365">1年</option>
             </select>
           </div>
           <button type="submit" class="pure-button pure-button-primary">查询</button>
@@ -66,13 +66,20 @@
         <form data-action="submit->violations#applyFilters" style="display: flex; gap: 1em; flex-wrap: wrap; align-items: center;">
           <div>
             <label for="filterDays">时间范围（天）:</label>
-            <select id="filterDays" data-violations-target="daysSelect" style="margin-left: 0.5em;">
+            <select id="filterDays" data-violations-target="daysSelect" style="margin-left: 0.5em;" data-action="change->violations#onDaysChange">
               <option value="1">1天</option>
               <option value="7" selected>1周</option>
               <option value="30">1个月</option>
               <option value="90">3个月</option>
-              <option value="0">全部</option>
+              <option value="365">1年</option>
+              <option value="custom">自定义范围</option>
             </select>
+          </div>
+          <div id="customDateRange" style="display: none; gap: 0.5em; align-items: center;">
+            <label for="filterStartDate">开始日期:</label>
+            <input type="date" id="filterStartDate" data-violations-target="startDate" style="margin-left: 0.5em; padding: 0.3em;">
+            <label for="filterEndDate">结束日期:</label>
+            <input type="date" id="filterEndDate" data-violations-target="endDate" style="margin-left: 0.5em; padding: 0.3em;">
           </div>
           <div>
             <label for="filterAction">动作:</label>
@@ -226,26 +233,59 @@
 
   // Violations 管理控制器
   window.App.register("violations", class extends Stimulus.Controller {
-    static targets = ["daysSelect", "usernameInput", "actionSelect", "tableBody", "pagination", "totalViolations", "blockCount", "logonlyCount", "violations24h", "tableContainer"];
+    static targets = ["daysSelect", "usernameInput", "actionSelect", "tableBody", "pagination", "totalViolations", "blockCount", "logonlyCount", "violations24h", "tableContainer", "startDate", "endDate"];
 
     static values = {
       limit: { type: Number, default: 20 },
       offset: { type: Number, default: 0 },
       days: { type: Number, default: 7 },
       username: { type: String, default: "" },
-      action: { type: String, default: "" }
+      action: { type: String, default: "" },
+      startDate: { type: String, default: "" },
+      endDate: { type: String, default: "" },
+      useCustomRange: { type: Boolean, default: false }
     }
 
     connect() {
       this.loadData();
     }
 
+    onDaysChange(event) {
+      const customRangeDiv = document.getElementById("customDateRange");
+      if (event.target.value === "custom") {
+        customRangeDiv.style.display = "flex";
+        // Set default to today and 7 days ago
+        const endDate = new Date();
+        const startDate = new Date(endDate);
+        startDate.setDate(startDate.getDate() - 7);
+        
+        this.endDateTarget.value = endDate.toISOString().split('T')[0];
+        this.startDateTarget.value = startDate.toISOString().split('T')[0];
+      } else {
+        customRangeDiv.style.display = "none";
+      }
+    }
+
     applyFilters(event) {
       event.preventDefault();
       this.offsetValue = 0;
-      this.daysValue = parseInt(this.daysSelectTarget.value) || 7;
       this.usernameValue = this.usernameInputTarget.value.trim();
       this.actionValue = this.actionSelectTarget.value;
+      
+      const selectedDays = this.daysSelectTarget.value;
+      if (selectedDays === "custom") {
+        this.useCustomRangeValue = true;
+        this.startDateValue = this.startDateTarget.value;
+        this.endDateValue = this.endDateTarget.value;
+        if (!this.startDateValue || !this.endDateValue) {
+          alert("Please select both start and end dates");
+          return;
+        }
+      } else {
+        this.useCustomRangeValue = false;
+        this.daysValue = parseInt(selectedDays) || 7;
+      }
+      
       this.loadData();
     }
 
@@ -258,6 +298,10 @@
       this.daysValue = 7;
       this.usernameValue = "";
       this.actionValue = "";
+      this.useCustomRangeValue = false;
+      this.startDateValue = "";
+      this.endDateValue = "";
+      document.getElementById("customDateRange").style.display = "none";
       this.loadData();
     }
 
@@ -278,7 +322,12 @@
 
     async loadViolations() {
       const params = new URLSearchParams();
-      if (this.daysValue > 0) params.append("days", this.daysValue);
+      if (this.useCustomRangeValue) {
+        params.append("startDate", this.startDateValue);
+        params.append("endDate", this.endDateValue);
+      } else if (this.daysValue > 0) {
+        params.append("days", this.daysValue);
+      }
       if (this.usernameValue) params.append("username", this.usernameValue);
       if (this.actionValue) params.append("action", this.actionValue);
       params.append("limit", this.limitValue);
@@ -293,7 +342,12 @@
 
     async loadStats() {
       const params = new URLSearchParams();
-      if (this.daysValue > 0) params.append("days", this.daysValue);
+      if (this.useCustomRangeValue) {
+        params.append("startDate", this.startDateValue);
+        params.append("endDate", this.endDateValue);
+      } else if (this.daysValue > 0) {
+        params.append("days", this.daysValue);
+      }
       if (this.usernameValue) params.append("username", this.usernameValue);
 
       const response = await fetch(`/api/violations/stats?${params}`);

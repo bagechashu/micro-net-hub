@@ -145,11 +145,14 @@ type ViolationLog struct {
 
 // ViolationQuery defines filtering parameters for violation queries
 type ViolationQuery struct {
-	TimeBack time.Duration
-	Username string
-	Action   string
-	Limit    int
-	Offset   int
+	TimeBack       time.Duration
+	StartTime      time.Time
+	EndTime        time.Time
+	UseCustomRange bool
+	Username       string
+	Action         string
+	Limit          int
+	Offset         int
 }
 
 const (
@@ -171,10 +174,23 @@ func generateID() string {
 }
 
 // buildWhereClause builds SQL WHERE clause with dynamic filter conditions
+// If endTime is zero value, only uses startTime constraint
+// If endTime is set, uses startTime AND endTime constraint
 // Returns the WHERE clause string and corresponding query arguments
-func buildWhereClause(startTime time.Time, username, action string) (string, []interface{}) {
-	whereConditions := []string{"timestamp >= ?"}
-	args := []interface{}{startTime}
+func buildWhereClause(startTime, endTime time.Time, username, action string) (string, []interface{}) {
+	var whereConditions []string
+	var args []interface{}
+
+	// Handle timestamp conditions
+	if endTime.IsZero() {
+		// Only startTime constraint
+		whereConditions = append(whereConditions, "timestamp >= ?")
+		args = append(args, startTime)
+	} else {
+		// Custom date range
+		whereConditions = append(whereConditions, "timestamp >= ? AND timestamp < ?")
+		args = append(args, startTime, endTime)
+	}
 
 	if username != "" {
 		whereConditions = append(whereConditions, "username = ?")
@@ -319,13 +335,6 @@ func GetViolations(query ViolationQuery) ([]ViolationLog, int64, error) {
 			query.Offset = 0
 		}
 
-		if query.TimeBack <= 0 {
-			query.TimeBack = time.Duration(defaultTimeBackDays) * 24 * time.Hour
-		}
-		if query.TimeBack > time.Duration(maxTimeBackDays)*24*time.Hour {
-			query.TimeBack = time.Duration(maxTimeBackDays) * 24 * time.Hour
-		}
-
 		// Sanitize username and action
 		query.Username = strings.TrimSpace(query.Username)
 		query.Action = strings.ToLower(strings.TrimSpace(query.Action))
@@ -333,10 +342,25 @@ func GetViolations(query ViolationQuery) ([]ViolationLog, int64, error) {
 			query.Action = ""
 		}
 
-		startTime := time.Now().Add(-query.TimeBack)
+		// Calculate time range
+		var queryStartTime, queryEndTime time.Time
+		if query.UseCustomRange {
+			queryStartTime = query.StartTime
+			queryEndTime = query.EndTime
+		} else {
+			// Use time-back calculation
+			timeBack := query.TimeBack
+			if timeBack <= 0 {
+				timeBack = time.Duration(defaultTimeBackDays) * 24 * time.Hour
+			}
+			if timeBack > time.Duration(maxTimeBackDays)*24*time.Hour {
+				timeBack = time.Duration(maxTimeBackDays) * 24 * time.Hour
+			}
+			queryStartTime = time.Now().Add(-timeBack)
+			queryEndTime = time.Time{}
+		}
 
-		// Build query conditions using generic helper
-		whereClause, args := buildWhereClause(startTime, query.Username, query.Action)
+		whereClause, args := buildWhereClause(queryStartTime, queryEndTime, query.Username, query.Action)
 
 		// Get total count
 		countQuery := fmt.Sprintf(sqlSelectCountWithFilter, whereClause)
@@ -369,30 +393,37 @@ func GetViolations(query ViolationQuery) ([]ViolationLog, int64, error) {
 	return violations, totalCount, nil
 }
 
-// GetViolationStats retrieves action-based statistics for violations within a time range
-func GetViolationStats(timeBack time.Duration, username ...string) (map[string]interface{}, error) {
+// GetViolationStats retrieves action-based statistics for violations
+// If query.UseCustomRange is true, uses StartTime and EndTime; otherwise uses TimeBack
+func GetViolationStats(query ViolationQuery) (map[string]interface{}, error) {
 	var stats map[string]interface{}
 
 	err := dbManager.GetDB(func(db *sqlx.DB) error {
-		if timeBack <= 0 {
-			timeBack = time.Duration(defaultTimeBackDays) * 24 * time.Hour
-		}
-		if timeBack > time.Duration(maxTimeBackDays)*24*time.Hour {
-			timeBack = time.Duration(maxTimeBackDays) * 24 * time.Hour
-		}
-
-		startTime := time.Now().Add(-timeBack)
 		stats = make(map[string]interface{})
 
 		ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
 		defer cancel()
 
-		// Build query conditions using generic helper
-		usernameFilter := ""
-		if len(username) > 0 && username[0] != "" {
-			usernameFilter = username[0]
+		// Calculate time range
+		var queryStartTime, queryEndTime time.Time
+		if query.UseCustomRange {
+			queryStartTime = query.StartTime
+			queryEndTime = query.EndTime
+		} else {
+			// Use time-back calculation
+			timeBack := query.TimeBack
+			if timeBack <= 0 {
+				timeBack = time.Duration(defaultTimeBackDays) * 24 * time.Hour
+			}
+			if timeBack > time.Duration(maxTimeBackDays)*24*time.Hour {
+				timeBack = time.Duration(maxTimeBackDays) * 24 * time.Hour
+			}
+			queryStartTime = time.Now().Add(-timeBack)
+			queryEndTime = time.Time{}
 		}
-		whereClause, args := buildWhereClause(startTime, usernameFilter, "")
+
+		// Build query conditions
+		whereClause, args := buildWhereClause(queryStartTime, queryEndTime, query.Username, "")
 
 		// Get total count
 		var totalCount int
@@ -428,9 +459,17 @@ func GetViolationStats(timeBack time.Duration, username ...string) (map[string]i
 		// Get recent violations (last 24 hours) count
 		last24h := time.Now().Add(-24 * time.Hour)
 		var last24Count int
-		err = db.QueryRowContext(ctx, sqlSelectLast24hCount, last24h).Scan(&last24Count)
-		if err != nil {
-			log.Printf("[violation] failed to get 24h count: %v", err)
+		if query.UseCustomRange && last24h.After(queryStartTime) {
+			last24WhereClause, last24Args := buildWhereClause(last24h, queryEndTime, "", "")
+			err = db.QueryRowContext(ctx, fmt.Sprintf(sqlSelectCountWithFilter, last24WhereClause), last24Args...).Scan(&last24Count)
+			if err != nil {
+				log.Printf("[violation] failed to get 24h count: %v", err)
+			}
+		} else if !query.UseCustomRange {
+			err = db.QueryRowContext(ctx, sqlSelectLast24hCount, last24h).Scan(&last24Count)
+			if err != nil {
+				log.Printf("[violation] failed to get 24h count: %v", err)
+			}
 		}
 		stats["violations_24h"] = last24Count
 
@@ -444,7 +483,6 @@ func GetViolationStats(timeBack time.Duration, username ...string) (map[string]i
 	return stats, nil
 }
 
-// GetViolationUsers retrieves top users and their action breakdown within a time range
 // Optimized to use a single query with window functions instead of nested queries
 func GetViolationUsers(timeBack time.Duration) (map[string]interface{}, error) {
 	var stats map[string]interface{}

@@ -47,19 +47,31 @@ func GetViolationsHandler(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get("username")
 	action := r.URL.Query().Get("action")
 	daysStr := r.URL.Query().Get("days")
+	startDateStr := r.URL.Query().Get("startDate")
+	endDateStr := r.URL.Query().Get("endDate")
 	limitStr := r.URL.Query().Get("limit")
 	offsetStr := r.URL.Query().Get("offset")
 
-	timeBack := parseDays(daysStr)
 	limit := parseLimit(limitStr)
 	offset := parseOffset(offsetStr)
 
+	startTime, endTime, useCustomRange, err := parseCustomDateRange(startDateStr, endDateStr)
+	if err != nil {
+		log.Printf("[api] invalid date format: startDate=%s, endDate=%s", startDateStr, endDateStr)
+		sendError(w, http.StatusBadRequest, "invalid date format, use YYYY-MM-DD")
+		return
+	}
+
+	timeBack := parseDays(daysStr)
 	query := internal.ViolationQuery{
-		TimeBack: timeBack,
-		Username: username,
-		Action:   action,
-		Limit:    limit,
-		Offset:   offset,
+		TimeBack:       timeBack,
+		StartTime:      startTime,
+		EndTime:        endTime,
+		UseCustomRange: useCustomRange,
+		Username:       username,
+		Action:         action,
+		Limit:          limit,
+		Offset:         offset,
 	}
 
 	violations, total, err := internal.GetViolations(query)
@@ -97,10 +109,12 @@ func GetViolationsHandler(w http.ResponseWriter, r *http.Request) {
 // Optionally filters by username with caching for improved performance
 func GetViolationStatsHandler(w http.ResponseWriter, r *http.Request) {
 	daysStr := r.URL.Query().Get("days")
+	startDateStr := r.URL.Query().Get("startDate")
+	endDateStr := r.URL.Query().Get("endDate")
 	username := r.URL.Query().Get("username")
 
-	// Check cache only if no username filter (user-specific stats are more volatile)
-	if username == "" {
+	// Check cache only if no username filter and no custom range (user-specific stats are more volatile)
+	if username == "" && startDateStr == "" && endDateStr == "" {
 		statsCache.mu.RLock()
 		if time.Since(statsCache.timestamp) < statsTTL && statsCache.data != nil {
 			defer statsCache.mu.RUnlock()
@@ -110,16 +124,31 @@ func GetViolationStatsHandler(w http.ResponseWriter, r *http.Request) {
 		statsCache.mu.RUnlock()
 	}
 
+	startTime, endTime, useCustomRange, err := parseCustomDateRange(startDateStr, endDateStr)
+	if err != nil {
+		log.Printf("[api] invalid date format: startDate=%s, endDate=%s", startDateStr, endDateStr)
+		sendError(w, http.StatusBadRequest, "invalid date format, use YYYY-MM-DD")
+		return
+	}
+
 	timeBack := parseDays(daysStr)
-	stats, err := internal.GetViolationStats(timeBack, username)
+	query := internal.ViolationQuery{
+		StartTime:      startTime,
+		EndTime:        endTime,
+		TimeBack:       timeBack,
+		UseCustomRange: useCustomRange,
+		Username:       username,
+	}
+
+	stats, err := internal.GetViolationStats(query)
 	if err != nil {
 		log.Printf("[api] failed to get violation stats: %v", err)
 		sendError(w, http.StatusInternalServerError, "failed to retrieve statistics")
 		return
 	}
 
-	// Update cache if no username filter
-	if username == "" {
+	// Update cache if no username filter and no custom range
+	if username == "" && !useCustomRange {
 		statsCache.mu.Lock()
 		statsCache.data = stats
 		statsCache.timestamp = time.Now()
@@ -166,6 +195,26 @@ func VacuumViolationDBHandler(w http.ResponseWriter, r *http.Request) {
 	sendSuccess(w, "violation database vacuumed successfully", nil)
 }
 
+// parseCustomDateRange Handle custom date range if provided
+func parseCustomDateRange(startDateStr, endDateStr string) (startTime time.Time, endTime time.Time, enable bool, err error) {
+	enable = false
+	if startDateStr == "" && endDateStr == "" {
+		return time.Time{}, time.Time{}, enable, nil
+	}
+	startTime, err = time.Parse("2006-01-02", startDateStr)
+	if err != nil {
+		return time.Time{}, time.Time{}, enable, err
+	}
+	endTime, err = time.Parse("2006-01-02", endDateStr)
+	if err != nil {
+		return time.Time{}, time.Time{}, enable, err
+	}
+	// Add 24 hours to end date to include the whole day
+	endTime = endTime.Add(24 * time.Hour)
+	enable = true
+	return startTime, endTime, enable, nil
+}
+
 // parseDays parses the days query parameter and returns a time.Duration
 func parseDays(daysStr string) time.Duration {
 	if daysStr == "" {
@@ -173,7 +222,7 @@ func parseDays(daysStr string) time.Duration {
 	}
 
 	days, err := strconv.Atoi(daysStr)
-	if err != nil && days <= 0 {
+	if err != nil || days <= 0 {
 		return time.Duration(0)
 	}
 

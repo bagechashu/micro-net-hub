@@ -19,15 +19,18 @@ var (
 
 // InitAuthSessionStore initializes authentication system
 func InitAuth(cfg *internal.AuthConfig) error {
-	if !*cfg.Enabled {
-		log.Println("[auth] authentication is disabled")
-		return nil
-	}
-
+	// Set global auth config
 	authConfig = cfg
 
 	// Initialize global session store
 	globalSessionStore = internal.NewAuthSessionStore(time.Duration(cfg.Session.TimeoutMinutes) * time.Minute)
+
+	// If authentication is disabled, skip further initialization.
+	// Must after setting up authConfig and globalSessionStore, or other code may panic.
+	if !*cfg.Enabled {
+		log.Println("[auth] authentication is disabled")
+		return nil
+	}
 
 	// Build admin users map for quick lookup
 	adminUsersList = make(map[string]bool)

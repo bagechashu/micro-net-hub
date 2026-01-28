@@ -12,6 +12,12 @@ var ctxKeyIsAdmin = "isAdmin"
 // It wraps the next handler and ensures authentication is performed if enabled
 func authMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// If authentication is disabled, skip checks
+		if !*authConfig.Enabled {
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		// Get session cookie
 		cookie, err := r.Cookie(authConfig.Session.CookieName)
 		if err != nil {
