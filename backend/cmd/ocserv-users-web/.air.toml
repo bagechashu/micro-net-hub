@@ -7,7 +7,7 @@ tmp_dir = "tmp"
 [build]
   args_bin = []
   bin = "./tmp/main"
-  cmd = "go build -o ./tmp/main ."
+  cmd = "rm -f ./tmp/main && go build -o ./tmp/main ."
   delay = 1000
   entrypoint = ["./tmp/main", "-timezone=Asia/Dubai", "-config=./rules.yaml"]
   exclude_dir = ["assets", "tmp", "vendor", "testdata", ".config_backups"]

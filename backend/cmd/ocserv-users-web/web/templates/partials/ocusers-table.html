@@ -10,7 +10,7 @@
     </thead>
     <tbody
       hx-get="{{ .DataEndpoint }}"
-      hx-trigger="load, every 30s"
+      hx-trigger="load, every 60s"
       hx-swap="innerHTML">
       <tr>
         <td colspan="{{ len .Columns }}" style="text-align:center;color:#999">加载中...</td>

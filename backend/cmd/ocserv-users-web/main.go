@@ -18,7 +18,7 @@ func main() {
 	var (
 		config        = flag.String("config", "rules.yaml", "配置文件路径 (json|yaml)")
 		dbPath        = flag.String("dbpath", "data", "违规日志数据库路径")
-		refresh       = flag.Duration("refresh", 30*time.Second, "刷新间隔")
+		refresh       = flag.Duration("refresh", 60*time.Second, "刷新间隔")
 		webListenAddr = flag.String("webaddr", ":8080", "Web服务监听地址")
 		timezone      = flag.String("timezone", "UTC", "时区设置用于时间检查 (如: UTC, Asia/Shanghai)")
 	)

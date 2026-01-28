@@ -21,9 +21,32 @@
   <!-- App CSS -->
   <link rel="stylesheet" href="/static/css/app.css" />
 
-  <!-- Initialize global Stimulus app -->
   <script>
+    // Initialize global Stimulus app
     window.App = Stimulus.Application.start()
+
+    // HTMX Configuration and Error Handling
+    // Handle HTMX errors (e.g., 403 Forbidden due to session expiration)
+    document.addEventListener('htmx:responseError', function(event) {
+      const xhr = event.detail.xhr;
+      
+      // If we get a 403 or 401, the session has likely expired
+      if (xhr.status === 403 || xhr.status === 401) {
+        // Clear cached user info
+        localStorage.removeItem('userInfo');
+        // Redirect to home page (login page)
+        window.location.href = '/';
+      }
+    });
+
+    // Also handle htmx:afterSwap to check for authentication errors
+    document.addEventListener('htmx:afterSwap', function(event) {
+      const xhr = event.detail.xhr;
+      if (xhr && (xhr.status === 403 || xhr.status === 401)) {
+        localStorage.removeItem('userInfo');
+        window.location.href = '/';
+      }
+    });
   </script>
 </head>
 
