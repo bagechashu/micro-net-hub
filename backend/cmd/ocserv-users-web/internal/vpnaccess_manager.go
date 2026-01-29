@@ -83,13 +83,12 @@ func enforceVpnAccess(cfg []VpnAccessRule, onlyCheckTime ...bool) error {
 	for _, s := range sessions {
 		allow, action, reason := checkSession(cfg, s, now, check)
 
-		if allow {
-			continue
+		// Send webhook notification
+		if err := SendVpnAccessNotice(s.Username, s.RemoteIP, reason, action, allow); err != nil {
+			log.Printf("[vpn-access-notice] failed to send violation notice: %v", err)
 		}
 
-		if action == nil {
-			log.Printf("[access] action null pointer: id=%d user=%s remote=%s", s.ID, s.Username, s.RemoteIP)
-			failureCount++
+		if allow {
 			continue
 		}
 
@@ -101,21 +100,16 @@ func enforceVpnAccess(cfg []VpnAccessRule, onlyCheckTime ...bool) error {
 				failureCount++
 				continue
 			}
-			// Record violation to database (non-blocking now)
-			if err := RecordViolation(s.Username, s.RemoteIP, string(VpnActionBlock), reason); err != nil {
-				log.Printf("[violation] failed to record violation: %v", err)
-				// Don't fail the entire operation for logging failures
-			}
 			log.Printf("[access] 会话不符合规则，断开: id=%d user=%s remote=%s action=block reason=%s", s.ID, s.Username, s.RemoteIP, reason)
 			successCount++
 		case VpnActionLogOnly:
-			// Record violation to database (non-blocking now)
-			if err := RecordViolation(s.Username, s.RemoteIP, string(VpnActionLogOnly), reason); err != nil {
-				log.Printf("[violation] failed to record violation: %v", err)
-				// Don't fail the entire operation for logging failures
-			}
 			log.Printf("[access] 会话不符合规则，仅记录: id=%d user=%s remote=%s action=logonly reason=%s", s.ID, s.Username, s.RemoteIP, reason)
 			successCount++
+		}
+
+		// Record violation to database
+		if err := RecordViolation(s.Username, s.RemoteIP, string(*action), reason); err != nil {
+			log.Printf("[violation] failed to record violation: %v", err)
 		}
 	}
 

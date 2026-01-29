@@ -23,6 +23,34 @@ auth:
       - admin
       - user1
 
+# 违规通知 Webhook 配置
+vpn_access_notice:
+  enabled: false
+  # webhook 接收端地址，当检测到违规时会发送 POST 请求到此地址
+  webhook_receiver: http://your-notification-service:9000/webhook/json/ding
+  # 是否只在违规时发送通知，默认为 true（只发送违规通知）
+  # 如果设置为 false，则所有访问事件都会发送通知
+  only_notify_on_violation: true
+
+vpn_access_rules:
+  - users:
+      - user1
+      - user2
+    remote_ips:
+      - 1.2.3.4
+    time_range:
+      start: "08:00"
+      end: "12:00"
+    action_on_violation: block
+  - users:
+      - user1
+    remote_ips:
+      - 0.0.0.0/0
+    time_range:
+      start: "08:00"
+      end: "20:00"
+    action_on_violation: logonly
+
 rule_groups:
   - name: admin_access
     rules:
@@ -86,6 +114,7 @@ rule_groups:
         dest_port: 8080
         protocol: tcp
         action: accept
+
 rule_mappings:
   - name: admins
     mapping_type: users
@@ -121,21 +150,3 @@ rule_mappings:
       ips:
         - 0.0.0.0/0
     rule_group_ref: allow_access_ocserv
-vpn_access_rules:
-  - users:
-      - user1
-      - user2
-    remote_ips:
-      - 1.2.3.4
-    time_range:
-      start: "08:00"
-      end: "12:00"
-    action_on_violation: block
-  - users:
-      - user1
-    remote_ips:
-      - 0.0.0.0/0
-    time_range:
-      start: "08:00"
-      end: "20:00"
-    action_on_violation: logonly

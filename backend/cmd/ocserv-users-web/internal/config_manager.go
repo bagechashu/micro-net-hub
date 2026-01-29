@@ -15,10 +15,11 @@ import (
 )
 
 type Config struct {
-	Auth           AuthConfig      `json:"auth,omitempty" yaml:"auth,omitempty"`
-	RuleGroups     []RuleGroup     `json:"rule_groups,omitempty" yaml:"rule_groups,omitempty"`
-	RuleMappings   []RuleMapping   `json:"rule_mappings,omitempty" yaml:"rule_mappings,omitempty"`
-	VpnAccessRules []VpnAccessRule `json:"vpn_access_rules,omitempty" yaml:"vpn_access_rules,omitempty"`
+	Auth            AuthConfig            `json:"auth,omitempty" yaml:"auth,omitempty"`
+	VpnAccessNotice VpnAccessNoticeConfig `json:"vpn_access_notice,omitempty" yaml:"vpn_access_notice,omitempty"`
+	VpnAccessRules  []VpnAccessRule       `json:"vpn_access_rules,omitempty" yaml:"vpn_access_rules,omitempty"`
+	RuleGroups      []RuleGroup           `json:"rule_groups,omitempty" yaml:"rule_groups,omitempty"`
+	RuleMappings    []RuleMapping         `json:"rule_mappings,omitempty" yaml:"rule_mappings,omitempty"`
 }
 
 // -------------------- Config Manager --------------------
@@ -54,6 +55,8 @@ func LoadConfig(path string) (*Config, error) {
 	cfg.Auth.setDefaults()
 	// set default values for rules
 	cfg.setRuleDefaults()
+	// set default values for VPN access notice
+	cfg.VpnAccessNotice.setDefaults()
 
 	if err := cfg.Check(); err != nil {
 		return nil, fmt.Errorf("invalid config %q: %w", path, err)
@@ -158,6 +161,9 @@ func (cfg *Config) setRuleDefaults() {
 		}
 	}
 }
+
+// Global config manager (will be initialized in main.go)
+var GlobalConfigManager *ConfigManager
 
 // ConfigManager handles configuration file operations with backup support
 type ConfigManager struct {

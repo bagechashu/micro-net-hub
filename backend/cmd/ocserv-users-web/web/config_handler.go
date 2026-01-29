@@ -20,9 +20,6 @@ func configEditorWebHandler(w http.ResponseWriter, r *http.Request) {
 	renderWithLayout(w, "config-editor.html", nil)
 }
 
-// Global config manager (will be initialized in main.go)
-var GlobalConfigManager *internal.ConfigManager
-
 // Response represents a JSON API response
 type Response struct {
 	Code    int         `json:"code"`
@@ -63,7 +60,7 @@ type ConfigDiff struct {
 // ExportConfigHandler exports the entire config as JSON
 func ExportConfigHandler(w http.ResponseWriter, r *http.Request) {
 	// Load config from cache
-	config := GlobalConfigManager.GetConfig()
+	config := internal.GlobalConfigManager.GetConfig()
 
 	type ExportData struct {
 		RuleGroups     []internal.RuleGroup     `json:"rule_groups"`
@@ -90,7 +87,7 @@ func ExportConfigHandler(w http.ResponseWriter, r *http.Request) {
 // ==================== Unified Config View API ====================
 // ConfigViewHandler returns complete config with relationships
 func ConfigViewHandler(w http.ResponseWriter, r *http.Request) {
-	cfg := GlobalConfigManager.GetConfig()
+	cfg := internal.GlobalConfigManager.GetConfig()
 
 	sendSuccess(w, "unified config view", cfg)
 }
@@ -157,7 +154,7 @@ func ConfigPreviewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Calculate changes
-	oldConfig := GlobalConfigManager.GetConfig()
+	oldConfig := internal.GlobalConfigManager.GetConfig()
 	summary := calculateConfigChanges(oldConfig, &newConfig)
 
 	sendSuccess(w, "preview generated", summary)
@@ -224,11 +221,14 @@ func ConfigSaveHandler(w http.ResponseWriter, r *http.Request) {
 		// Update VPN access rules
 		internal.UpdateVpnAccessRules(applyCfg.VpnAccessRules)
 
+		// 初始化违规通知 webhook 配置
+		internal.InitializeVpnAccessNoticeConfig(cfg.VpnAccessNotice)
+
 		return nil
 	}
 
 	// Save config and apply rules atomically
-	if err := GlobalConfigManager.SaveAndApplyConfig(&cfg, applyFunc); err != nil {
+	if err := internal.GlobalConfigManager.SaveAndApplyConfig(&cfg, applyFunc); err != nil {
 		log.Printf("[config] save and apply failed: %v", err)
 		sendError(w, http.StatusInternalServerError, err.Error())
 		return

@@ -42,6 +42,9 @@ func main() {
 		log.Fatalf("[main] 配置加载失败: %v", err)
 	}
 
+	// 初始化违规通知 webhook 配置
+	internal.InitializeVpnAccessNoticeConfig(cfg.VpnAccessNotice)
+
 	// 初始化 nftables
 	log.Println("[nft] nftables 初始化")
 	publicRules, err := internal.GetPublicRules(cfg)
@@ -86,7 +89,7 @@ func main() {
 	// go internal.RunNftablesManager(ctx, *refresh)
 
 	// 初始化全局配置管理器
-	web.GlobalConfigManager = internal.NewConfigManager(*config)
+	internal.GlobalConfigManager = internal.NewConfigManager(*config)
 
 	// 启动 WEB 服务
 	go web.RunWebServer(*webListenAddr, cfg)
