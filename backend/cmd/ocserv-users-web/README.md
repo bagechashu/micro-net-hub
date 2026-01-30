@@ -36,19 +36,32 @@ RED="#ff0000"
 
 if [[ $REASON == "connect" ]]; then
   REASON_COLOR="<font color=\"$GREEN\"> $REASON </font>"
+  REASON_TYPE="warning"
 elif [[ $REASON == "disconnect" ]]; then
   REASON_COLOR="<font color=\"$RED\"> $REASON </font>"
+  REASON_TYPE="info"
 else
   REASON_COLOR=$REASON
+  REASON_TYPE="default"
 fi
 
 CONNECT_INFO="[notice] $USERNAME\($IP_REAL\) $IP_REMOTE $REASON_COLOR Ocserv VPN"
+CONNECT_INFO_JSON=$(jq -n \
+  --arg title "$USERNAME $REASON VPN" \
+  --arg type "$REASON_TYPE" \
+  --arg ip_real "$IP_REAL" \
+  --arg ip_remote "$IP_REMOTE" \
+  '{title: $title, type: $type, ip_real: $ip_real, ip_remote: $ip_remote}')
 
-(/usr/bin/curl --connect-timeout 5 -XPOST "http://:9000/webhook/raw/ding?secret=securitykey" -d "${CONNECT_INFO}" >/dev/null 2>&1 &)
+echo "$(date +%F-%H-%M) $CONNECT_INFO" >> /etc/ocserv/log
+
+(/usr/bin/curl -k --connect-timeout 5 -XPOST "http://:9000/webhook/json/ding?secret=securitykey" -d "${CONNECT_INFO_JSON}" >/dev/null 2>&1 &)
 
 /usr/bin/curl -XPOST http://127.0.0.1:8080/core/vpnaccess 2>/dev/null
 sleep 3
 (/usr/bin/curl -XPOST http://127.0.0.1:8080/core/nft 2>/dev/null &)
+
+exit 0
 
 ```
 
