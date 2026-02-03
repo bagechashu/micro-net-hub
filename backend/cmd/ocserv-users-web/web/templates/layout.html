@@ -1,9 +1,9 @@
 {{ define "layout" }}
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>{{ block "title" . }}Ocserv 用户管理{{ end }}</title>
+  <title>{{ block "title" . }}Ocserv User Management{{ end }}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <!-- htmx -->
@@ -53,13 +53,13 @@
 <body>
 <main class="container">
 <header class="app-header">
-  <h3>Ocserv 用户管理</h3>
+  <h3>Ocserv User Management</h3>
   <nav id="mainNav">
-    <a href="/ocusers.html" role="button" class="pure-button" id="usersBtn" style="visibility: hidden; position: absolute; width: 0;">用户</a>
+    <a href="/ocusers.html" role="button" class="pure-button" id="usersBtn" style="visibility: hidden; position: absolute; width: 0;">Users</a>
     <a href="/nft.html" role="button" class="pure-button pure-button-secondary" id="nftBtn" style="visibility: hidden; position: absolute; width: 0;">NFT</a>
-    <a href="/config.html" role="button" class="pure-button pure-button-secondary" id="configBtn" style="visibility: hidden; position: absolute; width: 0;">配置</a>
-    <button role="button" class="pure-button" id="loginBtn" onclick="openLoginModal()" style="visibility: visible;">登录</button>
-    <button role="button" hx-confirm="Are you sure?" class="pure-button pure-button-secondary" id="logoutBtn" onclick="handleLogout()" style="visibility: hidden; position: absolute; width: 0;">登出</button>
+    <a href="/config.html" role="button" class="pure-button pure-button-secondary" id="configBtn" style="visibility: hidden; position: absolute; width: 0;">Config</a>
+    <button role="button" class="pure-button" id="loginBtn" onclick="openLoginModal()" style="visibility: visible;">Login</button>
+    <button role="button" hx-confirm="Are you sure?" class="pure-button pure-button-secondary" id="logoutBtn" onclick="handleLogout()" style="visibility: hidden; position: absolute; width: 0;">Logout</button>
   </nav>
 </header>
 
@@ -67,34 +67,34 @@
 <div id="loginModal" class="modal" hidden aria-hidden="true">
   <div class="modal__container">
     <button class="modal__close" onclick="closeLoginModal()">&times;</button>
-    <div class="modal__title">用户登录</div>
+    <div class="modal__title">User Login</div>
     
     <div class="modal__body">
       <div id="loginErrorMessage" class="error-message" style="display: none; margin-bottom: 1em;"></div>
       
       <form id="loginForm" onsubmit="handleLogin(event)">
         <div class="form-group">
-          <label for="username">用户名</label>
+          <label for="username">Username</label>
           <input 
             type="text" 
             id="username" 
             name="username" 
             required 
             autocomplete="username"
-            placeholder="输入用户名"
+            placeholder="Enter username"
             class="pure-input-1"
           >
         </div>
         
         <div class="form-group">
-          <label for="password">密码</label>
+          <label for="password">Password</label>
           <input 
             type="password" 
             id="password" 
             name="password" 
             required 
             autocomplete="current-password"
-            placeholder="输入密码"
+            placeholder="Enter password"
             class="pure-input-1"
           >
         </div>
@@ -102,8 +102,8 @@
     </div>
     
     <div class="modal__footer">
-      <button type="button" class="pure-button" onclick="closeLoginModal()">取消</button>
-      <button type="submit" form="loginForm" class="pure-button pure-button-primary" id="loginSubmitBtn">登录</button>
+      <button type="button" class="pure-button" onclick="closeLoginModal()">Cancel</button>
+      <button type="submit" form="loginForm" class="pure-button pure-button-primary" id="loginSubmitBtn">Login</button>
     </div>
   </div>
 </div>
@@ -114,9 +114,9 @@
 
 <!-- Auth Scripts -->
 <script>
-// 初始化页面 - 检查登录状态
+// Initialize page - check login status
 async function initializePage() {
-  // 先恢复上次缓存的状态，避免初始抖动
+  // Restore cached state first to avoid initial flicker
   const cachedUserInfo = localStorage.getItem('userInfo');
   if (cachedUserInfo !== null) {
     const userInfo = JSON.parse(cachedUserInfo);
@@ -125,8 +125,8 @@ async function initializePage() {
   }
   
   try {
-    // 调用后端 API 检查会话状态
-    // credentials: 'include' 确保请求会携带 cookie
+    // Call backend API to check session status
+    // credentials: 'include' ensures request carries cookie
     const response = await fetch('/api/auth/session', {
       method: 'GET',
       credentials: 'include',
@@ -136,7 +136,7 @@ async function initializePage() {
     
     let userInfo = null;
     if (response.ok && data.code === 0) {
-      // 已登录
+      // User is logged in
       userInfo = {
         isLoggedIn: true,
         username: data.data.username,
@@ -144,14 +144,14 @@ async function initializePage() {
       };
       // console.log(`[DEBUG] User is logged in:`, userInfo);
     } else {
-      // 未登录
+      // User is not logged in
       userInfo = {
         isLoggedIn: false
       };
       // console.log(`[DEBUG] User is NOT logged in`);
     }
     
-    // 缓存用户信息
+    // Cache user information
     localStorage.setItem('userInfo', JSON.stringify(userInfo));
     updateNavigation(userInfo);
   } catch (error) {
@@ -160,7 +160,7 @@ async function initializePage() {
   }
 }
 
-// 从 cookie 中获取值（不再使用，保留用于调试）
+// Get value from cookie (no longer used, kept for debugging)
 function getCookie(name) {
   const cookieName = 'ocauth_session';
   const nameEQ = cookieName + "=";
@@ -174,11 +174,11 @@ function getCookie(name) {
       return value;
     }
   }
-  console.log(`[DEBUG] Cookie '${cookieName}' not found (这是正常的，因为 HttpOnly 标志设置了)`);
+  console.log(`[DEBUG] Cookie '${cookieName}' not found (this is normal because HttpOnly flag is set)`);
   return null;
 }
 
-// 更新导航栏显示
+// Update navigation bar display
 function updateNavigation(userInfo) {
   const usersBtn = document.getElementById('usersBtn');
   const nftBtn = document.getElementById('nftBtn');
@@ -187,7 +187,7 @@ function updateNavigation(userInfo) {
   const logoutBtn = document.getElementById('logoutBtn');
   
   if (userInfo.isLoggedIn) {
-    // 已登录：显示用户按钮和登出
+    // Logged in: show user buttons and logout
     usersBtn.style.visibility = 'visible';
     usersBtn.style.position = 'static';
     usersBtn.style.width = 'auto';
@@ -196,13 +196,13 @@ function updateNavigation(userInfo) {
     logoutBtn.style.position = 'static';
     logoutBtn.style.width = 'auto';
     
-    // 隐藏登录按钮
+    // Hide login button
     loginBtn.style.visibility = 'hidden';
     loginBtn.style.position = 'absolute';
     loginBtn.style.width = '0';
     
     if (userInfo.isAdmin) {
-      // 管理员：显示所有功能按钮
+      // Admin: show all feature buttons
       nftBtn.style.visibility = 'visible';
       nftBtn.style.position = 'static';
       nftBtn.style.width = 'auto';
@@ -211,7 +211,7 @@ function updateNavigation(userInfo) {
       configBtn.style.position = 'static';
       configBtn.style.width = 'auto';
     } else {
-      // 普通用户：隐藏 NFT 和配置按钮
+      // Regular user: hide NFT and config buttons
       nftBtn.style.visibility = 'hidden';
       nftBtn.style.position = 'absolute';
       nftBtn.style.width = '0';
@@ -221,7 +221,7 @@ function updateNavigation(userInfo) {
       configBtn.style.width = '0';
     }
   } else {
-    // 未登录：仅显示登录按钮
+    // Not logged in: only show login button
     usersBtn.style.visibility = 'hidden';
     usersBtn.style.position = 'absolute';
     usersBtn.style.width = '0';
@@ -244,7 +244,7 @@ function updateNavigation(userInfo) {
   }
 }
 
-// 打开登录 modal
+// Open login modal
 function openLoginModal() {
   const modal = document.getElementById('loginModal');
   modal.hidden = false;
@@ -252,7 +252,7 @@ function openLoginModal() {
   document.getElementById('username').focus();
 }
 
-// 关闭登录 modal
+// Close login modal
 function closeLoginModal() {
   const modal = document.getElementById('loginModal');
   modal.hidden = true;
@@ -261,7 +261,7 @@ function closeLoginModal() {
   document.getElementById('loginErrorMessage').style.display = 'none';
 }
 
-// 处理登录
+// Handle login
 async function handleLogin(event) {
   event.preventDefault();
   
@@ -270,10 +270,10 @@ async function handleLogin(event) {
   const errorDiv = document.getElementById('loginErrorMessage');
   const submitBtn = document.getElementById('loginSubmitBtn');
   
-  // 清除之前的错误
+  // Clear previous errors
   errorDiv.style.display = 'none';
   submitBtn.disabled = true;
-  submitBtn.textContent = '登录中...';
+  submitBtn.textContent = 'Logging in...';
   
   try {
     const response = await fetch('/api/auth/login', {
@@ -287,26 +287,26 @@ async function handleLogin(event) {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || '登录失败');
+      throw new Error(data.message || 'Login failed');
     }
-    // 可选：登录成功，关闭 modal 并更新导航
+    // Optional: on successful login, close modal and update navigation
     // closeLoginModal();
     // updateNavigation(true);
 
-    // 跳转到首页或其他页面
+    // Redirect to home page or other page
     window.location.href = '/ocusers.html';
   } catch (error) {
     errorDiv.textContent = error.message;
     errorDiv.style.display = 'block';
   } finally {
     submitBtn.disabled = false;
-    submitBtn.textContent = '登录';
+    submitBtn.textContent = 'Login';
   }
 }
 
-// 处理登出
+// Handle logout
 async function handleLogout() {
-  if (!confirm('确定要登出吗？')) return;
+  if (!confirm('Are you sure you want to logout?')) return;
   
   try {
     const response = await fetch('/api/auth/logout', {
@@ -314,23 +314,23 @@ async function handleLogout() {
       headers: {
         'Content-Type': 'application/json',
       },
-      credentials: 'include', // 确保请求携带 cookie
+      credentials: 'include', // ensures request carries cookie
     });
     
     if (response.ok) {
-      // 清除缓存的用户信息
+      // Clear cached user information
       localStorage.removeItem('userInfo');
       updateNavigation({ isLoggedIn: false });
       window.location.href = '/';
     } else {
-      alert('登出失败');
+      alert('Logout failed');
     }
   } catch (error) {
-    alert('登出出错: ' + error.message);
+    alert('Logout error: ' + error.message);
   }
 }
 
-// 点击 modal 外部关闭
+// Close modal when clicking outside
 document.addEventListener('DOMContentLoaded', function() {
   initializePage();
   
@@ -341,7 +341,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
   
-  // ESC 键关闭 modal
+  // Close modal on ESC key
   document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
       closeLoginModal();

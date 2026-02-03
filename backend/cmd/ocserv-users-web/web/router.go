@@ -104,6 +104,7 @@ func RunWebServer(addr string, cfg *internal.Config) {
 				r.Post("/config/validate", ConfigValidateHandler)
 				r.Post("/config/preview", ConfigPreviewHandler)
 				r.Post("/config/save", ConfigSaveHandler)
+				r.Get("/config/save-status/{id}", ConfigSaveStatusHandler)
 			})
 		})
 	})

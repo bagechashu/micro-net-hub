@@ -3,16 +3,16 @@
 {{ define "content" }}
 <div class="error-container">
 <h1 class="error-code">403</h1>
-<h2 class="error-title">禁止访问</h2>
-<p class="error-message">抱歉，您没有权限访问此页面。</p>
+<h2 class="error-title">Access Forbidden</h2>
+<p class="error-message">Sorry, you do not have permission to access this page.</p>
 
 <div class="button-group">
-    <a href="/" class="pure-button pure-button-primary">返回首页</a>
-    <button class="pure-button" onclick="window.history.back()">返回上一页</button>
+    <a href="/" class="pure-button pure-button-primary">Home</a>
+    <button class="pure-button" onclick="window.history.back()">Back</button>
 </div>
 
 <p style="margin-top: 2em; text-align: center; color: #666;">
-  <span id="countdown">3</span> 秒后自动返回首页...
+  <span id="countdown">3</span> seconds later, you will be automatically redirected to home page...
 </p>
 </div>
 

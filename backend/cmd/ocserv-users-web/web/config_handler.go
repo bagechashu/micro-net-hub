@@ -6,10 +6,73 @@ import (
 	"log"
 	"net/http"
 	"ocserv-users/internal"
+	"sync"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"gopkg.in/yaml.v3"
 )
+
+// ConfigSaveStatus tracks the status of an async config save operation
+type ConfigSaveStatus struct {
+	ID        string    `json:"id"`
+	Status    string    `json:"status"` // "pending", "completed", "failed"
+	Message   string    `json:"message"`
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// ConfigSaveManager manages async save operations
+type ConfigSaveManager struct {
+	mu       sync.RWMutex
+	statuses map[string]*ConfigSaveStatus
+}
+
+var configSaveManager = &ConfigSaveManager{
+	statuses: make(map[string]*ConfigSaveStatus),
+}
+
+// GenerateID generates a unique ID for a save operation
+func (m *ConfigSaveManager) generateID() string {
+	return fmt.Sprintf("%d", time.Now().UnixNano())
+}
+
+// CreatePendingOperation creates a pending save operation
+func (m *ConfigSaveManager) CreatePendingOperation() string {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	
+	id := m.generateID()
+	m.statuses[id] = &ConfigSaveStatus{
+		ID:        id,
+		Status:    "pending",
+		Timestamp: time.Now(),
+	}
+	return id
+}
+
+// CompleteOperation marks an operation as completed
+func (m *ConfigSaveManager) CompleteOperation(id string, message string, err error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	
+	if status, exists := m.statuses[id]; exists {
+		if err != nil {
+			status.Status = "failed"
+			status.Message = err.Error()
+		} else {
+			status.Status = "completed"
+			status.Message = message
+		}
+	}
+}
+
+// GetStatus retrieves the status of a save operation
+func (m *ConfigSaveManager) GetStatus(id string) *ConfigSaveStatus {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	
+	return m.statuses[id]
+}
 
 func configWebHandler(w http.ResponseWriter, r *http.Request) {
 	renderWithLayout(w, "config.html", nil)
@@ -18,6 +81,24 @@ func configWebHandler(w http.ResponseWriter, r *http.Request) {
 // ConfigEditorWebHandler serves the configuration editor page
 func configEditorWebHandler(w http.ResponseWriter, r *http.Request) {
 	renderWithLayout(w, "config-editor.html", nil)
+}
+
+// ConfigSaveStatusHandler checks the status of a config save operation
+func ConfigSaveStatusHandler(w http.ResponseWriter, r *http.Request) {
+	operationID := chi.URLParam(r, "id")
+	if operationID == "" {
+		sendError(w, http.StatusBadRequest, "operation ID is required")
+		return
+	}
+
+	status := configSaveManager.GetStatus(operationID)
+	if status == nil {
+		sendError(w, http.StatusNotFound, "operation not found")
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(status)
 }
 
 // Response represents a JSON API response
@@ -160,7 +241,7 @@ func ConfigPreviewHandler(w http.ResponseWriter, r *http.Request) {
 	sendSuccess(w, "preview generated", summary)
 }
 
-// ConfigSaveHandler saves a new configuration
+// ConfigSaveHandler saves a new configuration asynchronously
 func ConfigSaveHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Limit request body size to 10MB to prevent DoS attacks
@@ -187,54 +268,67 @@ func ConfigSaveHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Define atomic apply function
-	applyFunc := func(applyCfg *internal.Config) error {
-		// Prepare rules
-		publicRules, err := internal.GetPublicRules(applyCfg)
-		if err != nil {
-			return fmt.Errorf("failed to get public rules: %w", err)
+	// Create a pending operation
+	operationID := configSaveManager.CreatePendingOperation()
+
+	// Launch async save operation
+	go func() {
+		// Define atomic apply function
+		applyFunc := func(applyCfg *internal.Config) error {
+			// Prepare rules
+			publicRules, err := internal.GetPublicRules(applyCfg)
+			if err != nil {
+				return fmt.Errorf("failed to get public rules: %w", err)
+			}
+			inputChainRules, err := internal.GetInputChainRules(applyCfg)
+			if err != nil {
+				return fmt.Errorf("failed to get input chain rules: %w", err)
+			}
+			srcIpSets, inputChainIpSetRules, err := internal.GetInputChainIpSetRules(applyCfg)
+			if err != nil {
+				return fmt.Errorf("failed to get input chain ip set rules: %w", err)
+			}
+
+			// Reinitialize nftables
+			if err := internal.InitNftables(publicRules, inputChainRules, inputChainIpSetRules, srcIpSets); err != nil {
+				return fmt.Errorf("nftables init failed: %w", err)
+			}
+
+			// Update user rules and session-related nftables rules
+			userRules, err := internal.GetUserRulesMapping(applyCfg)
+			if err != nil {
+				return fmt.Errorf("failed to get user rules mapping: %w", err)
+			}
+			internal.UpdateUserRules(userRules)
+			if err := internal.InitUsersNftablesRules(userRules); err != nil {
+				return fmt.Errorf("update nftables with sessions failed: %w", err)
+			}
+
+			// Update VPN access rules
+			internal.UpdateVpnAccessRules(applyCfg.VpnAccessRules)
+
+			// 初始化违规通知 webhook 配置
+			internal.InitializeVpnAccessNoticeConfig(cfg.VpnAccessNotice)
+
+			return nil
 		}
-		inputChainRules, err := internal.GetInputChainRules(applyCfg)
-		if err != nil {
-			return fmt.Errorf("failed to get input chain rules: %w", err)
-		}
-		srcIpSets, inputChainIpSetRules, err := internal.GetInputChainIpSetRules(applyCfg)
-		if err != nil {
-			return fmt.Errorf("failed to get input chain ip set rules: %w", err)
-		}
 
-		// Reinitialize nftables
-		if err := internal.InitNftables(publicRules, inputChainRules, inputChainIpSetRules, srcIpSets); err != nil {
-			return fmt.Errorf("nftables init failed: %w", err)
+		// Save config and apply rules atomically
+		if err := internal.GlobalConfigManager.SaveAndApplyConfig(&cfg, applyFunc); err != nil {
+			log.Printf("[config] save and apply failed: %v", err)
+			configSaveManager.CompleteOperation(operationID, "", err)
+			return
 		}
 
-		// Update user rules and session-related nftables rules
-		userRules, err := internal.GetUserRulesMapping(applyCfg)
-		if err != nil {
-			return fmt.Errorf("failed to get user rules mapping: %w", err)
-		}
-		internal.UpdateUserRules(userRules)
-		if err := internal.InitUsersNftablesRules(userRules); err != nil {
-			return fmt.Errorf("update nftables with sessions failed: %w", err)
-		}
+		log.Printf("[config] config saved successfully (operation: %s)", operationID)
+		configSaveManager.CompleteOperation(operationID, "config saved and rules applied successfully", nil)
+	}()
 
-		// Update VPN access rules
-		internal.UpdateVpnAccessRules(applyCfg.VpnAccessRules)
-
-		// 初始化违规通知 webhook 配置
-		internal.InitializeVpnAccessNoticeConfig(cfg.VpnAccessNotice)
-
-		return nil
-	}
-
-	// Save config and apply rules atomically
-	if err := internal.GlobalConfigManager.SaveAndApplyConfig(&cfg, applyFunc); err != nil {
-		log.Printf("[config] save and apply failed: %v", err)
-		sendError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	sendSuccess(w, "config saved successfully", nil)
+	// Return immediately with operation ID (202 Accepted)
+	w.WriteHeader(http.StatusAccepted)
+	sendSuccess(w, "config save started", map[string]interface{}{
+		"operation_id": operationID,
+	})
 }
 
 // ruleEqual compares two Rule objects for equality

@@ -1,24 +1,24 @@
-{{ define "title" }}配置管理{{ end }}
+{{ define "title" }}Config Management{{ end }}
 
 {{ define "content" }}
 <section data-controller="config">
-  <h3>配置管理</h3>
+  <h3>Config Management</h3>
 
   <div style="margin: 1em 0;">
     <a href="/config-editor.html" class="pure-button pure-button-primary">
-      📝 编辑配置
+      📝 Edit Config
     </a>
     <button class="pure-button pure-button-secondary" id="btn-backups" style="margin-left: 0.5em;">
-      💾 备份与恢复
+      💾 Backup & Restore
     </button>
     <a href="/api/config/export" class="pure-button pure-button-secondary" style="margin-left: 0.5em;">
-      📤 导出配置
+      📤 Export Config
     </a>
   </div>
 
   <!-- Loading indicator -->
   <div data-config-target="loading" style="text-align: center; color: #999; display: none; padding: 2em;">
-    加载中...
+    Loading...
   </div>
 
   <!-- Error message -->
@@ -29,18 +29,18 @@
 
     <!-- Rule Groups Table -->
     <div class="table-section" style="margin-bottom: 2em;">
-      <h4>规则组</h4>
+      <h4>Rule Groups</h4>
       <div class="table-wrapper">
         <table class="pure-table pure-table-bordered pure-table-striped" width="100%">
           <thead>
             <tr>
-              <th>规则组名称</th>
-              <th>规则详情</th>
+              <th>Rule Group Name</th>
+              <th>Rule Details</th>
             </tr>
           </thead>
           <tbody data-config-target="ruleGroups">
             <tr>
-              <td colspan="2" style="text-align: center; color: #999;">加载中...</td>
+              <td colspan="2" style="text-align: center; color: #999;">Loading...</td>
             </tr>
           </tbody>
         </table>
@@ -49,20 +49,20 @@
 
     <!-- Rule Mappings Table -->
     <div class="table-section" style="margin-bottom: 2em;">
-      <h4>规则映射</h4>
+      <h4>Rule Mappings</h4>
       <div class="table-wrapper">
         <table class="pure-table pure-table-bordered pure-table-striped" width="100%">
           <thead>
             <tr>
-              <th>映射名称</th>
-              <th>映射类型</th>
-              <th>引用规则组</th>
-              <th>应用于</th>
+              <th>Mapping Name</th>
+              <th>Mapping Type</th>
+              <th>Referenced Rule Group</th>
+              <th>Applied To</th>
             </tr>
           </thead>
           <tbody data-config-target="ruleMappings">
             <tr>
-              <td colspan="4" style="text-align: center; color: #999;">加载中...</td>
+              <td colspan="4" style="text-align: center; color: #999;">Loading...</td>
             </tr>
           </tbody>
         </table>
@@ -71,20 +71,20 @@
 
     <!-- VPN Access Rules Table -->
     <div class="table-section">
-      <h4>VPN 访问规则</h4>
+      <h4>VPN Access Rules</h4>
       <div class="table-wrapper">
         <table class="pure-table pure-table-bordered pure-table-striped" width="100%">
           <thead>
             <tr>
-              <th>用户</th>
-              <th>远程 IP</th>
-              <th>时间范围</th>
+              <th>User</th>
+              <th>Remote IP</th>
+              <th>Time Range</th>
               <th>Action On Violation</th>
             </tr>
           </thead>
           <tbody data-config-target="vpnAccess">
             <tr>
-              <td colspan="4" style="text-align: center; color: #999;">加载中...</td>
+              <td colspan="4" style="text-align: center; color: #999;">Loading...</td>
             </tr>
           </tbody>
         </table>
@@ -100,7 +100,7 @@
     <div data-modal-target="title" class="modal__title"></div>
     <div data-modal-target="body" class="modal__body" style="max-height: 400px; overflow-y: auto;"></div>
     <div style="margin-top: 1rem;">
-      <button class="pure-button pure-button-secondary" data-action="click->modal#close">关闭</button>
+      <button class="pure-button pure-button-secondary" data-action="click->modal#close">Close</button>
     </div>
   </div>
 </div>
@@ -110,7 +110,7 @@
 {{ define "script" }}
 <script>
 (() => {
-  // Config Controller - 管理配置数据加载和表格渲染
+  // Config Controller - manage config data loading and table rendering
   window.App.register("config", class extends Stimulus.Controller {
     static targets = ["loading", "error", "container", "ruleGroups", "ruleMappings", "vpnAccess"]
 
@@ -141,13 +141,13 @@
         this.hideLoading();
       } catch (err) {
         console.error('Failed to load config:', err);
-        this.showError(`加载失败: ${err.message}`);
+        this.showError(`Loading failed: ${err.message}`);
       }
     }
 
     renderRuleGroups(ruleGroups) {
       if (!ruleGroups || ruleGroups.length === 0) {
-        this.ruleGroupsTarget.innerHTML = '<tr><td colspan="2" style="text-align: center; color: #999;">暂无规则组</td></tr>';
+        this.ruleGroupsTarget.innerHTML = '<tr><td colspan="2" style="text-align: center; color: #999;">No rule groups</td></tr>';
         return;
       }
 
@@ -163,7 +163,7 @@
             <td><strong>${this.escapeHtml(name)}</strong></td>
             <td>
               <span style="color: #666;">${this.escapeHtml(ruleSummary)}</span>
-              ${rules.length > 0 ? `<br><small><a href="#" data-action="click->config#showRuleDetail" data-config-group-name-param="${this.escapeHtml(name)}">查看全部</a></small>` : ''}
+              ${rules.length > 0 ? `<br><small><a href="#" data-action="click->config#showRuleDetail" data-config-group-name-param="${this.escapeHtml(name)}">View All</a></small>` : ''}
             </td>
           </tr>
         `;
@@ -174,7 +174,7 @@
 
     renderRuleMappings(ruleMappings) {
       if (!ruleMappings || ruleMappings.length === 0) {
-        this.ruleMappingsTarget.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #999;">暂无规则映射</td></tr>';
+        this.ruleMappingsTarget.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #999;">No rule mappings</td></tr>';
         return;
       }
 
@@ -213,7 +213,7 @@
 
     renderVpnAccess(vpnRules) {
       if (!vpnRules || vpnRules.length === 0) {
-        this.vpnAccessTarget.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #999;">暂无 VPN 访问规则</td></tr>';
+        this.vpnAccessTarget.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #999;">No VPN access rules</td></tr>';
         return;
       }
 
@@ -222,8 +222,8 @@
         const remote_ips = rule.remote_ips ? rule.remote_ips.join(', ') : '-';
         const timeRange = rule.time_range && rule.time_range.start && rule.time_range.end
           ? `${rule.time_range.start} - ${rule.time_range.end}`
-          : '全天';
-        const action_on_violation = rule.action_on_violation === 'block' ? '阻止' : (rule.action_on_violation === 'logonly' ? '仅记录' : '-');
+          : 'All day';
+        const action_on_violation = rule.action_on_violation === 'block' ? 'Block' : (rule.action_on_violation === 'logonly' ? 'Log only' : '-');
 
         return `
           <tr>
@@ -283,22 +283,22 @@
     }
   });
 
-  // Modal Controller - 管理模态框显示
+  // Modal Controller - manage modal display
   window.App.register("modal", class extends Stimulus.Controller {
     static targets = ["container", "title", "body"]
 
     show(title, rules) {
-      this.titleTarget.textContent = `规则详情: ${title}`;
+      this.titleTarget.textContent = `Rule Details: ${title}`;
 
       const html = `
         <table class="pure-table pure-table-bordered pure-table-striped" width="100%">
           <thead>
             <tr>
               <th>#</th>
-              <th>目标 IP</th>
-              <th>协议</th>
-              <th>端口</th>
-              <th>动作</th>
+              <th>Destination IP</th>
+              <th>Protocol</th>
+              <th>Port</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>

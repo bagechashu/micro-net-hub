@@ -1,55 +1,55 @@
-{{ define "title" }}用户管理{{ end }}
+{{ define "title" }}User Management{{ end }}
 
 {{ define "content" }}
 <section>
   <div style="display: flex; justify-content: space-between; align-items: center; gap: 1em;">
-    <h3 style="flex-shrink: 0;">用户管理</h3>
+    <h3 style="flex-shrink: 0;">User Management</h3>
     <div id="page-message"
         style="display:none; flex: 1; text-align: center; max-width: 500px; font-size:0.8rem; padding: 1em; border-radius:1px;">
     </div>
   </div>
 
   <div class="table-section" style="margin-bottom: 2em;">
-    <h4>在线用户</h4>
+    <h4>Online Users</h4>
     {{ template "ocusers-table" . }}
   </div>
 </section>
 
 <section data-controller="user-stats">
-  <!-- 用户统计表 -->
+  <!-- User stats table -->
   <div class="table-section" style="margin-bottom: 2em;">
-    <h4>违规登录统计</h4>
+    <h4>Violation Login Statistics</h4>
     <div class="table-wrapper">
-      <!-- 用户统计过滤器 -->
+      <!-- User statistics filter -->
       <div class="filter-section" style="padding-bottom: 1em;">
         <form data-action="submit->user-stats#applyFilters" style="display: flex; gap: 1em; flex-wrap: wrap; align-items: center;">
           <div>
-            <label for="userStatsDays">时间范围（天）:</label>
+            <label for="userStatsDays">Time Range (Days):</label>
             <select id="userStatsDays" data-user-stats-target="daysSelect" style="margin-left: 0.5em;">
-              <option value="1">1天</option>
-              <option value="7" selected>1周</option>
-              <option value="30">1个月</option>
-              <option value="90">3个月</option>
-              <option value="365">1年</option>
+              <option value="1">1 Day</option>
+              <option value="7" selected>1 Week</option>
+              <option value="30">1 Month</option>
+              <option value="90">3 Months</option>
+              <option value="365">1 Year</option>
             </select>
           </div>
-          <button type="submit" class="pure-button pure-button-primary">查询</button>
+          <button type="submit" class="pure-button pure-button-primary">Search</button>
         </form>
       </div>
 
       <table class="pure-table pure-table-bordered pure-table-striped" width="100%">
         <thead>
           <tr>
-            <th>排名</th>
-            <th>用户名</th>
-            <th>总违规数</th>
-            <th>阻止</th>
-            <th>仅记录</th>
+            <th>Rank</th>
+            <th>Username</th>
+            <th>Total Violations</th>
+            <th>Block</th>
+            <th>Log Only</th>
           </tr>
         </thead>
         <tbody data-user-stats-target="tableBody">
           <tr>
-            <td colspan="5" style="text-align:center;color:#999">加载中...</td>
+            <td colspan="5" style="text-align:center;color:#999">Loading...</td>
           </tr>
         </tbody>
       </table>
@@ -59,58 +59,58 @@
 
 <section data-controller="violations">
   <div class="table-section" data-violations-target="tableContainer" style="margin-bottom: 2em;">
-    <h4>违规登录事件</h4>
+    <h4>Violation Login Events</h4>
     <div class="table-wrapper">
-      <!-- 查询过滤器 -->
+      <!-- Query filter -->
       <div class="filter-section" style="padding-bottom: 1em;">
         <form data-action="submit->violations#applyFilters" style="display: flex; gap: 1em; flex-wrap: wrap; align-items: center;">
           <div>
-            <label for="filterDays">时间范围（天）:</label>
+            <label for="filterDays">Time Range (Days):</label>
             <select id="filterDays" data-violations-target="daysSelect" style="margin-left: 0.5em;" data-action="change->violations#onDaysChange">
-              <option value="1">1天</option>
-              <option value="7" selected>1周</option>
-              <option value="30">1个月</option>
-              <option value="90">3个月</option>
-              <option value="365">1年</option>
-              <option value="custom">自定义范围</option>
+              <option value="1">1 Day</option>
+              <option value="7" selected>1 Week</option>
+              <option value="30">1 Month</option>
+              <option value="90">3 Months</option>
+              <option value="365">1 Year</option>
+              <option value="custom">Custom Range</option>
             </select>
           </div>
           <div id="customDateRange" style="display: none; gap: 0.5em; align-items: center;">
-            <label for="filterStartDate">开始日期:</label>
+            <label for="filterStartDate">Start Date:</label>
             <input type="date" id="filterStartDate" data-violations-target="startDate" style="margin-left: 0.5em; padding: 0.3em;">
-            <label for="filterEndDate">结束日期:</label>
+            <label for="filterEndDate">End Date:</label>
             <input type="date" id="filterEndDate" data-violations-target="endDate" style="margin-left: 0.5em; padding: 0.3em;">
           </div>
           <div>
-            <label for="filterAction">动作:</label>
+            <label for="filterAction">Action:</label>
             <select id="filterAction" data-violations-target="actionSelect" style="margin-left: 0.5em;">
-              <option value="">全部</option>
-              <option value="block">阻止</option>
-              <option value="logonly">仅记录</option>
+              <option value="">All</option>
+              <option value="block">Block</option>
+              <option value="logonly">Log Only</option>
             </select>
           </div>
           <div>
-            <label for="filterUsername">用户名:</label>
-            <input type="text" id="filterUsername" data-violations-target="usernameInput" placeholder="输入用户名搜索" style="margin-left: 0.5em; padding: 0.3em;">
+            <label for="filterUsername">Username:</label>
+            <input type="text" id="filterUsername" data-violations-target="usernameInput" placeholder="Enter username to search" style="margin-left: 0.5em; padding: 0.3em;">
           </div>
-          <button type="submit" class="pure-button pure-button-primary">查询</button>
-          <button type="button" data-action="click->violations#clearFilters" class="pure-button">清空</button>
-          <!-- 加载状态指示 -->
+          <button type="submit" class="pure-button pure-button-primary">Search</button>
+          <button type="button" data-action="click->violations#clearFilters" class="pure-button">Clear</button>
+          <!-- Loading indicator -->
           <!-- <div id="loadingIndicator" style="display: none; text-align: center; padding: 1em; color: #666;"> -->
           <div id="loadingIndicator" style="display: none; color: #666;">
-            <span>⏳ 加载中...</span>
+            <span>⏳ Loading...</span>
           </div>
         </form>
       </div>
 
-      <!-- 统计信息表格 -->
+      <!-- Statistics table -->
       <table class="pure-table pure-table-bordered pure-table-striped" width="100%" id="statsContainer" style="margin-bottom: 1em;">
         <thead>
           <tr>
-            <th>总违规数</th>
-            <th>阻止</th>
-            <th>仅记录</th>
-            <th>近24小时</th>
+            <th>Total Violations</th>
+            <th>Block</th>
+            <th>Log Only</th>
+            <th>Last 24 Hours</th>
           </tr>
         </thead>
         <tbody>
@@ -123,27 +123,27 @@
         </tbody>
       </table>
 
-      <!-- 违规列表 -->
+      <!-- Violation list -->
       <table class="pure-table pure-table-bordered pure-table-striped" width="100%">
         <thead>
           <tr>
-            <th>用户名</th>
-            <th>远程IP</th>
-            <th>动作</th>
-            <th>原因</th>
-            <th>时间</th>
+            <th>Username</th>
+            <th>Remote IP</th>
+            <th>Action</th>
+            <th>Reason</th>
+            <th>Time</th>
           </tr>
         </thead>
         <tbody data-violations-target="tableBody">
           <tr>
-            <td colspan="5" style="text-align:center;color:#999">加载中...</td>
+            <td colspan="5" style="text-align:center;color:#999">Loading...</td>
           </tr>
         </tbody>
       </table>
     </div>
-  <!-- 分页 -->
+  <!-- Pagination -->
   <div data-violations-target="pagination" style="margin-top: 1em; text-align: center;">
-    <!-- 分页内容将动态生成 -->
+    <!-- Pagination will be generated dynamically -->
   </div>
 </section>
 
@@ -152,7 +152,7 @@
 {{ define "script" }}
 <script>
 (() => {
-  // UTC 时间格式化
+  // UTC time formatting
   window.App.register("utc", class extends Stimulus.Controller {
     static values = {
       connectAt: String
@@ -165,7 +165,7 @@
     }
   });
 
-  // 用户统计控制器
+  // User statistics controller
   window.App.register("user-stats", class extends Stimulus.Controller {
     static targets = ["daysSelect", "tableBody"];
 
@@ -195,7 +195,7 @@
         this.renderUserStats(data);
       } catch (err) {
         console.error("Failed to load user stats:", err);
-        this.tableBodyTarget.innerHTML = `<tr><td colspan="5" style="text-align:center;color:red;">加载失败: ${err.message}</td></tr>`;
+        this.tableBodyTarget.innerHTML = `<tr><td colspan="5" style="text-align:center;color:red;">Loading failed: ${err.message}</td></tr>`;
       }
     }
 
@@ -203,7 +203,7 @@
       const users = data.users || [];
       
       if (!users || users.length === 0) {
-        this.tableBodyTarget.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#999;">暂无数据</td></tr>`;
+        this.tableBodyTarget.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#999;">No data</td></tr>`;
         return;
       }
 
@@ -231,7 +231,7 @@
     }
   });
 
-  // Violations 管理控制器
+  // Violations management controller
   window.App.register("violations", class extends Stimulus.Controller {
     static targets = ["daysSelect", "usernameInput", "actionSelect", "tableBody", "pagination", "totalViolations", "blockCount", "logonlyCount", "violations24h", "tableContainer", "startDate", "endDate"];
 
@@ -314,7 +314,7 @@
         ]);
       } catch (err) {
         console.error("Failed to load data:", err);
-        this.showError("加载数据失败: " + err.message);
+        this.showError("Failed to load data: " + err.message);
       } finally {
         this.showLoading(false);
       }
@@ -358,7 +358,7 @@
 
     renderViolations(data) {
       if (!data.violations || data.violations.length === 0) {
-        this.tableBodyTarget.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#999;">暂无数据</td></tr>`;
+        this.tableBodyTarget.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#999;">No data</td></tr>`;
         this.paginationTarget.innerHTML = "";
         return;
       }
@@ -366,8 +366,8 @@
       let html = "";
       data.violations.forEach(v => {
         const actionBadge = v.action === "block" 
-          ? '<span style="background-color: #f8d7da; padding: 0.2em 0.5em; border-radius: 3px; color: #721c24; font-weight: bold;">阻止</span>'
-          : '<span style="background-color: #d1ecf1; padding: 0.2em 0.5em; border-radius: 3px; color: #0c5460; font-weight: bold;">仅记录</span>';
+          ? '<span style="background-color: #f8d7da; padding: 0.2em 0.5em; border-radius: 3px; color: #721c24; font-weight: bold;">Block</span>'
+          : '<span style="background-color: #d1ecf1; padding: 0.2em 0.5em; border-radius: 3px; color: #0c5460; font-weight: bold;">Log Only</span>';
         
         html += `<tr>
           <td>${this.escapeHtml(v.username)}</td>
@@ -394,7 +394,7 @@
       let html = `<div style="padding: 1em;">`;
       
       if (currentPage > 1) {
-        html += `<button class="pure-button" data-action="click->violations#previousPage">← 上一页</button> `;
+        html += `<button class="pure-button" data-action="click->violations#previousPage">← Previous</button> `;
       }
 
       const startPage = Math.max(1, currentPage - 2);
@@ -419,10 +419,10 @@
       }
 
       if (currentPage < page_count) {
-        html += `<button class="pure-button" data-action="click->violations#nextPage">下一页 →</button>`;
+        html += `<button class="pure-button" data-action="click->violations#nextPage">Next →</button>`;
       }
 
-      html += `<span style="margin-left: 1em; color: #666;">第 ${currentPage}/${page_count} 页</span>`;
+      html += `<span style="margin-left: 1em; color: #666;">Page ${currentPage}/${page_count}</span>`;
       html += `</div>`;
       
       this.paginationTarget.innerHTML = html;
@@ -467,7 +467,7 @@
     }
   });
 
-  // 断开连接控制器 - 处理单个按钮
+  // Disconnect controller - handles individual buttons
   window.App.register("disconnect", class extends Stimulus.Controller {
     static MESSAGE_CONFIG = {
       TIMEOUT: 3000,
@@ -486,7 +486,7 @@
     };
 
     connect() {
-      // 在按钮上监听 HTMX 事件（事件委托）
+      // Listen to HTMX events on button (event delegation)
       this.element.addEventListener("htmx:afterRequest", (e) => this.onAfterRequest(e));
       this.element.addEventListener("htmx:responseError", (e) => this.onResponseError(e));
     }

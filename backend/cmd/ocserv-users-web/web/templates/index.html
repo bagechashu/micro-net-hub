@@ -1,15 +1,15 @@
-{{ define "title" }}用户管理{{ end }}
+{{ define "title" }}User Management{{ end }}
 
 {{ define "content" }}
 <section>
-  <h3>当前时间
+  <h3>Current Time
     <span data-controller="current-time" data-current-time-target="timeDisplay"
           style="padding: 1em; font-weight: bold;">
     --:--:--
     </span>
   </h3>
   <div class="table-section" style="margin-bottom: 2em;">
-    <h4>在线用户</h4>
+    <h4>Online Users</h4>
     {{ template "ocusers-table" . }}
   </div>
 </section>
@@ -18,7 +18,7 @@
 {{ define "script" }}
 <script>
 (() => {
-  // UTC 时间格式化
+  // UTC time formatting
   window.App.register("utc", class extends Stimulus.Controller {
     static values = {
       connectAt: String
@@ -31,7 +31,7 @@
     }
   });
 
-  // 当前时间显示
+  // Current time display
   window.App.register("current-time", class extends Stimulus.Controller {
     static targets = ["timeDisplay"];
 
