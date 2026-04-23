@@ -13,7 +13,7 @@ import (
 	"github.com/go-chi/httprate"
 )
 
-func RunWebServer(addr string, cfg *internal.Config) {
+func RunWebServer(addr string, cfg *internal.Config, strictManagement bool) {
 	if err := InitAuth(&cfg.Auth); err != nil {
 		log.Fatalf("[auth] 初始化失败: %v", err)
 	}
@@ -63,9 +63,17 @@ func RunWebServer(addr string, cfg *internal.Config) {
 		r.Use(middleware.Logger)
 		r.Use(authMiddleware)
 
-		// ocUsers management
-		r.Get("/ocusers.html", ocUsersWebHandler)
-		r.Get("/partials/ocusers.html", ocUsersPartialWebHandler)
+		// ocUsers management, available to all authenticated users in loose management mode, admin-only in strict mode
+		if strictManagement {
+			r.Group(func(r chi.Router) {
+				r.Use(adminMiddleware)
+				r.Get("/ocusers.html", ocUsersWebHandler)
+				r.Get("/partials/ocusers.html", ocUsersPartialWebHandler)
+			})
+		} else {
+			r.Get("/ocusers.html", ocUsersWebHandler)
+			r.Get("/partials/ocusers.html", ocUsersPartialWebHandler)
+		}
 
 		// Admin-only routes
 		r.Group(func(r chi.Router) {

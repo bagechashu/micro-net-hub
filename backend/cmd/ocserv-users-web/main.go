@@ -21,6 +21,7 @@ func main() {
 		refresh       = flag.Duration("refresh", 60*time.Second, "刷新间隔")
 		webListenAddr = flag.String("webaddr", ":8080", "Web服务监听地址")
 		timezone      = flag.String("timezone", "UTC", "时区设置用于时间检查 (如: UTC, Asia/Shanghai)")
+		strictManagement = flag.Bool("strict", true, "是否启用严格管理模式")
 	)
 
 	flag.Parse()
@@ -92,7 +93,7 @@ func main() {
 	internal.GlobalConfigManager = internal.NewConfigManager(*config)
 
 	// 启动 WEB 服务
-	go web.RunWebServer(*webListenAddr, cfg)
+	go web.RunWebServer(*webListenAddr, cfg, *strictManagement)
 
 	// 等待退出信号
 	sigChan := make(chan os.Signal, 1)
