@@ -155,7 +155,10 @@
         const { name, rules } = item;
         const ruleSummary = rules ? rules
           .slice(0, 3)
-          .map((r) => `${r.dest_ip}${r.dest_port ? ':'+r.dest_port : ''}/${r.protocol || 'tcp'}/${r.action || 'accept'}`)
+          .map((r) => {
+            const base = `${r.dest_ip}${r.dest_port ? ':'+r.dest_port : ''}/${r.protocol || 'tcp'}/${r.action || 'accept'}`;
+            return r.comment ? `${base} (${r.comment})` : base;
+          })
           .join('; ') + (rules.length > 3 ? `... (total ${rules.length} rules)` : '') : '-';
 
         return `
@@ -299,6 +302,7 @@
               <th>Protocol</th>
               <th>Port</th>
               <th>Action</th>
+              <th>Comment</th>
             </tr>
           </thead>
           <tbody>
@@ -309,6 +313,7 @@
                 <td>${this.escapeHtml(r.protocol || 'tcp')}</td>
                 <td>${r.dest_port ? r.dest_port : '-'}</td>
                 <td>${this.escapeHtml(r.action || 'accept')}</td>
+                <td>${r.comment ? this.escapeHtml(r.comment) : ''}</td>
               </tr>
             `).join('')}
           </tbody>
