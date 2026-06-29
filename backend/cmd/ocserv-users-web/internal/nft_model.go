@@ -41,6 +41,7 @@ type Rule struct {
 	Protocol ProtocolType `json:"protocol,omitempty" yaml:"protocol,omitempty"` // tcp | udp | icmp, 默认 tcp
 	ToLocal  bool         `json:"to_local,omitempty" yaml:"to_local,omitempty"` // 是否访问宿主机本地服务, 默认 false
 	Action   ActionType   `json:"action,omitempty" yaml:"action,omitempty"`     // accept | drop，默认 accept
+	Comment  string       `json:"comment,omitempty" yaml:"comment,omitempty"`   // 规则名称，用于标记规则信息
 
 	// SrcIp, SrcIpSetName 默认不配置, 通过 RuleMapping 去补充
 	SrcIp        string `json:"src_ip,omitempty" yaml:"src_ip,omitempty"`
