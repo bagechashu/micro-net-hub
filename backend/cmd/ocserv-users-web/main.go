@@ -4,6 +4,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"time"
 
@@ -22,9 +23,16 @@ func main() {
 		webListenAddr    = flag.String("webaddr", ":8080", "Web服务监听地址")
 		timezone         = flag.String("timezone", "UTC", "时区设置用于时间检查 (如: UTC, Asia/Shanghai)")
 		strictManagement = flag.Bool("strict", true, "是否启用严格管理模式")
+		showVersion      = flag.Bool("version", false, "显示版本信息并退出")
 	)
 
 	flag.Parse()
+
+	// 如果请求显示版本，则打印并退出
+	if *showVersion {
+		fmt.Println(internal.GetVersionInfo())
+		os.Exit(0)
+	}
 
 	// 初始化时区设置（用于 VPN 访问控制的时间检查）
 	if err := internal.InitializeTimeLocation(*timezone); err != nil {
@@ -42,6 +50,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("[main] 配置加载失败: %v", err)
 	}
+
+	// 在正常启动时，也在日志中记录版本信息
+	log.Printf("[main] 启动服务 - %s", internal.GetVersionInfo())
 
 	// 初始化违规通知 webhook 配置
 	internal.InitializeVpnAccessNoticeConfig(cfg.VpnAccessNotice)
