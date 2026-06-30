@@ -19,9 +19,9 @@ var (
 )
 
 type VpnAccessNoticeConfig struct {
-	Enabled               *bool   `json:"enabled" yaml:"enabled"` // 是否启用 VPN 访问告警, 默认为 false
+	Enabled               *bool  `json:"enabled" yaml:"enabled"` // 是否启用 VPN 访问告警, 默认为 false
 	WebhookReceiver       string `json:"webhook_receiver" yaml:"webhook_receiver"`
-	OnlyNotifyOnViolation *bool   `json:"only_notify_on_violation" yaml:"only_notify_on_violation"` // 是否仅在违规时发送告警，默认为 true
+	OnlyNotifyOnViolation *bool  `json:"only_notify_on_violation" yaml:"only_notify_on_violation"` // 是否仅在违规时发送告警，默认为 true
 }
 
 func (ac *VpnAccessNoticeConfig) setDefaults() {
@@ -50,7 +50,9 @@ func InitializeVpnAccessNoticeConfig(config VpnAccessNoticeConfig) {
 	globalVpnAccessNoticeMu.Lock()
 	defer globalVpnAccessNoticeMu.Unlock()
 	globalVpnAccessNoticeConfig = &config
-	log.Printf("[vpn-access-notice] 初始化告警配置: enabled=%v, webhook_receiver=%s, only_notify_on_violation=%v", config.Enabled, config.WebhookReceiver, config.OnlyNotifyOnViolation)
+	if IsDebugMode() {
+		log.Printf("[vpn-access-notice] 初始化告警配置: enabled=%v, webhook_receiver=%s, only_notify_on_violation=%v", *config.Enabled, config.WebhookReceiver, *config.OnlyNotifyOnViolation)
+	}
 }
 
 // SendVpnAccessNotice 通过 webhook 发送 VPN 访问告警
