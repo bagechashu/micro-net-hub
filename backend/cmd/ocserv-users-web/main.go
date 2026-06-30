@@ -23,6 +23,7 @@ func main() {
 		webListenAddr    = flag.String("webaddr", ":8080", "Web服务监听地址")
 		timezone         = flag.String("timezone", "UTC", "时区设置用于时间检查 (如: UTC, Asia/Shanghai)")
 		strictManagement = flag.Bool("strict", true, "是否启用严格管理模式")
+		debugMode        = flag.Bool("debug", false, "是否启用调试模式")
 		showVersion      = flag.Bool("version", false, "显示版本信息并退出")
 	)
 
@@ -33,6 +34,9 @@ func main() {
 		fmt.Println(internal.GetVersionInfo())
 		os.Exit(0)
 	}
+
+	// 设置 debug 模式
+	internal.SetDebugMode(*debugMode)
 
 	// 初始化时区设置（用于 VPN 访问控制的时间检查）
 	if err := internal.InitializeTimeLocation(*timezone); err != nil {

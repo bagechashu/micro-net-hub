@@ -189,10 +189,13 @@ func addLoopbackRule(tableName, chainName, comment string) error {
 func addSshAccept30MinRuleAfterRestart(tableName, inputChainName string) {
 	go func() {
 		tmpSshAcceptComment := "tmp_allow_ssh"
-		if err := exec.Command("nft", "add", "rule", "ip", tableName, inputChainName,
-			"tcp", "dport", "22", "accept", "comment", fmt.Sprintf("\"%s\"", tmpSshAcceptComment)).Run(); err != nil {
-			log.Printf("[nft] 添加临时SSH放行规则失败: %v", err)
+		cmd := exec.Command("nft", "add", "rule", "ip", tableName, inputChainName,
+			"tcp", "dport", "22", "accept", "comment", fmt.Sprintf("\"%s\"", tmpSshAcceptComment))
+		if out, err := cmd.CombinedOutput(); err != nil {
+			log.Printf("[nft] 添加临时SSH放行规则失败: %v (%s)", err, out)
 			return
+		} else if IsDebugMode() {
+			log.Printf("[nft] 执行命令: %s", strings.Join(cmd.Args, " "))
 		}
 		time.AfterFunc(30*time.Minute, func() {
 			deleteNftRules(tableName, []string{inputChainName}, tmpSshAcceptComment)
@@ -272,7 +275,7 @@ func addNftRule(table, chain, srcIP, dstIP string, protocol ProtocolType, dstpor
 	cmd := exec.Command("nft", args...)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		log.Printf("[nft] 添加规则失败 %s: %v (%s)", tag, err, out)
-	} else {
+	} else if IsDebugMode() {
 		log.Printf("[nft] 执行命令: %s", strings.Join(cmd.Args, " "))
 	}
 }
@@ -285,7 +288,7 @@ func deleteNftRules(table string, chains []string, tag string) {
 				delCmd := exec.Command("nft", "delete", "rule", "ip", table, chain, "handle", h)
 				if outDel, err := delCmd.CombinedOutput(); err != nil {
 					log.Printf("[nft] 删除规则失败: %v (%s)", err, outDel)
-				} else {
+				} else if IsDebugMode() {
 					log.Printf("[nft] 执行命令: %s", strings.Join(delCmd.Args, " "))
 				}
 			}
@@ -358,7 +361,7 @@ func addNftRulesIpSet(table, chain, srcIpSetname, dstIP string, protocol Protoco
 	cmd := exec.Command("nft", args...)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		log.Printf("[nft] 添加规则失败: %v (%s)", err, out)
-	} else {
+	} else if IsDebugMode() {
 		log.Printf("[nft] 执行命令: %s", strings.Join(cmd.Args, " "))
 	}
 
@@ -374,7 +377,7 @@ func deleteNftRulesIpSet(table string, chains []string, srcIpSets []string) {
 					delCmd := exec.Command("nft", "delete", "rule", "ip", table, chain, "handle", h)
 					if outDel, err := delCmd.CombinedOutput(); err != nil {
 						log.Printf("[nft] 删除规则失败: %v (%s)", err, outDel)
-					} else {
+					} else if IsDebugMode() {
 						log.Printf("[nft] 执行命令: %s", strings.Join(delCmd.Args, " "))
 					}
 				}
@@ -393,6 +396,8 @@ func addIpSet(table, setName string, ips []string) {
 		"{", "type", "ipv4_addr;", "flags", "interval;", "}")
 	if out, err := cmdAdd.CombinedOutput(); err != nil {
 		log.Printf("[nft] 创建 set %s 失败: %v (%s)", setName, err, out)
+	} else if IsDebugMode() {
+		log.Printf("[nft] 执行命令: %s", strings.Join(cmdAdd.Args, " "))
 	}
 
 	// 批量添加元素
@@ -409,6 +414,8 @@ func addIpSet(table, setName string, ips []string) {
 		cmdEl := exec.Command("nft", args...)
 		if out, err := cmdEl.CombinedOutput(); err != nil {
 			log.Printf("[nft] 添加元素到 set %s 失败: %v (%s)", setName, err, out)
+		} else if IsDebugMode() {
+			log.Printf("[nft] 执行命令: %s", strings.Join(cmdEl.Args, " "))
 		}
 	}
 
@@ -424,6 +431,8 @@ func deleteIpSet(table, setName string) {
 		cmdFlush := exec.Command("nft", "flush", "set", "ip", table, setName)
 		if out, err := cmdFlush.CombinedOutput(); err != nil {
 			log.Printf("[nft] flush set %s 失败: %v (%s)", setName, err, out)
+		} else if IsDebugMode() {
+			log.Printf("[nft] 执行命令: %s", strings.Join(cmdFlush.Args, " "))
 		}
 	}
 }
