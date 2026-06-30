@@ -53,7 +53,7 @@ CONNECT_INFO_JSON=$(jq -n \
   --arg ip_remote "$IP_REMOTE" \
   '{title: $title, type: $type, ip_real: $ip_real, ip_remote: $ip_remote}')
 
-echo "$(date +%F-%H-%M) $CONNECT_INFO" >> /etc/ocserv/log
+echo "$(date +%F-%H-%M) $CONNECT_INFO" | tee -a /etc/ocserv/log
 
 (/usr/bin/curl -k --connect-timeout 5 -XPOST "http://:9000/webhook/json/ding?secret=securitykey" -d "${CONNECT_INFO_JSON}" >/dev/null 2>&1 &)
 
