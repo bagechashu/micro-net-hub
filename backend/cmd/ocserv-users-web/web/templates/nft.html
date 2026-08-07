@@ -1,27 +1,24 @@
-{{ define "title" }}Nft Ruleset{{ end }}
-
-{{ define "content" }}
+{{ define "title" }}Nft Ruleset{{ end }} {{ define "content" }}
 <section>
   <h3>Nft Ruleset</h3>
 
-  <div style="margin: 1em 0;">
+  <div style="margin: 1em 0">
     <button
       class="pure-button pure-button-secondary"
       hx-get="/partials/nftlistruleset.html"
       hx-target="#nft-ruleset"
-      hx-swap="innerHTML">
+      hx-swap="innerHTML"
+    >
       🔄 Refresh Rules
     </button>
     <pre
       id="nft-ruleset"
       hx-get="/partials/nftlistruleset.html"
       hx-trigger="load"
-      hx-swap="innerHTML">
+      hx-swap="innerHTML"
+    >
       Click refresh to view latest NFT rules...
     </pre>
   </div>
-  
 </section>
-{{ end }}
-
-{{ define "script" }}{{ end }}
+{{ end }} {{ define "script" }}{{ end }}

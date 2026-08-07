@@ -48,7 +48,11 @@ func main() {
 	if err := internal.InitializeDB(*dbPath); err != nil {
 		log.Fatalf("[main] 统一数据库初始化失败: %v", err)
 	}
-	defer internal.CloseDB()
+	defer func() {
+		if err := internal.CloseDB(); err != nil {
+			log.Printf("[main] 关闭数据库出错: %v", err)
+		}
+	}()
 
 	// 加载配置（包含防火墙规则和 VPN 访问控制规则）
 	cfg, err := internal.LoadConfig(*config)
@@ -72,11 +76,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("[main] 获取输入链规则失败: %v", err)
 	}
-	srcIpSets, inputChainIpSetRules, err := internal.GetInputChainIpSetRules(cfg)
+	srcIPSets, inputChainIPSetRules, err := internal.GetInputChainIPSetRules(cfg)
 	if err != nil {
 		log.Fatalf("[main] 获取输入链 IP 集规则失败: %v", err)
 	}
-	if err := internal.InitNftables(publicRules, inputChainRules, inputChainIpSetRules, srcIpSets); err != nil {
+	if err := internal.InitNftables(publicRules, inputChainRules, inputChainIPSetRules, srcIPSets); err != nil {
 		log.Fatalf("[main] nftables 初始化失败: %v", err)
 	}
 

@@ -165,7 +165,11 @@ func parseRadiusConfig(configFile string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to open config file: %w", err)
 	}
-	defer file.Close()
+	defer func() {
+		if cerr := file.Close(); cerr != nil {
+			log.Printf("[radius] 关闭配置文件出错: %v", cerr)
+		}
+	}()
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
@@ -199,7 +203,11 @@ func parseRadiusServers(serversFile string) ([]RadiusServer, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open servers file: %w", err)
 	}
-	defer file.Close()
+	defer func() {
+		if cerr := file.Close(); cerr != nil {
+			log.Printf("[radius] 关闭服务器文件出错: %v", cerr)
+		}
+	}()
 
 	var servers []RadiusServer
 	scanner := bufio.NewScanner(file)

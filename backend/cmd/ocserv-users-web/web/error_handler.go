@@ -15,8 +15,8 @@ func methodNotAllowedHandler(w http.ResponseWriter, r *http.Request) {
 	sendJSON(w, http.StatusMethodNotAllowed, Response{Message: "Method Not Allowed"})
 }
 
-// forbiddenHandler handles 403 errors
-func forbiddenHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusForbidden)
-	renderWithLayout(w, "403.html", nil)
-}
+// forbiddenHandler handles 403 errors (kept for future use)
+// func forbiddenHandler(w http.ResponseWriter, r *http.Request) {
+// 	w.WriteHeader(http.StatusForbidden)
+// 	renderWithLayout(w, "403.html", nil)
+// }

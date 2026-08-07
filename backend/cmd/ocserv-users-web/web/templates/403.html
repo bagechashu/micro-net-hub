@@ -1,32 +1,33 @@
-{{ define "title" }}403{{ end }}
-
-{{ define "content" }}
+{{ define "title" }}403{{ end }} {{ define "content" }}
 <div class="error-container">
-<h1 class="error-code">403</h1>
-<h2 class="error-title">Access Forbidden</h2>
-<p class="error-message">Sorry, you do not have permission to access this page.</p>
+  <h1 class="error-code">403</h1>
+  <h2 class="error-title">Access Forbidden</h2>
+  <p class="error-message">
+    Sorry, you do not have permission to access this page.
+  </p>
 
-<div class="button-group">
+  <div class="button-group">
     <a href="/" class="pure-button pure-button-primary">Home</a>
     <button class="pure-button" onclick="window.history.back()">Back</button>
-</div>
+  </div>
 
-<p style="margin-top: 2em; text-align: center; color: #666;">
-  <span id="countdown">3</span> seconds later, you will be automatically redirected to home page...
-</p>
+  <p style="margin-top: 2em; text-align: center; color: #666">
+    <span id="countdown">3</span> seconds later, you will be automatically
+    redirected to home page...
+  </p>
 </div>
 
 <script>
   let seconds = 3;
-  const countdownEl = document.getElementById('countdown');
-  
+  const countdownEl = document.getElementById("countdown");
+
   const timer = setInterval(() => {
     seconds--;
     countdownEl.textContent = seconds;
-    
+
     if (seconds <= 0) {
       clearInterval(timer);
-      window.location.replace('/');
+      window.location.replace("/");
     }
   }, 1000);
 </script>

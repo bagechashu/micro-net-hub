@@ -20,7 +20,9 @@ func nftCheckTriggerHandler(w http.ResponseWriter, r *http.Request) {
 
 	// 返回成功响应
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("nft updated successfully\n"))
+	if _, err := w.Write([]byte("nft updated successfully\n")); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 
 	// w.Header().Set("Content-Type", "application/json")
 	// json.NewEncoder(w).Encode(map[string]string{
@@ -42,5 +44,7 @@ func vpnAccessCheckTriggerHandler(w http.ResponseWriter, r *http.Request) {
 
 	// 返回成功响应
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("vpn access enforced\n"))
+	if _, err := w.Write([]byte("vpn access enforced\n")); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }

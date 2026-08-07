@@ -17,7 +17,7 @@ var (
 	adminUsersList      map[string]bool
 )
 
-// InitAuthSessionStore initializes authentication system
+// InitAuth initializes the authentication system.
 func InitAuth(cfg *internal.AuthConfig) error {
 	// Set global auth config
 	authConfig = cfg

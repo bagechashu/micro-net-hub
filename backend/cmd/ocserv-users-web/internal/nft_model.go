@@ -36,16 +36,16 @@ func UpdateUserRules(rules map[string][]Rule) {
 }
 
 type Rule struct {
-	DestIp   string       `json:"dest_ip,omitempty" yaml:"dest_ip,omitempty"`
+	DestIP   string       `json:"dest_ip,omitempty" yaml:"dest_ip,omitempty"`
 	DestPort uint16       `json:"dest_port,omitempty" yaml:"dest_port,omitempty"`
 	Protocol ProtocolType `json:"protocol,omitempty" yaml:"protocol,omitempty"` // tcp | udp | icmp, 默认 tcp
 	ToLocal  bool         `json:"to_local,omitempty" yaml:"to_local,omitempty"` // 是否访问宿主机本地服务, 默认 false
 	Action   ActionType   `json:"action,omitempty" yaml:"action,omitempty"`     // accept | drop，默认 accept
 	Comment  string       `json:"comment,omitempty" yaml:"comment,omitempty"`   // 规则名称，用于标记规则信息
 
-	// SrcIp, SrcIpSetName 默认不配置, 通过 RuleMapping 去补充
-	SrcIp        string `json:"src_ip,omitempty" yaml:"src_ip,omitempty"`
-	SrcIpSetName string `json:"src_ip_set_name,omitempty" yaml:"src_ip_set_name,omitempty"`
+	// SrcIP, SrcIPSetName 默认不配置, 通过 RuleMapping 去补充
+	SrcIP        string `json:"src_ip,omitempty" yaml:"src_ip,omitempty"`
+	SrcIPSetName string `json:"src_ip_set_name,omitempty" yaml:"src_ip_set_name,omitempty"`
 }
 
 type RuleGroup struct {
@@ -53,7 +53,7 @@ type RuleGroup struct {
 	Rules []Rule `json:"rules,omitempty" yaml:"rules,omitempty"`
 }
 
-type SrcIpSet struct {
+type SrcIPSet struct {
 	Name string   `json:"name,omitempty" yaml:"name,omitempty"`
 	Ips  []string `json:"ips,omitempty" yaml:"ips,omitempty"`
 }
@@ -61,8 +61,8 @@ type SrcIpSet struct {
 type RuleMapping struct {
 	Name         string      `json:"name,omitempty" yaml:"name,omitempty"`
 	Type         MappingType `json:"mapping_type" yaml:"mapping_type"` // [users | public | input_chain | input_chain_ip_set]
-	SrcIps       []string    `json:"src_ips,omitempty" yaml:"src_ips,omitempty"`
-	SrcIpSet     *SrcIpSet   `json:"src_ip_set,omitempty" yaml:"src_ip_set,omitempty"`
+	SrcIPs       []string    `json:"src_ips,omitempty" yaml:"src_ips,omitempty"`
+	SrcIPSet     *SrcIPSet   `json:"src_ip_set,omitempty" yaml:"src_ip_set,omitempty"`
 	Users        []string    `json:"users,omitempty" yaml:"users,omitempty"`
 	RuleGroupRef string      `json:"rule_group_ref,omitempty" yaml:"rule_group_ref,omitempty"` // 引用的规则组名称
 }
@@ -70,14 +70,14 @@ type RuleMapping struct {
 type ProtocolType string
 
 const (
-	ProtocolTcp  ProtocolType = "tcp"
-	ProtocolUdp  ProtocolType = "udp"
+	ProtocolTCP  ProtocolType = "tcp"
+	ProtocolUDP  ProtocolType = "udp"
 	ProtocolIcmp ProtocolType = "icmp"
 )
 
 func (t ProtocolType) Valid() bool {
 	switch t {
-	case ProtocolTcp, ProtocolUdp, ProtocolIcmp:
+	case ProtocolTCP, ProtocolUDP, ProtocolIcmp:
 		return true
 	default:
 		return false
@@ -106,12 +106,12 @@ const (
 	MappingUsers           MappingType = "users"
 	MappingPublic          MappingType = "public"
 	MappingInputChain      MappingType = "input_chain"
-	MappingInputChainIpSet MappingType = "input_chain_ip_set"
+	MappingInputChainIPSet MappingType = "input_chain_ip_set"
 )
 
 func (t MappingType) Valid() bool {
 	switch t {
-	case MappingUsers, MappingPublic, MappingInputChain, MappingInputChainIpSet:
+	case MappingUsers, MappingPublic, MappingInputChain, MappingInputChainIPSet:
 		return true
 	default:
 		return false
@@ -177,12 +177,12 @@ func GetInputChainRules(config *Config) (map[string][]Rule, error) {
 
 		rulemappingName := strings.ToLower(rulemapping.Name)
 
-		// dest_rule 中 srcIp 赋值
-		for _, srcIp := range rulemapping.SrcIps {
-			// 为每个 srcIp 生成一份带有 SrcIp 的规则拷贝
+		// dest_rule 中 srcIP 赋值
+		for _, srcIP := range rulemapping.SrcIPs {
+			// 为每个 srcIP 生成一份带有 SrcIP 的规则拷贝
 			rulesWithSrc := make([]Rule, 0, len(ruleGroup.Rules))
 			for _, r := range ruleGroup.Rules {
-				r.SrcIp = srcIp
+				r.SrcIP = srcIP
 				rulesWithSrc = append(rulesWithSrc, r)
 			}
 
@@ -194,16 +194,16 @@ func GetInputChainRules(config *Config) (map[string][]Rule, error) {
 	return inputChainRules, nil
 }
 
-// GetInputChainIpSetRules 获取InputChainIpSet规则
-func GetInputChainIpSetRules(config *Config) ([]SrcIpSet, map[string][]Rule, error) {
-	srcIpSets := []SrcIpSet{}
-	inputChainIpSetRules := make(map[string][]Rule)
+// GetInputChainIPSetRules 获取InputChainIPSet规则
+func GetInputChainIPSetRules(config *Config) ([]SrcIPSet, map[string][]Rule, error) {
+	srcIPSets := []SrcIPSet{}
+	inputChainIPSetRules := make(map[string][]Rule)
 	for _, rulemapping := range config.RuleMappings {
-		if rulemapping.Type != MappingInputChainIpSet {
+		if rulemapping.Type != MappingInputChainIPSet {
 			continue
 		}
-		if rulemapping.SrcIpSet != nil {
-			srcIpSets = append(srcIpSets, *rulemapping.SrcIpSet)
+		if rulemapping.SrcIPSet != nil {
+			srcIPSets = append(srcIPSets, *rulemapping.SrcIPSet)
 		}
 		ruleGroup := resolveRuleGroup(config.RuleGroups, rulemapping.RuleGroupRef)
 		if ruleGroup == nil {
@@ -212,20 +212,20 @@ func GetInputChainIpSetRules(config *Config) ([]SrcIpSet, map[string][]Rule, err
 
 		rulemappingName := strings.ToLower(rulemapping.Name)
 
-		// dest_rule 中 srcIpSetName 赋值
-		rulesWithSrcIpSetName := make([]Rule, 0, len(ruleGroup.Rules))
+		// dest_rule 中 srcIPSetName 赋值
+		rulesWithSrcIPSetName := make([]Rule, 0, len(ruleGroup.Rules))
 		for _, r := range ruleGroup.Rules {
-			if rulemapping.SrcIpSet != nil {
-				r.SrcIpSetName = rulemapping.SrcIpSet.Name
+			if rulemapping.SrcIPSet != nil {
+				r.SrcIPSetName = rulemapping.SrcIPSet.Name
 			}
-			rulesWithSrcIpSetName = append(rulesWithSrcIpSetName, r)
+			rulesWithSrcIPSetName = append(rulesWithSrcIPSetName, r)
 		}
 
 		// 将规则追加到现有规则中，以支持多个组的规则合并
-		inputChainIpSetRules[rulemappingName] = append(inputChainIpSetRules[rulemappingName], rulesWithSrcIpSetName...)
+		inputChainIPSetRules[rulemappingName] = append(inputChainIPSetRules[rulemappingName], rulesWithSrcIPSetName...)
 	}
 
-	return srcIpSets, inputChainIpSetRules, nil
+	return srcIPSets, inputChainIPSetRules, nil
 }
 
 // resolveRuleGroup 根据规则组名称查找规则组

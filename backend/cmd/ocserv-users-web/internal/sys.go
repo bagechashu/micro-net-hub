@@ -33,7 +33,11 @@ func getLocalIPv4s() ([]net.IP, error) {
 		return nil, fmt.Errorf("failed to list interfaces: %w", err)
 	}
 	for _, iface := range ifaces {
-		addrs, _ := iface.Addrs()
+		addrs, err := iface.Addrs()
+		if err != nil {
+			log.Printf("[sys] 获取接口地址失败 (%s): %v", iface.Name, err)
+			continue
+		}
 		for _, a := range addrs {
 			if ipnet, ok := a.(*net.IPNet); ok {
 				if ip4 := ipnet.IP.To4(); ip4 != nil {

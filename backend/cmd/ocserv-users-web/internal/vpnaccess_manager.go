@@ -13,7 +13,7 @@ func EnforceVpnAccess(cfg []VpnAccessRule) error {
 	return enforceVpnAccess(cfg)
 }
 
-// EnforceVpnAccessTime checks sessions and handles those that violate time-range rules only.
+// EnforceVpnAccessOnlyByTime checks sessions and handles those that violate time-range rules only.
 func EnforceVpnAccessOnlyByTime(cfg []VpnAccessRule) error {
 	return enforceVpnAccess(cfg, true)
 }

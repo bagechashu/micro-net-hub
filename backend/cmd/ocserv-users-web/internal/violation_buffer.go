@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 	"fmt"
+	"log"
 	"sync"
 	"time"
 
@@ -103,19 +104,27 @@ func (vb *ViolationBuffer) batchInsert(violations []*ViolationLog) {
 
 	stmt, err := tx.PrepareContext(ctx, sqlInsertViolation)
 	if err != nil {
-		tx.Rollback()
+		if rbErr := tx.Rollback(); rbErr != nil {
+			log.Printf("[violation] rollback after prepare error failed: %v", rbErr)
+		}
 		select {
 		case vb.errors <- fmt.Errorf("[violation] batch insert prepare failed: %w", err):
 		default:
 		}
 		return
 	}
-	defer stmt.Close()
+	defer func() {
+		if cerr := stmt.Close(); cerr != nil {
+			log.Printf("[violation] close stmt error: %v", cerr)
+		}
+	}()
 
 	for _, v := range violations {
 		_, err := stmt.ExecContext(ctx, v.ID, v.Username, v.RemoteIP, v.Action, v.Reason, v.Timestamp)
 		if err != nil {
-			tx.Rollback()
+			if rbErr := tx.Rollback(); rbErr != nil {
+				log.Printf("[violation] rollback after exec error failed: %v", rbErr)
+			}
 			select {
 			case vb.errors <- fmt.Errorf("[violation] batch insert exec failed: %w", err):
 			default:

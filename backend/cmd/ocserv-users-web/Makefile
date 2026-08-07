@@ -30,7 +30,7 @@ lint-go:
 	golangci-lint run ./...
 
 lint-html:
-	npx prettier --check web/templates/**/**
+	npx prettier --check web/templates/**/** && npx prettier --check web/templates/**
 
 # ========== Format ==========
 
@@ -42,4 +42,4 @@ fmt-go:
 	goimports -local ocserv-users -w .
 
 fmt-html:
-	npx prettier --write web/templates/**/**
+	npx prettier --write web/templates/**/** && npx prettier --write web/templates/**

@@ -1,14 +1,14 @@
-{{ define "title" }}404{{ end }}
-
-{{ define "content" }}
+{{ define "title" }}404{{ end }} {{ define "content" }}
 <div class="error-container">
-<h1 class="error-code">404</h1>
-<h2 class="error-title">Page Not Found</h2>
-<p class="error-message">Sorry, the page you are looking for does not exist or has been removed.</p>
+  <h1 class="error-code">404</h1>
+  <h2 class="error-title">Page Not Found</h2>
+  <p class="error-message">
+    Sorry, the page you are looking for does not exist or has been removed.
+  </p>
 
-<div class="button-group">
+  <div class="button-group">
     <a href="/" class="pure-button pure-button-primary">Home</a>
     <button class="pure-button" onclick="window.history.back()">Back</button>
-</div>
+  </div>
 </div>
 {{ end }}

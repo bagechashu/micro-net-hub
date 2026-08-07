@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"log"
 	"sync"
 	"time"
 )
@@ -143,9 +144,8 @@ func (ss *AuthSessionStore) cleanupExpiredSessions() {
 
 		ss.mu.Unlock()
 
-		if count > 0 {
-			// Uncomment for debugging
-			// log.Printf("[session] 清理了 %d 个过期会话", count)
+		if count > 0 && IsDebugMode() {
+			log.Printf("[session] 清理了 %d 个过期会话", count)
 		}
 	}
 }

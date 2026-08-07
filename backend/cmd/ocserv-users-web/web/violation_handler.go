@@ -30,7 +30,7 @@ type ViolationsListResponse struct {
 	Message    string              `json:"message,omitempty"`
 }
 
-// Cache for stats queries with TTL
+// StatsCache is a cache for stats queries with TTL.
 type StatsCache struct {
 	data      map[string]interface{}
 	timestamp time.Time

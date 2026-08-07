@@ -1,57 +1,63 @@
-{{ define "title" }}User Management{{ end }}
-
-{{ define "content" }}
+{{ define "title" }}User Management{{ end }} {{ define "content" }}
 <section>
-  <h3>Current Time
-    <span data-controller="current-time" data-current-time-target="timeDisplay"
-          style="padding: 1em; font-weight: bold;">
-    --:--:--
+  <h3>
+    Current Time
+    <span
+      data-controller="current-time"
+      data-current-time-target="timeDisplay"
+      style="padding: 1em; font-weight: bold"
+    >
+      --:--:--
     </span>
   </h3>
-  <div class="table-section" style="margin-bottom: 2em;">
+  <div class="table-section" style="margin-bottom: 2em">
     <h4>Online Users</h4>
     {{ template "ocusers-table" . }}
   </div>
 </section>
-{{ end }}
-
-{{ define "script" }}
+{{ end }} {{ define "script" }}
 <script>
-(() => {
-  // UTC time formatting
-  window.App.register("utc", class extends Stimulus.Controller {
-    static values = {
-      connectAt: String
-    }
-    connect() {
-      const raw = this.connectAtValue;
-      if (!raw) return;
-      const d = new Date(raw.replace(" ", "T") + "Z");
-      if (!isNaN(d)) this.element.textContent = d.toLocaleString();
-    }
-  });
+  (() => {
+    // UTC time formatting
+    window.App.register(
+      "utc",
+      class extends Stimulus.Controller {
+        static values = {
+          connectAt: String,
+        };
+        connect() {
+          const raw = this.connectAtValue;
+          if (!raw) return;
+          const d = new Date(raw.replace(" ", "T") + "Z");
+          if (!isNaN(d)) this.element.textContent = d.toLocaleString();
+        }
+      },
+    );
 
-  // Current time display
-  window.App.register("current-time", class extends Stimulus.Controller {
-    static targets = ["timeDisplay"];
+    // Current time display
+    window.App.register(
+      "current-time",
+      class extends Stimulus.Controller {
+        static targets = ["timeDisplay"];
 
-    connect() {
-      this.updateTime();
-      this.interval = setInterval(() => this.updateTime(), 1000);
-    }
+        connect() {
+          this.updateTime();
+          this.interval = setInterval(() => this.updateTime(), 1000);
+        }
 
-    disconnect() {
-      if (this.interval) clearInterval(this.interval);
-    }
+        disconnect() {
+          if (this.interval) clearInterval(this.interval);
+        }
 
-    updateTime() {
-      const now = new Date();
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      const seconds = String(now.getSeconds()).padStart(2, '0');
-      this.timeDisplayTarget.textContent = `${hours}:${minutes}:${seconds}`;
-    }
-  });
-})();
+        updateTime() {
+          const now = new Date();
+          const hours = String(now.getHours()).padStart(2, "0");
+          const minutes = String(now.getMinutes()).padStart(2, "0");
+          const seconds = String(now.getSeconds()).padStart(2, "0");
+          this.timeDisplayTarget.textContent = `${hours}:${minutes}:${seconds}`;
+        }
+      },
+    );
+  })();
 </script>
 {{ end }}

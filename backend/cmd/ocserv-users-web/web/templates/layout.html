@@ -1,371 +1,438 @@
 {{ define "layout" }}
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>{{ block "title" . }}Ocserv User Management{{ end }}</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{{ block "title" . }}Ocserv User Management{{ end }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- htmx -->
-  <!-- <script src="https://unpkg.com/htmx.org@1.9.12"></script> -->
-  <script src="/static/js/htmx.min.js"></script>
+    <!-- htmx -->
+    <!-- <script src="https://unpkg.com/htmx.org@1.9.12"></script> -->
+    <script src="/static/js/htmx.min.js"></script>
 
-  <!-- Stimulus -->
-  <!-- <script src="https://unpkg.com/@hotwired/stimulus/dist/stimulus.umd.js"></script> -->
-  <script src="/static/js/stimulus.umd.js"></script>
+    <!-- Stimulus -->
+    <!-- <script src="https://unpkg.com/@hotwired/stimulus/dist/stimulus.umd.js"></script> -->
+    <script src="/static/js/stimulus.umd.js"></script>
 
-  <!-- Pure.css -->
-  <link rel="stylesheet" href="/static/css/pure-min.css">
-  <link rel="stylesheet" href="/static/css/grids-responsive-min.css">
+    <!-- Pure.css -->
+    <link rel="stylesheet" href="/static/css/pure-min.css" />
+    <link rel="stylesheet" href="/static/css/grids-responsive-min.css" />
 
-  <!-- App CSS -->
-  <link rel="stylesheet" href="/static/css/app.css">
+    <!-- App CSS -->
+    <link rel="stylesheet" href="/static/css/app.css" />
 
-  <script>
-    // Initialize global Stimulus app
-    window.App = Stimulus.Application.start()
+    <script>
+      // Initialize global Stimulus app
+      window.App = Stimulus.Application.start();
 
-    // HTMX Configuration and Error Handling
-    // Handle HTMX errors (e.g., 403 Forbidden due to session expiration)
-    document.addEventListener('htmx:responseError', function(event) {
-      const xhr = event.detail.xhr;
-      
-      // If we get a 403 or 401, the session has likely expired
-      if (xhr.status === 403 || xhr.status === 401) {
-        // Clear cached user info
-        localStorage.removeItem('userInfo');
-        // Redirect to home page (login page)
-        window.location.href = '/';
-      }
-    });
+      // HTMX Configuration and Error Handling
+      // Handle HTMX errors (e.g., 403 Forbidden due to session expiration)
+      document.addEventListener("htmx:responseError", function (event) {
+        const xhr = event.detail.xhr;
 
-    // Also handle htmx:afterSwap to check for authentication errors
-    document.addEventListener('htmx:afterSwap', function(event) {
-      const xhr = event.detail.xhr;
-      if (xhr && (xhr.status === 403 || xhr.status === 401)) {
-        localStorage.removeItem('userInfo');
-        window.location.href = '/';
-      }
-    });
-  </script>
-</head>
+        // If we get a 403 or 401, the session has likely expired
+        if (xhr.status === 403 || xhr.status === 401) {
+          // Clear cached user info
+          localStorage.removeItem("userInfo");
+          // Redirect to home page (login page)
+          window.location.href = "/";
+        }
+      });
 
-<body>
-<main class="container">
-<header class="app-header">
-  <h3>Ocserv User Management</h3>
-  <nav id="mainNav">
-    <a href="/ocusers.html" role="button" class="pure-button" id="usersBtn" style="visibility: hidden; position: absolute; width: 0;">Users</a>
-    <a href="/login-history.html" role="button" class="pure-button" id="loginHistoryBtn" style="visibility: hidden; position: absolute; width: 0;">LoginHistory</a>
-    <a href="/nft.html" role="button" class="pure-button pure-button-secondary" id="nftBtn" style="visibility: hidden; position: absolute; width: 0;">NFT</a>
-    <a href="/config.html" role="button" class="pure-button pure-button-secondary" id="configBtn" style="visibility: hidden; position: absolute; width: 0;">Config</a>
-    <button role="button" class="pure-button" id="loginBtn" onclick="openLoginModal()" style="visibility: visible;">Login</button>
-    <button role="button" hx-confirm="Are you sure?" class="pure-button pure-button-secondary" id="logoutBtn" onclick="handleLogout()" style="visibility: hidden; position: absolute; width: 0;">Logout</button>
-  </nav>
-</header>
+      // Also handle htmx:afterSwap to check for authentication errors
+      document.addEventListener("htmx:afterSwap", function (event) {
+        const xhr = event.detail.xhr;
+        if (xhr && (xhr.status === 403 || xhr.status === 401)) {
+          localStorage.removeItem("userInfo");
+          window.location.href = "/";
+        }
+      });
+    </script>
+  </head>
 
-<!-- Login Modal -->
-<div id="loginModal" class="modal" hidden aria-hidden="true">
-  <div class="modal__container">
-    <button class="modal__close" onclick="closeLoginModal()">&times;</button>
-    <div class="modal__title">User Login</div>
-
-    <div class="modal__body">
-      <div id="loginErrorMessage" class="error-message" style="display: none; margin-bottom: 1em;"></div>
-
-      <form id="loginForm" onsubmit="handleLogin(event)">
-        <div class="form-group">
-          <label for="username">Username</label>
-          <input 
-            type="text" 
-            id="username" 
-            name="username" 
-            required 
-            autocomplete="username"
-            placeholder="Enter username"
-            class="pure-input-1"
+  <body>
+    <main class="container">
+      <header class="app-header">
+        <h3>Ocserv User Management</h3>
+        <nav id="mainNav">
+          <a
+            href="/ocusers.html"
+            role="button"
+            class="pure-button"
+            id="usersBtn"
+            style="visibility: hidden; position: absolute; width: 0"
+            >Users</a
           >
-        </div>
-
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input 
-            type="password" 
-            id="password" 
-            name="password" 
-            required 
-            autocomplete="current-password"
-            placeholder="Enter password"
-            class="pure-input-1"
+          <a
+            href="/login-history.html"
+            role="button"
+            class="pure-button"
+            id="loginHistoryBtn"
+            style="visibility: hidden; position: absolute; width: 0"
+            >LoginHistory</a
           >
+          <a
+            href="/nft.html"
+            role="button"
+            class="pure-button pure-button-secondary"
+            id="nftBtn"
+            style="visibility: hidden; position: absolute; width: 0"
+            >NFT</a
+          >
+          <a
+            href="/config.html"
+            role="button"
+            class="pure-button pure-button-secondary"
+            id="configBtn"
+            style="visibility: hidden; position: absolute; width: 0"
+            >Config</a
+          >
+          <button
+            role="button"
+            class="pure-button"
+            id="loginBtn"
+            onclick="openLoginModal()"
+            style="visibility: visible"
+          >
+            Login
+          </button>
+          <button
+            role="button"
+            hx-confirm="Are you sure?"
+            class="pure-button pure-button-secondary"
+            id="logoutBtn"
+            onclick="handleLogout()"
+            style="visibility: hidden; position: absolute; width: 0"
+          >
+            Logout
+          </button>
+        </nav>
+      </header>
+
+      <!-- Login Modal -->
+      <div id="loginModal" class="modal" hidden aria-hidden="true">
+        <div class="modal__container">
+          <button class="modal__close" onclick="closeLoginModal()">
+            &times;
+          </button>
+          <div class="modal__title">User Login</div>
+
+          <div class="modal__body">
+            <div
+              id="loginErrorMessage"
+              class="error-message"
+              style="display: none; margin-bottom: 1em"
+            ></div>
+
+            <form id="loginForm" onsubmit="handleLogin(event)">
+              <div class="form-group">
+                <label for="username">Username</label>
+                <input
+                  type="text"
+                  id="username"
+                  name="username"
+                  required
+                  autocomplete="username"
+                  placeholder="Enter username"
+                  class="pure-input-1"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="password">Password</label>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  required
+                  autocomplete="current-password"
+                  placeholder="Enter password"
+                  class="pure-input-1"
+                />
+              </div>
+            </form>
+          </div>
+
+          <div class="modal__footer">
+            <button
+              type="button"
+              class="pure-button"
+              onclick="closeLoginModal()"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              form="loginForm"
+              class="pure-button pure-button-primary"
+              id="loginSubmitBtn"
+            >
+              Login
+            </button>
+          </div>
         </div>
-      </form>
-    </div>
+      </div>
 
-    <div class="modal__footer">
-      <button type="button" class="pure-button" onclick="closeLoginModal()">Cancel</button>
-      <button type="submit" form="loginForm" class="pure-button pure-button-primary" id="loginSubmitBtn">Login</button>
-    </div>
-  </div>
-</div>
+      {{ block "content" . }}{{ end }}
+    </main>
 
-{{ block "content" . }}{{ end }}
+    <!-- Auth Scripts -->
+    <script>
+      // Initialize page - check login status
+      async function initializePage() {
+        // Restore cached state first to avoid initial flicker
+        const cachedUserInfo = localStorage.getItem("userInfo");
+        if (cachedUserInfo !== null) {
+          const userInfo = JSON.parse(cachedUserInfo);
+          // console.log(`[DEBUG] Restoring cached user info:`, userInfo);
+          updateNavigation(userInfo);
+        }
 
-</main>
+        try {
+          // Call backend API to check session status
+          // credentials: 'include' ensures request carries cookie
+          const response = await fetch("/api/auth/session", {
+            method: "GET",
+            credentials: "include",
+          });
 
-<!-- Auth Scripts -->
-<script>
-// Initialize page - check login status
-async function initializePage() {
-  // Restore cached state first to avoid initial flicker
-  const cachedUserInfo = localStorage.getItem('userInfo');
-  if (cachedUserInfo !== null) {
-    const userInfo = JSON.parse(cachedUserInfo);
-    // console.log(`[DEBUG] Restoring cached user info:`, userInfo);
-    updateNavigation(userInfo);
-  }
-  
-  try {
-    // Call backend API to check session status
-    // credentials: 'include' ensures request carries cookie
-    const response = await fetch('/api/auth/session', {
-      method: 'GET',
-      credentials: 'include',
-    });
-    
-    const data = await response.json();
-    
-    let userInfo = null;
-    if (response.ok && data.code === 0) {
-      // User is logged in
-      userInfo = {
-        isLoggedIn: true,
-        username: data.data.username,
-        isAdmin: data.data.isAdmin
-      };
-      // console.log(`[DEBUG] User is logged in:`, userInfo);
-    } else {
-      // User is not logged in
-      userInfo = {
-        isLoggedIn: false
-      };
-      // console.log(`[DEBUG] User is NOT logged in`);
-    }
-    
-    // Cache user information
-    localStorage.setItem('userInfo', JSON.stringify(userInfo));
-    updateNavigation(userInfo);
-  } catch (error) {
-    console.error(`Session check error:`, error);
-    updateNavigation({ isLoggedIn: false });
-  }
-}
+          const data = await response.json();
 
-// Get value from cookie (no longer used, kept for debugging)
-function getCookie(name) {
-  const cookieName = 'ocauth_session';
-  const nameEQ = cookieName + "=";
-  const ca = document.cookie.split(';');
-  console.log(`[DEBUG] getCookie('${cookieName}') - document.cookie is empty or HttpOnly`, document.cookie);
-  for(let i = 0; i < ca.length; i++) {
-    let c = ca[i].trim();
-    if (c.indexOf(nameEQ) === 0) {
-      const value = c.substring(nameEQ.length);
-      console.log(`[DEBUG] Found cookie '${cookieName}': "${value}"`);
-      return value;
-    }
-  }
-  console.log(`[DEBUG] Cookie '${cookieName}' not found (this is normal because HttpOnly flag is set)`);
-  return null;
-}
+          let userInfo = null;
+          if (response.ok && data.code === 0) {
+            // User is logged in
+            userInfo = {
+              isLoggedIn: true,
+              username: data.data.username,
+              isAdmin: data.data.isAdmin,
+            };
+            // console.log(`[DEBUG] User is logged in:`, userInfo);
+          } else {
+            // User is not logged in
+            userInfo = {
+              isLoggedIn: false,
+            };
+            // console.log(`[DEBUG] User is NOT logged in`);
+          }
 
-// Update navigation bar display
-function updateNavigation(userInfo) {
-  const usersBtn = document.getElementById('usersBtn');
-  const loginHistoryBtn = document.getElementById('loginHistoryBtn');
-  const nftBtn = document.getElementById('nftBtn');
-  const configBtn = document.getElementById('configBtn');
-  const loginBtn = document.getElementById('loginBtn');
-  const logoutBtn = document.getElementById('logoutBtn');
-  
-  if (userInfo.isLoggedIn) {
-    // Logged in: show user buttons and logout
-    usersBtn.style.visibility = 'visible';
-    usersBtn.style.position = 'static';
-    usersBtn.style.width = 'auto';
-    
-    logoutBtn.style.visibility = 'visible';
-    logoutBtn.style.position = 'static';
-    logoutBtn.style.width = 'auto';
-    
-    // Hide login button
-    loginBtn.style.visibility = 'hidden';
-    loginBtn.style.position = 'absolute';
-    loginBtn.style.width = '0';
-    
-    if (userInfo.isAdmin) {
-      // Admin: show all feature buttons
-      loginHistoryBtn.style.visibility = 'visible';
-      loginHistoryBtn.style.position = 'static';
-      loginHistoryBtn.style.width = 'auto';
-      
-      nftBtn.style.visibility = 'visible';
-      nftBtn.style.position = 'static';
-      nftBtn.style.width = 'auto';
-      
-      configBtn.style.visibility = 'visible';
-      configBtn.style.position = 'static';
-      configBtn.style.width = 'auto';
-    } else {
-      // Regular user: hide NFT and config buttons
-      loginHistoryBtn.style.visibility = 'hidden';
-      loginHistoryBtn.style.position = 'absolute';
-      loginHistoryBtn.style.width = '0';
+          // Cache user information
+          localStorage.setItem("userInfo", JSON.stringify(userInfo));
+          updateNavigation(userInfo);
+        } catch (error) {
+          console.error(`Session check error:`, error);
+          updateNavigation({ isLoggedIn: false });
+        }
+      }
 
-      nftBtn.style.visibility = 'hidden';
-      nftBtn.style.position = 'absolute';
-      nftBtn.style.width = '0';
-      
-      configBtn.style.visibility = 'hidden';
-      configBtn.style.position = 'absolute';
-      configBtn.style.width = '0';
-    }
-  } else {
-    // Not logged in: only show login button
-    usersBtn.style.visibility = 'hidden';
-    usersBtn.style.position = 'absolute';
-    usersBtn.style.width = '0';
-    
-    loginHistoryBtn.style.visibility = 'hidden';
-    loginHistoryBtn.style.position = 'absolute';
-    loginHistoryBtn.style.width = '0';
-    
-    nftBtn.style.visibility = 'hidden';
-    nftBtn.style.position = 'absolute';
-    nftBtn.style.width = '0';
-    
-    configBtn.style.visibility = 'hidden';
-    configBtn.style.position = 'absolute';
-    configBtn.style.width = '0';
-    
-    loginBtn.style.visibility = 'visible';
-    loginBtn.style.position = 'static';
-    loginBtn.style.width = 'auto';
-    
-    logoutBtn.style.visibility = 'hidden';
-    logoutBtn.style.position = 'absolute';
-    logoutBtn.style.width = '0';
-  }
-}
+      // Get value from cookie (no longer used, kept for debugging)
+      function getCookie(name) {
+        const cookieName = "ocauth_session";
+        const nameEQ = cookieName + "=";
+        const ca = document.cookie.split(";");
+        console.log(
+          `[DEBUG] getCookie('${cookieName}') - document.cookie is empty or HttpOnly`,
+          document.cookie,
+        );
+        for (let i = 0; i < ca.length; i++) {
+          let c = ca[i].trim();
+          if (c.indexOf(nameEQ) === 0) {
+            const value = c.substring(nameEQ.length);
+            console.log(`[DEBUG] Found cookie '${cookieName}': "${value}"`);
+            return value;
+          }
+        }
+        console.log(
+          `[DEBUG] Cookie '${cookieName}' not found (this is normal because HttpOnly flag is set)`,
+        );
+        return null;
+      }
 
-// Open login modal
-function openLoginModal() {
-  const modal = document.getElementById('loginModal');
-  modal.hidden = false;
-  modal.setAttribute('aria-hidden', 'false');
-  document.getElementById('username').focus();
-}
+      // Update navigation bar display
+      function updateNavigation(userInfo) {
+        const usersBtn = document.getElementById("usersBtn");
+        const loginHistoryBtn = document.getElementById("loginHistoryBtn");
+        const nftBtn = document.getElementById("nftBtn");
+        const configBtn = document.getElementById("configBtn");
+        const loginBtn = document.getElementById("loginBtn");
+        const logoutBtn = document.getElementById("logoutBtn");
 
-// Close login modal
-function closeLoginModal() {
-  const modal = document.getElementById('loginModal');
-  modal.hidden = true;
-  modal.setAttribute('aria-hidden', 'true');
-  document.getElementById('loginForm').reset();
-  document.getElementById('loginErrorMessage').style.display = 'none';
-}
+        if (userInfo.isLoggedIn) {
+          // Logged in: show user buttons and logout
+          usersBtn.style.visibility = "visible";
+          usersBtn.style.position = "static";
+          usersBtn.style.width = "auto";
 
-// Handle login
-async function handleLogin(event) {
-  event.preventDefault();
-  
-  const username = document.getElementById('username').value;
-  const password = document.getElementById('password').value;
-  const errorDiv = document.getElementById('loginErrorMessage');
-  const submitBtn = document.getElementById('loginSubmitBtn');
-  
-  // Clear previous errors
-  errorDiv.style.display = 'none';
-  submitBtn.disabled = true;
-  submitBtn.textContent = 'Logging in...';
-  
-  try {
-    const response = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ username, password }),
-    });
+          logoutBtn.style.visibility = "visible";
+          logoutBtn.style.position = "static";
+          logoutBtn.style.width = "auto";
 
-    const data = await response.json();
+          // Hide login button
+          loginBtn.style.visibility = "hidden";
+          loginBtn.style.position = "absolute";
+          loginBtn.style.width = "0";
 
-    if (!response.ok) {
-      throw new Error(data.message || 'Login failed');
-    }
-    // Optional: on successful login, close modal and update navigation
-    // closeLoginModal();
-    // updateNavigation(true);
+          if (userInfo.isAdmin) {
+            // Admin: show all feature buttons
+            loginHistoryBtn.style.visibility = "visible";
+            loginHistoryBtn.style.position = "static";
+            loginHistoryBtn.style.width = "auto";
 
-    // Redirect to home page or other page
-    window.location.href = '/ocusers.html';
-  } catch (error) {
-    errorDiv.textContent = error.message;
-    errorDiv.style.display = 'block';
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Login';
-  }
-}
+            nftBtn.style.visibility = "visible";
+            nftBtn.style.position = "static";
+            nftBtn.style.width = "auto";
 
-// Handle logout
-async function handleLogout() {
-  if (!confirm('Are you sure you want to logout?')) return;
-  
-  try {
-    const response = await fetch('/api/auth/logout', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include', // ensures request carries cookie
-    });
-    
-    if (response.ok) {
-      // Clear cached user information
-      localStorage.removeItem('userInfo');
-      updateNavigation({ isLoggedIn: false });
-      window.location.href = '/';
-    } else {
-      alert('Logout failed');
-    }
-  } catch (error) {
-    alert('Logout error: ' + error.message);
-  }
-}
+            configBtn.style.visibility = "visible";
+            configBtn.style.position = "static";
+            configBtn.style.width = "auto";
+          } else {
+            // Regular user: hide NFT and config buttons
+            loginHistoryBtn.style.visibility = "hidden";
+            loginHistoryBtn.style.position = "absolute";
+            loginHistoryBtn.style.width = "0";
 
-// Close modal when clicking outside
-document.addEventListener('DOMContentLoaded', function() {
-  initializePage();
-  
-  const modal = document.getElementById('loginModal');
-  modal.addEventListener('click', function(event) {
-    if (event.target === modal) {
-      closeLoginModal();
-    }
-  });
-  
-  // Close modal on ESC key
-  document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-      closeLoginModal();
-    }
-  });
-});
-</script>
+            nftBtn.style.visibility = "hidden";
+            nftBtn.style.position = "absolute";
+            nftBtn.style.width = "0";
 
-{{ block "script" . }}{{ end }}
+            configBtn.style.visibility = "hidden";
+            configBtn.style.position = "absolute";
+            configBtn.style.width = "0";
+          }
+        } else {
+          // Not logged in: only show login button
+          usersBtn.style.visibility = "hidden";
+          usersBtn.style.position = "absolute";
+          usersBtn.style.width = "0";
 
-</body>
+          loginHistoryBtn.style.visibility = "hidden";
+          loginHistoryBtn.style.position = "absolute";
+          loginHistoryBtn.style.width = "0";
+
+          nftBtn.style.visibility = "hidden";
+          nftBtn.style.position = "absolute";
+          nftBtn.style.width = "0";
+
+          configBtn.style.visibility = "hidden";
+          configBtn.style.position = "absolute";
+          configBtn.style.width = "0";
+
+          loginBtn.style.visibility = "visible";
+          loginBtn.style.position = "static";
+          loginBtn.style.width = "auto";
+
+          logoutBtn.style.visibility = "hidden";
+          logoutBtn.style.position = "absolute";
+          logoutBtn.style.width = "0";
+        }
+      }
+
+      // Open login modal
+      function openLoginModal() {
+        const modal = document.getElementById("loginModal");
+        modal.hidden = false;
+        modal.setAttribute("aria-hidden", "false");
+        document.getElementById("username").focus();
+      }
+
+      // Close login modal
+      function closeLoginModal() {
+        const modal = document.getElementById("loginModal");
+        modal.hidden = true;
+        modal.setAttribute("aria-hidden", "true");
+        document.getElementById("loginForm").reset();
+        document.getElementById("loginErrorMessage").style.display = "none";
+      }
+
+      // Handle login
+      async function handleLogin(event) {
+        event.preventDefault();
+
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+        const errorDiv = document.getElementById("loginErrorMessage");
+        const submitBtn = document.getElementById("loginSubmitBtn");
+
+        // Clear previous errors
+        errorDiv.style.display = "none";
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Logging in...";
+
+        try {
+          const response = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ username, password }),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.message || "Login failed");
+          }
+          // Optional: on successful login, close modal and update navigation
+          // closeLoginModal();
+          // updateNavigation(true);
+
+          // Redirect to home page or other page
+          window.location.href = "/ocusers.html";
+        } catch (error) {
+          errorDiv.textContent = error.message;
+          errorDiv.style.display = "block";
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Login";
+        }
+      }
+
+      // Handle logout
+      async function handleLogout() {
+        if (!confirm("Are you sure you want to logout?")) return;
+
+        try {
+          const response = await fetch("/api/auth/logout", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include", // ensures request carries cookie
+          });
+
+          if (response.ok) {
+            // Clear cached user information
+            localStorage.removeItem("userInfo");
+            updateNavigation({ isLoggedIn: false });
+            window.location.href = "/";
+          } else {
+            alert("Logout failed");
+          }
+        } catch (error) {
+          alert("Logout error: " + error.message);
+        }
+      }
+
+      // Close modal when clicking outside
+      document.addEventListener("DOMContentLoaded", function () {
+        initializePage();
+
+        const modal = document.getElementById("loginModal");
+        modal.addEventListener("click", function (event) {
+          if (event.target === modal) {
+            closeLoginModal();
+          }
+        });
+
+        // Close modal on ESC key
+        document.addEventListener("keydown", function (event) {
+          if (event.key === "Escape") {
+            closeLoginModal();
+          }
+        });
+      });
+    </script>
+
+    {{ block "script" . }}{{ end }}
+  </body>
 </html>
 {{ end }}

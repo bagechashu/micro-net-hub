@@ -80,8 +80,6 @@ const (
 // 删除和维护操作相关 SQL
 const (
 	sqlDeleteOldViolations = `DELETE FROM violations WHERE timestamp < ?`
-
-	sqlVacuumDB = `VACUUM`
 )
 
 // ============================================================================
@@ -317,7 +315,11 @@ func GetViolationStats(query ViolationQuery) (map[string]interface{}, error) {
 		if err != nil {
 			return fmt.Errorf("[violation] failed to get action stats: %w", err)
 		}
-		defer rows.Close()
+		defer func() {
+			if cerr := rows.Close(); cerr != nil {
+				log.Printf("[violation] close rows error: %v", cerr)
+			}
+		}()
 
 		for rows.Next() {
 			var action string
@@ -357,7 +359,8 @@ func GetViolationStats(query ViolationQuery) (map[string]interface{}, error) {
 	return stats, nil
 }
 
-// Optimized to use a single query with window functions instead of nested queries
+// GetViolationUsers retrieves user violation stats, optimized to use a single query
+// with window functions instead of nested queries.
 func GetViolationUsers(timeBack time.Duration) (map[string]interface{}, error) {
 	var stats map[string]interface{}
 
@@ -382,7 +385,11 @@ func GetViolationUsers(timeBack time.Duration) (map[string]interface{}, error) {
 		if err != nil {
 			return fmt.Errorf("[violation] failed to get user stats: %w", err)
 		}
-		defer rows.Close()
+		defer func() {
+			if cerr := rows.Close(); cerr != nil {
+				log.Printf("[violation] close rows error: %v", cerr)
+			}
+		}()
 
 		for rows.Next() {
 			var username string

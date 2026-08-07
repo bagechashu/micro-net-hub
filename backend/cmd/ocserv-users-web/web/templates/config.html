@@ -1,37 +1,58 @@
-{{ define "title" }}Config Management{{ end }}
-
-{{ define "content" }}
+{{ define "title" }}Config Management{{ end }} {{ define "content" }}
 <section data-controller="config">
   <h3>Config Management</h3>
 
-  <div style="margin: 1em 0;">
+  <div style="margin: 1em 0">
     <a href="/config-editor.html" class="pure-button pure-button-primary">
       📝 Edit Config
     </a>
-    <button class="pure-button pure-button-secondary" id="btn-backups" style="margin-left: 0.5em;">
+    <button
+      class="pure-button pure-button-secondary"
+      id="btn-backups"
+      style="margin-left: 0.5em"
+    >
       💾 Backup & Restore
     </button>
-    <a href="/api/config/export" class="pure-button pure-button-secondary" style="margin-left: 0.5em;">
+    <a
+      href="/api/config/export"
+      class="pure-button pure-button-secondary"
+      style="margin-left: 0.5em"
+    >
       📤 Export Config
     </a>
   </div>
 
   <!-- Loading indicator -->
-  <div data-config-target="loading" style="text-align: center; color: #999; display: none; padding: 2em;">
+  <div
+    data-config-target="loading"
+    style="text-align: center; color: #999; display: none; padding: 2em"
+  >
     Loading...
   </div>
 
   <!-- Error message -->
-  <div data-config-target="error" style="color: #d32f2f; padding: 1em; display: none; background: #ffebee; border-radius: 4px; margin-bottom: 1em;"></div>
+  <div
+    data-config-target="error"
+    style="
+      color: #d32f2f;
+      padding: 1em;
+      display: none;
+      background: #ffebee;
+      border-radius: 4px;
+      margin-bottom: 1em;
+    "
+  ></div>
 
   <!-- Config data container -->
   <div data-config-target="container">
-
     <!-- Rule Groups Table -->
-    <div class="table-section" style="margin-bottom: 2em;">
+    <div class="table-section" style="margin-bottom: 2em">
       <h4>Rule Groups</h4>
       <div class="table-wrapper">
-        <table class="pure-table pure-table-bordered pure-table-striped" width="100%">
+        <table
+          class="pure-table pure-table-bordered pure-table-striped"
+          width="100%"
+        >
           <thead>
             <tr>
               <th>Rule Group Name</th>
@@ -40,7 +61,9 @@
           </thead>
           <tbody data-config-target="ruleGroups">
             <tr>
-              <td colspan="2" style="text-align: center; color: #999;">Loading...</td>
+              <td colspan="2" style="text-align: center; color: #999">
+                Loading...
+              </td>
             </tr>
           </tbody>
         </table>
@@ -48,10 +71,13 @@
     </div>
 
     <!-- Rule Mappings Table -->
-    <div class="table-section" style="margin-bottom: 2em;">
+    <div class="table-section" style="margin-bottom: 2em">
       <h4>Rule Mappings</h4>
       <div class="table-wrapper">
-        <table class="pure-table pure-table-bordered pure-table-striped" width="100%">
+        <table
+          class="pure-table pure-table-bordered pure-table-striped"
+          width="100%"
+        >
           <thead>
             <tr>
               <th>Mapping Name</th>
@@ -62,7 +88,9 @@
           </thead>
           <tbody data-config-target="ruleMappings">
             <tr>
-              <td colspan="4" style="text-align: center; color: #999;">Loading...</td>
+              <td colspan="4" style="text-align: center; color: #999">
+                Loading...
+              </td>
             </tr>
           </tbody>
         </table>
@@ -73,7 +101,10 @@
     <div class="table-section">
       <h4>VPN Access Rules</h4>
       <div class="table-wrapper">
-        <table class="pure-table pure-table-bordered pure-table-striped" width="100%">
+        <table
+          class="pure-table pure-table-bordered pure-table-striped"
+          width="100%"
+        >
           <thead>
             <tr>
               <th>User</th>
@@ -84,151 +115,197 @@
           </thead>
           <tbody data-config-target="vpnAccess">
             <tr>
-              <td colspan="4" style="text-align: center; color: #999;">Loading...</td>
+              <td colspan="4" style="text-align: center; color: #999">
+                Loading...
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
-
   </div>
 </section>
 
 <!-- Rule Detail Modal -->
-<div data-controller="modal" data-modal-target="container" class="modal" hidden aria-hidden="true">
+<div
+  data-controller="modal"
+  data-modal-target="container"
+  class="modal"
+  hidden
+  aria-hidden="true"
+>
   <div class="modal__container">
     <div data-modal-target="title" class="modal__title"></div>
-    <div data-modal-target="body" class="modal__body" style="max-height: 400px; overflow-y: auto;"></div>
-    <div style="margin-top: 1rem;">
-      <button class="pure-button pure-button-secondary" data-action="click->modal#close">Close</button>
+    <div
+      data-modal-target="body"
+      class="modal__body"
+      style="max-height: 400px; overflow-y: auto"
+    ></div>
+    <div style="margin-top: 1rem">
+      <button
+        class="pure-button pure-button-secondary"
+        data-action="click->modal#close"
+      >
+        Close
+      </button>
     </div>
   </div>
 </div>
 
-{{ end }}
-
-{{ define "script" }}
+{{ end }} {{ define "script" }}
 <script>
-(() => {
-  // Config Controller - manage config data loading and table rendering
-  window.App.register("config", class extends Stimulus.Controller {
-    static targets = ["loading", "error", "container", "ruleGroups", "ruleMappings", "vpnAccess"]
+  (() => {
+    // Config Controller - manage config data loading and table rendering
+    window.App.register(
+      "config",
+      class extends Stimulus.Controller {
+        static targets = [
+          "loading",
+          "error",
+          "container",
+          "ruleGroups",
+          "ruleMappings",
+          "vpnAccess",
+        ];
 
-    connect() {
-      this.configData = null;
-      this.loadConfig();
-    }
-
-    async loadConfig() {
-      try {
-        this.showLoading();
-        const response = await fetch('/api/config/view');
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
+        connect() {
+          this.configData = null;
+          this.loadConfig();
         }
 
-        const result = await response.json();
-        if (result.code !== 0) {
-          throw new Error(result.message);
+        async loadConfig() {
+          try {
+            this.showLoading();
+            const response = await fetch("/api/config/view");
+
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}`);
+            }
+
+            const result = await response.json();
+            if (result.code !== 0) {
+              throw new Error(result.message);
+            }
+
+            this.configData = result.data;
+            this.renderRuleGroups(this.configData.rule_groups);
+            this.renderRuleMappings(this.configData.rule_mappings);
+            this.renderVpnAccess(this.configData.vpn_access_rules);
+
+            this.hideLoading();
+          } catch (err) {
+            console.error("Failed to load config:", err);
+            this.showError(`Loading failed: ${err.message}`);
+          }
         }
 
-        this.configData = result.data;
-        this.renderRuleGroups(this.configData.rule_groups);
-        this.renderRuleMappings(this.configData.rule_mappings);
-        this.renderVpnAccess(this.configData.vpn_access_rules);
-        
-        this.hideLoading();
-      } catch (err) {
-        console.error('Failed to load config:', err);
-        this.showError(`Loading failed: ${err.message}`);
-      }
-    }
+        renderRuleGroups(ruleGroups) {
+          if (!ruleGroups || ruleGroups.length === 0) {
+            this.ruleGroupsTarget.innerHTML =
+              '<tr><td colspan="2" style="text-align: center; color: #999;">No rule groups</td></tr>';
+            return;
+          }
 
-    renderRuleGroups(ruleGroups) {
-      if (!ruleGroups || ruleGroups.length === 0) {
-        this.ruleGroupsTarget.innerHTML = '<tr><td colspan="2" style="text-align: center; color: #999;">No rule groups</td></tr>';
-        return;
-      }
+          const rows = ruleGroups.map((item) => {
+            const { name, rules } = item;
+            const ruleSummary = rules
+              ? rules
+                  .slice(0, 3)
+                  .map((r) => {
+                    const base = `${r.dest_ip}${r.dest_port ? ":" + r.dest_port : ""}/${r.protocol || "tcp"}/${r.action || "accept"}`;
+                    return r.comment ? `${base} (${r.comment})` : base;
+                  })
+                  .join("; ") +
+                (rules.length > 3 ? `... (total ${rules.length} rules)` : "")
+              : "-";
 
-      const rows = ruleGroups.map(item => {
-        const { name, rules } = item;
-        const ruleSummary = rules ? rules
-          .slice(0, 3)
-          .map((r) => {
-            const base = `${r.dest_ip}${r.dest_port ? ':'+r.dest_port : ''}/${r.protocol || 'tcp'}/${r.action || 'accept'}`;
-            return r.comment ? `${base} (${r.comment})` : base;
-          })
-          .join('; ') + (rules.length > 3 ? `... (total ${rules.length} rules)` : '') : '-';
-
-        return `
+            return `
           <tr>
             <td><strong>${this.escapeHtml(name)}</strong></td>
             <td>
               <span style="color: #666;">${this.escapeHtml(ruleSummary)}</span>
-              ${rules.length > 0 ? `<br><small><a href="#" data-action="click->config#showRuleDetail" data-config-group-name-param="${this.escapeHtml(name)}">View All</a></small>` : ''}
+              ${rules.length > 0 ? `<br><small><a href="#" data-action="click->config#showRuleDetail" data-config-group-name-param="${this.escapeHtml(name)}">View All</a></small>` : ""}
             </td>
           </tr>
         `;
-      });
+          });
 
-      this.ruleGroupsTarget.innerHTML = rows.join('');
-    }
-
-    renderRuleMappings(ruleMappings) {
-      if (!ruleMappings || ruleMappings.length === 0) {
-        this.ruleMappingsTarget.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #999;">No rule mappings</td></tr>';
-        return;
-      }
-
-      const rows = ruleMappings.map(item => {
-        const { name, mapping_type, rule_group_ref, users, src_ips, src_ip_set } = item;
-        let target = '-';
-        switch (mapping_type) {
-          case 'users':
-            target = users ? users.join(', ') : '-';
-            break;
-          case 'public':
-            target = 'all users';
-            break;
-          case 'input_chain':
-            target = src_ips ? src_ips.join(', ') : '-';
-            break;
-          case 'input_chain_ip_set':
-            target = src_ip_set ? `${src_ip_set.name} [${src_ip_set.ips.join(', ')}]` : '-';
-            break;
-          default:
-            target = '-';
+          this.ruleGroupsTarget.innerHTML = rows.join("");
         }
 
-        return `
+        renderRuleMappings(ruleMappings) {
+          if (!ruleMappings || ruleMappings.length === 0) {
+            this.ruleMappingsTarget.innerHTML =
+              '<tr><td colspan="4" style="text-align: center; color: #999;">No rule mappings</td></tr>';
+            return;
+          }
+
+          const rows = ruleMappings.map((item) => {
+            const {
+              name,
+              mapping_type,
+              rule_group_ref,
+              users,
+              src_ips,
+              src_ip_set,
+            } = item;
+            let target = "-";
+            switch (mapping_type) {
+              case "users":
+                target = users ? users.join(", ") : "-";
+                break;
+              case "public":
+                target = "all users";
+                break;
+              case "input_chain":
+                target = src_ips ? src_ips.join(", ") : "-";
+                break;
+              case "input_chain_ip_set":
+                target = src_ip_set
+                  ? `${src_ip_set.name} [${src_ip_set.ips.join(", ")}]`
+                  : "-";
+                break;
+              default:
+                target = "-";
+            }
+
+            return `
           <tr>
-            <td><strong>${this.escapeHtml(name || '-')}</strong></td>
+            <td><strong>${this.escapeHtml(name || "-")}</strong></td>
             <td>${this.escapeHtml(mapping_type)}</td>
             <td><a href="#" data-action="click->config#showRuleDetail" data-config-group-name-param="${this.escapeHtml(rule_group_ref)}">${this.escapeHtml(rule_group_ref)}</a></td>
             <td>${this.escapeHtml(target)}</td>
           </tr>
         `;
-      });
+          });
 
-      this.ruleMappingsTarget.innerHTML = rows.join('');
-    }
+          this.ruleMappingsTarget.innerHTML = rows.join("");
+        }
 
-    renderVpnAccess(vpnRules) {
-      if (!vpnRules || vpnRules.length === 0) {
-        this.vpnAccessTarget.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #999;">No VPN access rules</td></tr>';
-        return;
-      }
+        renderVpnAccess(vpnRules) {
+          if (!vpnRules || vpnRules.length === 0) {
+            this.vpnAccessTarget.innerHTML =
+              '<tr><td colspan="4" style="text-align: center; color: #999;">No VPN access rules</td></tr>';
+            return;
+          }
 
-      const rows = vpnRules.map((rule) => {
-        const users = rule.users ? rule.users.join(', ') : '-';
-        const remote_ips = rule.remote_ips ? rule.remote_ips.join(', ') : '-';
-        const timeRange = rule.time_range && rule.time_range.start && rule.time_range.end
-          ? `${rule.time_range.start} - ${rule.time_range.end}`
-          : 'All day';
-        const action_on_violation = rule.action_on_violation === 'block' ? 'Block' : (rule.action_on_violation === 'logonly' ? 'Log only' : '-');
+          const rows = vpnRules.map((rule) => {
+            const users = rule.users ? rule.users.join(", ") : "-";
+            const remote_ips = rule.remote_ips
+              ? rule.remote_ips.join(", ")
+              : "-";
+            const timeRange =
+              rule.time_range && rule.time_range.start && rule.time_range.end
+                ? `${rule.time_range.start} - ${rule.time_range.end}`
+                : "All day";
+            const action_on_violation =
+              rule.action_on_violation === "block"
+                ? "Block"
+                : rule.action_on_violation === "logonly"
+                  ? "Log only"
+                  : "-";
 
-        return `
+            return `
           <tr>
             <td>${this.escapeHtml(users)}</td>
             <td>${this.escapeHtml(remote_ips)}</td>
@@ -236,64 +313,73 @@
             <td>${this.escapeHtml(action_on_violation)}</td>
           </tr>
         `;
-      });
+          });
 
-      this.vpnAccessTarget.innerHTML = rows.join('');
-    }
+          this.vpnAccessTarget.innerHTML = rows.join("");
+        }
 
-    showRuleDetail(event) {
-      event.preventDefault();
-      const groupName = event.params.groupName;
-      
-      if (!this.configData || !this.configData.rule_groups) {
-        console.error('Config data not loaded');
-        return;
-      }
+        showRuleDetail(event) {
+          event.preventDefault();
+          const groupName = event.params.groupName;
 
-      const ruleGroup = this.configData.rule_groups.find(g => g.name === groupName);
-      if (!ruleGroup || !ruleGroup.rules) {
-        console.error('Rule group not found:', groupName);
-        return;
-      }
+          if (!this.configData || !this.configData.rule_groups) {
+            console.error("Config data not loaded");
+            return;
+          }
 
-      const modal = document.querySelector('[data-controller="modal"]');
-      const modalController = this.application.getControllerForElementAndIdentifier(modal, 'modal');
-      
-      if (modalController) {
-        modalController.show(groupName, ruleGroup.rules);
-      }
-    }
+          const ruleGroup = this.configData.rule_groups.find(
+            (g) => g.name === groupName,
+          );
+          if (!ruleGroup || !ruleGroup.rules) {
+            console.error("Rule group not found:", groupName);
+            return;
+          }
 
-    showLoading() {
-      this.loadingTarget.style.display = 'block';
-      this.errorTarget.style.display = 'none';
-    }
+          const modal = document.querySelector('[data-controller="modal"]');
+          const modalController =
+            this.application.getControllerForElementAndIdentifier(
+              modal,
+              "modal",
+            );
 
-    hideLoading() {
-      this.loadingTarget.style.display = 'none';
-    }
+          if (modalController) {
+            modalController.show(groupName, ruleGroup.rules);
+          }
+        }
 
-    showError(message) {
-      this.errorTarget.textContent = message;
-      this.errorTarget.style.display = 'block';
-      this.loadingTarget.style.display = 'none';
-    }
+        showLoading() {
+          this.loadingTarget.style.display = "block";
+          this.errorTarget.style.display = "none";
+        }
 
-    escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    }
-  });
+        hideLoading() {
+          this.loadingTarget.style.display = "none";
+        }
 
-  // Modal Controller - manage modal display
-  window.App.register("modal", class extends Stimulus.Controller {
-    static targets = ["container", "title", "body"]
+        showError(message) {
+          this.errorTarget.textContent = message;
+          this.errorTarget.style.display = "block";
+          this.loadingTarget.style.display = "none";
+        }
 
-    show(title, rules) {
-      this.titleTarget.textContent = `Rule Details: ${title}`;
+        escapeHtml(text) {
+          const div = document.createElement("div");
+          div.textContent = text;
+          return div.innerHTML;
+        }
+      },
+    );
 
-      const html = `
+    // Modal Controller - manage modal display
+    window.App.register(
+      "modal",
+      class extends Stimulus.Controller {
+        static targets = ["container", "title", "body"];
+
+        show(title, rules) {
+          this.titleTarget.textContent = `Rule Details: ${title}`;
+
+          const html = `
         <table class="pure-table pure-table-bordered pure-table-striped" width="100%">
           <thead>
             <tr>
@@ -306,36 +392,41 @@
             </tr>
           </thead>
           <tbody>
-            ${rules.map((r, i) => `
+            ${rules
+              .map(
+                (r, i) => `
               <tr>
                 <td>${i + 1}</td>
                 <td>${this.escapeHtml(r.dest_ip)}</td>
-                <td>${this.escapeHtml(r.protocol || 'tcp')}</td>
-                <td>${r.dest_port ? r.dest_port : '-'}</td>
-                <td>${this.escapeHtml(r.action || 'accept')}</td>
-                <td>${r.comment ? this.escapeHtml(r.comment) : ''}</td>
+                <td>${this.escapeHtml(r.protocol || "tcp")}</td>
+                <td>${r.dest_port ? r.dest_port : "-"}</td>
+                <td>${this.escapeHtml(r.action || "accept")}</td>
+                <td>${r.comment ? this.escapeHtml(r.comment) : ""}</td>
               </tr>
-            `).join('')}
+            `,
+              )
+              .join("")}
           </tbody>
         </table>
       `;
 
-      this.bodyTarget.innerHTML = html;
-      this.containerTarget.removeAttribute('hidden');
-      this.containerTarget.setAttribute('aria-hidden', 'false');
-    }
+          this.bodyTarget.innerHTML = html;
+          this.containerTarget.removeAttribute("hidden");
+          this.containerTarget.setAttribute("aria-hidden", "false");
+        }
 
-    close() {
-      this.containerTarget.setAttribute('hidden', '');
-      this.containerTarget.setAttribute('aria-hidden', 'true');
-    }
+        close() {
+          this.containerTarget.setAttribute("hidden", "");
+          this.containerTarget.setAttribute("aria-hidden", "true");
+        }
 
-    escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    }
-  });
-})();
+        escapeHtml(text) {
+          const div = document.createElement("div");
+          div.textContent = text;
+          return div.innerHTML;
+        }
+      },
+    );
+  })();
 </script>
 {{ end }}

@@ -25,7 +25,7 @@ func getChain(ip string, tolocal bool) (chain string) {
 // -------------------- Nftables Manager --------------------
 
 // InitNftables 初始化nftables规则
-func InitNftables(publicRules, inputChainRules, inputChainIpSetRules map[string][]Rule, srcIpSets []SrcIpSet) error {
+func InitNftables(publicRules, inputChainRules, inputChainIPSetRules map[string][]Rule, srcIPSets []SrcIPSet) error {
 	if err := addNatTableAndChain(); err != nil {
 		return fmt.Errorf("确保NAT表和链失败: %v", err)
 	}
@@ -40,32 +40,44 @@ func InitNftables(publicRules, inputChainRules, inputChainIpSetRules map[string]
 	// 添加 公共Public 规则
 	for name, rules := range publicRules {
 		for i, r := range rules {
-			chain := getChain(r.DestIp, r.ToLocal)
-			addNftRule(filterTableName, chain, "0.0.0.0/0", r.DestIp, r.Protocol, r.DestPort, r.Action, fmt.Sprintf("%s:%d", name, i))
+			chain := getChain(r.DestIP, r.ToLocal)
+			addNftRule(filterTableName, chain, "0.0.0.0/0", r.DestIP, r.Protocol, r.DestPort, r.Action, fmt.Sprintf("%s:%d", name, i))
 		}
 	}
 
 	// 添加 InputChain 规则
 	for name, rules := range inputChainRules {
 		for i, r := range rules {
-			addNftRule(filterTableName, filterInputChainName, r.SrcIp, r.DestIp, r.Protocol, r.DestPort, r.Action, fmt.Sprintf("%s:%d", name, i))
+			addNftRule(filterTableName, filterInputChainName, r.SrcIP, r.DestIP, r.Protocol, r.DestPort, r.Action, fmt.Sprintf("%s:%d", name, i))
 		}
 	}
 
 	// 创建 IP Set
-	for _, srcIpSet := range srcIpSets {
-		addIpSet(filterTableName, srcIpSet.Name, srcIpSet.Ips)
+	for _, srcIPSet := range srcIPSets {
+		addIPSet(filterTableName, srcIPSet.Name, srcIPSet.Ips)
 	}
 
-	// 添加 InputChainIpSet 规则
-	for name, rules := range inputChainIpSetRules {
+	// 添加 InputChainIPSet 规则
+	for name, rules := range inputChainIPSetRules {
 		for i, r := range rules {
-			addNftRulesIpSet(filterTableName, filterInputChainName, r.SrcIpSetName, r.DestIp, r.Protocol, r.DestPort, r.Action, fmt.Sprintf("%s:%d", name, i))
+			addNftRulesIPSet(filterTableName, filterInputChainName, r.SrcIPSetName, r.DestIP, r.Protocol, r.DestPort, r.Action, fmt.Sprintf("%s:%d", name, i))
 		}
 	}
 
 	// 重启后30分钟内允许SSH访问（由函数内部处理协程）
-	addSshAccept30MinRuleAfterRestart(filterTableName, filterInputChainName)
+	addSSHAccept30MinRuleAfterRestart(filterTableName, filterInputChainName)
+	return nil
+}
+
+// InitUsersNftablesRules 支持多设备，tag = username:ip:ruleIndex
+func InitUsersNftablesRules(usersDestRules map[string][]Rule) error {
+	offlineAllSessions()
+	// 更新在线用户状态和 nftables 规则
+	addedSessions, _, err := checkOcSessions()
+	if err != nil {
+		return err
+	}
+	updateUsersNftRules(addedSessions, nil, usersDestRules)
 	return nil
 }
 
@@ -77,18 +89,6 @@ func UpdateUsersNftablesRules(usersDestRules map[string][]Rule) error {
 		return err
 	}
 	updateUsersNftRules(addedSessions, removedSessions, usersDestRules)
-	return nil
-}
-
-// UpdateUsersNftablesRules 支持多设备，tag = username:ip:ruleIndex
-func InitUsersNftablesRules(usersDestRules map[string][]Rule) error {
-	offlineAllSessions()
-	// 更新在线用户状态和 nftables 规则
-	addedSessions, _, err := checkOcSessions()
-	if err != nil {
-		return err
-	}
-	updateUsersNftRules(addedSessions, nil, usersDestRules)
 	return nil
 }
 
@@ -128,8 +128,8 @@ func handleAddedIPs(username string, added []string, usersDestRules map[string][
 	for _, ip := range added {
 		for j, r := range usersDestRules[username] {
 			tag := fmt.Sprintf("user:%s:%s:%d", username, ip, j)
-			chain := getChain(r.DestIp, r.ToLocal)
-			addNftRule(filterTableName, chain, ip, r.DestIp, r.Protocol, r.DestPort, r.Action, tag)
+			chain := getChain(r.DestIP, r.ToLocal)
+			addNftRule(filterTableName, chain, ip, r.DestIP, r.Protocol, r.DestPort, r.Action, tag)
 		}
 		clearConntrack(ip)
 	}

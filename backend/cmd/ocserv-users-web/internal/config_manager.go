@@ -22,7 +22,7 @@ type Config struct {
 	RuleMappings    []RuleMapping         `json:"rule_mappings,omitempty" yaml:"rule_mappings,omitempty"`
 }
 
-// -------------------- Config Manager --------------------
+// LoadConfig loads and parses a configuration file from the given path.
 func LoadConfig(path string) (*Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -65,7 +65,7 @@ func LoadConfig(path string) (*Config, error) {
 	return &cfg, nil
 }
 
-// Check: check the Config according to the following rules:
+// Check validates the Config according to the following rules:
 // 1) RuleGroups must have unique Name (case-insensitive)
 // 2) SrcIpSet names (from mappings) must be unique (case-insensitive)
 // 3) RuleMappings Names must be unique within the same MappingType (case-insensitive)
@@ -91,7 +91,7 @@ func (cfg Config) Check() error {
 		}
 	}
 
-	seenSrcIpSets := make(map[string]bool)
+	seenSrcIPSets := make(map[string]bool)
 	seenMappingByType := make(map[MappingType]map[string]bool)
 
 	for _, mapping := range cfg.RuleMappings {
@@ -99,13 +99,13 @@ func (cfg Config) Check() error {
 			return fmt.Errorf("invalid mapping type: %s [users | public | input_chain | input_chain_ip_set]", mapping.Type)
 		}
 
-		// check SrcIpSet name uniqueness when present
-		if mapping.SrcIpSet != nil && mapping.SrcIpSet.Name != "" {
-			sk := strings.ToLower(mapping.SrcIpSet.Name)
-			if seenSrcIpSets[sk] {
-				return fmt.Errorf("duplicate SrcIpSet name %q", mapping.SrcIpSet.Name)
+		// check SrcIPSet name uniqueness when present
+		if mapping.SrcIPSet != nil && mapping.SrcIPSet.Name != "" {
+			sk := strings.ToLower(mapping.SrcIPSet.Name)
+			if seenSrcIPSets[sk] {
+				return fmt.Errorf("duplicate SrcIPSet name %q", mapping.SrcIPSet.Name)
 			}
-			seenSrcIpSets[sk] = true
+			seenSrcIPSets[sk] = true
 		}
 
 		if mapping.Name == "" {
@@ -138,7 +138,7 @@ func (cfg *Config) setRuleDefaults() {
 			r := &cfg.RuleGroups[gi].Rules[ri]
 			// default protocol to tcp and normalize to lower-case
 			if r.Protocol == "" {
-				r.Protocol = ProtocolTcp
+				r.Protocol = ProtocolTCP
 			} else {
 				r.Protocol = ProtocolType(strings.ToLower(string(r.Protocol)))
 			}
@@ -162,7 +162,7 @@ func (cfg *Config) setRuleDefaults() {
 	}
 }
 
-// Global config manager (will be initialized in main.go)
+// GlobalConfigManager is the global config manager (will be initialized in main.go).
 var GlobalConfigManager *ConfigManager
 
 // ConfigManager handles configuration file operations with backup support
@@ -200,9 +200,14 @@ func (cm *ConfigManager) GetConfig() *Config {
 		return &Config{}
 	}
 	// Return a deep copy to prevent external modifications
-	data, _ := json.Marshal(cm.config)
+	data, err := json.Marshal(cm.config)
+	if err != nil {
+		return &Config{}
+	}
 	var cfg Config
-	json.Unmarshal(data, &cfg)
+	if err := json.Unmarshal(data, &cfg); err != nil {
+		return &Config{}
+	}
 	return &cfg
 }
 
@@ -284,6 +289,9 @@ func (cm *ConfigManager) saveConfigWithBackup(config *Config, createBackup bool)
 	case ".json":
 		// Marshal to JSON, then unmarshal and re-marshal to remove null values
 		data, err = json.MarshalIndent(config, "", "  ")
+		if err != nil {
+			return fmt.Errorf("failed to marshal config to JSON: %w", err)
+		}
 	default:
 		// Default to YAML
 		var buf bytes.Buffer

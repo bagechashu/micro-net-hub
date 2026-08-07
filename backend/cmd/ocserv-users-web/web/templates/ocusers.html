@@ -1,15 +1,29 @@
-{{ define "title" }}User Management{{ end }}
-
-{{ define "content" }}
+{{ define "title" }}User Management{{ end }} {{ define "content" }}
 <section>
-  <div style="display: flex; justify-content: space-between; align-items: center; gap: 1em;">
-    <h3 style="flex-shrink: 0;">User Management</h3>
-    <div id="page-message"
-        style="display:none; flex: 1; text-align: center; max-width: 500px; font-size:0.8rem; padding: 1em; border-radius:1px;">
-    </div>
+  <div
+    style="
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1em;
+    "
+  >
+    <h3 style="flex-shrink: 0">User Management</h3>
+    <div
+      id="page-message"
+      style="
+        display: none;
+        flex: 1;
+        text-align: center;
+        max-width: 500px;
+        font-size: 0.8rem;
+        padding: 1em;
+        border-radius: 1px;
+      "
+    ></div>
   </div>
 
-  <div class="table-section" style="margin-bottom: 2em;">
+  <div class="table-section" style="margin-bottom: 2em">
     <h4>Online Users</h4>
     {{ template "ocusers-table" . }}
   </div>
@@ -17,15 +31,22 @@
 
 <section data-controller="user-stats">
   <!-- User stats table -->
-  <div class="table-section" style="margin-bottom: 2em;">
+  <div class="table-section" style="margin-bottom: 2em">
     <h4>Violation Login Statistics</h4>
     <div class="table-wrapper">
       <!-- User statistics filter -->
-      <div class="filter-section" style="padding-bottom: 1em;">
-        <form data-action="submit->user-stats#applyFilters" style="display: flex; gap: 1em; flex-wrap: wrap; align-items: center;">
+      <div class="filter-section" style="padding-bottom: 1em">
+        <form
+          data-action="submit->user-stats#applyFilters"
+          style="display: flex; gap: 1em; flex-wrap: wrap; align-items: center"
+        >
           <div>
             <label for="userStatsDays">Time Range (Days):</label>
-            <select id="userStatsDays" data-user-stats-target="daysSelect" style="margin-left: 0.5em;">
+            <select
+              id="userStatsDays"
+              data-user-stats-target="daysSelect"
+              style="margin-left: 0.5em"
+            >
               <option value="1">1 Day</option>
               <option value="7" selected>1 Week</option>
               <option value="30">1 Month</option>
@@ -33,11 +54,16 @@
               <option value="365">1 Year</option>
             </select>
           </div>
-          <button type="submit" class="pure-button pure-button-primary">Search</button>
+          <button type="submit" class="pure-button pure-button-primary">
+            Search
+          </button>
         </form>
       </div>
 
-      <table class="pure-table pure-table-bordered pure-table-striped" width="100%">
+      <table
+        class="pure-table pure-table-bordered pure-table-striped"
+        width="100%"
+      >
         <thead>
           <tr>
             <th>Rank</th>
@@ -49,7 +75,9 @@
         </thead>
         <tbody data-user-stats-target="tableBody">
           <tr>
-            <td colspan="5" style="text-align:center;color:#999">Loading...</td>
+            <td colspan="5" style="text-align: center; color: #999">
+              Loading...
+            </td>
           </tr>
         </tbody>
       </table>
@@ -58,15 +86,27 @@
 </section>
 
 <section data-controller="violations">
-  <div class="table-section" data-violations-target="tableContainer" style="margin-bottom: 2em;">
+  <div
+    class="table-section"
+    data-violations-target="tableContainer"
+    style="margin-bottom: 2em"
+  >
     <h4>Violation Login Events</h4>
     <div class="table-wrapper">
       <!-- Query filter -->
-      <div class="filter-section" style="padding-bottom: 1em;">
-        <form data-action="submit->violations#applyFilters" style="display: flex; gap: 1em; flex-wrap: wrap; align-items: center;">
+      <div class="filter-section" style="padding-bottom: 1em">
+        <form
+          data-action="submit->violations#applyFilters"
+          style="display: flex; gap: 1em; flex-wrap: wrap; align-items: center"
+        >
           <div>
             <label for="filterDays">Time Range (Days):</label>
-            <select id="filterDays" data-violations-target="daysSelect" style="margin-left: 0.5em;" data-action="change->violations#onDaysChange">
+            <select
+              id="filterDays"
+              data-violations-target="daysSelect"
+              style="margin-left: 0.5em"
+              data-action="change->violations#onDaysChange"
+            >
               <option value="1">1 Day</option>
               <option value="7" selected>1 Week</option>
               <option value="30">1 Month</option>
@@ -75,15 +115,32 @@
               <option value="custom">Custom Range</option>
             </select>
           </div>
-          <div id="customDateRange" style="display: none; gap: 0.5em; align-items: center;">
+          <div
+            id="customDateRange"
+            style="display: none; gap: 0.5em; align-items: center"
+          >
             <label for="filterStartDate">Start Date:</label>
-            <input type="date" id="filterStartDate" data-violations-target="startDate" style="margin-left: 0.5em; padding: 0.3em;">
+            <input
+              type="date"
+              id="filterStartDate"
+              data-violations-target="startDate"
+              style="margin-left: 0.5em; padding: 0.3em"
+            />
             <label for="filterEndDate">End Date:</label>
-            <input type="date" id="filterEndDate" data-violations-target="endDate" style="margin-left: 0.5em; padding: 0.3em;">
+            <input
+              type="date"
+              id="filterEndDate"
+              data-violations-target="endDate"
+              style="margin-left: 0.5em; padding: 0.3em"
+            />
           </div>
           <div>
             <label for="filterAction">Action:</label>
-            <select id="filterAction" data-violations-target="actionSelect" style="margin-left: 0.5em;">
+            <select
+              id="filterAction"
+              data-violations-target="actionSelect"
+              style="margin-left: 0.5em"
+            >
               <option value="">All</option>
               <option value="block">Block</option>
               <option value="logonly">Log Only</option>
@@ -91,20 +148,39 @@
           </div>
           <div>
             <label for="filterUsername">Username:</label>
-            <input type="text" id="filterUsername" data-violations-target="usernameInput" placeholder="Enter username to search" style="margin-left: 0.5em; padding: 0.3em;">
+            <input
+              type="text"
+              id="filterUsername"
+              data-violations-target="usernameInput"
+              placeholder="Enter username to search"
+              style="margin-left: 0.5em; padding: 0.3em"
+            />
           </div>
-          <button type="submit" class="pure-button pure-button-primary">Search</button>
-          <button type="button" data-action="click->violations#clearFilters" class="pure-button">Clear</button>
+          <button type="submit" class="pure-button pure-button-primary">
+            Search
+          </button>
+          <button
+            type="button"
+            data-action="click->violations#clearFilters"
+            class="pure-button"
+          >
+            Clear
+          </button>
           <!-- Loading indicator -->
           <!-- <div id="loadingIndicator" style="display: none; text-align: center; padding: 1em; color: #666;"> -->
-          <div id="loadingIndicator" style="display: none; color: #666;">
+          <div id="loadingIndicator" style="display: none; color: #666">
             <span>⏳ Loading...</span>
           </div>
         </form>
       </div>
 
       <!-- Statistics table -->
-      <table class="pure-table pure-table-bordered pure-table-striped" width="100%" id="statsContainer" style="margin-bottom: 1em;">
+      <table
+        class="pure-table pure-table-bordered pure-table-striped"
+        width="100%"
+        id="statsContainer"
+        style="margin-bottom: 1em"
+      >
         <thead>
           <tr>
             <th>Total Violations</th>
@@ -115,16 +191,71 @@
         </thead>
         <tbody>
           <tr>
-            <td><strong><span style="background-color: #ffe284; padding: 0.2em 0.5em; border-radius: 3px; color: #664d00;" data-violations-target="totalViolations">0</span></strong></td>
-            <td><strong><span style="background-color: #f8d7da; padding: 0.2em 0.5em; border-radius: 3px; color: #721c24;" data-violations-target="blockCount">0</span></strong></td>
-            <td><strong><span style="background-color: #d1ecf1; padding: 0.2em 0.5em; border-radius: 3px; color: #0c5460;" data-violations-target="logonlyCount">0</span></strong></td>
-            <td><strong><span style="background-color: #7db8f2; padding: 0.2em 0.5em; border-radius: 3px; color: #003d7a;" data-violations-target="violations24h">0</span></strong></td>
+            <td>
+              <strong
+                ><span
+                  style="
+                    background-color: #ffe284;
+                    padding: 0.2em 0.5em;
+                    border-radius: 3px;
+                    color: #664d00;
+                  "
+                  data-violations-target="totalViolations"
+                  >0</span
+                ></strong
+              >
+            </td>
+            <td>
+              <strong
+                ><span
+                  style="
+                    background-color: #f8d7da;
+                    padding: 0.2em 0.5em;
+                    border-radius: 3px;
+                    color: #721c24;
+                  "
+                  data-violations-target="blockCount"
+                  >0</span
+                ></strong
+              >
+            </td>
+            <td>
+              <strong
+                ><span
+                  style="
+                    background-color: #d1ecf1;
+                    padding: 0.2em 0.5em;
+                    border-radius: 3px;
+                    color: #0c5460;
+                  "
+                  data-violations-target="logonlyCount"
+                  >0</span
+                ></strong
+              >
+            </td>
+            <td>
+              <strong
+                ><span
+                  style="
+                    background-color: #7db8f2;
+                    padding: 0.2em 0.5em;
+                    border-radius: 3px;
+                    color: #003d7a;
+                  "
+                  data-violations-target="violations24h"
+                  >0</span
+                ></strong
+              >
+            </td>
           </tr>
         </tbody>
       </table>
 
       <!-- Violation list -->
-      <table class="pure-table pure-table-bordered pure-table-striped" width="100%">
+      <table
+        class="pure-table pure-table-bordered pure-table-striped"
+        width="100%"
+      >
         <thead>
           <tr>
             <th>Username</th>
@@ -136,402 +267,434 @@
         </thead>
         <tbody data-violations-target="tableBody">
           <tr>
-            <td colspan="5" style="text-align:center;color:#999">Loading...</td>
+            <td colspan="5" style="text-align: center; color: #999">
+              Loading...
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
-  <!-- Pagination -->
-  <div data-violations-target="pagination" style="margin-top: 1em; text-align: center;">
+    <!-- Pagination -->
+    <div
+      data-violations-target="pagination"
+      style="margin-top: 1em; text-align: center"
+    ></div>
     <!-- Pagination will be generated dynamically -->
   </div>
 </section>
 
-{{ end }}
-
-{{ define "script" }}
+{{ end }} {{ define "script" }}
 <script>
-(() => {
-  // UTC time formatting
-  window.App.register("utc", class extends Stimulus.Controller {
-    static values = {
-      connectAt: String
-    }
-    connect() {
-      const raw = this.connectAtValue;
-      if (!raw) return;
-      const d = new Date(raw.replace(" ", "T") + "Z");
-      if (!isNaN(d)) this.element.textContent = d.toLocaleString();
-    }
-  });
+  (() => {
+    // UTC time formatting
+    window.App.register(
+      "utc",
+      class extends Stimulus.Controller {
+        static values = {
+          connectAt: String,
+        };
+        connect() {
+          const raw = this.connectAtValue;
+          if (!raw) return;
+          const d = new Date(raw.replace(" ", "T") + "Z");
+          if (!isNaN(d)) this.element.textContent = d.toLocaleString();
+        }
+      },
+    );
 
-  // User statistics controller
-  window.App.register("user-stats", class extends Stimulus.Controller {
-    static targets = ["daysSelect", "tableBody"];
+    // User statistics controller
+    window.App.register(
+      "user-stats",
+      class extends Stimulus.Controller {
+        static targets = ["daysSelect", "tableBody"];
 
-    static values = {
-      days: { type: Number, default: 7 }
-    }
+        static values = {
+          days: { type: Number, default: 7 },
+        };
 
-    connect() {
-      this.loadUserStats();
-    }
+        connect() {
+          this.loadUserStats();
+        }
 
-    applyFilters(event) {
-      event.preventDefault();
-      this.daysValue = parseInt(this.daysSelectTarget.value) || 7;
-      this.loadUserStats();
-    }
+        applyFilters(event) {
+          event.preventDefault();
+          this.daysValue = parseInt(this.daysSelectTarget.value) || 7;
+          this.loadUserStats();
+        }
 
-    async loadUserStats() {
-      try {
-        const params = new URLSearchParams();
-        if (this.daysValue > 0) params.append("days", this.daysValue);
+        async loadUserStats() {
+          try {
+            const params = new URLSearchParams();
+            if (this.daysValue > 0) params.append("days", this.daysValue);
 
-        const response = await fetch(`/api/violations/users?${params}`);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        
-        const { data } = await response.json();
-        this.renderUserStats(data);
-      } catch (err) {
-        console.error("Failed to load user stats:", err);
-        this.tableBodyTarget.innerHTML = `<tr><td colspan="5" style="text-align:center;color:red;">Loading failed: ${err.message}</td></tr>`;
-      }
-    }
+            const response = await fetch(`/api/violations/users?${params}`);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-    renderUserStats(data) {
-      const users = data.users || [];
-      
-      if (!users || users.length === 0) {
-        this.tableBodyTarget.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#999;">No data</td></tr>`;
-        return;
-      }
+            const { data } = await response.json();
+            this.renderUserStats(data);
+          } catch (err) {
+            console.error("Failed to load user stats:", err);
+            this.tableBodyTarget.innerHTML = `<tr><td colspan="5" style="text-align:center;color:red;">Loading failed: ${err.message}</td></tr>`;
+          }
+        }
 
-      let html = "";
-      users.forEach((user, index) => {
-        const blockCount = user.by_action?.block || 0;
-        const logonlyCount = user.by_action?.logonly || 0;
-        
-        html += `<tr>
+        renderUserStats(data) {
+          const users = data.users || [];
+
+          if (!users || users.length === 0) {
+            this.tableBodyTarget.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#999;">No data</td></tr>`;
+            return;
+          }
+
+          let html = "";
+          users.forEach((user, index) => {
+            const blockCount = user.by_action?.block || 0;
+            const logonlyCount = user.by_action?.logonly || 0;
+
+            html += `<tr>
           <td>${index + 1}</td>
           <td>${this.escapeHtml(user.username)}</td>
           <td><strong>${user.total}</strong></td>
           <td><span style="background-color: #f8d7da; padding: 0.2em 0.5em; border-radius: 3px; color: #721c24; font-weight: bold;">${blockCount}</span></td>
           <td><span style="background-color: #d1ecf1; padding: 0.2em 0.5em; border-radius: 3px; color: #0c5460; font-weight: bold;">${logonlyCount}</span></td>
         </tr>`;
-      });
+          });
 
-      this.tableBodyTarget.innerHTML = html;
-    }
-
-    escapeHtml(text) {
-      const div = document.createElement("div");
-      div.textContent = text;
-      return div.innerHTML;
-    }
-  });
-
-  // Violations management controller
-  window.App.register("violations", class extends Stimulus.Controller {
-    static targets = ["daysSelect", "usernameInput", "actionSelect", "tableBody", "pagination", "totalViolations", "blockCount", "logonlyCount", "violations24h", "tableContainer", "startDate", "endDate"];
-
-    static values = {
-      limit: { type: Number, default: 20 },
-      offset: { type: Number, default: 0 },
-      days: { type: Number, default: 7 },
-      username: { type: String, default: "" },
-      action: { type: String, default: "" },
-      startDate: { type: String, default: "" },
-      endDate: { type: String, default: "" },
-      useCustomRange: { type: Boolean, default: false }
-    }
-
-    connect() {
-      this.loadData();
-    }
-
-    onDaysChange(event) {
-      const customRangeDiv = document.getElementById("customDateRange");
-      if (event.target.value === "custom") {
-        customRangeDiv.style.display = "flex";
-        // Set default to today and 7 days ago
-        const endDate = new Date();
-        const startDate = new Date(endDate);
-        startDate.setDate(startDate.getDate() - 7);
-        
-        this.endDateTarget.value = endDate.toISOString().split('T')[0];
-        this.startDateTarget.value = startDate.toISOString().split('T')[0];
-      } else {
-        customRangeDiv.style.display = "none";
-      }
-    }
-
-    applyFilters(event) {
-      event.preventDefault();
-      this.offsetValue = 0;
-      this.usernameValue = this.usernameInputTarget.value.trim();
-      this.actionValue = this.actionSelectTarget.value;
-      
-      const selectedDays = this.daysSelectTarget.value;
-      if (selectedDays === "custom") {
-        this.useCustomRangeValue = true;
-        this.startDateValue = this.startDateTarget.value;
-        this.endDateValue = this.endDateTarget.value;
-        if (!this.startDateValue || !this.endDateValue) {
-          alert("Please select both start and end dates");
-          return;
+          this.tableBodyTarget.innerHTML = html;
         }
-      } else {
-        this.useCustomRangeValue = false;
-        this.daysValue = parseInt(selectedDays) || 7;
-      }
-      
-      this.loadData();
-    }
 
-    clearFilters(event) {
-      event.preventDefault();
-      this.daysSelectTarget.value = "7";
-      this.usernameInputTarget.value = "";
-      this.actionSelectTarget.value = "";
-      this.offsetValue = 0;
-      this.daysValue = 7;
-      this.usernameValue = "";
-      this.actionValue = "";
-      this.useCustomRangeValue = false;
-      this.startDateValue = "";
-      this.endDateValue = "";
-      document.getElementById("customDateRange").style.display = "none";
-      this.loadData();
-    }
+        escapeHtml(text) {
+          const div = document.createElement("div");
+          div.textContent = text;
+          return div.innerHTML;
+        }
+      },
+    );
 
-    async loadData() {
-      this.showLoading(true);
-      try {
-        await Promise.all([
-          this.loadViolations(),
-          this.loadStats()
-        ]);
-      } catch (err) {
-        console.error("Failed to load data:", err);
-        this.showError("Failed to load data: " + err.message);
-      } finally {
-        this.showLoading(false);
-      }
-    }
+    // Violations management controller
+    window.App.register(
+      "violations",
+      class extends Stimulus.Controller {
+        static targets = [
+          "daysSelect",
+          "usernameInput",
+          "actionSelect",
+          "tableBody",
+          "pagination",
+          "totalViolations",
+          "blockCount",
+          "logonlyCount",
+          "violations24h",
+          "tableContainer",
+          "startDate",
+          "endDate",
+        ];
 
-    async loadViolations() {
-      const params = new URLSearchParams();
-      if (this.useCustomRangeValue) {
-        params.append("startDate", this.startDateValue);
-        params.append("endDate", this.endDateValue);
-      } else if (this.daysValue > 0) {
-        params.append("days", this.daysValue);
-      }
-      if (this.usernameValue) params.append("username", this.usernameValue);
-      if (this.actionValue) params.append("action", this.actionValue);
-      params.append("limit", this.limitValue);
-      params.append("offset", this.offsetValue);
+        static values = {
+          limit: { type: Number, default: 20 },
+          offset: { type: Number, default: 0 },
+          days: { type: Number, default: 7 },
+          username: { type: String, default: "" },
+          action: { type: String, default: "" },
+          startDate: { type: String, default: "" },
+          endDate: { type: String, default: "" },
+          useCustomRange: { type: Boolean, default: false },
+        };
 
-      const response = await fetch(`/api/violations?${params}`);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      
-      const { data } = await response.json();
-      this.renderViolations(data);
-    }
+        connect() {
+          this.loadData();
+        }
 
-    async loadStats() {
-      const params = new URLSearchParams();
-      if (this.useCustomRangeValue) {
-        params.append("startDate", this.startDateValue);
-        params.append("endDate", this.endDateValue);
-      } else if (this.daysValue > 0) {
-        params.append("days", this.daysValue);
-      }
-      if (this.usernameValue) params.append("username", this.usernameValue);
+        onDaysChange(event) {
+          const customRangeDiv = document.getElementById("customDateRange");
+          if (event.target.value === "custom") {
+            customRangeDiv.style.display = "flex";
+            // Set default to today and 7 days ago
+            const endDate = new Date();
+            const startDate = new Date(endDate);
+            startDate.setDate(startDate.getDate() - 7);
 
-      const response = await fetch(`/api/violations/stats?${params}`);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const { data }= await response.json();
-      this.renderStats(data);
-    }
+            this.endDateTarget.value = endDate.toISOString().split("T")[0];
+            this.startDateTarget.value = startDate.toISOString().split("T")[0];
+          } else {
+            customRangeDiv.style.display = "none";
+          }
+        }
 
-    renderViolations(data) {
-      if (!data.violations || data.violations.length === 0) {
-        this.tableBodyTarget.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#999;">No data</td></tr>`;
-        this.paginationTarget.innerHTML = "";
-        return;
-      }
+        applyFilters(event) {
+          event.preventDefault();
+          this.offsetValue = 0;
+          this.usernameValue = this.usernameInputTarget.value.trim();
+          this.actionValue = this.actionSelectTarget.value;
 
-      let html = "";
-      data.violations.forEach(v => {
-        const actionBadge = v.action === "block" 
-          ? '<span style="background-color: #f8d7da; padding: 0.2em 0.5em; border-radius: 3px; color: #721c24; font-weight: bold;">Block</span>'
-          : '<span style="background-color: #d1ecf1; padding: 0.2em 0.5em; border-radius: 3px; color: #0c5460; font-weight: bold;">Log Only</span>';
-        
-        html += `<tr>
+          const selectedDays = this.daysSelectTarget.value;
+          if (selectedDays === "custom") {
+            this.useCustomRangeValue = true;
+            this.startDateValue = this.startDateTarget.value;
+            this.endDateValue = this.endDateTarget.value;
+            if (!this.startDateValue || !this.endDateValue) {
+              alert("Please select both start and end dates");
+              return;
+            }
+          } else {
+            this.useCustomRangeValue = false;
+            this.daysValue = parseInt(selectedDays) || 7;
+          }
+
+          this.loadData();
+        }
+
+        clearFilters(event) {
+          event.preventDefault();
+          this.daysSelectTarget.value = "7";
+          this.usernameInputTarget.value = "";
+          this.actionSelectTarget.value = "";
+          this.offsetValue = 0;
+          this.daysValue = 7;
+          this.usernameValue = "";
+          this.actionValue = "";
+          this.useCustomRangeValue = false;
+          this.startDateValue = "";
+          this.endDateValue = "";
+          document.getElementById("customDateRange").style.display = "none";
+          this.loadData();
+        }
+
+        async loadData() {
+          this.showLoading(true);
+          try {
+            await Promise.all([this.loadViolations(), this.loadStats()]);
+          } catch (err) {
+            console.error("Failed to load data:", err);
+            this.showError("Failed to load data: " + err.message);
+          } finally {
+            this.showLoading(false);
+          }
+        }
+
+        async loadViolations() {
+          const params = new URLSearchParams();
+          if (this.useCustomRangeValue) {
+            params.append("startDate", this.startDateValue);
+            params.append("endDate", this.endDateValue);
+          } else if (this.daysValue > 0) {
+            params.append("days", this.daysValue);
+          }
+          if (this.usernameValue) params.append("username", this.usernameValue);
+          if (this.actionValue) params.append("action", this.actionValue);
+          params.append("limit", this.limitValue);
+          params.append("offset", this.offsetValue);
+
+          const response = await fetch(`/api/violations?${params}`);
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+          const { data } = await response.json();
+          this.renderViolations(data);
+        }
+
+        async loadStats() {
+          const params = new URLSearchParams();
+          if (this.useCustomRangeValue) {
+            params.append("startDate", this.startDateValue);
+            params.append("endDate", this.endDateValue);
+          } else if (this.daysValue > 0) {
+            params.append("days", this.daysValue);
+          }
+          if (this.usernameValue) params.append("username", this.usernameValue);
+
+          const response = await fetch(`/api/violations/stats?${params}`);
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const { data } = await response.json();
+          this.renderStats(data);
+        }
+
+        renderViolations(data) {
+          if (!data.violations || data.violations.length === 0) {
+            this.tableBodyTarget.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#999;">No data</td></tr>`;
+            this.paginationTarget.innerHTML = "";
+            return;
+          }
+
+          let html = "";
+          data.violations.forEach((v) => {
+            const actionBadge =
+              v.action === "block"
+                ? '<span style="background-color: #f8d7da; padding: 0.2em 0.5em; border-radius: 3px; color: #721c24; font-weight: bold;">Block</span>'
+                : '<span style="background-color: #d1ecf1; padding: 0.2em 0.5em; border-radius: 3px; color: #0c5460; font-weight: bold;">Log Only</span>';
+
+            html += `<tr>
           <td>${this.escapeHtml(v.username)}</td>
           <td>${this.escapeHtml(v.remote_ip)}</td>
           <td>${actionBadge}</td>
           <td>${this.escapeHtml(v.reason)}</td>
           <td>${this.escapeHtml(v.timestamp)}</td>
         </tr>`;
-      });
+          });
 
-      this.tableBodyTarget.innerHTML = html;
-      this.renderPagination(data);
-    }
-
-    renderPagination(data) {
-      const { total, limit, offset, page_count } = data;
-      
-      if (page_count <= 1) {
-        this.paginationTarget.innerHTML = "";
-        return;
-      }
-
-      const currentPage = Math.floor(offset / limit) + 1;
-      let html = `<div style="padding: 1em;">`;
-      
-      if (currentPage > 1) {
-        html += `<button class="pure-button" data-action="click->violations#previousPage">← Previous</button> `;
-      }
-
-      const startPage = Math.max(1, currentPage - 2);
-      const endPage = Math.min(page_count, currentPage + 2);
-
-      if (startPage > 1) {
-        html += `<button class="pure-button" data-action="click->violations#goToPage" data-page="1">1</button> `;
-        if (startPage > 2) html += `<span style="padding: 0 0.5em;">...</span>`;
-      }
-
-      for (let i = startPage; i <= endPage; i++) {
-        if (i === currentPage) {
-          html += `<strong style="padding: 0.3em 0.5em;">${i}</strong> `;
-        } else {
-          html += `<button class="pure-button" data-action="click->violations#goToPage" data-page="${i}">${i}</button> `;
+          this.tableBodyTarget.innerHTML = html;
+          this.renderPagination(data);
         }
-      }
 
-      if (endPage < page_count) {
-        if (endPage < page_count - 1) html += `<span style="padding: 0 0.5em;">...</span>`;
-        html += `<button class="pure-button" data-action="click->violations#goToPage" data-page="${page_count}">${page_count}</button> `;
-      }
+        renderPagination(data) {
+          const { total, limit, offset, page_count } = data;
 
-      if (currentPage < page_count) {
-        html += `<button class="pure-button" data-action="click->violations#nextPage">Next →</button>`;
-      }
+          if (page_count <= 1) {
+            this.paginationTarget.innerHTML = "";
+            return;
+          }
 
-      html += `<span style="margin-left: 1em; color: #666;">Page ${currentPage}/${page_count}</span>`;
-      html += `</div>`;
-      
-      this.paginationTarget.innerHTML = html;
-    }
+          const currentPage = Math.floor(offset / limit) + 1;
+          let html = `<div style="padding: 1em;">`;
 
-    renderStats(stats) {
-      this.totalViolationsTarget.textContent = stats.total_violations || 0;
-      this.blockCountTarget.textContent = stats.by_action?.block || 0;
-      this.logonlyCountTarget.textContent = stats.by_action?.logonly || 0;
-      this.violations24hTarget.textContent = stats.violations_24h || 0;
-    }
+          if (currentPage > 1) {
+            html += `<button class="pure-button" data-action="click->violations#previousPage">← Previous</button> `;
+          }
 
-    previousPage() {
-      this.offsetValue = Math.max(0, this.offsetValue - this.limitValue);
-      this.loadViolations();
-    }
+          const startPage = Math.max(1, currentPage - 2);
+          const endPage = Math.min(page_count, currentPage + 2);
 
-    nextPage() {
-      this.offsetValue += this.limitValue;
-      this.loadViolations();
-    }
+          if (startPage > 1) {
+            html += `<button class="pure-button" data-action="click->violations#goToPage" data-page="1">1</button> `;
+            if (startPage > 2)
+              html += `<span style="padding: 0 0.5em;">...</span>`;
+          }
 
-    goToPage(event) {
-      const page = parseInt(event.currentTarget.dataset.page);
-      this.offsetValue = (page - 1) * this.limitValue;
-      this.loadViolations();
-    }
+          for (let i = startPage; i <= endPage; i++) {
+            if (i === currentPage) {
+              html += `<strong style="padding: 0.3em 0.5em;">${i}</strong> `;
+            } else {
+              html += `<button class="pure-button" data-action="click->violations#goToPage" data-page="${i}">${i}</button> `;
+            }
+          }
 
-    showLoading(show) {
-      const indicator = document.getElementById("loadingIndicator");
-      if (indicator) indicator.style.display = show ? "block" : "none";
-    }
+          if (endPage < page_count) {
+            if (endPage < page_count - 1)
+              html += `<span style="padding: 0 0.5em;">...</span>`;
+            html += `<button class="pure-button" data-action="click->violations#goToPage" data-page="${page_count}">${page_count}</button> `;
+          }
 
-    showError(message) {
-      this.tableBodyTarget.innerHTML = `<tr><td colspan="5" style="text-align:center;color:red;">${this.escapeHtml(message)}</td></tr>`;
-    }
+          if (currentPage < page_count) {
+            html += `<button class="pure-button" data-action="click->violations#nextPage">Next →</button>`;
+          }
 
-    escapeHtml(text) {
-      const div = document.createElement("div");
-      div.textContent = text;
-      return div.innerHTML;
-    }
-  });
+          html += `<span style="margin-left: 1em; color: #666;">Page ${currentPage}/${page_count}</span>`;
+          html += `</div>`;
 
-  // Disconnect controller - handles individual buttons
-  window.App.register("disconnect", class extends Stimulus.Controller {
-    static MESSAGE_CONFIG = {
-      TIMEOUT: 3000,
-      STYLES: {
-        success: {
-          background: "#e6fffa",
-          border: "1px solid #81e6d9",
-          color: "#065f46"
-        },
-        error: {
-          background: "#fff5f5",
-          border: "1px solid #feb2b2",
-          color: "#7f1d1d"
+          this.paginationTarget.innerHTML = html;
         }
-      }
-    };
 
-    connect() {
-      // Listen to HTMX events on button (event delegation)
-      this.element.addEventListener("htmx:afterRequest", (e) => this.onAfterRequest(e));
-      this.element.addEventListener("htmx:responseError", (e) => this.onResponseError(e));
-    }
+        renderStats(stats) {
+          this.totalViolationsTarget.textContent = stats.total_violations || 0;
+          this.blockCountTarget.textContent = stats.by_action?.block || 0;
+          this.logonlyCountTarget.textContent = stats.by_action?.logonly || 0;
+          this.violations24hTarget.textContent = stats.violations_24h || 0;
+        }
 
-    handleClick(event) {
-      if (!confirm("Are you sure to disconnect this user?")) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-    }
+        previousPage() {
+          this.offsetValue = Math.max(0, this.offsetValue - this.limitValue);
+          this.loadViolations();
+        }
 
-    onAfterRequest(event) {
-      const status = event.detail?.xhr?.status;
-      if (status >= 200 && status < 300) {
-        this.showMessage("User disconnected successfully", true);
-      }
-    }
+        nextPage() {
+          this.offsetValue += this.limitValue;
+          this.loadViolations();
+        }
 
-    onResponseError(event) {
-      const status = event.detail?.xhr?.status;
-      this.showMessage(`Failed to disconnect (HTTP ${status})`, false);
-    }
+        goToPage(event) {
+          const page = parseInt(event.currentTarget.dataset.page);
+          this.offsetValue = (page - 1) * this.limitValue;
+          this.loadViolations();
+        }
 
-    showMessage(text, isSuccess) {
-      const msgBox = document.getElementById("page-message");
-      if (!msgBox) return;
+        showLoading(show) {
+          const indicator = document.getElementById("loadingIndicator");
+          if (indicator) indicator.style.display = show ? "block" : "none";
+        }
 
-      const styles = isSuccess
-        ? this.constructor.MESSAGE_CONFIG.STYLES.success
-        : this.constructor.MESSAGE_CONFIG.STYLES.error;
+        showError(message) {
+          this.tableBodyTarget.innerHTML = `<tr><td colspan="5" style="text-align:center;color:red;">${this.escapeHtml(message)}</td></tr>`;
+        }
 
-      msgBox.textContent = text;
-      msgBox.style.cssText = `
+        escapeHtml(text) {
+          const div = document.createElement("div");
+          div.textContent = text;
+          return div.innerHTML;
+        }
+      },
+    );
+
+    // Disconnect controller - handles individual buttons
+    window.App.register(
+      "disconnect",
+      class extends Stimulus.Controller {
+        static MESSAGE_CONFIG = {
+          TIMEOUT: 3000,
+          STYLES: {
+            success: {
+              background: "#e6fffa",
+              border: "1px solid #81e6d9",
+              color: "#065f46",
+            },
+            error: {
+              background: "#fff5f5",
+              border: "1px solid #feb2b2",
+              color: "#7f1d1d",
+            },
+          },
+        };
+
+        connect() {
+          // Listen to HTMX events on button (event delegation)
+          this.element.addEventListener("htmx:afterRequest", (e) =>
+            this.onAfterRequest(e),
+          );
+          this.element.addEventListener("htmx:responseError", (e) =>
+            this.onResponseError(e),
+          );
+        }
+
+        handleClick(event) {
+          if (!confirm("Are you sure to disconnect this user?")) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+        }
+
+        onAfterRequest(event) {
+          const status = event.detail?.xhr?.status;
+          if (status >= 200 && status < 300) {
+            this.showMessage("User disconnected successfully", true);
+          }
+        }
+
+        onResponseError(event) {
+          const status = event.detail?.xhr?.status;
+          this.showMessage(`Failed to disconnect (HTTP ${status})`, false);
+        }
+
+        showMessage(text, isSuccess) {
+          const msgBox = document.getElementById("page-message");
+          if (!msgBox) return;
+
+          const styles = isSuccess
+            ? this.constructor.MESSAGE_CONFIG.STYLES.success
+            : this.constructor.MESSAGE_CONFIG.STYLES.error;
+
+          msgBox.textContent = text;
+          msgBox.style.cssText = `
         display: block;
         background: ${styles.background};
         border: ${styles.border};
         color: ${styles.color};
       `;
 
-      clearTimeout(msgBox._timer);
-      msgBox._timer = setTimeout(() => {
-        msgBox.style.display = "none";
-      }, this.constructor.MESSAGE_CONFIG.TIMEOUT);
-    }
-  });
-})();
+          clearTimeout(msgBox._timer);
+          msgBox._timer = setTimeout(() => {
+            msgBox.style.display = "none";
+          }, this.constructor.MESSAGE_CONFIG.TIMEOUT);
+        }
+      },
+    );
+  })();
 </script>
 {{ end }}

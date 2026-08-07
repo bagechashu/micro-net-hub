@@ -111,7 +111,7 @@ func diffIPs(oldIPs, newIPs []string) (added, removed []string) {
 	return
 }
 
-// -------------------- Session Manager --------------------
+// Session represents an ocserv user session.
 type Session struct {
 	ID        int    `json:"ID"`
 	Username  string `json:"Username"`
@@ -161,7 +161,7 @@ func OcctlDisconnectUserByID(id string) error {
 	return nil
 }
 
-// GetSessions 使用 occtl 获取当前会话列表
+// OcctlGetSessions 使用 occtl 获取当前会话列表
 func OcctlGetSessions() ([]Session, error) {
 	time.Sleep(500 * time.Millisecond) // 等待 ocserv 稳定
 	cmd := exec.Command("occtl", "-j", "show", "users")

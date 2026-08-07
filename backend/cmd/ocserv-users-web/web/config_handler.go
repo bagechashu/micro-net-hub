@@ -99,7 +99,9 @@ func ConfigSaveStatusHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(status)
+	if err := json.NewEncoder(w).Encode(status); err != nil {
+		log.Printf("[web] JSON encode error: %v", err)
+	}
 }
 
 // Response represents a JSON API response
@@ -138,8 +140,7 @@ type ConfigDiff struct {
 	Diff    string `json:"diff"`
 }
 
-// ==================== Config Export/Import APIs ====================
-// ExportConfigHandler exports the entire config as JSON
+// ExportConfigHandler exports the entire config as JSON.
 func ExportConfigHandler(w http.ResponseWriter, r *http.Request) {
 	// Load config from cache
 	config := internal.GlobalConfigManager.GetConfig()
@@ -163,7 +164,9 @@ func ExportConfigHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Content-Disposition", "attachment; filename=config.json")
-	json.NewEncoder(w).Encode(exportData)
+	if err := json.NewEncoder(w).Encode(exportData); err != nil {
+		log.Printf("[web] JSON encode error: %v", err)
+	}
 }
 
 // ConfigViewHandler returns complete config with relationships
@@ -243,7 +246,6 @@ func ConfigPreviewHandler(w http.ResponseWriter, r *http.Request) {
 
 // ConfigSaveHandler saves a new configuration asynchronously
 func ConfigSaveHandler(w http.ResponseWriter, r *http.Request) {
-
 	// Limit request body size to 10MB to prevent DoS attacks
 	r.Body = http.MaxBytesReader(w, r.Body, 10*1024*1024)
 
@@ -284,13 +286,13 @@ func ConfigSaveHandler(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				return fmt.Errorf("failed to get input chain rules: %w", err)
 			}
-			srcIpSets, inputChainIpSetRules, err := internal.GetInputChainIpSetRules(applyCfg)
+			srcIPSets, inputChainIPSetRules, err := internal.GetInputChainIPSetRules(applyCfg)
 			if err != nil {
 				return fmt.Errorf("failed to get input chain ip set rules: %w", err)
 			}
 
 			// Reinitialize nftables
-			if err := internal.InitNftables(publicRules, inputChainRules, inputChainIpSetRules, srcIpSets); err != nil {
+			if err := internal.InitNftables(publicRules, inputChainRules, inputChainIPSetRules, srcIPSets); err != nil {
 				return fmt.Errorf("nftables init failed: %w", err)
 			}
 
@@ -333,13 +335,13 @@ func ConfigSaveHandler(w http.ResponseWriter, r *http.Request) {
 
 // ruleEqual compares two Rule objects for equality
 func ruleEqual(a, b internal.Rule) bool {
-	return a.DestIp == b.DestIp &&
+	return a.DestIP == b.DestIP &&
 		a.DestPort == b.DestPort &&
 		a.Protocol == b.Protocol &&
 		a.ToLocal == b.ToLocal &&
 		a.Action == b.Action &&
-		a.SrcIp == b.SrcIp &&
-		a.SrcIpSetName == b.SrcIpSetName
+		a.SrcIP == b.SrcIP &&
+		a.SrcIPSetName == b.SrcIPSetName
 }
 
 // ruleGroupEqual compares two RuleGroup objects for equality
@@ -364,16 +366,16 @@ func ruleMappingEqual(a, b internal.RuleMapping) bool {
 		return false
 	}
 
-	// Compare SrcIps slices
-	if len(a.SrcIps) != len(b.SrcIps) {
+	// Compare SrcIPs slices
+	if len(a.SrcIPs) != len(b.SrcIPs) {
 		return false
 	}
-	srcIpsMap := make(map[string]bool)
-	for _, ip := range a.SrcIps {
-		srcIpsMap[ip] = true
+	srcIPsMap := make(map[string]bool)
+	for _, ip := range a.SrcIPs {
+		srcIPsMap[ip] = true
 	}
-	for _, ip := range b.SrcIps {
-		if !srcIpsMap[ip] {
+	for _, ip := range b.SrcIPs {
+		if !srcIPsMap[ip] {
 			return false
 		}
 	}
@@ -392,19 +394,19 @@ func ruleMappingEqual(a, b internal.RuleMapping) bool {
 		}
 	}
 
-	// Compare SrcIpSet
-	if (a.SrcIpSet == nil) != (b.SrcIpSet == nil) {
+	// Compare SrcIPSet
+	if (a.SrcIPSet == nil) != (b.SrcIPSet == nil) {
 		return false
 	}
-	if a.SrcIpSet != nil && b.SrcIpSet != nil {
-		if a.SrcIpSet.Name != b.SrcIpSet.Name || len(a.SrcIpSet.Ips) != len(b.SrcIpSet.Ips) {
+	if a.SrcIPSet != nil && b.SrcIPSet != nil {
+		if a.SrcIPSet.Name != b.SrcIPSet.Name || len(a.SrcIPSet.Ips) != len(b.SrcIPSet.Ips) {
 			return false
 		}
 		ipsMap := make(map[string]bool)
-		for _, ip := range a.SrcIpSet.Ips {
+		for _, ip := range a.SrcIPSet.Ips {
 			ipsMap[ip] = true
 		}
-		for _, ip := range b.SrcIpSet.Ips {
+		for _, ip := range b.SrcIPSet.Ips {
 			if !ipsMap[ip] {
 				return false
 			}

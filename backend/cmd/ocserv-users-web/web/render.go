@@ -6,6 +6,7 @@ import (
 	"html"
 	"html/template"
 	"io/fs"
+	"log"
 	"net/http"
 	"path/filepath"
 
@@ -96,7 +97,10 @@ func render(w http.ResponseWriter, name string, data any, tmplPaths ...string) {
 
 // registerStatic registers static file routes for chi
 func registerStatic(r chi.Router) {
-	fsys, _ := fs.Sub(staticFS, "static")
+	fsys, err := fs.Sub(staticFS, "static")
+	if err != nil {
+		panic("failed to create static sub-filesystem: " + err.Error())
+	}
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.FS(fsys))))
 }
 
@@ -104,7 +108,9 @@ func registerStatic(r chi.Router) {
 func sendJSON(w http.ResponseWriter, code int, resp Response) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
-	json.NewEncoder(w).Encode(resp)
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		log.Printf("[web] JSON encode error: %v", err)
+	}
 }
 
 func sendError(w http.ResponseWriter, code int, message string) {

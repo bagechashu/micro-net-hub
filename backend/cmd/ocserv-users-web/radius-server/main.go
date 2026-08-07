@@ -60,7 +60,7 @@ func main() {
 	}
 }
 
-// RADIUS 请求处理函数
+// AuthHandler handles RADIUS Access-Request packets and returns Accept/Reject.
 func AuthHandler(w radius.ResponseWriter, r *radius.Request) {
 	// r.Packet 是 *radius.Packet
 	// 使用 rfc2865 取得用户名和密码
@@ -78,5 +78,7 @@ func AuthHandler(w radius.ResponseWriter, r *radius.Request) {
 	}
 	// 写入响应
 	// r.Response(code) 会构造一个符合 RFC rfc2865 的响应
-	w.Write(r.Response(code))
+	if err := w.Write(r.Response(code)); err != nil {
+		log.Printf("RADIUS write response error: %v", err)
+	}
 }

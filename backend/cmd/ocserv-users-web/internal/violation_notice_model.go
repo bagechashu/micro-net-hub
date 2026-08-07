@@ -78,7 +78,12 @@ func SendVpnAccessNotice(username, remoteIP, reason string, action *VpnActionTyp
 	}
 
 	// 确定标题
-	title := fmt.Sprintf("[%s]登录VPN", username)
+	var title string
+	if isAllowSession {
+		title = fmt.Sprintf("[%s]登录VPN", username)
+	} else {
+		title = fmt.Sprintf("[%s]违规登录VPN, 已 %s", username, string(*action))
+	}
 	// 构建告警数据
 	payload := VpnAccessViolationPayload{
 		Title:     title,
@@ -88,9 +93,8 @@ func SendVpnAccessNotice(username, remoteIP, reason string, action *VpnActionTyp
 		Reason:    reason,
 	}
 
-	// 如果是违规会话，更新标题和 payload
+	// 如果是违规会话，设置 action
 	if !isAllowSession {
-		title = fmt.Sprintf("[%s]违规登录VPN, 已 %s", username, string(*action))
 		payload.Action = string(*action)
 	}
 
@@ -126,7 +130,11 @@ func sendVpnAccessWebhookAsync(webhookURL string, payload VpnAccessViolationPayl
 	if err != nil {
 		return fmt.Errorf("failed to send webhook request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if cerr := resp.Body.Close(); cerr != nil {
+			log.Printf("[vpn-access-notice] 关闭响应体出错: %v", cerr)
+		}
+	}()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return fmt.Errorf("webhook returned status code %d", resp.StatusCode)

@@ -6,7 +6,9 @@ import (
 	"net/http"
 )
 
-var ctxKeyIsAdmin = "isAdmin"
+type contextKey string
+
+var ctxKeyIsAdmin = contextKey("isAdmin")
 
 // AuthMiddleware checks if the user has a valid session
 // It wraps the next handler and ensures authentication is performed if enabled

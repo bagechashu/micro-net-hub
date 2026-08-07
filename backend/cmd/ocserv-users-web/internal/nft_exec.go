@@ -46,7 +46,7 @@ func validatePort(port uint16) error {
 // validateProtocol validates if a protocol is supported
 func validateProtocol(protocol ProtocolType) error {
 	switch protocol {
-	case ProtocolTcp, ProtocolUdp, ProtocolIcmp:
+	case ProtocolTCP, ProtocolUDP, ProtocolIcmp:
 		return nil
 	default:
 		return fmt.Errorf("invalid protocol: %s (must be tcp, udp, or icmp)", protocol)
@@ -185,12 +185,12 @@ func addLoopbackRule(tableName, chainName, comment string) error {
 	return nil
 }
 
-// addSshAccept30MinRuleAfterRestart 重启后30分钟内允许SSH访问（由函数内部处理协程）
-func addSshAccept30MinRuleAfterRestart(tableName, inputChainName string) {
+// addSSHAccept30MinRuleAfterRestart 重启后30分钟内允许SSH访问（由函数内部处理协程）
+func addSSHAccept30MinRuleAfterRestart(tableName, inputChainName string) {
 	go func() {
-		tmpSshAcceptComment := "tmp_allow_ssh"
+		tmpSSHAcceptComment := "tmp_allow_ssh"
 		cmd := exec.Command("nft", "add", "rule", "ip", tableName, inputChainName,
-			"tcp", "dport", "22", "accept", "comment", fmt.Sprintf("\"%s\"", tmpSshAcceptComment))
+			"tcp", "dport", "22", "accept", "comment", fmt.Sprintf("\"%s\"", tmpSSHAcceptComment))
 		if out, err := cmd.CombinedOutput(); err != nil {
 			log.Printf("[nft] 添加临时SSH放行规则失败: %v (%s)", err, out)
 			return
@@ -198,7 +198,7 @@ func addSshAccept30MinRuleAfterRestart(tableName, inputChainName string) {
 			log.Printf("[nft] 执行命令: %s", strings.Join(cmd.Args, " "))
 		}
 		time.AfterFunc(30*time.Minute, func() {
-			deleteNftRules(tableName, []string{inputChainName}, tmpSshAcceptComment)
+			deleteNftRules(tableName, []string{inputChainName}, tmpSSHAcceptComment)
 			log.Println("[nft] 已移除临时SSH放行规则")
 		})
 	}()
@@ -256,7 +256,7 @@ func addNftRule(table, chain, srcIP, dstIP string, protocol ProtocolType, dstpor
 	)
 
 	switch protocol {
-	case ProtocolTcp, ProtocolUdp:
+	case ProtocolTCP, ProtocolUDP:
 		if dstport > 0 {
 			args = append(args, string(protocol), "dport", fmt.Sprint(dstport))
 		} else {
@@ -296,10 +296,10 @@ func deleteNftRules(table string, chains []string, tag string) {
 	}
 }
 
-// AddIpSetRules 添加允许指定 IP 集合访问 ocserv 443 的规则
-func addNftRulesIpSet(table, chain, srcIpSetname, dstIP string, protocol ProtocolType, dstport uint16, action ActionType, tag string) {
+// addNftRulesIPSet 添加允许指定 IP 集合访问 ocserv 443 的规则
+func addNftRulesIPSet(table, chain, srcIPSetname, dstIP string, protocol ProtocolType, dstport uint16, action ActionType, tag string) {
 	// Validate all input parameters before executing nftables command
-	if srcIpSetname == "" {
+	if srcIPSetname == "" {
 		log.Printf("[nft] Invalid IP set name (empty) for tag %s", tag)
 		return
 	}
@@ -337,12 +337,12 @@ func addNftRulesIpSet(table, chain, srcIpSetname, dstIP string, protocol Protoco
 	}
 
 	args = append(args,
-		"ip", "saddr", fmt.Sprintf("@%s", srcIpSetname),
+		"ip", "saddr", fmt.Sprintf("@%s", srcIPSetname),
 		"ip", "daddr", dstIP,
 	)
 
 	switch protocol {
-	case ProtocolTcp, ProtocolUdp:
+	case ProtocolTCP, ProtocolUDP:
 		if dstport > 0 {
 			args = append(args, string(protocol), "dport", fmt.Sprint(dstport))
 		} else {
@@ -364,32 +364,31 @@ func addNftRulesIpSet(table, chain, srcIpSetname, dstIP string, protocol Protoco
 	} else if IsDebugMode() {
 		log.Printf("[nft] 执行命令: %s", strings.Join(cmd.Args, " "))
 	}
-
 }
 
-// DeleteIpSetRules 删除指定 set 对应的规则
-func deleteNftRulesIpSet(table string, chains []string, srcIpSets []string) {
-	// 遍历 forward/input 两个链
-	for _, chain := range chains {
-		for _, setName := range srcIpSets {
-			if hs, err := getNftRuleHandle(table, chain, fmt.Sprintf("@%s", setName)); err != nil || len(hs) != 0 {
-				for _, h := range hs {
-					delCmd := exec.Command("nft", "delete", "rule", "ip", table, chain, "handle", h)
-					if outDel, err := delCmd.CombinedOutput(); err != nil {
-						log.Printf("[nft] 删除规则失败: %v (%s)", err, outDel)
-					} else if IsDebugMode() {
-						log.Printf("[nft] 执行命令: %s", strings.Join(delCmd.Args, " "))
-					}
-				}
-			}
-		}
-	}
-}
+// deleteNftRulesIPSet 删除指定 set 对应的规则 (kept for future use)
+// func deleteNftRulesIPSet(table string, chains []string, srcIPSets []string) {
+// 	// 遍历 forward/input 两个链
+// 	for _, chain := range chains {
+// 		for _, setName := range srcIPSets {
+// 			if hs, err := getNftRuleHandle(table, chain, fmt.Sprintf("@%s", setName)); err != nil || len(hs) != 0 {
+// 				for _, h := range hs {
+// 					delCmd := exec.Command("nft", "delete", "rule", "ip", table, chain, "handle", h)
+// 					if outDel, err := delCmd.CombinedOutput(); err != nil {
+// 						log.Printf("[nft] 删除规则失败: %v (%s)", err, outDel)
+// 					} else if IsDebugMode() {
+// 						log.Printf("[nft] 执行命令: %s", strings.Join(delCmd.Args, " "))
+// 					}
+// 				}
+// 			}
+// 		}
+// 	}
+// }
 
-// addIpSet 在 nftables 中创建 IP 集合
-func addIpSet(table, setName string, ips []string) {
+// addIPSet 在 nftables 中创建 IP 集合
+func addIPSet(table, setName string, ips []string) {
 	// 判断 set 是否存在
-	deleteIpSet(table, setName)
+	deleteIPSet(table, setName)
 
 	// 创建 set
 	cmdAdd := exec.Command("nft", "add", "set", "ip", table, setName,
@@ -422,8 +421,8 @@ func addIpSet(table, setName string, ips []string) {
 	log.Printf("[nft] 创建 set %s 完成，包含 %d 个 IP", setName, ipsLen)
 }
 
-// deleteIpSet 在 nftables 中删除 IP 集合
-func deleteIpSet(table, setName string) {
+// deleteIPSet 在 nftables 中删除 IP 集合
+func deleteIPSet(table, setName string) {
 	// 判断 set 是否存在
 	check := exec.Command("nft", "list", "set", "ip", table, setName)
 	if err := check.Run(); err == nil {
