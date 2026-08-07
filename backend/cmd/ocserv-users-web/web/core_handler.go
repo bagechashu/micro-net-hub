@@ -3,13 +3,14 @@ package web
 import (
 	"fmt"
 	"net/http"
+
 	"ocserv-users/internal"
 )
 
 func nftCheckTriggerHandler(w http.ResponseWriter, r *http.Request) {
 	// Get a thread-safe copy of user rules
 	userRules := internal.GetUserRules()
-	
+
 	// 执行一次 nftables 规则更新
 	err := internal.UpdateUsersNftablesRules(userRules)
 	if err != nil {
@@ -31,7 +32,7 @@ func nftCheckTriggerHandler(w http.ResponseWriter, r *http.Request) {
 func vpnAccessCheckTriggerHandler(w http.ResponseWriter, r *http.Request) {
 	// Get a thread-safe copy of VPN access rules
 	vpnRules := internal.GetVpnAccessRules()
-	
+
 	// 执行一次 EnforceVpnAccess 规则检查
 	err := internal.EnforceVpnAccess(vpnRules)
 	if err != nil {

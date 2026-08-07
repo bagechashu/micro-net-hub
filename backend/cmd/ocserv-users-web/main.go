@@ -8,17 +8,18 @@ import (
 	"log"
 	"time"
 
-	"ocserv-users/internal"
-	"ocserv-users/web"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"ocserv-users/internal"
+	"ocserv-users/web"
 )
 
 func main() {
 	var (
 		config           = flag.String("config", "rules.yaml", "配置文件路径 (json|yaml)")
-		dbPath           = flag.String("dbpath", "data", "违规日志数据库路径")
+		dbPath           = flag.String("dbpath", "data", "数据库路径")
 		refresh          = flag.Duration("refresh", 60*time.Second, "刷新间隔")
 		webListenAddr    = flag.String("webaddr", ":8080", "Web服务监听地址")
 		timezone         = flag.String("timezone", "UTC", "时区设置用于时间检查 (如: UTC, Asia/Shanghai)")
@@ -43,11 +44,11 @@ func main() {
 		log.Fatalf("[main] 时区初始化失败: %v", err)
 	}
 
-	// 初始化违规日志数据库
-	if err := internal.InitializeViolationDB(*dbPath); err != nil {
-		log.Fatalf("[main] 违规日志数据库初始化失败: %v", err)
+	// 初始化数据库（包含违规日志和登录历史）
+	if err := internal.InitializeDB(*dbPath); err != nil {
+		log.Fatalf("[main] 统一数据库初始化失败: %v", err)
 	}
-	defer internal.CloseViolationDB()
+	defer internal.CloseDB()
 
 	// 加载配置（包含防火墙规则和 VPN 访问控制规则）
 	cfg, err := internal.LoadConfig(*config)

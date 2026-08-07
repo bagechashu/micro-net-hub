@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>{{ block "title" . }}Ocserv User Management{{ end }}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -19,7 +19,7 @@
   <link rel="stylesheet" href="/static/css/grids-responsive-min.css">
 
   <!-- App CSS -->
-  <link rel="stylesheet" href="/static/css/app.css" />
+  <link rel="stylesheet" href="/static/css/app.css">
 
   <script>
     // Initialize global Stimulus app
@@ -56,6 +56,7 @@
   <h3>Ocserv User Management</h3>
   <nav id="mainNav">
     <a href="/ocusers.html" role="button" class="pure-button" id="usersBtn" style="visibility: hidden; position: absolute; width: 0;">Users</a>
+    <a href="/login-history.html" role="button" class="pure-button" id="loginHistoryBtn" style="visibility: hidden; position: absolute; width: 0;">LoginHistory</a>
     <a href="/nft.html" role="button" class="pure-button pure-button-secondary" id="nftBtn" style="visibility: hidden; position: absolute; width: 0;">NFT</a>
     <a href="/config.html" role="button" class="pure-button pure-button-secondary" id="configBtn" style="visibility: hidden; position: absolute; width: 0;">Config</a>
     <button role="button" class="pure-button" id="loginBtn" onclick="openLoginModal()" style="visibility: visible;">Login</button>
@@ -68,10 +69,10 @@
   <div class="modal__container">
     <button class="modal__close" onclick="closeLoginModal()">&times;</button>
     <div class="modal__title">User Login</div>
-    
+
     <div class="modal__body">
       <div id="loginErrorMessage" class="error-message" style="display: none; margin-bottom: 1em;"></div>
-      
+
       <form id="loginForm" onsubmit="handleLogin(event)">
         <div class="form-group">
           <label for="username">Username</label>
@@ -85,7 +86,7 @@
             class="pure-input-1"
           >
         </div>
-        
+
         <div class="form-group">
           <label for="password">Password</label>
           <input 
@@ -100,7 +101,7 @@
         </div>
       </form>
     </div>
-    
+
     <div class="modal__footer">
       <button type="button" class="pure-button" onclick="closeLoginModal()">Cancel</button>
       <button type="submit" form="loginForm" class="pure-button pure-button-primary" id="loginSubmitBtn">Login</button>
@@ -181,6 +182,7 @@ function getCookie(name) {
 // Update navigation bar display
 function updateNavigation(userInfo) {
   const usersBtn = document.getElementById('usersBtn');
+  const loginHistoryBtn = document.getElementById('loginHistoryBtn');
   const nftBtn = document.getElementById('nftBtn');
   const configBtn = document.getElementById('configBtn');
   const loginBtn = document.getElementById('loginBtn');
@@ -203,6 +205,10 @@ function updateNavigation(userInfo) {
     
     if (userInfo.isAdmin) {
       // Admin: show all feature buttons
+      loginHistoryBtn.style.visibility = 'visible';
+      loginHistoryBtn.style.position = 'static';
+      loginHistoryBtn.style.width = 'auto';
+      
       nftBtn.style.visibility = 'visible';
       nftBtn.style.position = 'static';
       nftBtn.style.width = 'auto';
@@ -212,6 +218,10 @@ function updateNavigation(userInfo) {
       configBtn.style.width = 'auto';
     } else {
       // Regular user: hide NFT and config buttons
+      loginHistoryBtn.style.visibility = 'hidden';
+      loginHistoryBtn.style.position = 'absolute';
+      loginHistoryBtn.style.width = '0';
+
       nftBtn.style.visibility = 'hidden';
       nftBtn.style.position = 'absolute';
       nftBtn.style.width = '0';
@@ -225,6 +235,10 @@ function updateNavigation(userInfo) {
     usersBtn.style.visibility = 'hidden';
     usersBtn.style.position = 'absolute';
     usersBtn.style.width = '0';
+    
+    loginHistoryBtn.style.visibility = 'hidden';
+    loginHistoryBtn.style.position = 'absolute';
+    loginHistoryBtn.style.width = '0';
     
     nftBtn.style.visibility = 'hidden';
     nftBtn.style.position = 'absolute';

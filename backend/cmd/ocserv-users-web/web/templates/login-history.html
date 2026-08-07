@@ -1,0 +1,311 @@
+{{define "title"}}Login History{{end}}
+
+{{define "content"}}
+<section data-controller="login-history">
+  <div style="display: flex; justify-content: space-between; align-items: center; gap: 1em;">
+    <h3 style="flex-shrink: 0;">Login History</h3>
+    <div id="page-message"
+        style="display:none; flex: 1; text-align: center; max-width: 500px; font-size:0.8rem; padding: 1em; border-radius:1px;">
+    </div>
+  </div>
+
+  <div class="table-section" data-login-history-target="tableContainer" style="margin-bottom: 2em;">
+    <h4>User Login Records</h4>
+    <div class="table-wrapper">
+      <!-- Query filter -->
+      <div class="filter-section" style="padding-bottom: 1em;">
+        <form data-action="submit->login-history#applyFilters" style="display: flex; gap: 1em; flex-wrap: wrap; align-items: center;">
+          <div>
+            <label for="filterUsername">Username:</label>
+            <input type="text" id="filterUsername" data-login-history-target="usernameInput" placeholder="Enter username to search" style="margin-left: 0.5em; padding: 0.3em;">
+          </div>
+          <div>
+            <label for="filterTimeBack">Time Range:</label>
+            <select id="filterTimeBack" data-login-history-target="timeBackSelect" style="margin-left: 0.5em;">
+              <option value="7">7 Days</option>
+              <option value="30" selected>30 Days</option>
+              <option value="90">90 Days</option>
+              <option value="180">180 Days</option>
+              <option value="365">365 Days</option>
+            </select>
+          </div>
+          <div>
+            <label for="filterLimit">Per Page:</label>
+            <select id="filterLimit" data-login-history-target="limitSelect" style="margin-left: 0.5em;">
+              <option value="10">10</option>
+              <option value="20" selected>20</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </div>
+          <div>
+            <label>
+              <input type="checkbox" id="filterActiveOnly" data-login-history-target="activeOnlyCheckbox" data-action="change->login-history#applyFilters">
+              Active Only
+            </label>
+          </div>
+          <button type="submit" class="pure-button pure-button-primary">Search</button>
+          <button type="button" data-action="click->login-history#clearFilters" class="pure-button">Clear</button>
+          <div id="loginHistoryLoading" style="display: none; color: #666;">
+            <span>⏳ Loading...</span>
+          </div>
+        </form>
+      </div>
+
+      <!-- Login history table -->
+      <table class="pure-table pure-table-bordered pure-table-striped" width="100%">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Login Time</th>
+            <th>Logout Time</th>
+            <th>Duration</th>
+            <th>Public IP</th>
+            <th>Private IP</th>
+            <th>User Agent</th>
+          </tr>
+        </thead>
+        <tbody data-login-history-target="tableBody">
+          <tr>
+            <td colspan="7" style="text-align:center;color:#999">Loading...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Summary + Pagination -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1em;">
+      <span data-login-history-target="totalCount" style="color: #666;">Total: 0 records</span>
+      <div data-login-history-target="pagination" style="text-align: center;">
+        <!-- Pagination will be generated dynamically -->
+      </div>
+    </div>
+  </div>
+</section>
+{{ end }}
+
+
+{{ define "script" }}
+<script>
+(() => {
+  window.App.register("login-history", class extends Stimulus.Controller {
+    static targets = [
+      "usernameInput", "timeBackSelect", "limitSelect", "activeOnlyCheckbox",
+      "tableBody", "pagination", "totalCount", "tableContainer"
+    ];
+
+    static values = {
+      limit: { type: Number, default: 20 },
+      offset: { type: Number, default: 0 },
+      timeBack: { type: Number, default: 30 },
+      username: { type: String, default: "" },
+      activeOnly: { type: Boolean, default: false }
+    }
+
+    connect() {
+      this.loadData();
+    }
+
+    applyFilters(event) {
+      if (event) event.preventDefault();
+      this.offsetValue = 0;
+      this.usernameValue = this.usernameInputTarget.value.trim();
+      this.timeBackValue = parseInt(this.timeBackSelectTarget.value) || 30;
+      this.limitValue = parseInt(this.limitSelectTarget.value) || 20;
+      this.activeOnlyValue = this.activeOnlyCheckboxTarget.checked;
+      this.loadData();
+    }
+
+    clearFilters(event) {
+      if (event) event.preventDefault();
+      this.usernameInputTarget.value = "";
+      this.timeBackSelectTarget.value = "30";
+      this.limitSelectTarget.value = "20";
+      this.activeOnlyCheckboxTarget.checked = false;
+      this.offsetValue = 0;
+      this.usernameValue = "";
+      this.timeBackValue = 30;
+      this.limitValue = 20;
+      this.activeOnlyValue = false;
+      this.loadData();
+    }
+
+    async loadData() {
+      this.showLoading(true);
+      try {
+        const params = new URLSearchParams({
+          limit: this.limitValue.toString(),
+          offset: this.offsetValue.toString(),
+          time_back: this.timeBackValue.toString()
+        });
+
+        if (this.usernameValue) params.append("username", this.usernameValue);
+        if (this.activeOnlyValue) params.append("active_only", "true");
+
+        const response = await fetch(`/api/login-history?${params}`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const { data, code, message } = await response.json();
+        if (code !== 0) throw new Error(message || "Failed to load data");
+
+        this.renderTable(data.records || []);
+        this.renderPagination(data.total_count || 0, data.limit || this.limitValue);
+        this.totalCountTarget.textContent = `Total: ${data.total_count || 0} records`;
+      } catch (err) {
+        console.error("Failed to load login history:", err);
+        this.tableBodyTarget.innerHTML = `<tr><td colspan="7" style="text-align:center;color:red;">Loading failed: ${this.escapeHtml(err.message)}</td></tr>`;
+        this.paginationTarget.innerHTML = "";
+        this.totalCountTarget.textContent = "Total: 0 records";
+      } finally {
+        this.showLoading(false);
+      }
+    }
+
+    renderTable(records) {
+      if (!records || records.length === 0) {
+        this.tableBodyTarget.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#999;">No login history records</td></tr>`;
+        return;
+      }
+
+      let html = "";
+      records.forEach(record => {
+        html += `<tr>
+          <td>${this.escapeHtml(record.username)}</td>
+          <td>${this.formatDateTime(record.login_time)}</td>
+          <td>${this.formatDateTime(record.logout_time)}</td>
+          <td>${this.calculateDuration(record.login_time, record.logout_time)}</td>
+          <td>${this.escapeHtml(record.public_ip)}</td>
+          <td>${this.escapeHtml(record.private_ip || '—')}</td>
+          <td title="${this.escapeHtml(record.user_agent || '')}">${this.formatUserAgent(record.user_agent)}</td>
+        </tr>`;
+      });
+
+      this.tableBodyTarget.innerHTML = html;
+    }
+
+    renderPagination(totalCount, limit) {
+      const totalPages = Math.ceil(totalCount / limit);
+      if (totalPages <= 1) {
+        this.paginationTarget.innerHTML = "";
+        return;
+      }
+
+      const currentPage = Math.floor(this.offsetValue / limit) + 1;
+      let html = `<div style="padding: 0.5em;">`;
+
+      if (currentPage > 1) {
+        html += `<button class="pure-button" data-action="click->login-history#previousPage">← Previous</button> `;
+      }
+
+      const startPage = Math.max(1, currentPage - 2);
+      const endPage = Math.min(totalPages, currentPage + 2);
+
+      if (startPage > 1) {
+        html += `<button class="pure-button" data-action="click->login-history#goToPage" data-page="1">1</button> `;
+        if (startPage > 2) html += `<span style="padding: 0 0.5em;">...</span>`;
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        if (i === currentPage) {
+          html += `<strong style="padding: 0.3em 0.5em;">${i}</strong> `;
+        } else {
+          html += `<button class="pure-button" data-action="click->login-history#goToPage" data-page="${i}">${i}</button> `;
+        }
+      }
+
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) html += `<span style="padding: 0 0.5em;">...</span>`;
+        html += `<button class="pure-button" data-action="click->login-history#goToPage" data-page="${totalPages}">${totalPages}</button> `;
+      }
+
+      if (currentPage < totalPages) {
+        html += `<button class="pure-button" data-action="click->login-history#nextPage">Next →</button>`;
+      }
+
+      html += `<span style="margin-left: 1em; color: #666;">Page ${currentPage}/${totalPages}</span>`;
+      html += `</div>`;
+
+      this.paginationTarget.innerHTML = html;
+    }
+
+    previousPage() {
+      this.offsetValue = Math.max(0, this.offsetValue - this.limitValue);
+      this.loadData();
+    }
+
+    nextPage() {
+      this.offsetValue += this.limitValue;
+      this.loadData();
+    }
+
+    goToPage(event) {
+      const page = parseInt(event.currentTarget.dataset.page);
+      this.offsetValue = (page - 1) * this.limitValue;
+      this.loadData();
+    }
+
+    showLoading(show) {
+      const indicator = document.getElementById("loginHistoryLoading");
+      if (indicator) indicator.style.display = show ? "inline" : "none";
+    }
+
+    formatDateTime(dateTimeStr) {
+      if (!dateTimeStr) return '—';
+      const date = new Date(dateTimeStr);
+      if (isNaN(date.getTime())) return '—';
+      return date.toLocaleString('en-US', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+    }
+
+    // Helper function to calculate duration between login and logout times
+    calculateDuration(loginTime, logoutTime) {
+      if (!logoutTime) {
+        return "—";
+      }
+      
+      const login = new Date(loginTime);
+      const logout = new Date(logoutTime);
+      const diffMs = logout.getTime() - login.getTime();
+      
+      // Convert to human readable format
+      const seconds = Math.floor(diffMs / 1000);
+      const minutes = Math.floor(seconds / 60);
+      const hours = Math.floor(minutes / 60);
+      const days = Math.floor(hours / 24);
+      
+      if (days > 0) {
+        return `${days}d ${hours % 24}h ${minutes % 60}m`;
+      } else if (hours > 0) {
+        return `${hours}h ${minutes % 60}m ${seconds % 60}s`;
+      } else if (minutes > 0) {
+        return `${minutes}m ${seconds % 60}s`;
+      } else {
+        return `${seconds}s`;
+      }
+    }
+
+    formatUserAgent(userAgent) {
+      if (!userAgent) return 'Unknown';
+      if (userAgent.includes('Cisco AnyConnect')) return 'Cisco AnyConnect';
+      if (userAgent.includes('openconnect')) return 'OpenConnect';
+      if (userAgent.includes('Windows')) return 'Windows';
+      if (userAgent.includes('Mac OS')) return 'Mac';
+      if (userAgent.includes('Linux')) return 'Linux';
+      return userAgent.length > 30 ? userAgent.substring(0, 30) + '...' : userAgent;
+    }
+
+    escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  });
+})();
+</script>
+{{ end }}

@@ -69,6 +69,7 @@ func RunWebServer(addr string, cfg *internal.Config, strictManagement bool) {
 				r.Use(adminMiddleware)
 				r.Get("/ocusers.html", ocUsersWebHandler)
 				r.Get("/partials/ocusers.html", ocUsersPartialWebHandler)
+				r.Get("/login-history.html", loginHistoryWebHandler)
 			})
 		} else {
 			r.Get("/ocusers.html", ocUsersWebHandler)
@@ -104,7 +105,6 @@ func RunWebServer(addr string, cfg *internal.Config, strictManagement bool) {
 
 				// Violations API
 				r.Post("/violations/clearold", ClearViolationOldDataHandler)
-				r.Post("/violations/vacuum", VacuumViolationDBHandler)
 
 				// Config APIs
 				r.Get("/config/view", ConfigViewHandler)
@@ -113,6 +113,10 @@ func RunWebServer(addr string, cfg *internal.Config, strictManagement bool) {
 				r.Post("/config/preview", ConfigPreviewHandler)
 				r.Post("/config/save", ConfigSaveHandler)
 				r.Get("/config/save-status/{id}", ConfigSaveStatusHandler)
+				r.Post("/config/vacuum", VacuumDBHandler)
+
+				// Login history API
+				r.Get("/login-history", GetLoginHistoryHandler)
 			})
 		})
 	})

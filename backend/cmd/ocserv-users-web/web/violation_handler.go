@@ -3,10 +3,11 @@ package web
 import (
 	"log"
 	"net/http"
-	"ocserv-users/internal"
 	"strconv"
 	"sync"
 	"time"
+
+	"ocserv-users/internal"
 )
 
 // ViolationResponse represents the response structure for violation queries
@@ -183,16 +184,6 @@ func ClearViolationOldDataHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	sendSuccess(w, "violation cleared old data successfully", nil)
-}
-
-func VacuumViolationDBHandler(w http.ResponseWriter, r *http.Request) {
-	err := internal.VacuumViolationDB()
-	if err != nil {
-		log.Printf("[api] violation database vacuum failed: %v", err)
-		sendError(w, http.StatusInternalServerError, "violation database vacuum failed")
-		return
-	}
-	sendSuccess(w, "violation database vacuumed successfully", nil)
 }
 
 // parseCustomDateRange Handle custom date range if provided

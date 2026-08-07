@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"ocserv-users/internal"
 	"sync"
 	"time"
+
+	"ocserv-users/internal"
 
 	"github.com/go-chi/chi/v5"
 	"gopkg.in/yaml.v3"
@@ -40,7 +41,7 @@ func (m *ConfigSaveManager) generateID() string {
 func (m *ConfigSaveManager) CreatePendingOperation() string {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	
+
 	id := m.generateID()
 	m.statuses[id] = &ConfigSaveStatus{
 		ID:        id,
@@ -54,7 +55,7 @@ func (m *ConfigSaveManager) CreatePendingOperation() string {
 func (m *ConfigSaveManager) CompleteOperation(id string, message string, err error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	
+
 	if status, exists := m.statuses[id]; exists {
 		if err != nil {
 			status.Status = "failed"
@@ -70,7 +71,7 @@ func (m *ConfigSaveManager) CompleteOperation(id string, message string, err err
 func (m *ConfigSaveManager) GetStatus(id string) *ConfigSaveStatus {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	
+
 	return m.statuses[id]
 }
 
@@ -165,7 +166,6 @@ func ExportConfigHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(exportData)
 }
 
-// ==================== Unified Config View API ====================
 // ConfigViewHandler returns complete config with relationships
 func ConfigViewHandler(w http.ResponseWriter, r *http.Request) {
 	cfg := internal.GlobalConfigManager.GetConfig()
@@ -558,4 +558,15 @@ func calculateConfigChanges(oldCfg, newCfg *internal.Config) ConfigChangesSummar
 	}
 
 	return summary
+}
+
+// VacuumDBHandler handles the /api/vacuum endpoint
+func VacuumDBHandler(w http.ResponseWriter, r *http.Request) {
+	err := internal.VacuumDB()
+	if err != nil {
+		log.Printf("[api] database vacuum failed: %v", err)
+		sendError(w, http.StatusInternalServerError, "database vacuum failed")
+		return
+	}
+	sendSuccess(w, "database vacuumed successfully", nil)
 }

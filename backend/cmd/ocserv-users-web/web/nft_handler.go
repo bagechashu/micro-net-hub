@@ -2,6 +2,7 @@ package web
 
 import (
 	"net/http"
+
 	"ocserv-users/internal"
 )
 

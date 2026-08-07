@@ -7,9 +7,9 @@ import (
 
 // 这些变量将在编译时通过 -ldflags 注入
 var (
-	Version   = "dev"       // 版本号，如 v1.0.0
-	GitCommit = "none"      // Git Commit Hash
-	BuildTime = "unknown"   // 编译时间
+	Version   = "dev"             // 版本号，如 v1.0.0
+	GitCommit = "none"            // Git Commit Hash
+	BuildTime = "unknown"         // 编译时间
 	GoVersion = runtime.Version() // Go 版本
 )
 

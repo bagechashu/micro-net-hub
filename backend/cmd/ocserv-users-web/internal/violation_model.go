@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -85,53 +84,9 @@ const (
 	sqlVacuumDB = `VACUUM`
 )
 
-// PRAGMA 设置
-var sqlPragmas = []string{
-	"PRAGMA synchronous=NORMAL",
-	"PRAGMA cache_size=20000",
-	"PRAGMA temp_store=MEMORY",
-	"PRAGMA foreign_keys=ON",
-	"PRAGMA query_only=FALSE",
-	"PRAGMA busy_timeout=5000",
-}
-
 // ============================================================================
 // 业务类型定义
 // ============================================================================
-
-// DBManager encapsulates database access with RWMutex for thread-safe operations
-type DBManager struct {
-	db    *sqlx.DB
-	mutex sync.RWMutex
-}
-
-// GetDB retrieves the database connection with read lock
-// The lock is held until the callback completes
-func (dm *DBManager) GetDB(fn func(*sqlx.DB) error) error {
-	dm.mutex.RLock()
-	defer dm.mutex.RUnlock()
-	if dm.db == nil {
-		return fmt.Errorf("[violation] database not initialized")
-	}
-	return fn(dm.db)
-}
-
-// SetDB sets the database connection with write lock
-func (dm *DBManager) SetDB(db *sqlx.DB) {
-	dm.mutex.Lock()
-	defer dm.mutex.Unlock()
-	dm.db = db
-}
-
-// Close closes the database with write lock
-func (dm *DBManager) Close() error {
-	dm.mutex.Lock()
-	defer dm.mutex.Unlock()
-	if dm.db != nil {
-		return dm.db.Close()
-	}
-	return nil
-}
 
 // ViolationLog represents a single VPN access violation record
 type ViolationLog struct {
@@ -163,10 +118,7 @@ const (
 	queryTimeout        = 30 * time.Second
 )
 
-var (
-	dbManager = &DBManager{}
-	dbPath    = "data/violations.db"
-)
+// No package-level variables needed - using database manager
 
 // generateID generates a proper UUID v4 for records
 func generateID() string {
@@ -204,84 +156,6 @@ func buildWhereClause(startTime, endTime time.Time, username, action string) (st
 
 	whereClause := strings.Join(whereConditions, " AND ")
 	return whereClause, args
-}
-
-// InitializeViolationDB initializes the SQLite violation logging database
-func InitializeViolationDB(dataPath string) error {
-	if dataPath != "" {
-		dbPath = dataPath + "/violations.db"
-	}
-
-	var err error
-	// Use sqlx with sqlite3 driver
-	db, err := sqlx.Open("sqlite3", dbPath+"?cache=shared&mode=rwc&_journal_mode=WAL")
-	if err != nil {
-		return fmt.Errorf("[violation] failed to open database: %w", err)
-	}
-
-	// Test connection
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	err = db.PingContext(ctx)
-	cancel()
-	if err != nil {
-		return fmt.Errorf("[violation] failed to ping database: %w", err)
-	}
-
-	// Set connection pool parameters for SQLite with optimized settings
-	// SQLite doesn't benefit from large connection pools; keep it minimal
-	db.SetMaxOpenConns(5)
-	db.SetMaxIdleConns(2)
-	db.SetConnMaxLifetime(30 * time.Minute)
-	db.SetConnMaxIdleTime(5 * time.Minute)
-
-	// Set pragmas for performance and safety
-	for _, pragma := range sqlPragmas {
-		if _, err := db.Exec(pragma); err != nil {
-			return fmt.Errorf("[violation] failed to set pragma: %w", err)
-		}
-	}
-
-	// Create tables with proper schema
-	if _, err := db.Exec(sqlCreateViolationsTable); err != nil {
-		return fmt.Errorf("[violation] failed to create table: %w", err)
-	}
-
-	// Create indexes
-	indexes := []string{
-		sqlCreateIndexTimestamp,
-		sqlCreateIndexUsername,
-		sqlCreateIndexUsernameTimestamp,
-		sqlCreateIndexAction,
-		sqlCreateIndexActionTimestamp,
-	}
-
-	for _, idx := range indexes {
-		if _, err := db.Exec(idx); err != nil {
-			return fmt.Errorf("[violation] failed to create index: %w", err)
-		}
-	}
-
-	// Set the database in manager
-	dbManager.SetDB(db)
-
-	// Initialize async violation buffer for non-blocking writes
-	violationBuffer = NewViolationBuffer(db, 1000)
-	violationBuffer.Start()
-
-	log.Printf("[violation] SQLite3 database initialized at: %s", dbPath)
-	return nil
-}
-
-// CloseViolationDB closes the violation database and flushes pending writes
-func CloseViolationDB() error {
-	// Stop the async buffer first to flush all pending writes
-	if violationBuffer != nil {
-		if err := violationBuffer.Stop(); err != nil {
-			log.Printf("[violation] failed to stop buffer: %v", err)
-		}
-	}
-
-	return dbManager.Close()
 }
 
 // RecordViolation records a VPN access violation asynchronously
@@ -323,7 +197,7 @@ func GetViolations(query ViolationQuery) ([]ViolationLog, int64, error) {
 	var violations []ViolationLog
 	var totalCount int64
 
-	err := dbManager.GetDB(func(db *sqlx.DB) error {
+	err := GetDBManager().GetDB(func(db *sqlx.DB) error {
 		// Validate and sanitize parameters
 		if query.Limit <= 0 {
 			query.Limit = defaultLimit
@@ -398,7 +272,7 @@ func GetViolations(query ViolationQuery) ([]ViolationLog, int64, error) {
 func GetViolationStats(query ViolationQuery) (map[string]interface{}, error) {
 	var stats map[string]interface{}
 
-	err := dbManager.GetDB(func(db *sqlx.DB) error {
+	err := GetDBManager().GetDB(func(db *sqlx.DB) error {
 		stats = make(map[string]interface{})
 
 		ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
@@ -487,7 +361,7 @@ func GetViolationStats(query ViolationQuery) (map[string]interface{}, error) {
 func GetViolationUsers(timeBack time.Duration) (map[string]interface{}, error) {
 	var stats map[string]interface{}
 
-	err := dbManager.GetDB(func(db *sqlx.DB) error {
+	err := GetDBManager().GetDB(func(db *sqlx.DB) error {
 		if timeBack <= 0 {
 			timeBack = time.Duration(defaultTimeBackDays) * 24 * time.Hour
 		}
@@ -551,7 +425,7 @@ func GetViolationUsers(timeBack time.Duration) (map[string]interface{}, error) {
 
 // ClearOldViolations removes violations older than specified duration
 func ClearOldViolations(keepDuration time.Duration) error {
-	return dbManager.GetDB(func(db *sqlx.DB) error {
+	return GetDBManager().GetDB(func(db *sqlx.DB) error {
 		if keepDuration <= 0 {
 			keepDuration = time.Duration(maxTimeBackDays) * 24 * time.Hour
 		}
@@ -575,21 +449,6 @@ func ClearOldViolations(keepDuration time.Duration) error {
 			log.Printf("[violation] cleared %d old violations before %s", rowsAffected, cutoffTime)
 		}
 
-		return nil
-	})
-}
-
-// VacuumViolationDB optimizes database file
-func VacuumViolationDB() error {
-	return dbManager.GetDB(func(db *sqlx.DB) error {
-		ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
-		defer cancel()
-
-		if _, err := db.ExecContext(ctx, sqlVacuumDB); err != nil {
-			return fmt.Errorf("[violation] vacuum failed: %w", err)
-		}
-
-		log.Println("[violation] database vacuumed")
 		return nil
 	})
 }

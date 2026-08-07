@@ -98,13 +98,28 @@ func updateUsersNftRules(addedSessions, removedSessions map[string][]string, use
 	for username, removed := range removedSessions {
 		if len(removed) > 0 {
 			handleRemovedIPs(username, removed, usersDestRules)
+			// 记录用户下线事件到登录历史
+			for _, privateIP := range removed {
+				if err := RecordUserLogout(username, privateIP); err != nil {
+					log.Printf("[login_history] failed to record logout for %s (%s): %v", username, privateIP, err)
+				}
+			}
 		}
 	}
 
 	for username, added := range addedSessions {
 		if len(added) > 0 {
 			handleAddedIPs(username, added, usersDestRules)
+			// 非阻塞方式记录用户上线：只记录基础信息（username + privateIP）
+			for _, privateIP := range added {
+				if err := RecordUserLoginBasic(username, privateIP); err != nil {
+					log.Printf("[login_history] failed to record basic login for %s (%s): %v", username, privateIP, err)
+				}
+			}
 		}
+		// 异步获取完整会话信息并更新详细字段
+		// 这不会阻塞用户的登录流程
+		updateLoginDetailsAsync(username, added)
 	}
 }
 
@@ -129,6 +144,40 @@ func handleRemovedIPs(username string, removed []string, usersDestRules map[stri
 		}
 		clearConntrack(ip)
 	}
+}
+
+// updateLoginDetailsAsync 异步获取完整会话信息并更新详细字段
+// 这不会阻塞用户的登录流程
+func updateLoginDetailsAsync(username string, ips []string) {
+	go func() {
+		// 稍微延迟一下，确保ocserv会话已经完全建立
+		time.Sleep(1 * time.Second)
+
+		sessions, err := OcctlGetSessions()
+		if err != nil {
+			log.Printf("[login_history] failed to get sessions for detail update: %v", err)
+			return
+		}
+
+		// 为每个新增的IP更新详细信息
+		for _, privateIP := range ips {
+			// 查找对应的会话信息
+			for _, session := range sessions {
+				if session.Username == username && session.IPv4 == privateIP {
+					if err := UpdateUserLoginDetails(
+						session.Username,
+						session.IPv4,
+						session.RemoteIP,
+						session.UserAgent,
+						session.ID,
+					); err != nil {
+						log.Printf("[login_history] failed to update login details for %s (%s): %v", username, privateIP, err)
+					}
+					break
+				}
+			}
+		}
+	}()
 }
 
 // RunNftablesManager 启动nftables管理器，定期更新规则
