@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"os/exec"
+	"strings"
 )
 
 // localAddrs 本机地址缓存
@@ -32,7 +33,11 @@ func getLocalIPv4s() ([]net.IP, error) {
 		return nil, fmt.Errorf("failed to list interfaces: %w", err)
 	}
 	for _, iface := range ifaces {
-		addrs, _ := iface.Addrs()
+		addrs, err := iface.Addrs()
+		if err != nil {
+			log.Printf("[sys] 获取接口地址失败 (%s): %v", iface.Name, err)
+			continue
+		}
 		for _, a := range addrs {
 			if ipnet, ok := a.(*net.IPNet); ok {
 				if ip4 := ipnet.IP.To4(); ip4 != nil {
@@ -81,4 +86,24 @@ func checkDependencies() error {
 
 	log.Println("[init] 系统依赖检查通过: nft, conntrack, occtl 已安装")
 	return nil
+}
+
+// clearConntrack 清理指定源IP的连接跟踪条目
+func clearConntrack(ip string) {
+	cmd := exec.Command("conntrack", "-D", "-s", ip)
+	out, err := cmd.CombinedOutput()
+	output := string(out)
+
+	if err != nil {
+		// 特殊情况：没有条目被删除
+		if strings.Contains(output, "0 flow entries have been deleted") {
+			log.Printf("[sys] 执行命令: %s (没有匹配的条目)", strings.Join(cmd.Args, " "))
+			return
+		}
+		// 其他错误才是真的失败
+		log.Printf("[sys] 执行命令: %s 清理失败: %v (%s)", strings.Join(cmd.Args, " "), err, output)
+		return
+	}
+
+	log.Printf("[sys] 执行命令: %s", strings.Join(cmd.Args, " "))
 }

@@ -1,0 +1,239 @@
+package internal
+
+import (
+	"fmt"
+	"strings"
+	"sync"
+)
+
+var (
+	// globalUsersRules 全局用户目标规则映射，受 globalUsersRulesMu 保护
+	globalUsersRules map[string][]Rule
+	// globalUsersRulesMu 保护全局规则变量的并发访问
+	globalUsersRulesMu sync.RWMutex
+)
+
+// GetUserRules returns a thread-safe copy of the global user rules
+func GetUserRules() map[string][]Rule {
+	globalUsersRulesMu.RLock()
+	defer globalUsersRulesMu.RUnlock()
+	// Return a copy to prevent external modifications
+	if globalUsersRules == nil {
+		return nil
+	}
+	rules := make(map[string][]Rule)
+	for k, v := range globalUsersRules {
+		rules[k] = v
+	}
+	return rules
+}
+
+// UpdateUserRules safely updates the global user rules
+func UpdateUserRules(rules map[string][]Rule) {
+	globalUsersRulesMu.Lock()
+	defer globalUsersRulesMu.Unlock()
+	globalUsersRules = rules
+}
+
+type Rule struct {
+	DestIP   string       `json:"dest_ip,omitempty" yaml:"dest_ip,omitempty"`
+	DestPort uint16       `json:"dest_port,omitempty" yaml:"dest_port,omitempty"`
+	Protocol ProtocolType `json:"protocol,omitempty" yaml:"protocol,omitempty"` // tcp | udp | icmp, 默认 tcp
+	ToLocal  bool         `json:"to_local,omitempty" yaml:"to_local,omitempty"` // 是否访问宿主机本地服务, 默认 false
+	Action   ActionType   `json:"action,omitempty" yaml:"action,omitempty"`     // accept | drop，默认 accept
+	Comment  string       `json:"comment,omitempty" yaml:"comment,omitempty"`   // 规则名称，用于标记规则信息
+
+	// SrcIP, SrcIPSetName 默认不配置, 通过 RuleMapping 去补充
+	SrcIP        string `json:"src_ip,omitempty" yaml:"src_ip,omitempty"`
+	SrcIPSetName string `json:"src_ip_set_name,omitempty" yaml:"src_ip_set_name,omitempty"`
+}
+
+type RuleGroup struct {
+	Name  string `json:"name" yaml:"name"`
+	Rules []Rule `json:"rules,omitempty" yaml:"rules,omitempty"`
+}
+
+type SrcIPSet struct {
+	Name string   `json:"name,omitempty" yaml:"name,omitempty"`
+	Ips  []string `json:"ips,omitempty" yaml:"ips,omitempty"`
+}
+
+type RuleMapping struct {
+	Name         string      `json:"name,omitempty" yaml:"name,omitempty"`
+	Type         MappingType `json:"mapping_type" yaml:"mapping_type"` // [users | public | input_chain | input_chain_ip_set]
+	SrcIPs       []string    `json:"src_ips,omitempty" yaml:"src_ips,omitempty"`
+	SrcIPSet     *SrcIPSet   `json:"src_ip_set,omitempty" yaml:"src_ip_set,omitempty"`
+	Users        []string    `json:"users,omitempty" yaml:"users,omitempty"`
+	RuleGroupRef string      `json:"rule_group_ref,omitempty" yaml:"rule_group_ref,omitempty"` // 引用的规则组名称
+}
+
+type ProtocolType string
+
+const (
+	ProtocolTCP  ProtocolType = "tcp"
+	ProtocolUDP  ProtocolType = "udp"
+	ProtocolIcmp ProtocolType = "icmp"
+)
+
+func (t ProtocolType) Valid() bool {
+	switch t {
+	case ProtocolTCP, ProtocolUDP, ProtocolIcmp:
+		return true
+	default:
+		return false
+	}
+}
+
+type ActionType string
+
+const (
+	ActionAccept ActionType = "accept"
+	ActionDrop   ActionType = "drop"
+)
+
+func (t ActionType) Valid() bool {
+	switch t {
+	case ActionAccept, ActionDrop:
+		return true
+	default:
+		return false
+	}
+}
+
+type MappingType string
+
+const (
+	MappingUsers           MappingType = "users"
+	MappingPublic          MappingType = "public"
+	MappingInputChain      MappingType = "input_chain"
+	MappingInputChainIPSet MappingType = "input_chain_ip_set"
+)
+
+func (t MappingType) Valid() bool {
+	switch t {
+	case MappingUsers, MappingPublic, MappingInputChain, MappingInputChainIPSet:
+		return true
+	default:
+		return false
+	}
+}
+
+// GetUserRulesMapping 构建用户到规则的映射
+func GetUserRulesMapping(config *Config) (map[string][]Rule, error) {
+	usersRules := make(map[string][]Rule)
+	for _, rgm := range config.RuleMappings {
+		// 为每个用户组构建规则映射
+		if rgm.Type != MappingUsers {
+			continue
+		}
+		// 查找该用户组引用的规则组
+		rg := resolveRuleGroup(config.RuleGroups, rgm.RuleGroupRef)
+		if rg == nil {
+			return nil, fmt.Errorf("未找到规则组: %s", rgm.RuleGroupRef)
+		}
+
+		// 为该组中的每个用户分配规则
+		for _, username := range rgm.Users {
+			username = strings.ToLower(username) // 用户名转小写，保持一致性
+			// 将规则追加到现有规则中，以支持多个组的规则合并
+			usersRules[username] = append(usersRules[username], rg.Rules...)
+		}
+	}
+
+	return usersRules, nil
+}
+
+// GetPublicRules 获取公共规则
+func GetPublicRules(config *Config) (map[string][]Rule, error) {
+	publicRules := make(map[string][]Rule)
+	for _, rulemapping := range config.RuleMappings {
+		if rulemapping.Type != MappingPublic {
+			continue
+		}
+		ruleGroup := resolveRuleGroup(config.RuleGroups, rulemapping.RuleGroupRef)
+		if ruleGroup == nil {
+			return nil, fmt.Errorf("未找到规则组: %s", rulemapping.RuleGroupRef)
+		}
+
+		rulemappingName := strings.ToLower(rulemapping.Name) // 用户名转小写，保持一致性
+		// 将规则追加到现有规则中，以支持多个组的规则合并
+		publicRules[rulemappingName] = append(publicRules[rulemappingName], ruleGroup.Rules...)
+	}
+
+	return publicRules, nil
+}
+
+// GetInputChainRules 获取InputChain规则
+func GetInputChainRules(config *Config) (map[string][]Rule, error) {
+	inputChainRules := make(map[string][]Rule)
+	for _, rulemapping := range config.RuleMappings {
+		if rulemapping.Type != MappingInputChain {
+			continue
+		}
+		ruleGroup := resolveRuleGroup(config.RuleGroups, rulemapping.RuleGroupRef)
+		if ruleGroup == nil {
+			return nil, fmt.Errorf("未找到规则组: %s", rulemapping.RuleGroupRef)
+		}
+
+		rulemappingName := strings.ToLower(rulemapping.Name)
+
+		// dest_rule 中 srcIP 赋值
+		for _, srcIP := range rulemapping.SrcIPs {
+			// 为每个 srcIP 生成一份带有 SrcIP 的规则拷贝
+			rulesWithSrc := make([]Rule, 0, len(ruleGroup.Rules))
+			for _, r := range ruleGroup.Rules {
+				r.SrcIP = srcIP
+				rulesWithSrc = append(rulesWithSrc, r)
+			}
+
+			// 将规则追加到现有规则中，以支持多个组的规则合并
+			inputChainRules[rulemappingName] = append(inputChainRules[rulemappingName], rulesWithSrc...)
+		}
+	}
+
+	return inputChainRules, nil
+}
+
+// GetInputChainIPSetRules 获取InputChainIPSet规则
+func GetInputChainIPSetRules(config *Config) ([]SrcIPSet, map[string][]Rule, error) {
+	srcIPSets := []SrcIPSet{}
+	inputChainIPSetRules := make(map[string][]Rule)
+	for _, rulemapping := range config.RuleMappings {
+		if rulemapping.Type != MappingInputChainIPSet {
+			continue
+		}
+		if rulemapping.SrcIPSet != nil {
+			srcIPSets = append(srcIPSets, *rulemapping.SrcIPSet)
+		}
+		ruleGroup := resolveRuleGroup(config.RuleGroups, rulemapping.RuleGroupRef)
+		if ruleGroup == nil {
+			return nil, nil, fmt.Errorf("未找到规则组: %s", rulemapping.RuleGroupRef)
+		}
+
+		rulemappingName := strings.ToLower(rulemapping.Name)
+
+		// dest_rule 中 srcIPSetName 赋值
+		rulesWithSrcIPSetName := make([]Rule, 0, len(ruleGroup.Rules))
+		for _, r := range ruleGroup.Rules {
+			if rulemapping.SrcIPSet != nil {
+				r.SrcIPSetName = rulemapping.SrcIPSet.Name
+			}
+			rulesWithSrcIPSetName = append(rulesWithSrcIPSetName, r)
+		}
+
+		// 将规则追加到现有规则中，以支持多个组的规则合并
+		inputChainIPSetRules[rulemappingName] = append(inputChainIPSetRules[rulemappingName], rulesWithSrcIPSetName...)
+	}
+
+	return srcIPSets, inputChainIPSetRules, nil
+}
+
+// resolveRuleGroup 根据规则组名称查找规则组
+func resolveRuleGroup(groups []RuleGroup, name string) *RuleGroup {
+	for _, group := range groups {
+		if group.Name == name {
+			return &group
+		}
+	}
+	return nil
+}

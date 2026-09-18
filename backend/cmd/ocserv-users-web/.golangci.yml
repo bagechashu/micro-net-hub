@@ -1,0 +1,60 @@
+version: "2"
+
+run:
+  timeout: 3m
+  tests: true
+
+linters:
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - misspell
+    - whitespace
+    - nilerr
+  settings:
+    errcheck:
+      check-type-assertions: false
+      check-blank: true
+
+    misspell:
+      locale: US
+
+    staticcheck:
+      checks: ["all", "-SA1019"]
+
+  exclusions:
+    paths:
+      - prompt
+      - tmp
+    rules:
+      # 排除 Go embed 未使用的警告
+      - path: web/render.go
+        linters:
+          - unused
+        text: "templateFS"
+      # 排除 vendor
+      - path: vendor/
+        linters:
+          - all
+      # 内部项目不强制要求包注释
+      - linters:
+          - staticcheck
+        text: "ST1000"
+
+issues:
+  max-same-issues: 10
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    gofmt:
+      simplify: true
+
+    goimports:
+      local-prefixes:
+        - ocserv-users

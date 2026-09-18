@@ -1,0 +1,39 @@
+{{ if not . }}
+<tr>
+  <td colspan="11" style="text-align: center; color: #999">No online users</td>
+</tr>
+{{ end }} {{ range . }}
+<tr>
+  <td style="text-align: center">
+    <button
+      class="btn-disconnect"
+      data-controller="disconnect"
+      data-action="click->disconnect#handleClick"
+      hx-post="/api/occtl/disconnect/{{.ID}}"
+      hx-target="closest tr"
+      hx-swap="delete"
+      data-tooltip="disconnect"
+    >
+      🔓
+    </button>
+  </td>
+  <td>{{.ID}}</td>
+  <td>{{.Username}}</td>
+  <!-- <td>{{.Groupname}}</td>
+  <td>{{.State}}</td> -->
+  <td>{{.RemoteIP}}</td>
+  <td>{{.ConnectedFor}}</td>
+  <td>
+    <span
+      class="utc-time"
+      data-controller="utc"
+      data-utc-connect-at-value="{{.ConnectedAt}}"
+    ></span>
+  </td>
+  <td>{{.UserAgent}}</td>
+  <td>{{.RXHuman}}</td>
+  <td>{{.TXHuman}}</td>
+  <td>{{.AverageRX}}</td>
+  <td>{{.AverageTX}}</td>
+</tr>
+{{ end }}

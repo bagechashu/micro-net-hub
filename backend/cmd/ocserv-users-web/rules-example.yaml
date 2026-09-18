@@ -1,0 +1,152 @@
+auth:
+  # 启用身份认证, 默认启用
+  enabled: true
+  
+  # RADIUS 认证配置
+  radius:
+    # 方式1: 使用 radiusclient.conf 文件
+    config_file: /etc/radcli/radiusclient.conf
+    # 或者方式2: 直接指定 servers 文件
+    # servers_file: /etc/radcli/servers
+
+  # 会话配置
+  session:
+    # 会话超时时间（分钟）, 默认: 60 (1小时)
+    timeout_minutes: 60
+    # Cookie 名称，默认: ocauth_session
+    cookie_name: ocauth_session
+
+  # 管理员用户配置
+  admins:
+    # 指定哪些用户拥有管理员权限
+    users:
+      - admin
+      - user1
+
+# 违规通知 Webhook 配置
+vpn_access_notice:
+  enabled: false
+  # webhook 接收端地址，当检测到违规时会发送 POST 请求到此地址
+  webhook_receiver: http://your-notification-service:9000/webhook/json/ding
+  # 是否只在违规时发送通知，默认为 true（只发送违规通知）
+  # 如果设置为 false，则所有访问事件都会发送通知
+  only_notify_on_violation: true
+
+vpn_access_rules:
+  - users:
+      - user1
+      - user2
+    remote_ips:
+      - 1.2.3.4
+    time_range:
+      start: "08:00"
+      end: "12:00"
+    action_on_violation: block
+  - users:
+      - user1
+    remote_ips:
+      - 0.0.0.0/0
+    time_range:
+      start: "08:00"
+      end: "20:00"
+    action_on_violation: logonly
+
+rule_groups:
+  - name: admin_access
+    rules:
+      - dest_ip: 10.12.0.11/32
+        dest_port: 22
+        protocol: tcp
+        action: accept
+      - dest_ip: 10.12.0.216
+        dest_port: 22
+        protocol: tcp
+        action: accept
+      - dest_ip: 10.12.0.0/16
+        dest_port: 22
+        protocol: icmp
+        action: accept
+      - dest_ip: 8.8.4.4
+        dest_port: 53
+        protocol: tcp
+        action: drop
+  - name: user_network
+    rules:
+      - dest_ip: 10.12.0.0/16
+        protocol: tcp
+        action: accept
+  - name: dev_rules
+    rules:
+      - dest_ip: 192.168.1.0/24
+        dest_port: 8080
+        protocol: tcp
+        action: accept
+      - dest_ip: 192.168.2.0/24
+        dest_port: 53
+        protocol: udp
+        action: accept
+  - name: public_dns
+    rules:
+      - dest_ip: 8.8.8.8
+        dest_port: 53
+        protocol: tcp
+        action: accept
+      - dest_ip: 1.1.1.0/24
+        protocol: udp
+        action: accept
+  - name: input_rules
+    rules:
+      - dest_ip: 10.12.0.11
+        dest_port: 443
+        protocol: tcp
+        action: accept
+  - name: allow_access_ocserv
+    rules:
+      - dest_ip: 0.0.0.0/0
+        dest_port: 443
+        protocol: tcp
+        action: accept
+      - dest_ip: 0.0.0.0/0
+        dest_port: 443
+        protocol: udp
+        action: accept
+      - dest_ip: 0.0.0.0/0
+        dest_port: 8080
+        protocol: tcp
+        action: accept
+
+rule_mappings:
+  - name: admins
+    mapping_type: users
+    users:
+      - user1
+      - admin1
+    rule_group_ref: admin_access
+  - name: developers
+    mapping_type: users
+    users:
+      - user1
+      - user2
+      - dev1
+      - dev2
+    rule_group_ref: user_network
+  - name: testers
+    mapping_type: users
+    users:
+      - tester1
+    rule_group_ref: dev_rules
+  - name: public_dns
+    mapping_type: public
+    rule_group_ref: public_dns
+  - name: input
+    mapping_type: input_chain
+    src_ips:
+      - 10.12.0.0/16
+    rule_group_ref: input_rules
+  - name: allow_access_ocserv
+    mapping_type: input_chain_ip_set
+    src_ip_set:
+      name: allow_access_ocserv
+      ips:
+        - 0.0.0.0/0
+    rule_group_ref: allow_access_ocserv

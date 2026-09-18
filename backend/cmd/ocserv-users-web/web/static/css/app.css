@@ -1,0 +1,380 @@
+body {
+  margin: 0;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background: #f5f5f5;
+}
+
+main.container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 1.5rem;
+}
+
+header.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid #ddd;
+}
+
+header.app-header h3 {
+  margin: 0;
+}
+
+header.app-header nav {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+header.app-header nav a,
+header.app-header nav button {
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+header.app-header nav a.secondary,
+header.app-header nav button.secondary {
+  background-color: #e6e6e6;
+  color: #333;
+}
+
+header.app-header nav a:hover,
+header.app-header nav button:hover {
+  background-color: #ddd;
+}
+
+header.app-header nav button {
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* ======================= Modal Overlay ======================= */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 更浅的遮罩，协调主背景 */
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+}
+
+.modal[hidden] {
+  display: none;
+}
+
+/* ======================= Modal Container ======================= */
+.modal__container {
+  /* 白色背景，和 Pure.css 表格、按钮协调 */
+  background: #f5f5f5;
+  /* 无圆角 */
+  border-radius: 0;
+
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  padding: 1.5em;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ======================= Modal Title ======================= */
+.modal__title {
+  font-size: 1.25em;
+  font-weight: bold;
+  margin-bottom: 1em;
+  /* 边界颜色协调主页面表格 */
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 0.5em;
+}
+
+/* ======================= Modal Body ======================= */
+.modal__body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  margin-bottom: 1em;
+  font-size: 0.95em;
+  color: #333;
+}
+
+/* ======================= Modal Footer / Buttons ======================= */
+.modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5em;
+}
+
+.modal__footer .pure-button {
+  min-width: 80px;
+}
+
+/* ======================= Close Button (top-right) ======================= */
+.modal__close {
+  position: absolute;
+  top: 0.5em;
+  right: 0.5em;
+  background: transparent;
+  border: none;
+  font-size: 1.2em;
+  cursor: pointer;
+  line-height: 1;
+  color: #888;
+  transition: color 0.2s;
+}
+
+.modal__close:hover {
+  color: #000;
+}
+
+/* ======================= Scrollbar for Modal Body ======================= */
+.modal__body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal__body::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  /* 无圆角 */
+  border-radius: 0;
+}
+
+.modal__body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ======================= Form Styles for Modal ======================= */
+.form-group {
+  margin-bottom: 1.5em;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5em;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-group input[type="text"],
+.form-group input[type="password"] {
+  width: 100%;
+  padding: 0.5em;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  font-size: 1em;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="password"]:focus {
+  outline: none;
+  border-color: #2d89df;
+  box-shadow: 0 0 0 2px rgba(45, 137, 223, 0.1);
+}
+
+.pure-input-1 {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ======================= Error Message ======================= */
+.error-message {
+  color: #d32f2f;
+  background-color: #ffebee;
+  border: 1px solid #ef5350;
+  padding: 0.75em;
+  border-radius: 3px;
+  font-size: 0.95em;
+}
+
+/* ======================= Small Button ======================= */
+.pure-button-sm {
+  padding: 0.3em 0.6em;
+  font-size: 0.85em;
+}
+
+/* ======================= Action Buttons ======================= */
+.btn-disconnect {
+  background-color: #0079e8;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.4em 0.7em;
+  font-size: 0.9em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.5s ease;
+  box-shadow: 0 2px 4px rgba(47, 122, 224, 0.2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3em;
+  min-width: 32px;
+  min-height: 32px;
+  position: relative;
+}
+
+.btn-disconnect:hover {
+  background-color: #2d89df;
+  box-shadow: 0 3px 6px rgba(47, 122, 224, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-disconnect:active {
+  background-color: #1f618d;
+  box-shadow: 0 1px 3px rgba(52, 152, 219, 0.2);
+  transform: translateY(0);
+}
+
+/* 自定义 tooltip */
+.btn-disconnect::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 0.4em 0.8em;
+  border-radius: 3px;
+  font-size: 0.85em;
+  white-space: nowrap;
+  margin-bottom: 0.5em;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+  z-index: 1001;
+}
+
+.btn-disconnect:hover::after {
+  opacity: 1;
+}
+
+/* ======================= Table Section ======================= */
+.table-section {
+  background: white;
+  padding: 1em;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  overflow-x: auto;
+  /* 移动端顺滑滚动 */
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-section h4 {
+  margin-top: 0;
+  margin-bottom: 1em;
+  color: #333;
+  border-bottom: 2px solid #e67e22;
+  padding-bottom: 0.5em;
+}
+
+/* ======================= Responsive Table Wrapper ======================= */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  /* 移动端顺滑滚动 */
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-wrapper table {
+  /* 至少占满容器 */
+  min-width: 100%;
+  /* 防止单元格自动换行 */
+  white-space: nowrap;
+}
+
+/* ======================= Code Block Style ======================= */
+code {
+  background: white;
+  color: #333;
+  padding: 1em;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.8em;
+  line-height: 1.4em;
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  white-space: pre;
+  word-wrap: break-word;
+  border-top: 2px solid #e67e22;
+}
+
+code::-webkit-scrollbar {
+  height: 6px;
+}
+
+code::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 0;
+}
+
+code::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ======================= Error Page Styles ======================= */
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  text-align: center;
+  padding: 2em;
+}
+
+.error-code {
+  font-size: 8em;
+  font-weight: bold;
+  color: #d9534f;
+  margin: 0;
+  line-height: 1;
+}
+
+.error-title {
+  font-size: 2em;
+  color: #333;
+  margin: 0.5em 0;
+}
+
+.error-message {
+  font-size: 1.2em;
+  color: #666;
+  margin: 1em 0 2em 0;
+  max-width: 500px;
+}
+
+.error-path {
+  background-color: #f5f5f5;
+  padding: 1em;
+  border-radius: 4px;
+  margin: 1em 0;
+  word-break: break-all;
+  font-family: monospace;
+  color: #555;
+}
+
+.button-group {
+  margin-top: 2em;
+}
+
+.button-group a,
+.button-group button {
+  margin: 0 0.5em;
+}

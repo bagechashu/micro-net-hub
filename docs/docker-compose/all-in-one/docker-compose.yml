@@ -40,6 +40,10 @@ services:
       - LDAP_TLS_CRT_FILENAME=server.crt
       - LDAP_TLS_KEY_FILENAME=server.key
       - LDAP_TLS_CA_CRT_FILENAME=example.com.ca.crt
+      # === 添加下面这行配置 ===
+      # 允许客户端不提供证书进行连接 ldaps636（解决 No certificate was found 报错）
+      # osixia/openldap 镜像默认启用了“双向 TLS 认证”（mTLS / Client Authentication)
+      - LDAP_TLS_VERIFY_CLIENT=try
     networks:
       - micro-net-hub-net
 
