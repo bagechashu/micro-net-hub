@@ -13,6 +13,7 @@ import (
 	opLogModel "micro-net-hub/internal/module/operationlog/model"
 	siteNavModel "micro-net-hub/internal/module/sitenav/model"
 	totpModel "micro-net-hub/internal/module/totp/model"
+	approvalModel "micro-net-hub/internal/radiusappr/model"
 
 	"github.com/glebarez/sqlite"
 	"gorm.io/driver/mysql"
@@ -48,6 +49,8 @@ func dbAutoMigrate() {
 		&dnsModel.DnsZone{},
 		&dnsModel.DnsRecord{},
 		&noticeboardModel.NoticeBoard{},
+		&approvalModel.ApprovalRequest{},
+		&approvalModel.ApprovalGrant{},
 	)
 }
 

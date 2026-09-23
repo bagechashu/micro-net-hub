@@ -2,6 +2,7 @@ package model
 
 import (
 	"errors"
+
 	"micro-net-hub/internal/global"
 
 	"github.com/thoas/go-funk"

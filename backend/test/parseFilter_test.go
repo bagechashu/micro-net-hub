@@ -1,10 +1,11 @@
 package test
 
 import (
+	"testing"
+
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global/setup"
 	"micro-net-hub/internal/ldapsrv"
-	"testing"
 
 	"github.com/merlinz01/ldapserver"
 )

@@ -2,6 +2,7 @@ package user
 
 import (
 	"fmt"
+
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/module/account/auth"
 	"micro-net-hub/internal/module/account/model"

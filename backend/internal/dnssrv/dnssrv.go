@@ -1,9 +1,10 @@
 package dnssrv
 
 import (
+	"time"
+
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
-	"time"
 
 	"github.com/miekg/dns"
 )

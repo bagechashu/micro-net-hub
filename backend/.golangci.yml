@@ -1,0 +1,37 @@
+# golangci-lint 配置 (v2 格式)
+#
+# 基线原则:
+#   - 默认启用 standard 标准集 (errcheck / govet / ineffassign / staticcheck / unused)
+#     + gofmt 格式检查;
+#   - 本次 RADIUS 人工审批功能涉及的目录 (internal/radiusappr, internal/bot,
+#     internal/radiussrv, internal/config, internal/global, cmd) 保持零豁免;
+#   - 与本次功能无关的存量历史债务按目录明确豁免, 后续按目录逐步清理、收紧.
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  default: standard
+  exclusions:
+    rules:
+      # ===== 存量债务豁免 (与本次 RADIUS 审批功能无关) =====
+      # errcheck: 既有 LDAP / clipshare / goldap 代码未检查 I/O 与响应返回值
+      - path: 'internal/ldapsrv/'
+        linters: [errcheck]
+      - path: 'internal/module/clipshare/'
+        linters: [errcheck, staticcheck]
+      - path: 'internal/module/goldap/'
+        linters: [errcheck, staticcheck]
+      # staticcheck: 既有 DNS / 工具代码风格问题
+      - path: 'internal/dnssrv/'
+        linters: [staticcheck]
+      - path: 'internal/tools/'
+        linters: [staticcheck]
+      # unused: 既有 account 模块未使用变量/函数
+      - path: 'internal/module/account/'
+        linters: [unused]
+
+formatters:
+  enable:
+    - gofmt

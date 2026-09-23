@@ -176,6 +176,60 @@ radius:
   listen-addr: "0.0.0.0:1812"
   secret: "default-radius-secret"
   group-filter: ""
+  # 人工审批: 命中时间窗口的认证请求需人工审批, 审批通过后放行; 可通过 Bot(Telegram) 私聊审批.
+  approval:
+    # 是否开启人工审批(默认关闭)
+    enable: false
+    # 时间窗口判定使用的时区
+    timezone: "Asia/Shanghai"
+    # 需要审批的时间窗口, 命中任意一个即需要审批; 留空表示全天都需要审批.
+    # days 取值 mon/tue/wed/thu/fri/sat/sun, 留空表示每天; end 早于 start 时视为跨天窗口.
+    time-windows:
+      - days: [mon, tue, wed, thu, fri]
+        start: "22:00"
+        end: "23:59"
+      - days: [sat, sun]
+        start: "00:00"
+        end: "06:00"
+    # 审批适用的用户范围, 各维度留空表示不限制该维度.
+    scope:
+      roles: []          # 角色关键字, 如 [user, guest]
+      groups: []         # 分组名称
+      users: []          # 用户名
+      exclude-users: []  # 排除的用户名, 如 [admin]
+    # 审批的 Bot 渠道
+    bot:
+      # 是否开启 Bot 审批
+      enable: true
+      # 参与审批的 Bot 实例 ID, 对应 bot.instances 中的 id
+      instance-ids: ["telegram-approval"]
+      # 审批人会话白名单(telegram 的 chat id), 审批人需先与机器人私聊发送 /start.
+      # 审批人可向机器人发送 /id 获取自己的 chat id, 再填入此处.
+      approver-chat-ids: []
+      # 是否仅允许私聊会话审批(安全边界, 建议保持 true)
+      private-only: true
+      # 是否向申请人发送 "申请已提交" 与 "审批结果" 通知
+      applicant-notify: true
+      # 申请人 Bot 会话映射: 平台用户名 -> Bot chat id
+      applicant-map: {}
+      # 单个审批人 10 秒内可执行的指令条数上限
+      max-commands-per10s: 5
+    # RADIUS 侧同步等待审批结果的秒数(超时后本次认证返回拒绝, 审批通过后用户重连即可放行)
+    wait-seconds: 6
+    # 申请单有效期(秒)
+    pending-ttl-seconds: 120
+    # 同一用户名重复申请时, 通知审批人的最小间隔(秒)
+    notice-interval-seconds: 15
+    # 被拒绝后的申请冷却时间(秒), 冷却期内不重复通知审批人
+    reject-cooldown-seconds: 60
+    # 审批通过后放行凭证的有效期(分钟)
+    grant-ttl-minutes: 30
+    # 放行凭证在有效期内的最大使用次数, 0 表示不限次
+    grant-max-uses: 0
+    # 全局待审批申请数量上限, 超出后新的申请直接拒绝
+    max-pending-global: 200
+    # 过期申请与凭证的清理任务(cron, 秒级: 秒 分 时 日 月 周)
+    cleanup-cron: "0 30 4 * * *"
 
 dns:
   # 默认的 DNS 服务器地址
@@ -217,3 +271,17 @@ sync:
 #   dept-list:    # 配置要同步的部门列表，配置留空则同步所有部门，在开头加^表示不同步此部门
 #     #- "48456726"   # 需要同步的部门ID
 #     #- "^61213417"  # 不需要同步的部门ID
+
+# 通用 Bot 接入配置: 可接入多个 Bot 实例(目前支持 telegram), 供 RADIUS 人工审批等场景使用.
+bot:
+  # 是否启用 Bot 接入(默认关闭)
+  enable: false
+  instances:
+    # 实例 ID 需唯一, 审批配置 radius.approval.bot.instance-ids 中引用该 ID
+    - id: "telegram-approval"
+      type: "telegram"
+      name: "VPN 审批机器人"
+      enable: true
+      config:
+        # 通过 Telegram 的 @BotFather 创建机器人后获取的 token
+        token: ""

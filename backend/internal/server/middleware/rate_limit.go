@@ -1,8 +1,9 @@
 package middleware
 
 import (
-	"micro-net-hub/internal/server/helper"
 	"time"
+
+	"micro-net-hub/internal/server/helper"
 
 	"github.com/gin-gonic/gin"
 	"github.com/juju/ratelimit"

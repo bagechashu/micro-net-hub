@@ -19,7 +19,6 @@ import (
 )
 
 var (
-	g      errgroup.Group
 	ctx    context.Context
 	cancel func()
 )
@@ -52,6 +51,10 @@ func main() {
 
 	// 启动定时任务
 	setup.InitCron()
+
+	// 初始化 Bot 接入(用于 RADIUS 人工审批等场景), 进程退出时停止全部实例
+	bot := setup.InitBot()
+	defer bot()
 
 	// 操作日志中间件处理日志时没有将日志发送到rabbitmq或者kafka中, 而是发送到了channel中
 	// 这里开启3个goroutine处理channel将日志记录到数据库

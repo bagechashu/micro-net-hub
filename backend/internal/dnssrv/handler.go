@@ -3,12 +3,13 @@ package dnssrv
 import (
 	"errors"
 	"fmt"
-	"micro-net-hub/internal/config"
-	"micro-net-hub/internal/global"
-	"micro-net-hub/internal/module/dns/model"
 	"net"
 	"strings"
 	"time"
+
+	"micro-net-hub/internal/config"
+	"micro-net-hub/internal/global"
+	"micro-net-hub/internal/module/dns/model"
 
 	"github.com/miekg/dns"
 )

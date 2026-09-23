@@ -54,7 +54,18 @@ First get server up and running
 go run cmd/micro-net-hub/main.go
 ```
 
-For the test we need a client
+For the test we need a client: use the built-in one (no extra dependency needed), it is the equivalent of `radtest`.
+
+```
+# test
+go run ./cmd/radius-client -user admin -pass admin_pass -otp 000000 -verbose
+go run ./cmd/radius-client admin admin_pass000000   # 位置参数写法
+```
+
+See [cmd/radius-client](../cmd/radius-client/README.md) for all flags, e.g. `-count`/`-interval` for the
+"failed attempts lock" flow, `-timeout`/`-nas-id` for the manual approval flow.
+
+Or install freeradius-utils if you need a byte-level comparison:
 
 ```
 # Ubuntu

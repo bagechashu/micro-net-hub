@@ -19,12 +19,15 @@ limitations under the License.
 package radiussrv
 
 import (
+	"context"
 	"fmt"
+	"time"
+
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
 	accountModel "micro-net-hub/internal/module/account/model"
 	totpModel "micro-net-hub/internal/module/totp/model"
-	"time"
+	"micro-net-hub/internal/radiusappr"
 
 	"github.com/patrickmn/go-cache"
 	"layeh.com/radius"
@@ -36,12 +39,46 @@ type loginAttemptInfo struct {
 	LastFailedAt time.Time
 }
 
+// AuthMeta RADIUS 认证请求携带的客户端信息, 用于人工审批留痕与审批人判读
+type AuthMeta struct {
+	RemoteAddr    string // 请求来源地址
+	NasIdentifier string // NAS 标识(如 ocserv-1)
+	NasIPAddress  string // NAS 地址
+}
+
+// checkApproval 人工审批门禁: 返回 nil 表示放行, 否则返回拒绝原因.
+//
+// 门禁在 TOTP 校验通过之后执行, 因此审批人不会被"密码错误的刷屏请求"打扰;
+// 相应地, 审批相关的拒绝也不写入登录失败计数, 由 reject-cooldown-seconds 限流.
+func checkApproval(ctx context.Context, user *accountModel.User, meta AuthMeta) error {
+	if !radiusappr.Enabled() {
+		return nil
+	}
+
+	allow, err := radiusappr.Gate(ctx, user, radiusappr.Meta{
+		RemoteAddr:    meta.RemoteAddr,
+		NasIdentifier: meta.NasIdentifier,
+		NasIPAddress:  meta.NasIPAddress,
+	})
+	if err != nil {
+		global.Log.Warnf("RADIUS 人工审批未放行: username=%s, %v", user.Username, err)
+		return err
+	}
+	if !allow {
+		return fmt.Errorf("登录未获人工审批放行, username=%s", user.Username)
+	}
+	return nil
+}
+
 // 初始化一个缓存实例，设置过期时间为 banDurationMinute 分钟
 var banDurationMinute float64 = 5
 var loginAttemptsCache = cache.New(time.Duration(banDurationMinute)*time.Minute, time.Duration(banDurationMinute)*time.Minute)
 
-// AuthRequest - encapsulates approval logic
-func AuthRequest(username string, password string) (valid bool, err error) {
+// AuthRequest 校验用户名密码与 TOTP, 通过后按需进入人工审批门禁.
+//
+// 注意: 人工审批的拒绝与等待超时都不写入 loginAttemptsCache, 否则用户重试几次
+// 就会触发 5 分钟锁定, 反而放大故障面; 重复申请的限流由 reject-cooldown-seconds 承担.
+func AuthRequest(ctx context.Context, username string, password string, meta AuthMeta) (valid bool, err error) {
 	var loginAttempt = &loginAttemptInfo{}
 	attempt, found := loginAttemptsCache.Get(username)
 	if found {
@@ -87,7 +124,11 @@ func AuthRequest(username string, password string) (valid bool, err error) {
 	}
 	// 校验 totp
 	if totpModel.CheckTotp(userRight.Totp.Secret, otp) {
-		valid = true
+		// TOTP 通过后才进入人工审批: 避免未通过身份校验的请求消耗审批人注意力
+		if err := checkApproval(ctx, userRight, meta); err != nil {
+			return false, err
+		}
+
 		// 验证成功了,清除该用户的登录失败记录，
 		loginAttemptsCache.Delete(username)
 		return true, nil
@@ -106,9 +147,24 @@ func AuthHandler(w radius.ResponseWriter, r *radius.Request) {
 	username := rfc2865.UserName_GetString(r.Packet)
 	password := rfc2865.UserPassword_GetString(r.Packet)
 
+	// 来源与 NAS 信息仅用于审批单留痕, 取不到不影响认证流程
+	remoteAddr := ""
+	if r.RemoteAddr != nil {
+		remoteAddr = r.RemoteAddr.String()
+	}
+	nasIP := ""
+	if ip := rfc2865.NASIPAddress_Get(r.Packet); ip != nil {
+		nasIP = ip.String()
+	}
+	meta := AuthMeta{
+		RemoteAddr:    remoteAddr,
+		NasIdentifier: rfc2865.NASIdentifier_GetString(r.Packet),
+		NasIPAddress:  nasIP,
+	}
+
 	code := radius.CodeAccessReject
 
-	if userValid, err := AuthRequest(username, password); err != nil {
+	if userValid, err := AuthRequest(r.Context(), username, password, meta); err != nil {
 		global.Log.Errorf("Error while performing auth for user %s: %s", username, err)
 	} else if userValid {
 		code = radius.CodeAccessAccept

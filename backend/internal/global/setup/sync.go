@@ -5,6 +5,7 @@ import (
 	"micro-net-hub/internal/global"
 	"micro-net-hub/internal/module/goldap/sync"
 	"micro-net-hub/internal/module/goldap/usermgr"
+	"micro-net-hub/internal/radiusappr"
 
 	"github.com/robfig/cron/v3"
 )
@@ -19,14 +20,14 @@ func InitCron() {
 
 		//启动定时任务
 		_, err := c.AddFunc(config.Conf.Sync.DeptSyncTime, func() {
-			ding.SyncDepts()
+			_ = ding.SyncDepts()
 		})
 		if err != nil {
 			global.Log.Errorf("启动同步部门的定时任务失败: %v", err)
 		}
 		//每天凌晨1点执行一次
 		_, err = c.AddFunc(config.Conf.Sync.UserSyncTime, func() {
-			ding.SyncUsers()
+			_ = ding.SyncUsers()
 		})
 		if err != nil {
 			global.Log.Errorf("启动同步用户的定时任务失败: %v", err)
@@ -37,14 +38,14 @@ func InitCron() {
 		wechat := usermgr.NewWeChat()
 
 		_, err := c.AddFunc(config.Conf.Sync.DeptSyncTime, func() {
-			wechat.SyncDepts()
+			_ = wechat.SyncDepts()
 		})
 		if err != nil {
 			global.Log.Errorf("启动同步部门的定时任务失败: %v", err)
 		}
 		//每天凌晨1点执行一次
 		_, err = c.AddFunc(config.Conf.Sync.UserSyncTime, func() {
-			wechat.SyncUsers()
+			_ = wechat.SyncUsers()
 		})
 		if err != nil {
 			global.Log.Errorf("启动同步用户的定时任务失败: %v", err)
@@ -55,14 +56,14 @@ func InitCron() {
 		feishu := usermgr.NewFeiShu()
 
 		_, err := c.AddFunc(config.Conf.Sync.DeptSyncTime, func() {
-			feishu.SyncDepts()
+			_ = feishu.SyncDepts()
 		})
 		if err != nil {
 			global.Log.Errorf("同步部门的定时任务启动失败: %v", err)
 		}
 		//每天凌晨1点执行一次
 		_, err = c.AddFunc(config.Conf.Sync.UserSyncTime, func() {
-			feishu.SyncUsers()
+			_ = feishu.SyncUsers()
 		})
 		if err != nil {
 			global.Log.Errorf("同步用户的定时任务启动失败: %v", err)
@@ -78,6 +79,18 @@ func InitCron() {
 			global.Log.Errorf("同步任务状态检查任务启动失败: %v", err)
 		}
 	}
+	// RADIUS 人工审批数据清理: 超时的申请单置为已过期, 并删除超过保留期的历史数据
+	if config.Conf.Radius != nil && config.Conf.Radius.Approval != nil && config.Conf.Radius.Approval.Enable {
+		cleanupCron := config.Conf.Radius.Approval.CleanupCron
+		if cleanupCron == "" {
+			cleanupCron = "0 30 4 * * *"
+		}
+		_, err := c.AddFunc(cleanupCron, radiusappr.Cleanup)
+		if err != nil {
+			global.Log.Errorf("启动 RADIUS 审批数据清理任务失败: %v", err)
+		}
+	}
+
 	c.Start()
 	global.Log.Info("初始化定时任务完成")
 }

@@ -1,12 +1,13 @@
 package ldapsrv
 
 import (
-	"micro-net-hub/internal/config"
-	"micro-net-hub/internal/global"
-	"micro-net-hub/internal/tools"
 	"strings"
 	"sync"
 	"time"
+
+	"micro-net-hub/internal/config"
+	"micro-net-hub/internal/global"
+	"micro-net-hub/internal/tools"
 
 	"micro-net-hub/internal/module/account/model"
 	totpModel "micro-net-hub/internal/module/totp/model"

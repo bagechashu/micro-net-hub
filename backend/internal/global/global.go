@@ -1,6 +1,7 @@
 package global
 
 import (
+	"micro-net-hub/internal/bot"
 	"micro-net-hub/internal/pkg/ldappool"
 
 	"github.com/casbin/casbin/v2"
@@ -30,3 +31,6 @@ var Trans ut.Translator
 
 // Global LdapPool
 var LdapPool ldappool.LdapPool
+
+// 全局 Bot 实例管理器, 负责 Bot 实例的启停与热加载
+var BotManager *bot.Manager

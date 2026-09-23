@@ -1,16 +1,68 @@
 package tools
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	"testing"
+
+	"micro-net-hub/internal/config"
 )
 
 func TestGenPass(t *testing.T) {
-	fmt.Printf("密码为：%s\n", NewGenPasswd("123456"))
-	// err := ComparePasswd("$2a$10$Fy8p0nCixgWKzLfO3SgdhOzAF7YolSt6dHj6QidDGYlzLJDpniXB6", "123456")
-	// if err != nil {
-	// 	fmt.Printf("密码错误：%s\n", err)
-	// }
+	pubPEM, privPEM := testRSAKeyPair(t)
+
+	// 注入测试密钥到全局配置, 结束后恢复, 避免影响其它用例
+	previousSystem := config.Conf.System
+	config.Conf.System = &config.System{
+		RSAPublicBytes:  pubPEM,
+		RSAPrivateBytes: privPEM,
+	}
+	t.Cleanup(func() { config.Conf.System = previousSystem })
+
+	const raw = "123456"
+	encrypted := NewGenPasswd(raw)
+	if encrypted == "" {
+		t.Fatal("加密结果为空")
+	}
+	if encrypted == raw {
+		t.Fatalf("加密结果不应等于明文: %q", encrypted)
+	}
+
+	if decrypted := NewParsePasswd(encrypted); decrypted != raw {
+		t.Fatalf("加解密往返不一致: got %q, want %q", decrypted, raw)
+	}
+}
+
+// testRSAKeyPair 生成一对用于测试的 RSA 密钥, 返回公钥/私钥的 PEM 编码字节.
+//
+// 公钥采用 PKIX 编码、私钥采用 PKCS#1 编码, 分别与 RSAEncrypt / RSADecrypt 的
+// 解析方式保持一致.
+func testRSAKeyPair(t *testing.T) (pubPEM, privPEM []byte) {
+	t.Helper()
+
+	priv, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		t.Fatalf("生成测试 RSA 私钥失败: %v", err)
+	}
+
+	privPEM = pem.EncodeToMemory(&pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: x509.MarshalPKCS1PrivateKey(priv),
+	})
+
+	pubDER, err := x509.MarshalPKIXPublicKey(&priv.PublicKey)
+	if err != nil {
+		t.Fatalf("序列化测试 RSA 公钥失败: %v", err)
+	}
+	pubPEM = pem.EncodeToMemory(&pem.Block{
+		Type:  "PUBLIC KEY",
+		Bytes: pubDER,
+	})
+
+	return pubPEM, privPEM
 }
 
 func TestArrUintCmp(t *testing.T) {

@@ -2,8 +2,9 @@ package helper
 
 import (
 	"fmt"
-	"micro-net-hub/internal/global"
 	"net/http"
+
+	"micro-net-hub/internal/global"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"

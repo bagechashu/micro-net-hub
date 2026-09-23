@@ -1,9 +1,10 @@
 package setup
 
 import (
+	"regexp"
+
 	"micro-net-hub/internal/global"
 	"micro-net-hub/internal/tools"
-	"regexp"
 
 	"github.com/go-playground/locales/zh"
 	ut "github.com/go-playground/universal-translator"

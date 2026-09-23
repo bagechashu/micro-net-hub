@@ -2,8 +2,9 @@ package ldapsrv
 
 import (
 	"fmt"
-	"micro-net-hub/internal/config"
 	"strings"
+
+	"micro-net-hub/internal/config"
 
 	"github.com/merlinz01/ldapserver"
 )

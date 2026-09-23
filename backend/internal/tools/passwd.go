@@ -4,9 +4,10 @@ import (
 	"crypto/rand"
 	"errors"
 	"math/big"
-	"micro-net-hub/internal/config"
 	"strings"
 	"unicode"
+
+	"micro-net-hub/internal/config"
 
 	"github.com/thoas/go-funk"
 )

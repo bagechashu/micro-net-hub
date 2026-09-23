@@ -2,6 +2,7 @@ package sync
 
 import (
 	"fmt"
+
 	"micro-net-hub/internal/config"
 	accountModel "micro-net-hub/internal/module/account/model"
 	"micro-net-hub/internal/module/goldap/ldapmgr"

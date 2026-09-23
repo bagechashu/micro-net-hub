@@ -44,6 +44,15 @@ clean:
 	$(GO_CLEAN)
 	rm -f $(SERVICE_SRC_DIR)/$(BIN_DIR)/$(APP_NAME)
 
+test:
+	cd $(SERVICE_SRC_DIR) && go test `go list ./... | grep -v /test`
+
+fmt:
+	cd $(SERVICE_SRC_DIR) && goimports -local micro-net-hub -w . && gofmt -w .
+
+lint: 
+	cd $(SERVICE_SRC_DIR) && golangci-lint run ./...
+
 .DEFAULT_GOAL := all
 
-.PHONY: all be fe clean run
+.PHONY: all be fe clean run test fmt lint
