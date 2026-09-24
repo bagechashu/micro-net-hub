@@ -110,7 +110,7 @@ func BotHandler(ctx context.Context, bot bot.BotProvider, msg bot.Message) {
 }
 
 // instanceEnabled 判断某个 Bbot 实例是否参与审批
-func instanceEnabled(approval *config.RadiusApproval, instanceID string) bool {
+func instanceEnabled(approval *config.ApprovalConfig, instanceID string) bool {
 	if len(approval.Bot.InstanceIDs) == 0 {
 		// 未限定实例时, 任意已启用实例都可以承载审批
 		return true

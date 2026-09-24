@@ -79,15 +79,15 @@ func InitCron() {
 			global.Log.Errorf("同步任务状态检查任务启动失败: %v", err)
 		}
 	}
-	// RADIUS 人工审批数据清理: 超时的申请单置为已过期, 并删除超过保留期的历史数据
-	if config.Conf.Radius != nil && config.Conf.Radius.Approval != nil && config.Conf.Radius.Approval.Enable {
-		cleanupCron := config.Conf.Radius.Approval.CleanupCron
+	// 人工审批数据清理: 超时的申请单置为已过期, 并删除超过保留期的历史数据
+	if config.Conf.Approval != nil && config.Conf.Approval.Enable {
+		cleanupCron := config.Conf.Approval.CleanupCron
 		if cleanupCron == "" {
 			cleanupCron = "0 30 4 * * *"
 		}
 		_, err := c.AddFunc(cleanupCron, approval.Cleanup)
 		if err != nil {
-			global.Log.Errorf("启动 RADIUS 审批数据清理任务失败: %v", err)
+			global.Log.Errorf("启动审批数据清理任务失败: %v", err)
 		}
 	}
 

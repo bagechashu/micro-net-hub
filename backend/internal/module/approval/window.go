@@ -48,7 +48,7 @@ func loadLocation(name string) *time.Location {
 //   - days 为空表示每天生效; start 与 end 为 HH:MM, 当 end 不晚于 start 时视为跨天窗口;
 //   - 跨天窗口的回溯由"候选取今天与昨天两个锚定日"实现, 因此 22:00-06:00 这类窗口
 //     在凌晨时段也能正确命中.
-func InApprovalWindow(now time.Time, approval *config.RadiusApproval) (bool, error) {
+func InApprovalWindow(now time.Time, approval *config.ApprovalConfig) (bool, error) {
 	if approval == nil || !approval.Enable {
 		return false, nil
 	}

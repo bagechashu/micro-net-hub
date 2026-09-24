@@ -64,11 +64,11 @@ type timeouts struct {
 }
 
 // configApproval 返回当前生效的审批配置, 未配置时返回 nil
-func configApproval() *config.RadiusApproval {
-	if config.Conf == nil || config.Conf.Radius == nil {
+func configApproval() *config.ApprovalConfig {
+	if config.Conf == nil {
 		return nil
 	}
-	return config.Conf.Radius.Approval
+	return config.Conf.Approval
 }
 
 // Enabled 判断人工审批是否已开启

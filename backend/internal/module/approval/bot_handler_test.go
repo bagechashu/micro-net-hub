@@ -91,7 +91,7 @@ func approvalBotConfig(instanceID string, approverChatIDs []string) config.Appro
 }
 
 // setupHandlerEnv 准备带 Bot 审批配置的测试环境
-func setupHandlerEnv(t *testing.T, approval *config.RadiusApproval, providers ...*fakeBotProvider) {
+func setupHandlerEnv(t *testing.T, approval *config.ApprovalConfig, providers ...*fakeBotProvider) {
 	t.Helper()
 	setupApprovalEnv(t, approval)
 
@@ -106,8 +106,8 @@ func setupHandlerEnv(t *testing.T, approval *config.RadiusApproval, providers ..
 }
 
 // handlerApproval 审批开启 + 单实例 + 指定白名单的默认配置
-func handlerApproval(instanceID string, approverChatIDs []string) *config.RadiusApproval {
-	return &config.RadiusApproval{
+func handlerApproval(instanceID string, approverChatIDs []string) *config.ApprovalConfig {
+	return &config.ApprovalConfig{
 		Enable:            true,
 		WaitSeconds:       1,
 		PendingTTLSeconds: 120,

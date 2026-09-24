@@ -24,14 +24,14 @@ func TestInApprovalWindow(t *testing.T) {
 	// 2026-01-01 为周四, 01-03 为周六, 01-04 为周日, 01-05 为周一, 01-06 为周二
 	tests := []struct {
 		name     string
-		approval *config.RadiusApproval
+		approval *config.ApprovalConfig
 		now      time.Time
 		want     bool
 		wantErr  bool
 	}{
 		{
 			name:     "审批未开启时恒不判定",
-			approval: &config.RadiusApproval{Enable: false, TimeWindows: []config.ApprovalTimeWindow{{Start: "00:00", End: "23:59"}}},
+			approval: &config.ApprovalConfig{Enable: false, TimeWindows: []config.ApprovalTimeWindow{{Start: "00:00", End: "23:59"}}},
 			now:      time.Date(2026, 1, 1, 12, 0, 0, 0, loc),
 			want:     false,
 		},
@@ -43,13 +43,13 @@ func TestInApprovalWindow(t *testing.T) {
 		},
 		{
 			name:     "未配置时间窗口视为全天需要审批",
-			approval: &config.RadiusApproval{Enable: true},
+			approval: &config.ApprovalConfig{Enable: true},
 			now:      time.Date(2026, 1, 1, 3, 0, 0, 0, loc),
 			want:     true,
 		},
 		{
 			name: "日内窗口内命中",
-			approval: &config.RadiusApproval{
+			approval: &config.ApprovalConfig{
 				Enable:      true,
 				Timezone:    "Asia/Shanghai",
 				TimeWindows: []config.ApprovalTimeWindow{{Start: "09:00", End: "18:00"}},
@@ -59,7 +59,7 @@ func TestInApprovalWindow(t *testing.T) {
 		},
 		{
 			name: "日内窗口外不命中",
-			approval: &config.RadiusApproval{
+			approval: &config.ApprovalConfig{
 				Enable:      true,
 				Timezone:    "Asia/Shanghai",
 				TimeWindows: []config.ApprovalTimeWindow{{Start: "09:00", End: "18:00"}},
@@ -69,7 +69,7 @@ func TestInApprovalWindow(t *testing.T) {
 		},
 		{
 			name: "窗口起点包含、终点不包含",
-			approval: &config.RadiusApproval{
+			approval: &config.ApprovalConfig{
 				Enable:      true,
 				Timezone:    "Asia/Shanghai",
 				TimeWindows: []config.ApprovalTimeWindow{{Start: "09:00", End: "18:00"}},
@@ -79,7 +79,7 @@ func TestInApprovalWindow(t *testing.T) {
 		},
 		{
 			name: "跨天窗口在凌晨命中",
-			approval: &config.RadiusApproval{
+			approval: &config.ApprovalConfig{
 				Enable:      true,
 				Timezone:    "Asia/Shanghai",
 				TimeWindows: []config.ApprovalTimeWindow{{Start: "22:00", End: "06:00"}},
@@ -89,7 +89,7 @@ func TestInApprovalWindow(t *testing.T) {
 		},
 		{
 			name: "跨天窗口在白天不命中",
-			approval: &config.RadiusApproval{
+			approval: &config.ApprovalConfig{
 				Enable:      true,
 				Timezone:    "Asia/Shanghai",
 				TimeWindows: []config.ApprovalTimeWindow{{Start: "22:00", End: "06:00"}},
@@ -99,7 +99,7 @@ func TestInApprovalWindow(t *testing.T) {
 		},
 		{
 			name: "星期限定窗口在指定星期命中",
-			approval: &config.RadiusApproval{
+			approval: &config.ApprovalConfig{
 				Enable:      true,
 				Timezone:    "Asia/Shanghai",
 				TimeWindows: []config.ApprovalTimeWindow{{Days: []string{"mon"}, Start: "09:00", End: "18:00"}},
@@ -109,7 +109,7 @@ func TestInApprovalWindow(t *testing.T) {
 		},
 		{
 			name: "星期限定窗口在其它星期不命中",
-			approval: &config.RadiusApproval{
+			approval: &config.ApprovalConfig{
 				Enable:      true,
 				Timezone:    "Asia/Shanghai",
 				TimeWindows: []config.ApprovalTimeWindow{{Days: []string{"mon"}, Start: "09:00", End: "18:00"}},
@@ -119,7 +119,7 @@ func TestInApprovalWindow(t *testing.T) {
 		},
 		{
 			name: "跨天窗口的星期按锚定日判定",
-			approval: &config.RadiusApproval{
+			approval: &config.ApprovalConfig{
 				Enable:      true,
 				Timezone:    "Asia/Shanghai",
 				TimeWindows: []config.ApprovalTimeWindow{{Days: []string{"sat"}, Start: "22:00", End: "06:00"}},
@@ -130,7 +130,7 @@ func TestInApprovalWindow(t *testing.T) {
 		},
 		{
 			name: "多个窗口任意命中即需审批",
-			approval: &config.RadiusApproval{
+			approval: &config.ApprovalConfig{
 				Enable:   true,
 				Timezone: "Asia/Shanghai",
 				TimeWindows: []config.ApprovalTimeWindow{
@@ -143,7 +143,7 @@ func TestInApprovalWindow(t *testing.T) {
 		},
 		{
 			name: "时间格式非法",
-			approval: &config.RadiusApproval{
+			approval: &config.ApprovalConfig{
 				Enable:      true,
 				TimeWindows: []config.ApprovalTimeWindow{{Start: "25:00", End: "06:00"}},
 			},
@@ -152,7 +152,7 @@ func TestInApprovalWindow(t *testing.T) {
 		},
 		{
 			name: "星期取值非法",
-			approval: &config.RadiusApproval{
+			approval: &config.ApprovalConfig{
 				Enable:      true,
 				TimeWindows: []config.ApprovalTimeWindow{{Days: []string{"monday"}, Start: "09:00", End: "18:00"}},
 			},

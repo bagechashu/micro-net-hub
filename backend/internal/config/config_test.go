@@ -28,9 +28,9 @@ func TestSampleConfigs_ParseApproval(t *testing.T) {
 			conf := loadConfig(t, tt.path)
 
 			require.NotNil(t, conf.Radius, "radius 段缺失")
-			require.NotNil(t, conf.Radius.Approval, "radius.approval 段缺失")
+			require.NotNil(t, conf.Approval, "approval 段缺失")
 
-			approval := conf.Radius.Approval
+			approval := conf.Approval
 			assert.Equal(t, "Asia/Shanghai", approval.Timezone)
 			assert.Positive(t, approval.WaitSeconds)
 			assert.Positive(t, approval.PendingTTLSeconds)
@@ -76,9 +76,9 @@ func TestDefaults_Approval(t *testing.T) {
 	out := new(config)
 	require.NoError(t, viper.Unmarshal(out))
 	require.NotNil(t, out.Radius, "radius 默认值未生效")
-	require.NotNil(t, out.Radius.Approval, "radius.approval 默认值未生效")
+	require.NotNil(t, out.Approval, "approval 默认值未生效")
 
-	approval := out.Radius.Approval
+	approval := out.Approval
 	assert.False(t, approval.Enable, "人工审批默认关闭")
 	assert.Equal(t, "Asia/Shanghai", approval.Timezone)
 	assert.Equal(t, 6, approval.WaitSeconds)

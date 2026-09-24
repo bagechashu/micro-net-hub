@@ -19,23 +19,24 @@ import (
 var Conf = new(config)
 
 type config struct {
-	System     *System     `mapstructure:"system" json:"system"`
-	Logs       *Logs       `mapstructure:"logs" json:"logs"`
-	Database   *Database   `mapstructure:"database" json:"database"`
-	Mysql      *Mysql      `mapstructure:"mysql" json:"mysql"`
-	Jwt        *Jwt        `mapstructure:"jwt" json:"jwt"`
-	RateLimit  *RateLimit  `mapstructure:"rate-limit" json:"rateLimit"`
-	Ldap       *Ldap       `mapstructure:"ldap" json:"ldap"`
-	LdapServer *LdapServer `mapstructure:"ldap-server" json:"ldapServer"`
-	Radius     *Radius     `mapstructure:"radius" json:"radius"`
-	Dns        *Dns        `mapstructure:"dns" json:"dns"`
-	Email      *Email      `mapstructure:"email" json:"email"`
-	Notice     *Notice     `mapstructure:"notice" json:"notice"`
-	Sync       *Sync       `mapstructure:"sync" json:"sync"`
-	DingTalk   *DingTalk   `mapstructure:"dingtalk" json:"dingTalk"`
-	WeCom      *WeCom      `mapstructure:"wecom" json:"weCom"`
-	FeiShu     *FeiShu     `mapstructure:"feishu" json:"feiShu"`
-	Bot        *Bot        `mapstructure:"bot" json:"bot"`
+	System     *System         `mapstructure:"system" json:"system"`
+	Logs       *Logs           `mapstructure:"logs" json:"logs"`
+	Database   *Database       `mapstructure:"database" json:"database"`
+	Mysql      *Mysql          `mapstructure:"mysql" json:"mysql"`
+	Jwt        *Jwt            `mapstructure:"jwt" json:"jwt"`
+	RateLimit  *RateLimit      `mapstructure:"rate-limit" json:"rateLimit"`
+	Ldap       *Ldap           `mapstructure:"ldap" json:"ldap"`
+	LdapServer *LdapServer     `mapstructure:"ldap-server" json:"ldapServer"`
+	Radius     *Radius         `mapstructure:"radius" json:"radius"`
+	Dns        *Dns            `mapstructure:"dns" json:"dns"`
+	Email      *Email          `mapstructure:"email" json:"email"`
+	Notice     *Notice         `mapstructure:"notice" json:"notice"`
+	Sync       *Sync           `mapstructure:"sync" json:"sync"`
+	DingTalk   *DingTalk       `mapstructure:"dingtalk" json:"dingTalk"`
+	WeCom      *WeCom          `mapstructure:"wecom" json:"weCom"`
+	FeiShu     *FeiShu         `mapstructure:"feishu" json:"feiShu"`
+	Bot        *Bot            `mapstructure:"bot" json:"bot"`
+	Approval   *ApprovalConfig `mapstructure:"approval" json:"approval"`
 }
 
 // 设置读取配置信息
@@ -90,20 +91,20 @@ func setViperDefaults() {
 	viper.SetDefault("sync.ldap-sync-time", "0 */2 * * * *")
 	viper.SetDefault("radius.fail-times-before-block5min", 9)
 	viper.SetDefault("bot.enable", false)
-	viper.SetDefault("radius.approval.enable", false)
-	viper.SetDefault("radius.approval.timezone", "Asia/Shanghai")
-	viper.SetDefault("radius.approval.wait-seconds", 6)
-	viper.SetDefault("radius.approval.pending-ttl-seconds", 120)
-	viper.SetDefault("radius.approval.notice-interval-seconds", 15)
-	viper.SetDefault("radius.approval.reject-cooldown-seconds", 60)
-	viper.SetDefault("radius.approval.grant-ttl-minutes", 30)
-	viper.SetDefault("radius.approval.grant-max-uses", 0)
-	viper.SetDefault("radius.approval.max-pending-global", 200)
-	viper.SetDefault("radius.approval.cleanup-cron", "0 30 4 * * *")
-	viper.SetDefault("radius.approval.bot.enable", true)
-	viper.SetDefault("radius.approval.bot.private-only", true)
-	viper.SetDefault("radius.approval.bot.applicant-notify", true)
-	viper.SetDefault("radius.approval.bot.max-commands-per10s", 5)
+	viper.SetDefault("approval.enable", false)
+	viper.SetDefault("approval.timezone", "Asia/Shanghai")
+	viper.SetDefault("approval.wait-seconds", 6)
+	viper.SetDefault("approval.pending-ttl-seconds", 120)
+	viper.SetDefault("approval.notice-interval-seconds", 15)
+	viper.SetDefault("approval.reject-cooldown-seconds", 60)
+	viper.SetDefault("approval.grant-ttl-minutes", 30)
+	viper.SetDefault("approval.grant-max-uses", 0)
+	viper.SetDefault("approval.max-pending-global", 200)
+	viper.SetDefault("approval.cleanup-cron", "0 30 4 * * *")
+	viper.SetDefault("approval.bot.enable", true)
+	viper.SetDefault("approval.bot.private-only", true)
+	viper.SetDefault("approval.bot.applicant-notify", true)
+	viper.SetDefault("approval.bot.max-commands-per10s", 5)
 	viper.SetDefault("email.enable", false)
 	viper.SetDefault("ldap-server.enable-manage", false)
 	viper.SetDefault("ldap-server.listen-addr", "0.0.0.0:1389")
@@ -215,11 +216,10 @@ type LdapServer struct {
 }
 
 type Radius struct {
-	FailTimesBeforeBlock5min int             `mapstructure:"fail-times-before-block5min" json:"failTimesBeforeBlock5min"`
-	ListenAddr               string          `mapstructure:"listen-addr" json:"listenAddr"`
-	Secret                   string          `mapstructure:"secret" json:"secret"`
-	GroupFilter              string          `mapstructure:"group-filter" json:"groupFilter"`
-	Approval                 *RadiusApproval `mapstructure:"approval" json:"approval"`
+	FailTimesBeforeBlock5min int    `mapstructure:"fail-times-before-block5min" json:"failTimesBeforeBlock5min"`
+	ListenAddr               string `mapstructure:"listen-addr" json:"listenAddr"`
+	Secret                   string `mapstructure:"secret" json:"secret"`
+	GroupFilter              string `mapstructure:"group-filter" json:"groupFilter"`
 }
 
 // Bot 通用 Bot 接入配置.
@@ -241,10 +241,10 @@ type BotInstance struct {
 	Config map[string]string `mapstructure:"config" json:"config"`
 }
 
-// RadiusApproval RADIUS 认证人工审批配置.
+// ApprovalConfig 认证审批配置.
 //
 // 命中时间窗口且在适用范围内的认证请求, 需人工审批通过后方可放行; 审批可通过 Bot 完成.
-type RadiusApproval struct {
+type ApprovalConfig struct {
 	// 是否开启人工审批
 	Enable bool `mapstructure:"enable" json:"enable"`
 	// 时间窗口判定使用的时区
@@ -255,7 +255,7 @@ type RadiusApproval struct {
 	Scope ApprovalScope `mapstructure:"scope" json:"scope"`
 	// 审批的 Bot 渠道配置
 	Bot ApprovalBot `mapstructure:"bot" json:"bot"`
-	// RADIUS 侧同步等待审批结果的秒数, 超时后本次认证返回拒绝(审批通过后用户重连即可放行)
+	// 认证侧同步等待审批结果的秒数, 超时后本次认证返回拒绝(审批通过后用户重连即可放行)
 	WaitSeconds int `mapstructure:"wait-seconds" json:"waitSeconds"`
 	// 申请单有效期(秒), 超时后申请单置为已过期
 	PendingTTLSeconds int `mapstructure:"pending-ttl-seconds" json:"pendingTTLSeconds"`

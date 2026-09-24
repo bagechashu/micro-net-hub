@@ -23,8 +23,8 @@ import (
 // setupApprovalEnv 准备内存数据库与审批配置.
 //
 // 每个用例使用独立的共享内存库(名称带纳秒后缀), 避免用例之间互相污染; 全局的
-// global.DB / global.Log / config.Conf.Radius 在清理时恢复, 保证用例可重复执行.
-func setupApprovalEnv(t *testing.T, approval *config.RadiusApproval) {
+// global.DB / global.Log / config.Conf.Approval 在清理时恢复, 保证用例可重复执行.
+func setupApprovalEnv(t *testing.T, approval *config.ApprovalConfig) {
 	t.Helper()
 
 	dsn := fmt.Sprintf("file:approval-%d?mode=memory&cache=shared", time.Now().UnixNano())
@@ -50,9 +50,9 @@ func setupApprovalEnv(t *testing.T, approval *config.RadiusApproval) {
 		global.Log = previousLog
 	})
 
-	previousRadius := config.Conf.Radius
-	config.Conf.Radius = &config.Radius{Approval: approval}
-	t.Cleanup(func() { config.Conf.Radius = previousRadius })
+	previousApproval := config.Conf.Approval
+	config.Conf.Approval = approval
+	t.Cleanup(func() { config.Conf.Approval = previousApproval })
 
 	// 频控与冷却缓存是包级状态, 逐用例重置避免相互影响
 	rejectCooldownCache.Flush()
@@ -61,7 +61,7 @@ func setupApprovalEnv(t *testing.T, approval *config.RadiusApproval) {
 
 // TestCreateOrReuseRequest 新建与复用待审批申请单
 func TestCreateOrReuseRequest(t *testing.T) {
-	setupApprovalEnv(t, &config.RadiusApproval{Enable: true, PendingTTLSeconds: 120})
+	setupApprovalEnv(t, &config.ApprovalConfig{Enable: true, PendingTTLSeconds: 120})
 	user := &accountModel.User{Username: "alice", Nickname: "艾丽斯"}
 
 	req, created, err := CreateOrReuseRequest(user, Meta{MetaKeySourceAddr: "10.0.0.1", MetaKeySourceID: "ocserv-1"})
@@ -80,7 +80,7 @@ func TestCreateOrReuseRequest(t *testing.T) {
 
 // TestCreateOrReuseRequest_RejectsNilUser 非法入参必须报错而不是落库
 func TestCreateOrReuseRequest_RejectsNilUser(t *testing.T) {
-	setupApprovalEnv(t, &config.RadiusApproval{Enable: true})
+	setupApprovalEnv(t, &config.ApprovalConfig{Enable: true})
 
 	_, _, err := CreateOrReuseRequest(nil, Meta{})
 	require.Error(t, err)
@@ -88,7 +88,7 @@ func TestCreateOrReuseRequest_RejectsNilUser(t *testing.T) {
 
 // TestCreateOrReuseRequest_MaxPending 全局待审批上限生效
 func TestCreateOrReuseRequest_MaxPending(t *testing.T) {
-	setupApprovalEnv(t, &config.RadiusApproval{Enable: true, PendingTTLSeconds: 120, MaxPendingGlobal: 1})
+	setupApprovalEnv(t, &config.ApprovalConfig{Enable: true, PendingTTLSeconds: 120, MaxPendingGlobal: 1})
 
 	_, _, err := CreateOrReuseRequest(&accountModel.User{Username: "alice"}, Meta{})
 	require.NoError(t, err)
@@ -99,7 +99,7 @@ func TestCreateOrReuseRequest_MaxPending(t *testing.T) {
 
 // TestCreateOrReuseRequest_AfterExpire 已过期的申请单不可复用, 应新建
 func TestCreateOrReuseRequest_AfterExpire(t *testing.T) {
-	setupApprovalEnv(t, &config.RadiusApproval{Enable: true, PendingTTLSeconds: 120})
+	setupApprovalEnv(t, &config.ApprovalConfig{Enable: true, PendingTTLSeconds: 120})
 	user := &accountModel.User{Username: "alice"}
 
 	first, _, err := CreateOrReuseRequest(user, Meta{})
@@ -121,7 +121,7 @@ func TestCreateOrReuseRequest_AfterExpire(t *testing.T) {
 
 // TestApproveIssuesGrantAndIsIdempotent 审批通过签发凭证, 重复审批为幂等操作
 func TestApproveIssuesGrantAndIsIdempotent(t *testing.T) {
-	setupApprovalEnv(t, &config.RadiusApproval{Enable: true, PendingTTLSeconds: 120, GrantTTLMinutes: 30})
+	setupApprovalEnv(t, &config.ApprovalConfig{Enable: true, PendingTTLSeconds: 120, GrantTTLMinutes: 30})
 
 	req, _, err := CreateOrReuseRequest(&accountModel.User{Username: "alice"}, Meta{})
 	require.NoError(t, err)
@@ -146,7 +146,7 @@ func TestApproveIssuesGrantAndIsIdempotent(t *testing.T) {
 
 // TestRejectSetsCooldown 审批拒绝后进入冷却期
 func TestRejectSetsCooldown(t *testing.T) {
-	setupApprovalEnv(t, &config.RadiusApproval{Enable: true, PendingTTLSeconds: 120, RejectCooldownSeconds: 60})
+	setupApprovalEnv(t, &config.ApprovalConfig{Enable: true, PendingTTLSeconds: 120, RejectCooldownSeconds: 60})
 
 	req, _, err := CreateOrReuseRequest(&accountModel.User{Username: "alice"}, Meta{})
 	require.NoError(t, err)
@@ -169,7 +169,7 @@ func TestRejectSetsCooldown(t *testing.T) {
 
 // TestGate_AllowsWithActiveGrant 命中放行凭证时直接放行并记录使用次数
 func TestGate_AllowsWithActiveGrant(t *testing.T) {
-	setupApprovalEnv(t, &config.RadiusApproval{Enable: true, WaitSeconds: 1, GrantTTLMinutes: 30})
+	setupApprovalEnv(t, &config.ApprovalConfig{Enable: true, WaitSeconds: 1, GrantTTLMinutes: 30})
 
 	grant, err := GrantAccess("alice", "bot:telegram:1", approvalModel.ChannelBotTelegram, time.Minute)
 	require.NoError(t, err)
@@ -187,7 +187,7 @@ func TestGate_AllowsWithActiveGrant(t *testing.T) {
 
 // TestGate_WaitsForApproval 门禁在等待窗口内被审批通过后应立即放行
 func TestGate_WaitsForApproval(t *testing.T) {
-	setupApprovalEnv(t, &config.RadiusApproval{Enable: true, WaitSeconds: 5, PendingTTLSeconds: 120})
+	setupApprovalEnv(t, &config.ApprovalConfig{Enable: true, WaitSeconds: 5, PendingTTLSeconds: 120})
 
 	result := make(chan error, 1)
 	go func() {
@@ -222,7 +222,7 @@ func TestGate_WaitsForApproval(t *testing.T) {
 
 // TestGate_TimesOutAndKeepsRequest 等待超时不放行, 但申请单保留供审批人稍后处理
 func TestGate_TimesOutAndKeepsRequest(t *testing.T) {
-	setupApprovalEnv(t, &config.RadiusApproval{Enable: true, WaitSeconds: 1, PendingTTLSeconds: 120})
+	setupApprovalEnv(t, &config.ApprovalConfig{Enable: true, WaitSeconds: 1, PendingTTLSeconds: 120})
 
 	allowed, err := Gate(context.Background(), &accountModel.User{Username: "alice"}, Meta{})
 	require.False(t, allowed)
@@ -241,7 +241,7 @@ func TestGate_TimesOutAndKeepsRequest(t *testing.T) {
 
 // TestGate_SkipsOutsideScope 不在审批范围内的用户直接放行
 func TestGate_SkipsOutsideScope(t *testing.T) {
-	setupApprovalEnv(t, &config.RadiusApproval{
+	setupApprovalEnv(t, &config.ApprovalConfig{
 		Enable:      true,
 		WaitSeconds: 1,
 		Scope:       config.ApprovalScope{ExcludeUsers: []string{"alice"}},
@@ -262,7 +262,7 @@ func TestGate_SkipsOutsideTimeWindow(t *testing.T) {
 	now := time.Now().In(loc)
 
 	// 构造一个当前时刻必然不命中的窗口: 起点为 2 小时后, 终点为 3 小时后
-	setupApprovalEnv(t, &config.RadiusApproval{
+	setupApprovalEnv(t, &config.ApprovalConfig{
 		Enable:      true,
 		Timezone:    loc.String(),
 		WaitSeconds: 1,
@@ -283,7 +283,7 @@ func TestGate_SkipsOutsideTimeWindow(t *testing.T) {
 
 // TestGrantAccessHandlesPendingRequest 应急放行应同时处理待审批申请单
 func TestGrantAccessHandlesPendingRequest(t *testing.T) {
-	setupApprovalEnv(t, &config.RadiusApproval{Enable: true, PendingTTLSeconds: 120, GrantTTLMinutes: 30})
+	setupApprovalEnv(t, &config.ApprovalConfig{Enable: true, PendingTTLSeconds: 120, GrantTTLMinutes: 30})
 
 	req, _, err := CreateOrReuseRequest(&accountModel.User{Username: "alice"}, Meta{})
 	require.NoError(t, err)
@@ -305,7 +305,7 @@ func TestGrantAccessHandlesPendingRequest(t *testing.T) {
 
 // TestCleanupExpiresOverdueRequests 清理任务把超时申请单置为已过期
 func TestCleanupExpiresOverdueRequests(t *testing.T) {
-	setupApprovalEnv(t, &config.RadiusApproval{Enable: true, PendingTTLSeconds: 120})
+	setupApprovalEnv(t, &config.ApprovalConfig{Enable: true, PendingTTLSeconds: 120})
 
 	req, _, err := CreateOrReuseRequest(&accountModel.User{Username: "alice"}, Meta{})
 	require.NoError(t, err)

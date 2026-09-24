@@ -16,14 +16,14 @@ import (
 )
 
 // withApproval 在测试期间替换全局审批配置与日志, 结束后恢复
-func withApproval(t *testing.T, approval *config.RadiusApproval) {
+func withApproval(t *testing.T, approval *config.ApprovalConfig) {
 	t.Helper()
 
-	previousRadius, previousLog := config.Conf.Radius, global.Log
-	config.Conf.Radius = &config.Radius{Approval: approval}
+	previousApproval, previousLog := config.Conf.Approval, global.Log
+	config.Conf.Approval = approval
 	global.Log = zap.NewNop().Sugar()
 	t.Cleanup(func() {
-		config.Conf.Radius = previousRadius
+		config.Conf.Approval = previousApproval
 		global.Log = previousLog
 	})
 }
@@ -42,7 +42,7 @@ func TestCheckApproval_OutsideTimeWindow(t *testing.T) {
 	now := time.Now().In(loc)
 
 	// 起点为 2 小时后、终点为 3 小时后: 当前时刻必然不命中
-	withApproval(t, &config.RadiusApproval{
+	withApproval(t, &config.ApprovalConfig{
 		Enable:   true,
 		Timezone: loc.String(),
 		TimeWindows: []config.ApprovalTimeWindow{{
@@ -56,7 +56,7 @@ func TestCheckApproval_OutsideTimeWindow(t *testing.T) {
 
 // TestCheckApproval_InvalidTimeWindow 时间窗口配置非法时保守拒绝, 避免静默放行
 func TestCheckApproval_InvalidTimeWindow(t *testing.T) {
-	withApproval(t, &config.RadiusApproval{
+	withApproval(t, &config.ApprovalConfig{
 		Enable: true,
 		TimeWindows: []config.ApprovalTimeWindow{{
 			Start: "25:99",
