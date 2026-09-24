@@ -1,4 +1,4 @@
-package radiusappr
+package approval
 
 import (
 	"strings"

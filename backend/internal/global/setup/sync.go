@@ -3,9 +3,9 @@ package setup
 import (
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
+	"micro-net-hub/internal/module/approval"
 	"micro-net-hub/internal/module/goldap/sync"
 	"micro-net-hub/internal/module/goldap/usermgr"
-	"micro-net-hub/internal/radiusappr"
 
 	"github.com/robfig/cron/v3"
 )
@@ -85,7 +85,7 @@ func InitCron() {
 		if cleanupCron == "" {
 			cleanupCron = "0 30 4 * * *"
 		}
-		_, err := c.AddFunc(cleanupCron, radiusappr.Cleanup)
+		_, err := c.AddFunc(cleanupCron, approval.Cleanup)
 		if err != nil {
 			global.Log.Errorf("启动 RADIUS 审批数据清理任务失败: %v", err)
 		}

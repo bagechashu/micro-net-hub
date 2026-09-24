@@ -1,4 +1,4 @@
-// Package model 定义 RADIUS 人工审批的申请单与放行凭证, 以及对应的数据访问方法.
+// Package model 定义人工审批的申请单与放行凭证, 以及对应的数据访问方法.
 package model
 
 import (
@@ -24,18 +24,17 @@ const (
 	ChannelSystem      = "system"       // 系统(过期/清理等自动处理)
 )
 
-// ApprovalRequest 一次 RADIUS 登录的人工审批申请单.
+// ApprovalRequest 一次登录认证的人工审批申请单.
 //
 // 申请单是审批的最小单元, 同一用户名的重复认证请求会复用同一条待审批申请单,
 // 避免客户端重试导致审批人被重复打扰.
 type ApprovalRequest struct {
 	gorm.Model
-	Username      string `gorm:"type:varchar(50);not null;index;comment:'申请人用户名'" json:"username"`
-	Nickname      string `gorm:"type:varchar(50);comment:'申请人昵称'" json:"nickname"`
-	SourceIP      string `gorm:"type:varchar(64);comment:'认证请求来源地址'" json:"sourceIp"`
-	NasIdentifier string `gorm:"type:varchar(128);comment:'NAS 标识'" json:"nasIdentifier"`
-	NasIPAddress  string `gorm:"type:varchar(64);comment:'NAS 地址'" json:"nasIpAddress"`
-	Status        uint8  `gorm:"type:tinyint(1);not null;default:1;index;comment:'状态:1待审批,2已通过,3已拒绝,4已过期,5已作废'" json:"status"`
+	Username string `gorm:"type:varchar(50);not null;index;comment:'申请人用户名'" json:"username"`
+	Nickname string `gorm:"type:varchar(50);comment:'申请人昵称'" json:"nickname"`
+	// Meta 认证上下文(JSON 文本), 字段随认证场景不同而不同, 仅作留痕审计
+	Meta   string `gorm:"type:text;comment:'认证上下文(JSON)'" json:"meta"`
+	Status uint8  `gorm:"type:tinyint(1);not null;default:1;index;comment:'状态:1待审批,2已通过,3已拒绝,4已过期,5已作废'" json:"status"`
 	// PendingKey 待审批唯一占位键: 申请单处于待审批状态时非空(值为 pending:<username>),
 	// 通过唯一索引在数据库层兜底保证同一用户同时只有一条待审批申请单(多实例部署下).
 	// 申请单进入终态(通过/拒绝/过期/作废)时置空, 释放占位.
@@ -51,7 +50,7 @@ type ApprovalRequest struct {
 
 // ApprovalGrant 审批通过后签发的放行凭证.
 //
-// RADIUS 认证是同步的一次性交互, 审批人未必能在等待窗口内响应, 因此审批通过后签发凭证:
+// 认证是同步的一次性交互, 审批人未必能在等待窗口内响应, 因此审批通过后签发凭证:
 // 申请人在凭证有效期内重新连接即可直接放行, 无需再次审批.
 type ApprovalGrant struct {
 	gorm.Model

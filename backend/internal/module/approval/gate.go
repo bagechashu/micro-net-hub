@@ -1,4 +1,4 @@
-package radiusappr
+package approval
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 
 	"micro-net-hub/internal/global"
 	accountModel "micro-net-hub/internal/module/account/model"
-	approvalModel "micro-net-hub/internal/radiusappr/model"
+	approvalModel "micro-net-hub/internal/module/approval/model"
 )
 
 // pollInterval 等待期间轮询数据库的间隔.
@@ -65,7 +65,7 @@ func wakeWaiters(requestID uint, status uint8) {
 	delete(waiters.chans, requestID)
 }
 
-// Gate 人工审批门禁, 是 RADIUS 认证链路上接入审批的唯一入口.
+// Gate 人工审批门禁, 是认证链路上接入审批的唯一入口.
 //
 // 返回值语义: allow 为 true 表示放行; 否则 err 描述拒绝原因.
 // 调用方必须保证: 审批相关的拒绝(含等待超时)不计入登录失败次数, 否则用户重试几次即被锁定.

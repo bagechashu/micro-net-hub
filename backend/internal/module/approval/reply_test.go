@@ -1,10 +1,10 @@
-package radiusappr
+package approval
 
 import (
 	"testing"
 	"time"
 
-	approvalModel "micro-net-hub/internal/radiusappr/model"
+	approvalModel "micro-net-hub/internal/module/approval/model"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -22,7 +22,7 @@ func TestNoticeHTML_EscapesUserInput(t *testing.T) {
 	req := &approvalModel.ApprovalRequest{
 		Username: "alice<b>",
 		Nickname: "<script>alert(1)</script>",
-		SourceIP: "10.0.0.1",
+		Meta:     `{"sourceAddr":"10.0.0.1"}`,
 		ExpireAt: now.Add(2 * time.Minute),
 	}
 	req.ID = 42
@@ -48,8 +48,8 @@ func TestPendingListText(t *testing.T) {
 	assert.Equal(t, "当前没有待审批申请", pendingListText(nil, now))
 
 	reqs := []*approvalModel.ApprovalRequest{
-		{Username: "alice", Nickname: "艾丽斯", SourceIP: "10.0.0.1", ExpireAt: now.Add(time.Minute)},
-		{Username: "bob", SourceIP: "10.0.0.2", ExpireAt: now.Add(-time.Minute)},
+		{Username: "alice", Nickname: "艾丽斯", Meta: `{"sourceAddr":"10.0.0.1"}`, ExpireAt: now.Add(time.Minute)},
+		{Username: "bob", Meta: `{"sourceAddr":"10.0.0.2"}`, ExpireAt: now.Add(-time.Minute)},
 	}
 	reqs[0].ID = 1
 	reqs[1].ID = 2

@@ -8,6 +8,7 @@ import (
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
 	accountModel "micro-net-hub/internal/module/account/model"
+	"micro-net-hub/internal/module/approval"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -31,7 +32,7 @@ func withApproval(t *testing.T, approval *config.RadiusApproval) {
 func TestCheckApproval_Disabled(t *testing.T) {
 	withApproval(t, nil)
 
-	require.NoError(t, checkApproval(context.Background(), &accountModel.User{Username: "alice"}, AuthMeta{}))
+	require.NoError(t, checkApproval(context.Background(), &accountModel.User{Username: "alice"}, approval.Meta{}))
 }
 
 // TestCheckApproval_OutsideTimeWindow 不在审批时间窗口内时直接放行
@@ -50,7 +51,7 @@ func TestCheckApproval_OutsideTimeWindow(t *testing.T) {
 		}},
 	})
 
-	require.NoError(t, checkApproval(context.Background(), &accountModel.User{Username: "alice"}, AuthMeta{RemoteAddr: "10.0.0.1"}))
+	require.NoError(t, checkApproval(context.Background(), &accountModel.User{Username: "alice"}, approval.Meta{approval.MetaKeySourceAddr: "10.0.0.1"}))
 }
 
 // TestCheckApproval_InvalidTimeWindow 时间窗口配置非法时保守拒绝, 避免静默放行
@@ -63,7 +64,7 @@ func TestCheckApproval_InvalidTimeWindow(t *testing.T) {
 		}},
 	})
 
-	err := checkApproval(context.Background(), &accountModel.User{Username: "alice"}, AuthMeta{})
+	err := checkApproval(context.Background(), &accountModel.User{Username: "alice"}, approval.Meta{})
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "时间窗口")
 }

@@ -1,4 +1,4 @@
-package radiusappr
+package approval
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 
 	"micro-net-hub/internal/bot"
 	"micro-net-hub/internal/global"
-	approvalModel "micro-net-hub/internal/radiusappr/model"
+	approvalModel "micro-net-hub/internal/module/approval/model"
 )
 
 // ProviderLister 列出全部运行中的实例, 由装配层注入.

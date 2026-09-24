@@ -1,8 +1,9 @@
-// Package radiusappr 实现 RADIUS 认证的人工审批: 时间窗口判定、申请单状态机、
+// Package approval 实现登录认证的人工审批: 时间窗口判定、申请单状态机、
 // 放行凭证与 Bot(Telegram) 审批交互.
-package radiusappr
+package approval
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"sync"
@@ -11,17 +12,28 @@ import (
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
 	accountModel "micro-net-hub/internal/module/account/model"
-	approvalModel "micro-net-hub/internal/radiusappr/model"
+	approvalModel "micro-net-hub/internal/module/approval/model"
 
 	"github.com/patrickmn/go-cache"
 )
 
-// Meta RADIUS 认证请求携带的客户端信息, 用于审批单留痕与审批人判读
-type Meta struct {
-	RemoteAddr    string // 请求来源地址
-	NasIdentifier string // NAS 标识(如 ocserv-1)
-	NasIPAddress  string // NAS 地址
-}
+// Meta 认证请求携带的上下文信息, 由各认证入口(如 LDAP/HTTP 等)自行构造的
+// 键值对, 以 JSON 落库留痕, 便于不同认证场景携带不同字段.
+//
+// 约定 key(可选, 用于审批人通知展示):
+//
+//	MetaKeySourceAddr 来源地址
+//	MetaKeySourceID   来源设备标识
+//
+// 其余 key 仅作审计留存, 不在通知中展示.
+type Meta map[string]string
+
+// Meta 约定 key
+const (
+	MetaKeySourceAddr = "sourceAddr" // 来源地址(展示)
+	MetaKeySourceID   = "sourceId"   // 来源设备标识(展示)
+	MetaKeySourceIP   = "sourceIp"   // 来源设备地址(仅留痕)
+)
 
 // Decision 一次审批决定的执行结果
 type Decision struct {
@@ -42,7 +54,7 @@ var rejectCooldownCache = cache.New(10*time.Minute, 20*time.Minute)
 
 // timeouts 审批相关的超时与有效期参数
 type timeouts struct {
-	wait           time.Duration // RADIUS 侧同步等待时长
+	wait           time.Duration // 认证侧同步等待时长
 	pendingTTL     time.Duration // 申请单有效期
 	noticeInterval time.Duration // 通知审批人的最小间隔
 	rejectCooldown time.Duration // 拒绝后的申请冷却时长
@@ -106,7 +118,7 @@ func approvalTimeouts() timeouts {
 // CreateOrReuseRequest 创建或复用某用户的待审批申请单.
 //
 // created 为 true 表示本次新建了申请单(应通知审批人), false 表示复用了已有申请单,
-// 从而避免 RADIUS 客户端重试导致审批人被反复打扰; 是否重新通知由 ShouldNotice 决定.
+// 从而避免客户端重试导致审批人被反复打扰; 是否重新通知由 ShouldNotice 决定.
 func CreateOrReuseRequest(user *accountModel.User, meta Meta) (req *approvalModel.ApprovalRequest, created bool, err error) {
 	if user == nil {
 		return nil, false, errors.New("创建审批申请失败: 用户信息为空")
@@ -141,15 +153,21 @@ func CreateOrReuseRequest(user *accountModel.User, meta Meta) (req *approvalMode
 		return nil, false, ErrTooManyPending
 	}
 
+	if meta == nil {
+		meta = Meta{}
+	}
+	metaJSON, err := json.Marshal(meta)
+	if err != nil {
+		return nil, false, fmt.Errorf("序列化认证上下文失败: %w", err)
+	}
+
 	req = &approvalModel.ApprovalRequest{
-		Username:      user.Username,
-		Nickname:      user.Nickname,
-		SourceIP:      meta.RemoteAddr,
-		NasIdentifier: meta.NasIdentifier,
-		NasIPAddress:  meta.NasIPAddress,
-		Status:        approvalModel.RequestStatusPending,
-		ExpireAt:      now.Add(t.pendingTTL),
-		PendingKey:    approvalModel.PendingKeyFor(user.Username),
+		Username:   user.Username,
+		Nickname:   user.Nickname,
+		Meta:       string(metaJSON),
+		Status:     approvalModel.RequestStatusPending,
+		ExpireAt:   now.Add(t.pendingTTL),
+		PendingKey: approvalModel.PendingKeyFor(user.Username),
 	}
 	if err := approvalModel.CreateApprovalRequest(req); err != nil {
 		// 数据库唯一约束兜底: 多实例部署下并发创建同一用户的申请单时, 后到者会被
@@ -224,11 +242,11 @@ func Approve(requestID uint, decider, channel, reason string) (*Decision, error)
 	}
 	if err := approvalModel.CreateApprovalGrant(grant); err != nil {
 		// 凭证签发失败不回滚审批结论: 申请单已通过, 审批人可让用户重连或重新审批
-		global.Log.Errorf("签发 RADIUS 放行凭证失败, username=%s, requestID=%d: %v", req.Username, req.ID, err)
+		global.Log.Errorf("签发放行凭证失败, username=%s, requestID=%d: %v", req.Username, req.ID, err)
 		grant = nil
 	}
 
-	global.Log.Infof("RADIUS 登录审批通过: requestID=%d, username=%s, decider=%s, channel=%s",
+	global.Log.Infof("登录审批通过: requestID=%d, username=%s, decider=%s, channel=%s",
 		req.ID, req.Username, decider, channel)
 	wakeWaiters(req.ID, approvalModel.RequestStatusApproved)
 	return &Decision{Request: req, Grant: grant, Applied: true}, nil
@@ -261,7 +279,7 @@ func Reject(requestID uint, decider, channel, reason string) (*Decision, error) 
 		rejectCooldownCache.Set(rejectCooldownKey(req.Username), now, t.rejectCooldown)
 	}
 
-	global.Log.Infof("RADIUS 登录审批拒绝: requestID=%d, username=%s, decider=%s, channel=%s, reason=%s",
+	global.Log.Infof("登录审批拒绝: requestID=%d, username=%s, decider=%s, channel=%s, reason=%s",
 		req.ID, req.Username, decider, channel, reason)
 	wakeWaiters(req.ID, approvalModel.RequestStatusRejected)
 	return &Decision{Request: req, Applied: true}, nil
@@ -315,7 +333,7 @@ func GrantAccess(username, decider, channel string, ttl time.Duration) (*approva
 		}
 	}
 
-	global.Log.Infof("RADIUS 应急放行: username=%s, decider=%s, channel=%s, expireAt=%s",
+	global.Log.Infof("应急放行: username=%s, decider=%s, channel=%s, expireAt=%s",
 		username, decider, channel, formatTime(grant.ExpireAt))
 	return grant, nil
 }
@@ -349,6 +367,6 @@ func Cleanup() {
 		global.Log.Errorf("清理历史放行凭证失败: %v", err)
 	}
 
-	global.Log.Infof("清理 RADIUS 审批数据完成: 置为过期的申请 %d 条, 删除申请 %d 条, 删除凭证 %d 条",
+	global.Log.Infof("清理审批数据完成: 置为过期的申请 %d 条, 删除申请 %d 条, 删除凭证 %d 条",
 		expired, reqs, grants)
 }

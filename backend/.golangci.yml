@@ -3,7 +3,7 @@
 # 基线原则:
 #   - 默认启用 standard 标准集 (errcheck / govet / ineffassign / staticcheck / unused)
 #     + gofmt 格式检查;
-#   - 本次 RADIUS 人工审批功能涉及的目录 (internal/radiusappr, internal/bot,
+#   - 本次人工审批功能涉及的目录 (internal/module/approval, internal/bot,
 #     internal/radiussrv, internal/config, internal/global, cmd) 保持零豁免;
 #   - 与本次功能无关的存量历史债务按目录明确豁免, 后续按目录逐步清理、收紧.
 version: "2"

@@ -1,4 +1,4 @@
-package radiusappr
+package approval
 
 import (
 	"context"
@@ -190,5 +190,5 @@ func handleGrantCommand(ctx context.Context, bot bot.BotProvider, chatID string,
 	_ = sendPlain(ctx, bot, chatID,
 		fmt.Sprintf("✅ 已放行用户 %s, 有效期至 %s", grant.Username, formatTime(grant.ExpireAt)))
 	NotifyApplicant(ctx, grant.Username,
-		fmt.Sprintf("✅ 管理员已为你的 VPN 登录应急放行, 请在 %s 前连接。", formatTime(grant.ExpireAt)))
+		fmt.Sprintf("✅ 管理员已为你的登录应急放行, 请在 %s 前连接。", formatTime(grant.ExpireAt)))
 }

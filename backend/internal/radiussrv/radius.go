@@ -26,8 +26,8 @@ import (
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
 	accountModel "micro-net-hub/internal/module/account/model"
+	"micro-net-hub/internal/module/approval"
 	totpModel "micro-net-hub/internal/module/totp/model"
-	"micro-net-hub/internal/radiusappr"
 
 	"github.com/patrickmn/go-cache"
 	"layeh.com/radius"
@@ -39,29 +39,18 @@ type loginAttemptInfo struct {
 	LastFailedAt time.Time
 }
 
-// AuthMeta RADIUS 认证请求携带的客户端信息, 用于人工审批留痕与审批人判读
-type AuthMeta struct {
-	RemoteAddr    string // 请求来源地址
-	NasIdentifier string // NAS 标识(如 ocserv-1)
-	NasIPAddress  string // NAS 地址
-}
-
 // checkApproval 人工审批门禁: 返回 nil 表示放行, 否则返回拒绝原因.
 //
 // 门禁在 TOTP 校验通过之后执行, 因此审批人不会被"密码错误的刷屏请求"打扰;
 // 相应地, 审批相关的拒绝也不写入登录失败计数, 由 reject-cooldown-seconds 限流.
-func checkApproval(ctx context.Context, user *accountModel.User, meta AuthMeta) error {
-	if !radiusappr.Enabled() {
+func checkApproval(ctx context.Context, user *accountModel.User, meta approval.Meta) error {
+	if !approval.Enabled() {
 		return nil
 	}
 
-	allow, err := radiusappr.Gate(ctx, user, radiusappr.Meta{
-		RemoteAddr:    meta.RemoteAddr,
-		NasIdentifier: meta.NasIdentifier,
-		NasIPAddress:  meta.NasIPAddress,
-	})
+	allow, err := approval.Gate(ctx, user, meta)
 	if err != nil {
-		global.Log.Warnf("RADIUS 人工审批未放行: username=%s, %v", user.Username, err)
+		global.Log.Warnf("人工审批未放行: username=%s, %v", user.Username, err)
 		return err
 	}
 	if !allow {
@@ -78,7 +67,7 @@ var loginAttemptsCache = cache.New(time.Duration(banDurationMinute)*time.Minute,
 //
 // 注意: 人工审批的拒绝与等待超时都不写入 loginAttemptsCache, 否则用户重试几次
 // 就会触发 5 分钟锁定, 反而放大故障面; 重复申请的限流由 reject-cooldown-seconds 承担.
-func AuthRequest(ctx context.Context, username string, password string, meta AuthMeta) (valid bool, err error) {
+func AuthRequest(ctx context.Context, username string, password string, meta approval.Meta) (valid bool, err error) {
 	var loginAttempt = &loginAttemptInfo{}
 	attempt, found := loginAttemptsCache.Get(username)
 	if found {
@@ -147,7 +136,7 @@ func AuthHandler(w radius.ResponseWriter, r *radius.Request) {
 	username := rfc2865.UserName_GetString(r.Packet)
 	password := rfc2865.UserPassword_GetString(r.Packet)
 
-	// 来源与 NAS 信息仅用于审批单留痕, 取不到不影响认证流程
+	// 来源与设备信息仅用于审批单留痕, 取不到不影响认证流程
 	remoteAddr := ""
 	if r.RemoteAddr != nil {
 		remoteAddr = r.RemoteAddr.String()
@@ -156,10 +145,11 @@ func AuthHandler(w radius.ResponseWriter, r *radius.Request) {
 	if ip := rfc2865.NASIPAddress_Get(r.Packet); ip != nil {
 		nasIP = ip.String()
 	}
-	meta := AuthMeta{
-		RemoteAddr:    remoteAddr,
-		NasIdentifier: rfc2865.NASIdentifier_GetString(r.Packet),
-		NasIPAddress:  nasIP,
+	// 把 RADIUS 协议属性映射为审批模块的通用认证上下文
+	meta := approval.Meta{
+		approval.MetaKeySourceAddr: remoteAddr,
+		approval.MetaKeySourceID:   rfc2865.NASIdentifier_GetString(r.Packet),
+		approval.MetaKeySourceIP:   nasIP,
 	}
 
 	code := radius.CodeAccessReject

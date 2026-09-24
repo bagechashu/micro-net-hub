@@ -1,11 +1,12 @@
-package radiusappr
+package approval
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 
-	approvalModel "micro-net-hub/internal/radiusappr/model"
+	approvalModel "micro-net-hub/internal/module/approval/model"
 )
 
 // EscapeText 转义用户可控文本, 避免破坏 Bot(HTML 模式)的消息排版.
@@ -18,6 +19,18 @@ func EscapeText(text string) string {
 // formatTime 审批相关文案的统一时间格式
 func formatTime(t time.Time) string {
 	return t.Format("2006-01-02 15:04:05")
+}
+
+// metaGet 从审批单的认证上下文 JSON 中读取指定 key, 解析失败或缺失时返回空串
+func metaGet(req *approvalModel.ApprovalRequest, key string) string {
+	if req == nil || req.Meta == "" {
+		return ""
+	}
+	meta := make(Meta)
+	if err := json.Unmarshal([]byte(req.Meta), &meta); err != nil {
+		return ""
+	}
+	return meta[key]
 }
 
 // remainingText 把剩余有效期描述为可读文案
@@ -35,18 +48,20 @@ func remainingText(expireAt, now time.Time) string {
 // noticeHTML 审批人收到的审批通知(HTML 格式).
 func noticeHTML(req *approvalModel.ApprovalRequest, now time.Time, waitSeconds int) string {
 	var sb strings.Builder
-	sb.WriteString("🔐 <b>RADIUS 登录审批</b>\n")
+	sb.WriteString("🔐 <b>登录审批</b>\n")
 	fmt.Fprintf(&sb, "申请人: %s", EscapeText(req.Username))
 	if req.Nickname != "" {
 		fmt.Fprintf(&sb, "(%s)", EscapeText(req.Nickname))
 	}
-	fmt.Fprintf(&sb, "\n来源: %s", EscapeText(req.SourceIP))
-	if req.NasIdentifier != "" {
-		fmt.Fprintf(&sb, " · NAS: %s", EscapeText(req.NasIdentifier))
+	if sourceAddr := metaGet(req, MetaKeySourceAddr); sourceAddr != "" {
+		fmt.Fprintf(&sb, "\n来源: %s", EscapeText(sourceAddr))
+	}
+	if sourceID := metaGet(req, MetaKeySourceID); sourceID != "" {
+		fmt.Fprintf(&sb, " · 设备: %s", EscapeText(sourceID))
 	}
 	fmt.Fprintf(&sb, "\n时间: %s", formatTime(req.CreatedAt))
 	fmt.Fprintf(&sb, "\n申请ID: <b>#%d</b> (有效期 %s)", req.ID, remainingText(req.ExpireAt, now))
-	fmt.Fprintf(&sb, "\n\n用户正在等待连接(约 %d 秒); 若已超时, 批准后用户需重新连接 VPN 方可生效.", waitSeconds)
+	fmt.Fprintf(&sb, "\n\n用户正在等待连接(约 %d 秒); 若已超时, 批准后用户需重新连接方可生效.", waitSeconds)
 	fmt.Fprintf(&sb, "\n\n/approve %d (通过)\n/reject %d [原因] (拒绝)", req.ID, req.ID)
 	return sb.String()
 }
@@ -55,7 +70,7 @@ func noticeHTML(req *approvalModel.ApprovalRequest, now time.Time, waitSeconds i
 func approverApprovedText(req *approvalModel.ApprovalRequest, grantExpireAt time.Time) string {
 	var sb strings.Builder
 	fmt.Fprintf(&sb, "✅ 已通过 #%d (申请人 %s)", req.ID, EscapeText(req.Username))
-	fmt.Fprintf(&sb, "\n放行有效期至 %s · 用户需重新连接 VPN 才生效", formatTime(grantExpireAt))
+	fmt.Fprintf(&sb, "\n放行有效期至 %s · 用户需重新连接才生效", formatTime(grantExpireAt))
 	return sb.String()
 }
 
@@ -90,19 +105,19 @@ func approverRequestGoneText(id uint) string {
 
 // applicantSubmittedText 申请人收到的"已提交审批"提示
 func applicantSubmittedText(req *approvalModel.ApprovalRequest, now time.Time) string {
-	return fmt.Sprintf("⏳ 已提交人工审批 #%d, 有效期 %s, 请稍候; 审批通过后请重新连接 VPN。",
+	return fmt.Sprintf("⏳ 已提交人工审批 #%d, 有效期 %s, 请稍候; 审批通过后请重新连接。",
 		req.ID, remainingText(req.ExpireAt, now))
 }
 
 // applicantApprovedText 申请人收到的审批通过通知
 func applicantApprovedText(req *approvalModel.ApprovalRequest, grantExpireAt time.Time) string {
-	return fmt.Sprintf("✅ 你的 VPN 登录申请 #%d 已通过, 请在 %s 前重新连接 (授权至 %s)。",
+	return fmt.Sprintf("✅ 你的登录申请 #%d 已通过, 请在 %s 前重新连接 (授权至 %s)。",
 		req.ID, formatTime(grantExpireAt), formatTime(grantExpireAt))
 }
 
 // applicantRejectedText 申请人收到的审批拒绝通知
 func applicantRejectedText(req *approvalModel.ApprovalRequest, cooldown time.Duration) string {
-	text := fmt.Sprintf("❌ 你的 VPN 登录申请 #%d 已被拒绝。", req.ID)
+	text := fmt.Sprintf("❌ 你的登录申请 #%d 已被拒绝。", req.ID)
 	if req.Reason != "" {
 		text += fmt.Sprintf("\n原因: %s", EscapeText(req.Reason))
 	}
@@ -126,7 +141,7 @@ func pendingListText(reqs []*approvalModel.ApprovalRequest, now time.Time) strin
 			name = fmt.Sprintf("%s(%s)", req.Username, req.Nickname)
 		}
 		fmt.Fprintf(&sb, "\n#%d %s · %s · 剩余 %s",
-			req.ID, EscapeText(name), EscapeText(req.SourceIP), remainingText(req.ExpireAt, now))
+			req.ID, EscapeText(name), EscapeText(metaGet(req, MetaKeySourceAddr)), remainingText(req.ExpireAt, now))
 	}
 	sb.WriteString("\n\n/approve <申请ID> (通过)\n/reject <申请ID> [原因] (拒绝)")
 	return sb.String()
@@ -135,7 +150,7 @@ func pendingListText(reqs []*approvalModel.ApprovalRequest, now time.Time) strin
 // helpText 审批机器人的帮助文案
 func helpText() string {
 	return strings.Join([]string{
-		"VPN 登录审批机器人",
+		"登录审批机器人",
 		"",
 		"/pending (查看待审批申请)",
 		"/approve <申请ID> [原因] (通过)",

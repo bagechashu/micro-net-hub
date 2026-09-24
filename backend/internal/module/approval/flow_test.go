@@ -1,4 +1,4 @@
-package radiusappr
+package approval
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
 	accountModel "micro-net-hub/internal/module/account/model"
-	approvalModel "micro-net-hub/internal/radiusappr/model"
+	approvalModel "micro-net-hub/internal/module/approval/model"
 
 	"github.com/glebarez/sqlite"
 	"github.com/stretchr/testify/assert"
@@ -27,7 +27,7 @@ import (
 func setupApprovalEnv(t *testing.T, approval *config.RadiusApproval) {
 	t.Helper()
 
-	dsn := fmt.Sprintf("file:radiusappr-%d?mode=memory&cache=shared", time.Now().UnixNano())
+	dsn := fmt.Sprintf("file:approval-%d?mode=memory&cache=shared", time.Now().UnixNano())
 	db, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
 		Logger:                                   gormlogger.Default.LogMode(gormlogger.Silent),
@@ -64,18 +64,18 @@ func TestCreateOrReuseRequest(t *testing.T) {
 	setupApprovalEnv(t, &config.RadiusApproval{Enable: true, PendingTTLSeconds: 120})
 	user := &accountModel.User{Username: "alice", Nickname: "艾丽斯"}
 
-	req, created, err := CreateOrReuseRequest(user, Meta{RemoteAddr: "10.0.0.1", NasIdentifier: "ocserv-1"})
+	req, created, err := CreateOrReuseRequest(user, Meta{MetaKeySourceAddr: "10.0.0.1", MetaKeySourceID: "ocserv-1"})
 	require.NoError(t, err)
 	require.True(t, created)
 	assert.Equal(t, approvalModel.RequestStatusPending, req.Status)
 	assert.Equal(t, "艾丽斯", req.Nickname)
-	assert.Equal(t, "10.0.0.1", req.SourceIP)
+	assert.Equal(t, "10.0.0.1", metaGet(req, MetaKeySourceAddr))
 
-	reused, created, err := CreateOrReuseRequest(user, Meta{RemoteAddr: "10.0.0.2"})
+	reused, created, err := CreateOrReuseRequest(user, Meta{MetaKeySourceAddr: "10.0.0.2"})
 	require.NoError(t, err)
 	assert.False(t, created, "同一用户名的重复请求应复用待审批申请单")
 	assert.Equal(t, req.ID, reused.ID)
-	assert.Equal(t, "10.0.0.1", reused.SourceIP, "复用时不覆盖原始来源信息")
+	assert.Equal(t, "10.0.0.1", metaGet(reused, MetaKeySourceAddr), "复用时不覆盖原始来源信息")
 }
 
 // TestCreateOrReuseRequest_RejectsNilUser 非法入参必须报错而不是落库

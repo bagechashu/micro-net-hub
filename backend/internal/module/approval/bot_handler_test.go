@@ -1,4 +1,4 @@
-package radiusappr
+package approval
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"micro-net-hub/internal/bot"
 	"micro-net-hub/internal/config"
 	accountModel "micro-net-hub/internal/module/account/model"
-	approvalModel "micro-net-hub/internal/radiusappr/model"
+	approvalModel "micro-net-hub/internal/module/approval/model"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -382,7 +382,7 @@ func TestNotifyApprovers(t *testing.T) {
 	setupHandlerEnv(t, approval, bot)
 
 	req, _, err := CreateOrReuseRequest(&accountModel.User{Username: "alice", Nickname: "艾丽斯"},
-		Meta{RemoteAddr: "10.0.0.1", NasIdentifier: "ocserv-1"})
+		Meta{MetaKeySourceAddr: "10.0.0.1", MetaKeySourceID: "ocserv-1"})
 	require.NoError(t, err)
 
 	NotifyApprovers(context.Background(), req)

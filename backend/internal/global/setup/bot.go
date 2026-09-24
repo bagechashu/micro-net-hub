@@ -7,7 +7,7 @@ import (
 	"micro-net-hub/internal/bot"
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
-	"micro-net-hub/internal/radiusappr"
+	"micro-net-hub/internal/module/approval"
 )
 
 // InitBot 初始化 Bot 实例管理器并按配置启动实例, 返回停止函数供进程退出时调用.
@@ -27,11 +27,11 @@ func InitBot() context.CancelFunc {
 		return func() {}
 	}
 
-	manager := bot.NewManager(bot.DefaultRegistry(), radiusappr.BotHandler)
+	manager := bot.NewManager(bot.DefaultRegistry(), approval.BotHandler)
 	global.BotManager = manager
 
 	// 审批模块通过列表器获取全部运行实例, 从而不直接依赖全局管理器
-	radiusappr.SetProviderLister(manager.Providers)
+	approval.SetProviderLister(manager.Providers)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	if err := manager.Start(ctx, specs); err != nil {
