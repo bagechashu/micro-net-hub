@@ -70,7 +70,7 @@ func noticeHTML(req *approvalModel.ApprovalRequest, now time.Time, waitSeconds i
 func approverApprovedText(req *approvalModel.ApprovalRequest, grantExpireAt time.Time) string {
 	var sb strings.Builder
 	fmt.Fprintf(&sb, "✅ 已通过 #%d (申请人 %s)", req.ID, EscapeText(req.Username))
-	fmt.Fprintf(&sb, "\n放行有效期至 %s · 用户需重新连接才生效", formatTime(grantExpireAt))
+	fmt.Fprintf(&sb, "\n放行有效期至 %s · 用户需重新登录", formatTime(grantExpireAt))
 	return sb.String()
 }
 
@@ -81,7 +81,7 @@ func approverRejectedText(req *approvalModel.ApprovalRequest, cooldown time.Dura
 	if req.Reason != "" {
 		fmt.Fprintf(&sb, "\n原因: %s", EscapeText(req.Reason))
 	}
-	fmt.Fprintf(&sb, "\n该用户 %d 秒内不会重复通知, 期间可重新申请但不会打扰审批人", int(cooldown.Seconds()))
+	fmt.Fprintf(&sb, "\n该用户 %d 秒内登录审批不会重复通知, 期间可重新申请但不会打扰审批人", int(cooldown.Seconds()))
 	return sb.String()
 }
 

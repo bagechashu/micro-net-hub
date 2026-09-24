@@ -259,7 +259,7 @@ func TestBotHandler_ApproveFlow(t *testing.T) {
 	})
 
 	msgs := b.messages()
-	require.Len(t, msgs, 1)
+	require.Len(t, msgs, 2)
 	assert.Contains(t, msgs[0].text, fmt.Sprintf("已通过 #%d", req.ID))
 
 	grant, err := FindActiveGrant("alice")
@@ -281,8 +281,8 @@ func TestBotHandler_ApproveFlow(t *testing.T) {
 	})
 
 	msgs = b.messages()
-	require.Len(t, msgs, 2)
-	assert.Contains(t, msgs[1].text, "已由 bot:telegram:100")
+	require.Len(t, msgs, 3)
+	assert.Contains(t, msgs[2].text, "已由 bot:telegram:100")
 }
 
 // TestBotHandler_RejectFlow 拒绝后进入冷却并回执

@@ -3,6 +3,7 @@ package approval
 import (
 	"context"
 	"fmt"
+	"net"
 	"sync/atomic"
 	"time"
 
@@ -152,6 +153,18 @@ func handleApproveCommand(ctx context.Context, bot bot.BotProvider, chatID strin
 	}
 
 	_ = sendPlain(ctx, bot, chatID, approverApprovedText(decision.Request, grantExpireAt))
+
+	nowStr := time.Now().In(loadLocation(configApproval().Timezone)).Format("Jan 2, 2006 3:04 PM MST")
+	src := metaGet(decision.Request, MetaKeySourceAddr)
+	if host, _, err := net.SplitHostPort(src); err == nil {
+		src = host
+	}
+	_ = sendPlain(ctx, bot, chatID, fmt.Sprintf(
+		"同步如下信息到安全团队:\n%s: 已确认用户 `%s` 通过 %s 登录VPN\n%s: Confirmed user `%s` VPN login via %s",
+		nowStr, decision.Request.Username, src,
+		nowStr, decision.Request.Username, src,
+	))
+
 	NotifyApplicant(ctx, decision.Request.Username, applicantApprovedText(decision.Request, grantExpireAt))
 }
 
