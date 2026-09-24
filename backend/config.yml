@@ -211,6 +211,8 @@ approval:
     private-only: true
     # 是否向申请人发送 "申请已提交" 与 "审批结果" 通知
     applicant-notify: true
+    # 审批通过后向审批人触发的额外通知: ["security_audit"] 开启安全审计通知(供同步至安全团队/SOC)
+    # notifications: []
     # 申请人 Bot 会话映射: 平台用户名 -> Bot chat id
     applicant-map: {}
     # 单个审批人 10 秒内可执行的指令条数上限

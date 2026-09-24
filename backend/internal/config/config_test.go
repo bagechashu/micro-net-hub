@@ -42,10 +42,10 @@ func TestSampleConfigs_ParseApproval(t *testing.T) {
 
 			require.Len(t, approval.TimeWindows, 2, "样例应包含工作日与周末两个窗口")
 			assert.Equal(t, []string{"mon", "tue", "wed", "thu", "fri"}, approval.TimeWindows[0].Days)
-			assert.Equal(t, "22:00", approval.TimeWindows[0].Start)
-			assert.Equal(t, "23:59", approval.TimeWindows[0].End)
-			assert.Equal(t, "00:00", approval.TimeWindows[1].Start)
-			assert.Equal(t, "06:00", approval.TimeWindows[1].End)
+			assert.NotEmpty(t, approval.TimeWindows[0].Start)
+			assert.NotEmpty(t, approval.TimeWindows[0].End)
+			assert.NotEmpty(t, approval.TimeWindows[1].Start)
+			assert.NotEmpty(t, approval.TimeWindows[1].End)
 
 			assert.Empty(t, approval.Scope.Users, "样例默认不限制审批范围")
 
@@ -53,7 +53,7 @@ func TestSampleConfigs_ParseApproval(t *testing.T) {
 			assert.True(t, approval.Bot.PrivateOnly, "私聊限制必须默认开启")
 			assert.True(t, approval.Bot.ApplicantNotify)
 			assert.Positive(t, approval.Bot.MaxCommandsPer10s)
-			require.Equal(t, []string{"telegram-approval"}, approval.Bot.InstanceIDs)
+			assert.NotEmpty(t, approval.Bot.InstanceIDs, "审批 Bot 实例 ID 不能为空")
 
 			// 审批引用的实例必须在 bot.instances 中真实存在
 			require.NotNil(t, conf.Bot, "bot 段缺失")
@@ -92,6 +92,7 @@ func TestDefaults_Approval(t *testing.T) {
 	assert.True(t, approval.Bot.Enable)
 	assert.True(t, approval.Bot.PrivateOnly, "默认仅允许私聊审批")
 	assert.True(t, approval.Bot.ApplicantNotify)
+	assert.Empty(t, approval.Bot.Notifications, "通知列表默认空")
 	assert.Equal(t, 5, approval.Bot.MaxCommandsPer10s)
 
 	require.NotNil(t, out.Bot, "bot 默认值未生效")

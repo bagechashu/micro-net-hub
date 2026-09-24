@@ -86,6 +86,7 @@ func approvalBotConfig(instanceID string, approverChatIDs []string) config.Appro
 		InstanceIDs:       []string{instanceID},
 		ApproverChatIDs:   approverChatIDs,
 		PrivateOnly:       true,
+		Notifications:     []string{NotifySecurityAudit},
 		MaxCommandsPer10s: 10,
 	}
 }

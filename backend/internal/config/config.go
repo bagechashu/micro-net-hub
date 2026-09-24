@@ -306,6 +306,8 @@ type ApprovalBot struct {
 	PrivateOnly bool `mapstructure:"private-only" json:"privateOnly"`
 	// 是否向申请人发送"申请已提交"与审批结果通知
 	ApplicantNotify bool `mapstructure:"applicant-notify" json:"applicantNotify"`
+	// 审批通过后向审批人触发的额外通知列表, 支持 "security_audit"(安全审计通知, 供同步到安全团队/SOC); 留空表示不触发
+	Notifications []string `mapstructure:"notifications" json:"notifications"`
 	// 申请人 Bot 会话映射: 平台用户名 -> Bot chat id, 用于向申请人回执
 	ApplicantMap map[string]string `mapstructure:"applicant-map" json:"applicantMap"`
 	// 单个审批人 10 秒内可执行的指令条数上限
