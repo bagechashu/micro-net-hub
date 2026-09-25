@@ -11,6 +11,7 @@ services:
       - ./config/app/auth-pub.pem:/app/auth-pub.pem
       - ./config/app/auth-priv-rsa.pem:/app/auth-priv-rsa.pem
       - ./config/app/entrypoint.sh:/entrypoint.sh
+      - ./config/app/scripts/:/app/scripts/
     entrypoint: ["sh", "/entrypoint.sh"]
     ports:
       - 9000:9000

@@ -211,7 +211,8 @@ approval:
     private-only: true
     # 是否向申请人发送 "申请已提交" 与 "审批结果" 通知
     applicant-notify: true
-    # 审批通过后向审批人触发的额外通知: ["security_audit"] 开启安全审计通知(供同步至安全团队/SOC)
+    # 审批通过后向审批人触发的额外通知: ["security_audit"] 开启安全审计 Bot 消息(供同步至安全团队/SOC).
+    # 注意: 该开关仅控制 Bot 消息, 不影响 script-hook 脚本触发(见文件末尾 script-hook 段).
     # notifications: []
     # 申请人 Bot 会话映射: 平台用户名 -> Bot chat id
     applicant-map: {}
@@ -288,3 +289,16 @@ bot:
       config:
         # 通过 Telegram 的 @BotFather 创建机器人后获取的 token
         token: ""
+
+# 脚本调用配置: 业务模块在关键节点可按名称异步触发脚本(以 /bin/sh 执行).
+# 脚本 stdout/stderr 会写入日志; 通过 scripthook.WithEnv 注入的环境变量以 SCRIPTHOOK_<KEY> 传入脚本.
+script-hook:
+  # 脚本根目录(相对于程序工作目录)
+  dir: ./scripts
+  # 默认超时秒数(0 表示不限时, 传入的 ctx deadline 优先级更高)
+  timeout-seconds: 30
+  # 脚本名 -> 脚本相对路径(相对于 dir)
+  scripts:
+    # 审批通过后的安全审计脚本(供同步至安全团队/SOC). 独立于 approval.bot.notifications:
+    # 只要在此配置了 security_audit, 审批通过即触发脚本; 删除/注释本行可关闭脚本触发.
+    security_audit: notify_soc.sh

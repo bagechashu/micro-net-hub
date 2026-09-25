@@ -12,10 +12,18 @@ import (
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/global"
 	approvalModel "micro-net-hub/internal/module/approval/model"
+	"micro-net-hub/internal/scripthook"
 )
 
-// NotifySecurityAudit 安全审计通知: 审批通过后向审批人同步登录信息, 供转发至安全团队(SOC).
+// NotifySecurityAudit 安全审计通知标志, 作为 approval.bot.notifications 列表的取值,
+// 控制审批通过后是否向审批人发送安全审计 Bot 消息.
 const NotifySecurityAudit = "security_audit"
+
+// ScriptSecurityAudit 安全审计脚本名, 对应 script-hook.scripts 中的 key.
+//
+// 与 NotifySecurityAudit 相互独立: 前者(notifications 标志)只控制 Bot 消息,
+// 后者(script-hook 配置)只控制脚本触发, 二者互不依赖.
+const ScriptSecurityAudit = "security_audit"
 
 // commandLimiter 审批指令频控器, 在包初始化时按默认值构造.
 //
@@ -163,22 +171,54 @@ func handleApproveCommand(ctx context.Context, bot bot.BotProvider, chatID strin
 		notifySecurityAudit(ctx, bot, chatID, decision.Request)
 	}
 
+	// 安全审计脚本独立触发: 是否执行由 script-hook.scripts 配置决定, 与 notifications 无关.
+	triggerSecurityAuditScript(decision.Request)
+
 	NotifyApplicant(ctx, decision.Request.Username, applicantApprovedText(decision.Request, grantExpireAt))
 }
 
-// notifySecurityAudit 审批通过后向审批人发送安全审计通知, 供同步至安全团队(SOC).
-func notifySecurityAudit(ctx context.Context, b bot.BotProvider, chatID string, req *approvalModel.ApprovalRequest) {
-	loc := loadLocation(configApproval().Timezone)
+// securityAuditData 安全审计通知所需的上下文数据, Bot 消息与脚本共用同一份内容.
+type securityAuditData struct {
+	msg        string
+	username   string
+	sourceAddr string
+}
+
+// buildSecurityAuditData 构造安全审计数据(消息正文 + 脚本环境变量).
+func buildSecurityAuditData(req *approvalModel.ApprovalRequest) securityAuditData {
+	timezone := ""
+	if cfg := configApproval(); cfg != nil {
+		timezone = cfg.Timezone
+	}
+	loc := loadLocation(timezone)
 	nowStr := time.Now().In(loc).Format("Jan 2, 2006 3:04 PM MST")
 	src := metaGet(req, MetaKeySourceAddr)
 	if host, _, err := net.SplitHostPort(src); err == nil {
 		src = host
 	}
-	_ = sendPlain(ctx, b, chatID, fmt.Sprintf(
-		"同步如下信息到安全团队:\n%s: 已确认用户 `%s` 通过 %s 登录VPN\n%s: Confirmed user `%s` VPN login via %s",
+	msg := fmt.Sprintf(
+		"%s: 已确认用户 `%s` 通过 %s 登录VPN\n%s: Confirmed user `%s` VPN login via %s",
 		nowStr, req.Username, src,
 		nowStr, req.Username, src,
-	))
+	)
+	return securityAuditData{msg: msg, username: req.Username, sourceAddr: src}
+}
+
+// notifySecurityAudit 审批通过后向审批人发送安全审计 Bot 消息, 供转发至安全团队(SOC).
+func notifySecurityAudit(ctx context.Context, b bot.BotProvider, chatID string, req *approvalModel.ApprovalRequest) {
+	_ = sendPlain(ctx, b, chatID, buildSecurityAuditData(req).msg)
+}
+
+// triggerSecurityAuditScript 异步触发安全审计脚本, 通过环境变量传递上下文数据.
+//
+// 脚本是否执行由 script-hook.scripts 是否配置 security_audit 决定, 与
+// approval.bot.notifications 中的 NotifySecurityAudit 标志相互独立.
+func triggerSecurityAuditScript(req *approvalModel.ApprovalRequest) {
+	data := buildSecurityAuditData(req)
+	scriptCtx := scripthook.WithEnv(context.Background(), "MESSAGE", data.msg)
+	scriptCtx = scripthook.WithEnv(scriptCtx, "USERNAME", data.username)
+	scriptCtx = scripthook.WithEnv(scriptCtx, "SOURCE_ADDR", data.sourceAddr)
+	scripthook.Run(scriptCtx, ScriptSecurityAudit)
 }
 
 // handleRejectCommand 处理 /reject

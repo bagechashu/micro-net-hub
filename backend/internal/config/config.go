@@ -37,6 +37,7 @@ type config struct {
 	FeiShu     *FeiShu         `mapstructure:"feishu" json:"feiShu"`
 	Bot        *Bot            `mapstructure:"bot" json:"bot"`
 	Approval   *ApprovalConfig `mapstructure:"approval" json:"approval"`
+	ScriptHook *ScriptHook     `mapstructure:"script-hook" json:"scriptHook"`
 }
 
 // 设置读取配置信息
@@ -116,6 +117,7 @@ func setViperDefaults() {
 	viper.SetDefault("dns.forward-addr", "1.1.1.1:53")
 	viper.SetDefault("logs.audit-get-requests", true)
 	viper.SetDefault("ldap-server.binddn-role-keyword", "binddn")
+	viper.SetDefault("script-hook.timeout-seconds", 30)
 }
 
 // 从文件中读取RSA key
@@ -312,6 +314,19 @@ type ApprovalBot struct {
 	ApplicantMap map[string]string `mapstructure:"applicant-map" json:"applicantMap"`
 	// 单个审批人 10 秒内可执行的指令条数上限
 	MaxCommandsPer10s int `mapstructure:"max-commands-per10s" json:"maxCommandsPer10s"`
+}
+
+// ScriptHook 脚本调用配置。
+//
+// 业务模块在关键节点可按名称触发脚本; 脚本以 /bin/sh 异步执行, stdout/stderr
+// 记录到 global.Log。脚本环境变量通过 WithEnv 注入 context 后传入。
+type ScriptHook struct {
+	// 脚本根目录, 脚本路径基于此目录相对定位
+	Dir string `mapstructure:"dir" json:"dir"`
+	// 脚本名 → 脚本相对路径的映射 (路径相对于 Dir)
+	Scripts map[string]string `mapstructure:"scripts" json:"scripts"`
+	// 默认超时秒数, 0 或未配置时默认 30s; ctx deadline 优先级更高
+	TimeoutSeconds int `mapstructure:"timeout-seconds" json:"timeoutSeconds"`
 }
 
 type Dns struct {
