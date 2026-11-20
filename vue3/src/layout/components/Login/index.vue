@@ -11,7 +11,7 @@
 
       <el-form ref="loginForm" :model="loginForm" :rules="loginRules" autocomplete="on" label-position="left" label-width="auto" class="dialog-body">
         <el-form-item prop="username">
-          <template #label><svg-icon icon-class="user" /></template>
+          <template #label><IconUser :size="18" stroke="1.75" /></template>
           <el-input
             ref="username"
             v-model="loginForm.username"
@@ -22,10 +22,11 @@
             autocomplete="on" />
         </el-form-item>
 
-        <el-tooltip v-model="capsTooltip" content="Caps lock is On" placement="top" manual>
+        <!-- 由 capsTooltip 控制显示（Element Plus 用 :visible；Element UI 的 v-model + manual 在这里无效，会退化成悬停即显示） -->
+        <el-tooltip :visible="capsTooltip" :content="$t('loginform.capsLockOn')" placement="top">
           <el-form-item prop="password">
             <template #label>
-              <svg-icon icon-class="password" />
+              <IconLock :size="18" stroke="1.75" />
             </template>
             <el-input
               :key="passwordType"
@@ -36,11 +37,12 @@
               name="password"
               tabindex="2"
               autocomplete="on"
+              @keydown="checkCapslock"
               @keyup="checkCapslock"
               @blur="capsTooltip = false"
               @keyup.enter="handleLogin" />
             <span class="show-pwd" @click="showPwd">
-              <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
+              <component :is="passwordType === 'password' ? 'IconEyeOff' : 'IconEye'" :size="18" stroke="1.75" />
             </span>
           </el-form-item>
         </el-tooltip>
@@ -60,9 +62,11 @@
 import { defineComponent } from 'vue';
 import JSEncrypt from 'jsencrypt';
 import userStore from '@/store/modules/user';
+import { IconUser, IconLock, IconEye, IconEyeOff } from '@/icons/tabler';
 
 export default defineComponent({
   name: 'NavbarLogin',
+  components: { IconUser, IconLock, IconEye, IconEyeOff },
   props: {
     modelValue: {
       type: Boolean,
@@ -130,9 +134,11 @@ export default defineComponent({
         }
       });
     },
+    // 直接读取大写锁定状态：不受 Shift、数字键影响，按下 CapsLock 键切换时也能立即更新
     checkCapslock(e) {
-      const { key } = e;
-      this.capsTooltip = key && key.length === 1 && key >= 'A' && key <= 'Z';
+      if (e && typeof e.getModifierState === 'function') {
+        this.capsTooltip = e.getModifierState('CapsLock');
+      }
     },
     showPwd() {
       if (this.passwordType === 'password') {

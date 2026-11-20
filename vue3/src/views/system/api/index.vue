@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-card class="container-card" shadow="always">
-      <el-form size="small" :inline="true" :model="params" class="demo-form-inline">
+      <el-form :inline="true" :model="params" class="demo-form-inline">
         <el-form-item :label="$t('api.611p62ddlio0')">
           <el-input v-model.trim="params.path" clearable :placeholder="$t('api.611p62ddlio0')" @keyup.enter="search" @clear="search" />
         </el-form-item>
@@ -21,13 +21,13 @@
           <el-input v-model.trim="params.creator" clearable :placeholder="$t('api.611p62ddm980')" @keyup.enter="search" @clear="search" />
         </el-form-item>
         <el-form-item>
-          <el-button :loading="loading" type="primary" @click="search">
+          <el-button :loading="loading" @click="search">
             <el-icon><SearchIcon /></el-icon>
             {{ $t('api.611p62ddmdc0') }}
           </el-button>
         </el-form-item>
         <el-form-item>
-          <el-button :loading="loading" type="warning" @click="create">
+          <el-button :loading="loading" type="primary" @click="create">
             <el-icon><Plus /></el-icon>
             {{ $t('api.611p62ddmg40') }}
           </el-button>
@@ -90,7 +90,7 @@
       />
 
       <el-dialog :title="dialogFormTitle" v-model="dialogFormVisible">
-        <el-form ref="dialogForm" size="small" :model="dialogFormData" :rules="dialogFormRules" label-width="120px">
+        <el-form ref="dialogForm" :model="dialogFormData" :rules="dialogFormRules" label-width="120px">
           <el-form-item :label="$t('api.611p62ddlio0')" prop="path">
             <el-input v-model.trim="dialogFormData.path" :placeholder="$t('api.611p62ddlio0')" />
           </el-form-item>
@@ -123,7 +123,7 @@
 <script>
 import { defineComponent } from 'vue';
 import { getApis, createApi, updateApiById, batchDeleteApiByIds } from '@/api/system/api';
-import { Search, Plus, Delete, Edit } from '@element-plus/icons-vue';
+import { Search, Plus, Delete, Edit } from '@/icons/tabler';
 
 export default defineComponent({
   name: 'Api',

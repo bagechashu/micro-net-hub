@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-//go:embed index.html favicon.ico assets
+//go:embed index.html favicon.ico favicon.svg assets
 var Static embed.FS
 
 // cacheMiddleware 为静态文件添加缓存头

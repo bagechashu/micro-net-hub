@@ -1,7 +1,9 @@
 <template>
   <nav class="app-nav">
     <div class="app-container-xl">
+      <!-- 菜单项变化（登录/登出后）时重新挂载：el-menu 只在挂载和尺寸变化时计算折叠，否则登录后可能只剩“•••” -->
       <el-menu
+        :key="menuKey"
         mode="horizontal"
         :default-active="activeMenu"
         :ellipsis="true"
@@ -10,16 +12,16 @@
         <template v-for="item in navItems" :key="item.path">
           <el-sub-menu v-if="item.children" :index="item.path" popper-class="app-nav__popper">
             <template #title>
-              <svg-icon v-if="isSvgIcon(item.icon)" :icon-class="item.icon!" class="app-nav__icon" />
+              <nav-icon :name="item.icon" />
               <span>{{ item.title }}</span>
             </template>
             <el-menu-item v-for="child in item.children" :key="child.path" :index="child.path">
-              <svg-icon v-if="isSvgIcon(child.icon)" :icon-class="child.icon!" class="app-nav__icon" />
+              <nav-icon :name="child.icon" />
               <span>{{ child.title }}</span>
             </el-menu-item>
           </el-sub-menu>
           <el-menu-item v-else :index="item.path">
-            <svg-icon v-if="isSvgIcon(item.icon)" :icon-class="item.icon!" class="app-nav__icon" />
+            <nav-icon :name="item.icon" />
             <span>{{ item.title }}</span>
           </el-menu-item>
         </template>
@@ -34,6 +36,7 @@ import { useRoute } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
 import usePermissionStore from '@/store/modules/permission';
 import { constantRoutes } from '@/router';
+import NavIcon from './NavIcon.vue';
 
 defineOptions({ name: 'AppNav' });
 
@@ -84,12 +87,10 @@ const navItems = computed(() => permission.routes
   .map(r => toItem(r))
   .filter((i): i is NavItem => !!i));
 
+const menuKey = computed(() => navItems.value.map(i => `${i.path}:${i.title}`).join('|'));
+
 const activeMenu = computed(() => (route.meta.activeMenu as string) || route.path);
 
-// 后端菜单里个别旧图标是 Element UI 的类名（el-icon-*），在新版中不可用，跳过
-function isSvgIcon(icon?: string) {
-  return !!icon && !icon.startsWith('el-icon');
-}
 </script>
 
 <style lang="scss" scoped>
@@ -130,12 +131,6 @@ function isSvgIcon(icon?: string) {
   }
 }
 
-.app-nav__icon {
-  width: 16px;
-  height: 16px;
-  margin-right: 8px;
-  color: var(--app-muted-text);
-}
 </style>
 
 <style lang="scss">
@@ -152,10 +147,5 @@ function isSvgIcon(icon?: string) {
     border-radius: 6px;
   }
 
-  .app-nav__icon {
-    width: 16px;
-    height: 16px;
-    margin-right: 8px;
-  }
 }
 </style>

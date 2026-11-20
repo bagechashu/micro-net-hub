@@ -1,6 +1,6 @@
 <template>
   <div class="app-container sitenav">
-    <div class="sitenav-toolbar">
+    <Teleport to="#page-header-actions" defer>
       <div class="sitenav-search">
         <el-input
           v-model="search"
@@ -13,8 +13,10 @@
         <el-button type="primary" @click="searchData">{{ $t('common.search') }}</el-button>
         <el-button v-show="searchStatus" :icon="Refresh" @click="resetSearch">{{ $t('common.reset') }}</el-button>
       </div>
-      <div class="sitenav-notice"><Notice /></div>
-    </div>
+    </Teleport>
+
+    <!-- 公告：独占一行；没有公告时不渲染，导航内容直接贴着标题 -->
+    <Notice class="sitenav-notice" />
 
     <NavSub v-if="data.length > 0" :data="data" />
     <el-empty v-else :description="$t('common.nodata')" />
@@ -25,7 +27,7 @@
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
-import { Search, Refresh } from '@element-plus/icons-vue';
+import { Search, Refresh } from '@/icons/tabler';
 import NavSub from '@/views/sitenav/components/sub.vue';
 import Notice from '@/views/notice/index.vue';
 import { getNav } from '@/api/sitenav';
@@ -89,14 +91,7 @@ getNavJson();
 </script>
 
 <style lang="scss" scoped>
-.sitenav-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
+// 搜索框通过 Teleport 渲染在页面标题行右侧，scoped 样式仍然生效
 .sitenav-search {
   display: flex;
   align-items: center;
@@ -108,8 +103,7 @@ getNavJson();
 }
 
 .sitenav-notice {
-  flex: 1;
-  min-width: 240px;
+  margin-bottom: 20px;
 }
 
 @media (max-width: 768px) {

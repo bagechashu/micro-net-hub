@@ -1,6 +1,8 @@
 <template>
-  <div class="message-container">
+  <div v-if="data.length" class="message-container">
+    <IconSpeakerphone class="message-icon" :size="18" stroke="1.75" />
     <div
+      ref="marqueeRef"
       class="marquee"
       @mouseover="paused = true"
       @mouseleave="paused = false"
@@ -8,14 +10,14 @@
       <div
         class="marquee-track"
         :style="{
-          animationDuration: `${duration * copies}s`,
+          animationDuration: `${duration}s`,
           animationPlayState: paused ? 'paused' : 'running',
           '--marquee-shift': `${-100 / copies}%`
         }"
       >
-        <div v-for="n in copies" :key="n" class="marquee-copy" :aria-hidden="n > 1 ? 'true' : undefined">
-          <span v-for="(item, i) in data" :key="item.ID">
-            <span class="message" :style="styles[i]">
+        <div v-for="n in copies" :key="n" ref="copyRefs" class="marquee-copy" :aria-hidden="n > 1 ? 'true' : undefined">
+          <span v-for="item in data" :key="item.ID">
+            <span class="message">
               <span :class="['level', getLevelColorClass(item.level)]">{{ getLevelText(item.level) }}:</span>
               <span class="content">{{ item.content }}</span>
             </span>
@@ -27,7 +29,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onBeforeUnmount } from 'vue';
+import { nextTick, ref, onBeforeUnmount } from 'vue';
+import { IconSpeakerphone } from '@tabler/icons-vue';
 import { useI18n } from 'vue-i18n';
 import { getNotice } from '@/api/notice';
 
@@ -35,21 +38,25 @@ defineOptions({ name: 'NoticeBoard' });
 
 const { t } = useI18n();
 
+// 滚动速度（像素/秒）
+const SPEED = 60;
+
 const duration = ref(15);
 const paused = ref(false);
-const copies = ref(4);
+const copies = ref(2);
 const data = ref<any[]>([]);
-// Random font styles are generated once per fetch so repeated copies stay identical (seamless loop).
-const styles = ref<Record<string, string>[]>([]);
+const marqueeRef = ref<HTMLElement>();
+const copyRefs = ref<HTMLElement[]>([]);
 
-function getRandomFontSize() {
-  const minSize = 12;
-  const maxSize = 20;
-  return `${Math.floor(Math.random() * (maxSize - minSize + 1)) + minSize}px`;
-}
-
-function getRandomWeight() {
-  return Math.random() > 0.5 ? 'bold' : 'normal';
+// 动画每次平移一份内容的宽度：按实际宽度换算时长，保证匀速；份数要足够铺满一行，循环才连贯
+async function updateMarquee() {
+  copies.value = 2;
+  await nextTick();
+  const copyWidth = copyRefs.value[0]?.offsetWidth || 0;
+  const boxWidth = marqueeRef.value?.offsetWidth || 0;
+  if (!copyWidth) return;
+  copies.value = Math.max(2, Math.ceil(boxWidth / copyWidth) + 1);
+  duration.value = Math.max(4, copyWidth / SPEED);
 }
 
 async function fetchNotice() {
@@ -57,9 +64,7 @@ async function fetchNotice() {
     const res = await getNotice();
     const list = Array.isArray(res.data) ? res.data : [];
     data.value = list;
-    styles.value = list.map(() => ({ fontSize: getRandomFontSize(), fontWeight: getRandomWeight() }));
-    duration.value = Math.max(5, Math.round(JSON.stringify(list).length / 30));
-    copies.value = Math.max(2, 10 - list.length);
+    if (list.length) await updateMarquee();
   } catch {
     // error already shown by request wrapper
   }
@@ -104,14 +109,26 @@ onBeforeUnmount(() => {
 <style lang="css" scoped>
 .message-container {
   display: flex;
-  flex-direction: column;
-  height: fit-content;
-  padding: 8px;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--el-border-color-light);
+  border-radius: var(--app-card-radius);
+  background: var(--el-bg-color);
+  box-shadow: var(--app-shadow);
+  font-size: 13px;
+}
+
+.message-icon {
+  flex: none;
+  color: var(--el-color-primary);
 }
 
 .marquee {
+  flex: 1;
+  min-width: 0;
   overflow: hidden;
-  width: 100%;
 }
 
 .marquee-track {
@@ -143,36 +160,39 @@ onBeforeUnmount(() => {
 }
 
 .message {
+  display: inline-flex;
   align-items: center;
-  padding: 2px 10px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  gap: 6px;
+  margin-right: 32px;
+  color: var(--el-text-color-regular);
+}
+
+/* Tabler 风格的浅色徽标 */
+.level {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .info-level {
-  background-color: #66bb6a;
-  color: white;
+  background-color: var(--el-color-success-light-9);
+  color: var(--el-color-success);
 }
 
 .warning-level {
-  background-color: #ffa726;
-  color: white;
+  background-color: var(--el-color-warning-light-9);
+  color: var(--el-color-warning);
 }
 
 .critical-level {
-  background-color: #e53935;
-  color: white;
+  background-color: var(--el-color-danger-light-9);
+  color: var(--el-color-danger);
 }
 
 .default-level {
-  background-color: #999999;
-  color: white;
-}
-
-.level {
-  margin-left: 5px;
-  padding: 1px 8px;
-  border-radius: 4px;
-  font-weight: bold;
+  background-color: var(--el-fill-color-light);
+  color: var(--el-text-color-secondary);
 }
 
 .content {

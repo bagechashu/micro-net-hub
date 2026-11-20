@@ -4,7 +4,6 @@
       <el-form
         ref="dnsZoneFormRef"
         :inline="true"
-        size="small"
         :model="dnsZoneForm"
         :rules="dnsZoneFormRules"
       >
@@ -25,9 +24,9 @@
         @tab-remove="deleteZone"
       >
         <el-tab-pane v-for="item in dnsData" :key="item.ID" :label="item.name" :name="item.name">
-          <el-form size="small" :inline="true" class="demo-form-inline">
+          <el-form :inline="true" class="demo-form-inline">
             <el-form-item>
-              <el-button :loading="loading" :icon="Plus" type="warning" @click="addRecord">
+              <el-button :loading="loading" :icon="Plus" type="primary" @click="addRecord">
                 {{ $t('dns.6112hr2851s0') }}
               </el-button>
             </el-form-item>
@@ -83,7 +82,6 @@
       <el-dialog v-model="dnsRecordFormVisible" :title="dnsRecordFormTitle" @closed="resetRecordFormFields">
         <el-form
           ref="dnsRecordFormRef"
-          size="small"
           :model="dnsRecordForm"
           :rules="dnsRecordFormRules"
           label-width="auto"
@@ -126,7 +124,7 @@ import { onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import type { FormInstance } from 'element-plus';
-import { Plus, Delete, Edit } from '@element-plus/icons-vue';
+import { Plus, Delete, Edit } from '@/icons/tabler';
 import {
   getDnsRecords,
   createDnsZone,

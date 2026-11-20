@@ -21,7 +21,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Monitor, Sunny, Moon } from '@element-plus/icons-vue';
+import { Monitor, Sunny, Moon } from '@/icons/tabler';
 import useThemeStore from '@/store/modules/theme';
 import type { ThemeMode } from '@/store/modules/theme';
 

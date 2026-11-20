@@ -13,6 +13,8 @@ export interface IUserState {
   avatar: string;
   introduction: string;
   roles: string[];
+  /** /api/user/info 原始返回，个人中心展示昵称、手机号、职位等 */
+  info: IUserInfo | null;
 }
 
 /** /api/user/info 返回的用户信息（backend/internal/module/account/model/user.go） */
@@ -34,7 +36,8 @@ const useUserStore = defineStore('user', {
     mail: '',
     avatar: '',
     introduction: '',
-    roles: []
+    roles: [],
+    info: null
   }),
   actions: {
     async login(userInfo: { username: string; password: string }) {
@@ -63,6 +66,7 @@ const useUserStore = defineStore('user', {
       this.mail = mail || '';
       this.avatar = avatar || '';
       this.introduction = introduction || '';
+      this.info = data;
       return data;
     },
 
@@ -92,6 +96,7 @@ const useUserStore = defineStore('user', {
       this.avatar = '';
       this.introduction = '';
       this.roles = [];
+      this.info = null;
       removeToken();
     },
 

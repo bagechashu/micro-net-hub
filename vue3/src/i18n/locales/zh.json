@@ -81,7 +81,8 @@
         "newpassValidErrMustComplex": "密码要包含数字、大写字母、小写字母、特殊字符中的至少三种",
         "confirmNewPassErr": "两次输入密码不一致",
         "changePasswordSuccess": "修改密码成功，请重新登录",
-        "changePasswordErr": "修改密码失败"
+        "changePasswordErr": "修改密码失败",
+        "capsLockOn": "大写锁定已开启"
     },
     "profile": {
         "profile": "个人中心",
@@ -89,7 +90,31 @@
         "changePassword": "修改个人密码",
         "changeTotp": "修改 TOTP 秘钥",
         "changeTotpTips": "请输入OTP",
-        "changeTotpTipsValid": "OTP 为6位数字码"
+        "changeTotpTipsValid": "OTP 为6位数字码",
+        "username": "用户名",
+        "nickname": "中文名",
+        "givenName": "花名",
+        "mail": "邮箱",
+        "mobile": "手机号",
+        "jobNumber": "工号",
+        "position": "职位",
+        "source": "账号来源",
+        "roles": "角色",
+        "notSet": "未设置",
+        "security": "账号安全",
+        "changePasswordDesc": "修改后需要使用新密码重新登录。",
+        "pwdRuleTitle": "密码要求",
+        "pwdRules": [
+            "至少 8 位",
+            "包含大写字母、小写字母、数字、特殊字符中的至少 3 种",
+            "不要与旧密码相同"
+        ],
+        "totpTitle": "两步验证（TOTP）",
+        "totpDesc": "重置 TOTP 秘钥后，需要在身份验证器（如 Google Authenticator、Microsoft Authenticator）中重新添加账号。",
+        "totpConfirm": "确定重置 TOTP 秘钥吗？旧秘钥将立即失效。",
+        "totpScanTitle": "用身份验证器扫描二维码",
+        "totpScanDesc": "二维码只显示一次，离开或刷新页面后将无法再次查看。",
+        "done": "完成"
     },
     "totpNotice": {
         "notice": "注意:",
@@ -343,7 +368,9 @@
         "6111lkey4wg0": "验证码",
         "6111lkey4zc0": "请输入验证码",
         "otpSendTips": "验证码已发送, 60s后再次发送",
-        "resetSuccessTips": "操作成功, 3s后返回首页"
+        "resetSuccessTips": "操作成功, 3s后返回首页",
+        "desc": "输入账号绑定的邮箱，我们会发送验证码。验证通过后，新密码将发送到该邮箱。",
+        "backHome": "返回首页"
     },
     "operation-log": {
         "6111tvyrbi80": "请求人",

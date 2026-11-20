@@ -47,6 +47,42 @@ router.beforeEach(async (to) => {
   }
 });
 
-router.afterEach(() => {
+router.afterEach((to) => {
   NProgress.done();
+  try {
+    sessionStorage.removeItem(chunkReloadKey(to.fullPath));
+  } catch {
+    // 忽略存储不可用
+  }
+});
+
+// 页面模块（懒加载的 .vue / chunk）加载失败时，路由导航会被中断，表现为“点了没反应、进度条卡住”。
+// 常见原因：发布新版本后旧页面去加载已不存在的旧 chunk；开发时 Vite 依赖预构建过期（504 Outdated Optimize Dep）。
+// 处理：对同一目标页自动整页刷新一次；仍然失败则提示错误，避免无限刷新。
+const CHUNK_ERROR = /Failed to fetch dynamically imported module|Importing a module script failed|error loading dynamically imported module/i;
+
+function chunkReloadKey(path: string) {
+  return `chunk-reload:${path}`;
+}
+
+router.onError((error, to) => {
+  NProgress.done();
+  if (!CHUNK_ERROR.test(String((error as Error)?.message ?? error))) {
+    return;
+  }
+  const key = chunkReloadKey(to.fullPath);
+  let reloaded: boolean;
+  try {
+    reloaded = sessionStorage.getItem(key) === '1';
+    sessionStorage.setItem(key, '1');
+  } catch {
+    // 无法记录时按“已重试过”处理，避免循环刷新
+    reloaded = true;
+  }
+  if (!reloaded) {
+    window.location.href = router.resolve(to).href;
+    window.location.reload();
+  } else {
+    ElMessage.error('页面加载失败，请刷新后重试');
+  }
 });

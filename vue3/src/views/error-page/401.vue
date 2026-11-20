@@ -35,7 +35,7 @@
 </template>
 
 <script>
-import { ArrowLeft } from '@element-plus/icons-vue';
+import { ArrowLeft } from '@/icons/tabler';
 import { markRaw } from 'vue';
 import errGif from '@/assets/401_images/401.gif';
 import { defineComponent } from 'vue';

@@ -1,7 +1,7 @@
 <template>
   <el-dropdown trigger="click" @command="handleSetLocale">
     <div>
-      <svg-icon class-name="language-icon" icon-class="language" />
+      <IconLanguage :size="18" stroke="1.75" class="language-icon" />
     </div>
     <template #dropdown>
       <el-dropdown-menu>
@@ -19,6 +19,7 @@
 
 <script setup lang="ts">
 import Cookies from 'js-cookie';
+import { IconLanguage } from '@/icons/tabler';
 import { useI18n } from 'vue-i18n';
 
 const localeOptions = [

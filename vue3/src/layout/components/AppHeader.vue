@@ -53,12 +53,12 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { ArrowDown, Document, SwitchButton, User } from '@element-plus/icons-vue';
+import { ArrowDown, Document, SwitchButton, User } from '@/icons/tabler';
 import useUserStore from '@/store/modules/user';
 import ThemeSwitch from '@/components/ThemeSwitch/index.vue';
 import LanguageSelect from '@/components/LanguageSelect/index.vue';
 import Login from '@/layout/components/Login/index.vue';
-import logo from '@/assets/sidebar-logo/micro-net-hub.png';
+import logo from '@/assets/logo.svg';
 
 defineOptions({ name: 'AppHeader' });
 
@@ -95,8 +95,8 @@ async function logout() {
 }
 
 .app-header__logo {
+  width: 32px;
   height: 32px;
-  border-radius: 6px;
 }
 
 .app-header__title {

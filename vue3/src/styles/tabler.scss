@@ -9,6 +9,11 @@
   --el-font-family: var(--app-font-family);
   --el-font-size-base: 14px;
 
+  // ---- 控件尺寸（Tabler 表单控件高 36px）----
+  --el-component-size: 36px;
+  --el-component-size-small: 28px;
+  --el-component-size-large: 44px;
+
   // ---- 圆角与阴影 ----
   --el-border-radius-base: 6px;
   --el-border-radius-small: 4px;
@@ -263,4 +268,119 @@ a {
 // 业务页面外层卡片（.container-card）原本自带外边距，在新布局里与页面标题对齐
 .page-body .container-card {
   margin: 0 !important;
+}
+
+// ---------------------------------------------------------------------------
+// 间距：按钮、表单
+// ---------------------------------------------------------------------------
+.el-button {
+  --el-button-font-weight: 500;
+  padding: 8px 14px;
+
+  &.el-button--small {
+    padding: 5px 10px;
+  }
+
+  &.is-circle {
+    padding: 0;
+  }
+}
+
+// Element Plus 默认按钮写死 32px，与 36px 的输入框并排时高低不齐；统一跟随控件尺寸
+.el-button:not(.el-button--small):not(.el-button--large):not(.is-link):not(.is-text) {
+  height: var(--el-component-size);
+
+  &.is-circle {
+    width: var(--el-component-size);
+  }
+}
+
+// 相邻按钮统一 8px 间距（Element Plus 默认 12px）
+.el-button + .el-button {
+  margin-left: 8px;
+}
+
+// 页面上的筛选栏/工具栏（行内表单）：用 gap 控制间距，换行后上下对齐
+.page-body .el-form--inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  margin-bottom: 16px;
+
+  .el-form-item {
+    margin: 0;
+  }
+
+  .el-form-item__label {
+    padding-right: 8px;
+  }
+}
+
+// 弹窗里的表单项间距
+.el-dialog .el-form-item {
+  margin-bottom: 18px;
+}
+
+.el-input__wrapper,
+.el-select__wrapper,
+.el-textarea__inner {
+  box-shadow: 0 0 0 1px var(--el-border-color) inset;
+}
+
+// 表格与上方工具栏之间留出间距
+.page-body .el-table {
+  margin-top: 4px;
+}
+
+// 表单标签与 36px 高的控件垂直居中对齐
+.el-form-item--default .el-form-item__label,
+.el-form--inline .el-form-item__label {
+  height: var(--el-component-size);
+  line-height: var(--el-component-size);
+}
+
+.el-form-item--default .el-form-item__content {
+  line-height: var(--el-component-size);
+}
+
+/* ---- 设置类卡片（个人中心等）：图标 + 标题 + 说明，底部操作右对齐 ---- */
+.settings-card {
+  .settings-card__header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .settings-card__icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    color: var(--el-color-primary);
+    background: var(--el-color-primary-light-9);
+    border-radius: 8px;
+  }
+
+  .settings-card__title {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--el-text-color-primary);
+  }
+
+  .settings-card__desc {
+    margin-top: 2px;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--el-text-color-secondary);
+  }
+
+  .settings-card__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
 }

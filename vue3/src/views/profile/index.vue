@@ -1,37 +1,33 @@
 <template>
-  <div class="app-container">
-    <div v-if="user">
-      <el-row :gutter="20">
-        <el-col :span="6" :xs="24">
-          <UserCard :user="user" />
-        </el-col>
-        <el-col :span="8" :xs="24">
-          <TotpCard />
-        </el-col>
-        <el-col :span="10" :xs="24">
-          <Account />
-        </el-col>
-      </el-row>
-    </div>
-  </div>
+  <el-row :gutter="16" class="profile-page">
+    <el-col :xs="24" :md="8" :lg="7">
+      <UserCard />
+    </el-col>
+    <el-col :xs="24" :md="16" :lg="17">
+      <div class="profile-stack">
+        <Account />
+        <TotpCard />
+      </div>
+    </el-col>
+  </el-row>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import useUserStore from '@/store/modules/user';
 import UserCard from './components/UserCard.vue';
 import TotpCard from './components/TotpCard.vue';
 import Account from './components/Account.vue';
 
 defineOptions({ name: 'Profile' });
-
-const userStore = useUserStore();
-
-const user = computed(() => ({
-  name: userStore.name,
-  role: (userStore.roles || []).join(' | '),
-  mail: userStore.mail,
-  avatar: userStore.avatar ? userStore.avatar : 'https://q1.qlogo.cn/g?b=qq&nk=10002&s=100',
-  introduction: userStore.introduction
-}));
 </script>
+
+<style scoped>
+.profile-page {
+  row-gap: 16px;
+}
+
+.profile-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+</style>

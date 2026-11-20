@@ -34,7 +34,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
-import { Position, Document, CopyDocument, StarFilled } from '@element-plus/icons-vue';
+import { Position, Document, CopyDocument, StarFilled } from '@/icons/tabler';
 
 defineProps({
   sites: {

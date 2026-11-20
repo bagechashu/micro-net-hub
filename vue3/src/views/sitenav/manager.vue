@@ -4,7 +4,6 @@
       <el-form
         ref="navGroupFormRef"
         :inline="true"
-        size="small"
         :model="navGroupForm"
         :rules="navGroupFormRules"
       >
@@ -33,9 +32,9 @@
         @tab-remove="deleteGroup"
       >
         <el-tab-pane v-for="item in navData" :key="item.name" :label="item.title" :name="item.name">
-          <el-form size="small" :inline="true" class="demo-form-inline">
+          <el-form :inline="true" class="demo-form-inline">
             <el-form-item>
-              <el-button :loading="loading" :icon="Plus" type="warning" @click="addSite">
+              <el-button :loading="loading" :icon="Plus" type="primary" @click="addSite">
                 {{ $t('sitenav.6112v35e5xw0') }}
               </el-button>
             </el-form-item>
@@ -93,7 +92,6 @@
       <el-dialog v-model="navSiteFormVisible" :title="navSiteFormTitle" @closed="resetSiteFormFields">
         <el-form
           ref="navSiteFormRef"
-          size="small"
           :model="navSiteForm"
           :rules="navSiteFormRules"
           label-width="auto"
@@ -165,7 +163,7 @@ import { onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import type { FormInstance, FormItemRule } from 'element-plus';
-import { Plus, Delete, Edit } from '@element-plus/icons-vue';
+import { Plus, Delete, Edit } from '@/icons/tabler';
 import {
   getNav,
   getIcons,

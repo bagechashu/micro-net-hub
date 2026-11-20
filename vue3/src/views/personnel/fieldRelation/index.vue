@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-card class="container-card" shadow="always">
-      <el-form size="small" :inline="true" :model="params" class="demo-form-inline">
+      <el-form :inline="true" :model="params" class="demo-form-inline">
         <el-form-item :label="$t('fieldRelation.610zu0w6ymo0')">
           <el-input
             v-model.trim="params.flag"
@@ -12,10 +12,10 @@
           />
         </el-form-item>
         <el-form-item>
-          <el-button :loading="loading" :icon="Search" type="primary" @click="search">{{ $t('fieldRelation.610zu0w6z7w0') }}</el-button>
+          <el-button :loading="loading" :icon="Search" @click="search">{{ $t('fieldRelation.610zu0w6z7w0') }}</el-button>
         </el-form-item>
         <el-form-item>
-          <el-button :loading="loading" :icon="Plus" type="warning" @click="create">{{ $t('fieldRelation.610zu0w6zag0') }}</el-button>
+          <el-button :loading="loading" :icon="Plus" type="primary" @click="create">{{ $t('fieldRelation.610zu0w6zag0') }}</el-button>
         </el-form-item>
         <el-form-item>
           <el-button
@@ -74,7 +74,7 @@
             <a href="http://ldapdoc.eryajf.net/pages/84953d/" target="_blank">{{ $t('fieldRelation.610zu0w70140') }}</a>
           </aside>
         </div>
-        <el-form ref="createFormRef" size="small" :model="dialogFormData" :rules="dialogFormRules" label-width="180px">
+        <el-form ref="createFormRef" :model="dialogFormData" :rules="dialogFormRules" label-width="180px">
           <el-form-item :label="$t('fieldRelation.610zu0w703g0')">
             <el-checkbox-group v-model="fieldRelationChecked">
               <el-checkbox-button
@@ -126,7 +126,7 @@
             <a href="http://ldapdoc.eryajf.net/pages/84953d/" target="_blank">{{ $t('fieldRelation.610zu0w70140') }}</a>
           </aside>
         </div>
-        <el-form ref="updateFormRef" size="small" :model="dialogFormData" :rules="dialogFormRules" label-width="180px">
+        <el-form ref="updateFormRef" :model="dialogFormData" :rules="dialogFormRules" label-width="180px">
           <template v-if="isUserRelation">
             <el-form-item :label="$t('fieldRelation.610zu0w703g0')">
               <el-button type="primary">{{ $t('fieldRelation.610zu0w70600') }}</el-button>
@@ -168,7 +168,7 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import type { FormInstance, FormRules } from 'element-plus';
-import { Search, Plus, Delete, Edit } from '@element-plus/icons-vue';
+import { Search, Plus, Delete, Edit } from '@/icons/tabler';
 import { relationList, relationAdd, relationUp, relationDel } from '@/api/personnel/fieldRelation';
 
 defineOptions({ name: 'FieldRelation' });

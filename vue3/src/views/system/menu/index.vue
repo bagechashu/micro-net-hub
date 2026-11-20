@@ -1,9 +1,9 @@
 <template>
   <div>
     <el-card class="container-card" shadow="always">
-      <el-form size="small" :inline="true" class="demo-form-inline">
+      <el-form :inline="true" class="demo-form-inline">
         <el-form-item>
-          <el-button :loading="loading" type="warning" @click="create"><el-icon><Plus /></el-icon>{{ $t('menu.61131vuglrw0') }}</el-button>
+          <el-button :loading="loading" type="primary" @click="create"><el-icon><Plus /></el-icon>{{ $t('menu.61131vuglrw0') }}</el-button>
         </el-form-item>
         <el-form-item>
           <el-button :disabled="multipleSelection.length === 0" :loading="loading" type="danger" @click="batchDelete"><el-icon><Delete /></el-icon>{{ $t('menu.61131vugmb40') }}</el-button>
@@ -56,7 +56,7 @@
       </el-table>
 
       <el-dialog :title="dialogFormTitle" v-model="dialogFormVisible" width="800px">
-        <el-form ref="dialogForm" :inline="true" size="small" :model="dialogFormData" :rules="dialogFormRules" label-width="140px">
+        <el-form ref="dialogForm" :inline="true" :model="dialogFormData" :rules="dialogFormRules" label-width="140px">
           <el-form-item :label="$t('menu.61131vugmf40')" prop="name">
             <el-input v-model.trim="dialogFormData.name" :placeholder="$t('menu.61131vugna00')" style="width: 600px" />
           </el-form-item>
@@ -134,7 +134,7 @@ import IconSelect from '@/components/IconSelect';
 import TreeSelect from '@zanmato/vue3-treeselect';
 import '@zanmato/vue3-treeselect/dist/vue3-treeselect.min.css';
 import { getMenuTree, createMenu, updateMenuById, batchDeleteMenuByIds } from '@/api/system/menu';
-import { Edit, Delete, Plus } from '@element-plus/icons-vue';
+import { Edit, Delete, Plus } from '@/icons/tabler';
 
 export default defineComponent({
   name: 'SystemMenu',

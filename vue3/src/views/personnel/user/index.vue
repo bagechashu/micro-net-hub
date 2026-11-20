@@ -1,11 +1,11 @@
 <template>
   <div>
     <el-card class="container-card" shadow="always">
-      <el-form size="small" :inline="true" :model="params" class="demo-form-inline">
+      <el-form :inline="true" :model="params" class="demo-form-inline">
         <el-form-item :label="$t('user.610wkzjikzs0')">
           <el-input
             v-model.trim="params.username"
-            style="width: 100px"
+            style="width: 160px"
             clearable
             :placeholder="$t('user.610wkzjikzs0')"
             @keyup.enter="search"
@@ -15,7 +15,7 @@
         <el-form-item :label="$t('user.610wkzjill40')">
           <el-input
             v-model.trim="params.nickname"
-            style="width: 100px"
+            style="width: 160px"
             clearable
             :placeholder="$t('user.610wkzjill40')"
             @keyup.enter="search"
@@ -25,7 +25,7 @@
         <el-form-item :label="$t('common.status')">
           <el-select
             v-model="params.status"
-            style="width: 100px"
+            style="width: 160px"
             clearable
             :placeholder="$t('common.status')"
             @change="search"
@@ -38,7 +38,7 @@
         <el-form-item :label="$t('user.610wkzjilwo0')">
           <el-select
             v-model="params.syncState"
-            style="width: 100px"
+            style="width: 160px"
             clearable
             :placeholder="$t('user.610wkzjilwo0')"
             @change="search"
@@ -49,10 +49,10 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button :loading="loading" :icon="Search" type="primary" @click="search">{{ $t('common.query') }}</el-button>
+          <el-button :loading="loading" :icon="Search" @click="search">{{ $t('common.query') }}</el-button>
         </el-form-item>
         <el-form-item>
-          <el-button :loading="loading" :icon="Plus" type="warning" @click="create">{{ $t('common.add') }}</el-button>
+          <el-button :loading="loading" :icon="Plus" type="primary" @click="create">{{ $t('common.add') }}</el-button>
         </el-form-item>
         <el-form-item>
           <el-button
@@ -74,16 +74,16 @@
         </el-form-item>
         <br>
         <el-form-item>
-          <el-button :loading="loading" :icon="Download" type="warning" @click="runSync(syncOpenLdapUsersApi)">{{ $t('user.610wkzjimd80') }}</el-button>
+          <el-button :loading="loading" :icon="Download" @click="runSync(syncOpenLdapUsersApi)">{{ $t('user.610wkzjimd80') }}</el-button>
         </el-form-item>
         <el-form-item>
-          <el-button :loading="loading" :icon="Download" type="warning" @click="runSync(syncDingTalkUsersApi)">{{ $t('user.610wkzjimfk0') }}</el-button>
+          <el-button :loading="loading" :icon="Download" @click="runSync(syncDingTalkUsersApi)">{{ $t('user.610wkzjimfk0') }}</el-button>
         </el-form-item>
         <el-form-item>
-          <el-button :loading="loading" :icon="Download" type="warning" @click="runSync(syncFeiShuUsersApi)">{{ $t('user.610wkzjimho0') }}</el-button>
+          <el-button :loading="loading" :icon="Download" @click="runSync(syncFeiShuUsersApi)">{{ $t('user.610wkzjimho0') }}</el-button>
         </el-form-item>
         <el-form-item>
-          <el-button :loading="loading" :icon="Download" type="warning" @click="runSync(syncWeComUsersApi)">{{ $t('user.610wkzjimk00') }}</el-button>
+          <el-button :loading="loading" :icon="Download" @click="runSync(syncWeComUsersApi)">{{ $t('user.610wkzjimk00') }}</el-button>
         </el-form-item>
       </el-form>
 
@@ -213,7 +213,6 @@
       <el-dialog v-model="dialogFormVisible" :title="dialogFormTitle" width="50%" @closed="resetForm">
         <el-form
           ref="dialogFormRef"
-          size="small"
           :model="dialogFormData"
           :rules="dialogFormRules"
           label-width="150px"
@@ -357,7 +356,7 @@ import { ref, reactive, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import type { FormInstance, FormRules } from 'element-plus';
-import { Search, Plus, Delete, Upload, Download, Edit } from '@element-plus/icons-vue';
+import { Search, Plus, Delete, Upload, Download, Edit } from '@/icons/tabler';
 import TreeSelect from '@zanmato/vue3-treeselect';
 import '@zanmato/vue3-treeselect/dist/vue3-treeselect.min.css';
 import JSEncrypt from 'jsencrypt';

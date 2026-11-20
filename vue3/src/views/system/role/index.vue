@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-card class="container-card" shadow="always">
-      <el-form size="small" :inline="true" :model="params" class="demo-form-inline">
+      <el-form :inline="true" :model="params" class="demo-form-inline">
         <el-form-item :label="$t('role.611p12potc80')">
           <el-input v-model.trim="params.name" clearable :placeholder="$t('role.611p12potc80')" @keyup.enter="search" @clear="search" />
         </el-form-item>
@@ -15,10 +15,10 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button :loading="loading" type="primary" @click="search"><el-icon><SearchIcon /></el-icon>{{ $t('role.611p12povjw0') }}</el-button>
+          <el-button :loading="loading" @click="search"><el-icon><SearchIcon /></el-icon>{{ $t('role.611p12povjw0') }}</el-button>
         </el-form-item>
         <el-form-item>
-          <el-button :loading="loading" type="warning" @click="create"><el-icon><Plus /></el-icon>{{ $t('role.611p12povn40') }}</el-button>
+          <el-button :loading="loading" type="primary" @click="create"><el-icon><Plus /></el-icon>{{ $t('role.611p12povn40') }}</el-button>
         </el-form-item>
         <el-form-item>
           <el-button :disabled="multipleSelection.length === 0" :loading="loading" type="danger" @click="batchDelete"><el-icon><Delete /></el-icon>{{ $t('role.611p12povqk0') }}</el-button>
@@ -71,7 +71,7 @@
       />
 
       <el-dialog :title="dialogFormTitle" v-model="dialogFormVisible" width="580px">
-        <el-form ref="dialogForm" :inline="true" size="small" :model="dialogFormData" :rules="dialogFormRules" label-width="100px">
+        <el-form ref="dialogForm" :inline="true" :model="dialogFormData" :rules="dialogFormRules" label-width="100px">
           <el-form-item :label="$t('role.611p12potc80')" prop="name">
             <el-input v-model.trim="dialogFormData.name" :placeholder="$t('role.611p12potc80')" style="width: 420px" />
           </el-form-item>
@@ -141,7 +141,7 @@ import { defineComponent } from 'vue';
 import { getRoles, createRole, updateRoleById, batchDeleteRoleByIds, getRoleMenusById, getRoleApisById, updateRoleMenusById, updateRoleApisById } from '@/api/system/role';
 import { getMenuTree } from '@/api/system/menu';
 import { getApiTree } from '@/api/system/api';
-import { Search, Plus, Delete, Edit, Lock } from '@element-plus/icons-vue';
+import { Search, Plus, Delete, Edit, Lock } from '@/icons/tabler';
 
 export default defineComponent({
   name: 'Role',

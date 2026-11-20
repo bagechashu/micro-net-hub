@@ -1,8 +1,12 @@
 <template>
   <main class="page-wrapper">
     <div class="app-container-xl page-header">
-      <div v-if="pretitle" class="page-pretitle">{{ pretitle }}</div>
-      <h2 class="page-title">{{ title }}</h2>
+      <div class="page-header__titles">
+        <div v-if="pretitle" class="page-pretitle">{{ pretitle }}</div>
+        <h2 class="page-title">{{ title }}</h2>
+      </div>
+      <!-- 页面右上角操作区：页面通过 <Teleport to="#page-header-actions" defer> 放入内容 -->
+      <div id="page-header-actions" class="page-header__actions" />
     </div>
 
     <div class="app-container-xl page-body">
@@ -53,8 +57,23 @@ const pretitle = computed(() => {
 }
 
 .page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 24px;
   padding-top: 24px;
   padding-bottom: 16px;
+}
+
+.page-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:empty {
+    display: none;
+  }
 }
 
 .page-body {

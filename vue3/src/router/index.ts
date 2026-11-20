@@ -26,10 +26,18 @@ export const constantRoutes: RouteRecordRaw[] = [
     ]
   },
   {
+    // 找回密码：未登录也可访问，放在 Layout 里保持顶部导航和页脚
     path: '/changePass',
-    name: 'changePass',
-    component: () => import('@/views/changePassword/index.vue'),
-    meta: { title: t('loginform.forgetPassword'), icon: 'user', noCache: true, hidden: true }
+    component: Layout,
+    meta: { hidden: true },
+    children: [
+      {
+        path: '',
+        name: 'changePass',
+        component: () => import('@/views/changePassword/index.vue'),
+        meta: { title: t('loginform.forgetPassword'), icon: 'user', noCache: true, hidden: true }
+      }
+    ]
   },
   {
     path: '/404',
@@ -50,7 +58,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         path: '/sitenav',
         component: () => import('@/views/sitenav/index.vue'),
         name: 'SiteNav',
-        meta: { title: t('sidebar.Sitenav'), icon: 'tree', affix: true, hidden: false }
+        meta: { title: t('sidebar.Sitenav'), icon: 'home', affix: true, hidden: false }
       }
     ]
   },

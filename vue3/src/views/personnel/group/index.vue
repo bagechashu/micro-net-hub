@@ -2,7 +2,6 @@
   <div>
     <el-card class="container-card" shadow="always">
       <el-form
-        size="small"
         :inline="true"
         :model="params"
         class="demo-form-inline"
@@ -10,7 +9,7 @@
         <el-form-item :label="$t('group.610yx3auj8w0')">
           <el-input
             v-model.trim="params.groupName"
-            style="width: 100px"
+            style="width: 160px"
             clearable
             :placeholder="$t('group.610yx3auj8w0')"
             @keyup.enter="search"
@@ -20,7 +19,7 @@
         <el-form-item :label="$t('group.610yx3auk3k0')">
           <el-input
             v-model.trim="params.remark"
-            style="width: 100px"
+            style="width: 160px"
             clearable
             :placeholder="$t('group.610yx3auk3k0')"
             @keyup.enter="search"
@@ -30,7 +29,7 @@
         <el-form-item :label="$t('group.610yx3auk780')">
           <el-select
             v-model="params.syncState"
-            style="width: 110px"
+            style="width: 160px"
             clearable
             :placeholder="$t('group.610yx3auk780')"
             @change="search"
@@ -44,7 +43,6 @@
           <el-button
             :loading="loading"
             :icon="Search"
-            type="primary"
             @click="search"
           >{{ $t('group.610yx3auke40') }}</el-button>
         </el-form-item>
@@ -52,7 +50,7 @@
           <el-button
             :loading="loading"
             :icon="Plus"
-            type="warning"
+            type="primary"
             @click="create"
           >{{ $t('group.610yx3aukig0') }}</el-button>
         </el-form-item>
@@ -79,7 +77,6 @@
           <el-button
             :loading="loading"
             :icon="Download"
-            type="warning"
             @click="runDeptSync(syncOpenLdapDeptsApi)"
           >{{ $t('group.610yx3aukos0') }}</el-button>
         </el-form-item>
@@ -87,7 +84,6 @@
           <el-button
             :loading="loading"
             :icon="Download"
-            type="warning"
             @click="runDeptSync(syncDingTalkDeptsApi)"
           >{{ $t('group.610yx3aukr40') }}</el-button>
         </el-form-item>
@@ -95,7 +91,6 @@
           <el-button
             :loading="loading"
             :icon="Download"
-            type="warning"
             @click="runDeptSync(syncFeiShuDeptsApi)"
           >{{ $t('group.610yx3aukvw0') }}</el-button>
         </el-form-item>
@@ -103,7 +98,6 @@
           <el-button
             :loading="loading"
             :icon="Download"
-            type="warning"
             @click="runDeptSync(syncWeComDeptsApi)"
           >{{ $t('group.610yx3aukyc0') }}</el-button>
         </el-form-item>
@@ -240,7 +234,6 @@
       <el-dialog v-model="dialogGroupAddFormVisible" :title="dialogFormTitle" @closed="resetForm">
         <el-form
           ref="addFormRef"
-          size="small"
           :model="dialogFormData"
           :rules="dialogFormRules"
           label-width="120px"
@@ -295,7 +288,6 @@
       <el-dialog v-model="dialogGroupEditFormVisible" :title="dialogFormTitle" @closed="resetForm">
         <el-form
           ref="editFormRef"
-          size="small"
           :model="dialogFormData"
           :rules="dialogFormRules"
           label-width="120px"
@@ -332,7 +324,7 @@
       <el-dialog v-model="dialogUsersMgrVisible" :title="dialogUsersMgrTitle">
         <el-row>
           <el-col :span="9">
-            <el-form size="small" :inline="true" :model="userOfGroupParams">
+            <el-form :inline="true" :model="userOfGroupParams">
               <el-form-item>
                 <el-input
                   v-model.trim="userOfGroupParams.nickname"
@@ -346,13 +338,12 @@
                 size="small"
                 :loading="submitLoading"
                 :icon="Search"
-                type="primary"
                 @click="getUsersOfGroupData()"
               >{{ $t('group.610yx3aum0c0') }}</el-button>
             </el-form>
           </el-col>
           <el-col :span="9">
-            <el-form size="small" :inline="true" :model="groupAddUserParams">
+            <el-form :inline="true" :model="groupAddUserParams">
               <el-form-item>
                 <el-select
                   v-model="groupAddUserList"
@@ -386,7 +377,7 @@
             </el-form>
           </el-col>
           <el-col :span="4">
-            <el-form size="small" class="flex-inline-form" :inline="true">
+            <el-form class="flex-inline-form" :inline="true">
               <el-button
                 size="small"
                 :disabled="userOfGroupListMultipleSelection.length === 0"
@@ -435,7 +426,7 @@ import { reactive, ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import type { FormInstance, FormRules } from 'element-plus';
-import { Search, Plus, Delete, Upload, Download, Setting, Edit } from '@element-plus/icons-vue';
+import { Search, Plus, Delete, Upload, Download, Setting, Edit } from '@/icons/tabler';
 import TreeSelect from '@zanmato/vue3-treeselect';
 import '@zanmato/vue3-treeselect/dist/vue3-treeselect.min.css';
 import {

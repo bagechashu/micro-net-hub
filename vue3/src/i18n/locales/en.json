@@ -81,7 +81,8 @@
     "newpassValidErrMustComplex": "Password must include at least three of the following: numbers, uppercase letters, lowercase letters, special characters",
     "confirmNewPassErr": "Passwords do not match",
     "changePasswordSuccess": "Password changed successfully, please log in again",
-    "changePasswordErr": "Failed to change password"
+    "changePasswordErr": "Failed to change password",
+    "capsLockOn": "Caps Lock is on"
   },
   "profile": {
     "profile": "Profile",
@@ -89,7 +90,31 @@
     "changePassword": "Change Password",
     "changeTotp": "Change TOTP Key",
     "changeTotpTips": "Please enter the OTP",
-    "changeTotpTipsValid": "OTP must be a 6-digit numeric code"
+    "changeTotpTipsValid": "OTP must be a 6-digit numeric code",
+    "username": "Username",
+    "nickname": "Name",
+    "givenName": "Alias",
+    "mail": "Email",
+    "mobile": "Mobile",
+    "jobNumber": "Job Number",
+    "position": "Position",
+    "source": "Account Source",
+    "roles": "Roles",
+    "notSet": "Not set",
+    "security": "Security",
+    "changePasswordDesc": "You will need to sign in again with the new password.",
+    "pwdRuleTitle": "Password requirements",
+    "pwdRules": [
+      "At least 8 characters",
+      "At least 3 of: uppercase, lowercase, digits, special characters",
+      "Different from the current password"
+    ],
+    "totpTitle": "Two-factor authentication (TOTP)",
+    "totpDesc": "After resetting the TOTP key, re-add your account in your authenticator app (e.g. Google Authenticator, Microsoft Authenticator).",
+    "totpConfirm": "Reset the TOTP key? The old key stops working immediately.",
+    "totpScanTitle": "Scan the QR code with your authenticator app",
+    "totpScanDesc": "The QR code is shown only once and cannot be viewed again after leaving or refreshing the page.",
+    "done": "Done"
   },
   "totpNotice": {
     "notice": "Note:",
@@ -343,7 +368,9 @@
     "6111lkey4wg0": "Verification Code",
     "6111lkey4zc0": "Please enter the verification code",
     "otpSendTips": "Verification code sent, you can resend after 60s",
-    "resetSuccessTips": "Execution Successful, returning to homepage in 3s"
+    "resetSuccessTips": "Execution Successful, returning to homepage in 3s",
+    "desc": "Enter the email bound to your account and we will send a verification code. Once verified, a new password is sent to that email.",
+    "backHome": "Back to home"
   },
   "operation-log": {
     "6111tvyrbi80": "Requester",

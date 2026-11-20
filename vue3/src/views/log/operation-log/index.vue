@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-card class="container-card" shadow="always">
-      <el-form size="small" :inline="true" :model="params" class="demo-form-inline">
+      <el-form :inline="true" :model="params" class="demo-form-inline">
         <el-form-item :label="$t('operation-log.6111tvyrbi80')">
           <el-input v-model.trim="params.username" clearable :placeholder="$t('operation-log.6111tvyrbi80')" @keyup.enter="search" @clear="search" />
         </el-form-item>
@@ -15,7 +15,7 @@
           <el-input v-model.trim="params.status" clearable :placeholder="$t('operation-log.6111tvyrbw80')" @keyup.enter="search" @clear="search" />
         </el-form-item>
         <el-form-item>
-          <el-button :loading="loading" :icon="Search" type="primary" @click="search">{{ $t('operation-log.6111tvyrbyo0') }}</el-button>
+          <el-button :loading="loading" :icon="Search" @click="search">{{ $t('operation-log.6111tvyrbyo0') }}</el-button>
         </el-form-item>
         <el-form-item>
           <el-button :disabled="multipleSelection.length === 0" :loading="loading" :icon="Delete" type="danger" @click="batchDelete">{{ $t('operation-log.6111tvyrc0o0') }}</el-button>
@@ -74,7 +74,7 @@
 import { reactive, ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Search, Delete } from '@element-plus/icons-vue';
+import { Search, Delete } from '@/icons/tabler';
 import { getOperationLogs, batchDeleteOperationLogByIds } from '@/api/log/operationLog';
 
 defineOptions({ name: 'OperationLog' });

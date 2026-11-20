@@ -1,9 +1,9 @@
 <template>
   <div>
     <el-card class="container-card" shadow="always">
-      <el-form size="small" :inline="true">
+      <el-form :inline="true">
         <el-form-item>
-          <el-button :loading="loading" :icon="Plus" type="warning" @click="addNotice">
+          <el-button :loading="loading" :icon="Plus" type="primary" @click="addNotice">
             {{ $t('notice.6112860xxb80') }}
           </el-button>
         </el-form-item>
@@ -67,7 +67,7 @@
       <el-empty v-else :description="$t('common.nodata')" />
 
       <el-dialog v-model="noticeFormVisible" :title="noticeFormTitle" @closed="resetNoticeFormFields">
-        <el-form ref="noticeFormRef" size="small" :model="noticeForm" :rules="noticeFormRules" label-width="auto">
+        <el-form ref="noticeFormRef" :model="noticeForm" :rules="noticeFormRules" label-width="auto">
           <el-form-item :label="$t('notice.6112860xxyo0')" prop="level">
             <el-select v-model="noticeForm.level" :placeholder="$t('notice.6112860xyjw0')">
               <el-option v-for="item in levelOptions" :key="item.id" :label="item.name" :value="item.id" />
@@ -102,7 +102,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import type { FormInstance } from 'element-plus';
-import { Plus, Delete, Edit } from '@element-plus/icons-vue';
+import { Plus, Delete, Edit } from '@/icons/tabler';
 import { getNotice, createNotice, updateNotice, batchDeleteNoticeByIds } from '@/api/notice';
 
 defineOptions({ name: 'NoticeManager' });
