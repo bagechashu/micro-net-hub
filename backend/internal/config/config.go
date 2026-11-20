@@ -18,22 +18,21 @@ import (
 var Conf = new(config)
 
 type config struct {
-	System     *System     `mapstructure:"system" json:"system"`
-	Logs       *Logs       `mapstructure:"logs" json:"logs"`
-	Database   *Database   `mapstructure:"database" json:"database"`
-	Mysql      *Mysql      `mapstructure:"mysql" json:"mysql"`
-	Jwt        *Jwt        `mapstructure:"jwt" json:"jwt"`
-	RateLimit  *RateLimit  `mapstructure:"rate-limit" json:"rateLimit"`
-	Ldap       *Ldap       `mapstructure:"ldap" json:"ldap"`
-	LdapServer *LdapServer `mapstructure:"ldap-server" json:"ldapServer"`
-	Radius     *Radius     `mapstructure:"radius" json:"radius"`
-	Dns        *Dns        `mapstructure:"dns" json:"dns"`
-	Email      *Email      `mapstructure:"email" json:"email"`
-	Notice     *Notice     `mapstructure:"notice" json:"notice"`
-	Sync       *Sync       `mapstructure:"sync" json:"sync"`
-	DingTalk   *DingTalk   `mapstructure:"dingtalk" json:"dingTalk"`
-	WeCom      *WeCom      `mapstructure:"wecom" json:"weCom"`
-	FeiShu     *FeiShu     `mapstructure:"feishu" json:"feiShu"`
+	System    *System    `mapstructure:"system" json:"system"`
+	Logs      *Logs      `mapstructure:"logs" json:"logs"`
+	Database  *Database  `mapstructure:"database" json:"database"`
+	Mysql     *Mysql     `mapstructure:"mysql" json:"mysql"`
+	Jwt       *Jwt       `mapstructure:"jwt" json:"jwt"`
+	RateLimit *RateLimit `mapstructure:"rate-limit" json:"rateLimit"`
+	Ldap      *Ldap      `mapstructure:"ldap" json:"ldap"`
+	Radius    *Radius    `mapstructure:"radius" json:"radius"`
+	Dns       *Dns       `mapstructure:"dns" json:"dns"`
+	Email     *Email     `mapstructure:"email" json:"email"`
+	Notice    *Notice    `mapstructure:"notice" json:"notice"`
+	Sync      *Sync      `mapstructure:"sync" json:"sync"`
+	DingTalk  *DingTalk  `mapstructure:"dingtalk" json:"dingTalk"`
+	WeCom     *WeCom     `mapstructure:"wecom" json:"weCom"`
+	FeiShu    *FeiShu    `mapstructure:"feishu" json:"feiShu"`
 }
 
 // 设置读取配置信息
@@ -50,16 +49,12 @@ func InitConfig() {
 	viper.SetDefault("sync.ldap-sync-time", "0 */2 * * * *")
 	viper.SetDefault("radius.fail-times-before-block5min", 9)
 	viper.SetDefault("email.enable", false)
-	viper.SetDefault("ldap-server.enable-manage", false)
-	viper.SetDefault("ldap-server.listen-addr", "0.0.0.0:1389")
-	viper.SetDefault("ldap-server.totp-enable", true)
 	viper.SetDefault("dns.listen-addr", "0.0.0.0:53")
 	viper.SetDefault("dns.read-timeout-second", 5)
 	viper.SetDefault("dns.write-timeout-second", 5)
 	viper.SetDefault("dns.max-recursion-depth", 5)
 	viper.SetDefault("dns.forward-addr", "1.1.1.1:53")
 	viper.SetDefault("logs.audit-get-requests", true)
-	viper.SetDefault("ldap-server.binddn-role-keyword", "binddn")
 
 	// 读取配置信息
 	err = viper.ReadInConfig()
@@ -178,15 +173,6 @@ type Ldap struct {
 	GroupNameModify    bool   `mapstructure:"group-name-modify" json:"groupNameModify"`
 	UserNameModify     bool   `mapstructure:"user-name-modify" json:"userNameModify"`
 	DefaultEmailSuffix string `mapstructure:"default-email-suffix" json:"defaultEmailSuffix"`
-}
-
-type LdapServer struct {
-	ListenAddr               string `mapstructure:"listen-addr" json:"listenAddr"`
-	ListenAddrWithTotpVerify string `mapstructure:"listen-addr-with-totp-verify" json:"listenAddrWithTotpVerify"`
-	// TlsEnable  bool   `mapstructure:"tls-enable" json:"tlsEnable"`
-	BaseDN            string `mapstructure:"base-dn" json:"baseDN"`
-	BindDNRoleKeyword string `mapstructure:"binddn-role-keyword" json:"bindDNRoleKeyword"`
-	TotpEnable        bool   `mapstructure:"totp-enable" json:"totpEnable"`
 }
 
 type Radius struct {

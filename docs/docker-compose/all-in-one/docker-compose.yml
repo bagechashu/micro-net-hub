@@ -81,8 +81,6 @@ services:
       - 1812:1812/udp
       - 53:53
       - 53:53/udp
-      - 1389:1389
-      - 1390:1390
     networks:
       - micro-net-hub-net
 

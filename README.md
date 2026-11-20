@@ -64,8 +64,6 @@ flowchart LR
     
     radius[[Micro-Net-Hub<br>RadiusService:1812/udp]]
     embdns[[Micro-Net-Hub<br>DnsService:53/udp,tcp]]
-    embLdap[[Micro-Net-Hub<br>LdapService:1389/tcp]]
-    embLdapWithTotpVerify[[Micro-Net-Hub<br>LdapService:1390/tcp]]
 
     GoLDAPAdmin[GoLDAPAdmin<br>Sync Organization from<br>DingTalk, Wechat, Feishu, Openldap]
   end

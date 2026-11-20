@@ -238,10 +238,13 @@ func (u *User) Find(filter map[string]interface{}) error {
 	return global.DB.Where(filter).Preload("Groups").Preload("Roles").Preload("Totp").First(&u).Error
 }
 
-// 判断用户是否有等于用于配置 BindDN 的 Role
+// BindDNRoleKeyword 是初始化数据中 BindDN（服务账号）角色的关键字
+const BindDNRoleKeyword = "binddn"
+
+// 判断用户是否拥有 BindDN（服务账号）角色
 func (u *User) CheckBindDNRole() bool {
 	for _, r := range u.Roles {
-		if r.Keyword == config.Conf.LdapServer.BindDNRoleKeyword {
+		if r.Keyword == BindDNRoleKeyword {
 			return true
 		}
 	}
