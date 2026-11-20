@@ -90,47 +90,38 @@
       <el-table
         v-loading="loading"
         :data="tableData"
-        border
         stripe
         style="width: 100%"
         @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" width="55" align="center" />
-        <el-table-column :label="$t('user.610wkzjimm80')" width="65" type="expand">
+        <el-table-column type="selection" width="48" align="center" />
+        <!-- 展开列不写表头文字（窄列写字会把表头撑高），点箭头查看详情 -->
+        <el-table-column type="expand" width="44">
           <template #default="props">
-            <el-form label-position="left" class="table-expand">
-              <el-form-item label="userDN">
-                <span>{{ props.row.userDn }}</span>
-              </el-form-item>
-              <el-form-item :label="$t('user.610wkzjimog0')">
-                <span>{{ props.row.mobile }}</span>
-              </el-form-item>
-              <el-form-item :label="$t('user.610wkzjimqk0')">
-                <span>{{ props.row.mail }}</span>
-              </el-form-item>
-              <el-form-item :label="$t('user.610wkzjimsw0')">
-                <span>{{ props.row.jobNumber }}</span>
-              </el-form-item>
-              <el-form-item :label="$t('user.610wkzjimwo0')">
-                <span>{{ props.row.creator }}</span>
-              </el-form-item>
-              <el-form-item :label="$t('user.610wkzjimys0')">
-                <span>{{ props.row.position }}</span>
-              </el-form-item>
-              <el-form-item :label="$t('user.610wkzjin0w0')">
-                <span>{{ props.row.introduction }}</span>
-              </el-form-item>
-            </el-form>
+            <RowDetail
+              :columns="3"
+              :items="[
+                { label: 'User DN', value: props.row.userDn, wide: true },
+                { label: $t('user.610wkzjin800'), value: (props.row.groups || []).map(g => g.groupDn).join('\n'), wide: true },
+                { label: $t('user.610wkzjimqk0'), value: props.row.mail },
+                { label: $t('user.610wkzjimog0'), value: props.row.mobile },
+                { label: $t('user.610wkzjimsw0'), value: props.row.jobNumber },
+                { label: $t('user.610wkzjimys0'), value: props.row.position },
+                { label: $t('user.610wkzjimwo0'), value: props.row.creator },
+                { label: $t('user.610wkzjin0w0'), value: props.row.introduction }
+              ]"
+            />
           </template>
         </el-table-column>
-        <el-table-column show-overflow-tooltip sortable prop="username" :label="$t('user.610wkzjikzs0')" width="120">
+        <el-table-column sortable prop="username" :label="$t('user.610wkzjikzs0')" width="140">
           <template #default="scope">
-            <div class="name-wrapper">
-              <el-tag size="default">{{ scope.row.username }}</el-tag>
-            </div>
+            <!-- 悬停显示 User DN -->
+            <el-tooltip :content="scope.row.userDn" :disabled="!scope.row.userDn" placement="top">
+              <el-tag size="default" class="username-tag">{{ scope.row.username }}</el-tag>
+            </el-tooltip>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('common.status')" width="80" align="center">
+        <el-table-column :label="$t('common.status')" width="90" align="center">
           <template #default="scope">
             <el-switch
               v-model="scope.row.status"
@@ -141,59 +132,59 @@
             />
           </template>
         </el-table-column>
-        <el-table-column show-overflow-tooltip sortable prop="nickname" :label="$t('user.610wkzjill40')" width="120" />
-        <el-table-column show-overflow-tooltip prop="givenName" :label="$t('user.610wkzjin4g0')" width="120" />
-        <el-table-column show-overflow-tooltip sortable :label="$t('user.610wkzjin680')" width="150">
+        <el-table-column show-overflow-tooltip sortable prop="nickname" :label="$t('user.610wkzjill40')" min-width="130" />
+        <el-table-column show-overflow-tooltip prop="givenName" :label="$t('user.610wkzjin4g0')" min-width="120" />
+        <el-table-column :label="$t('user.610wkzjin680')" min-width="140">
           <template #default="scope">
-            <span v-for="(role, index) in scope.row.roles" :key="role.ID">
-              <el-tag size="small" effect="plain">{{ role.name }}</el-tag>
-              <span v-if="index !== scope.row.roles.length - 1">&nbsp;|&nbsp;</span>
-            </span>
-          </template>
-        </el-table-column>
-        <el-table-column show-overflow-tooltip :label="$t('user.610wkzjin800')" width="420">
-          <template #default="scope">
-            <div v-if="scope.row.groups && scope.row.groups.length">
-              <span v-for="(group, index) in scope.row.groups" :key="group.ID">
-                {{ group.groupDn }}
-                <span v-if="index !== scope.row.groups.length - 1"><br> </span>
-              </span>
-            </div>
-            <div v-else>
-              ---
+            <div class="cell-tags">
+              <el-tag v-for="role in scope.row.roles" :key="role.ID" size="small" effect="plain">{{ role.name }}</el-tag>
             </div>
           </template>
         </el-table-column>
-        <el-table-column show-overflow-tooltip sortable prop="CreatedAt" :label="$t('common.createTime')" />
-        <el-table-column show-overflow-tooltip sortable prop="UpdatedAt" :label="$t('common.updateTime')" />
-        <el-table-column fixed="right" :label="$t('common.management')" align="center" width="150">
+        <!-- 部门：单行显示组名标签（悬停看 DN），超过 2 个折叠成 +N；完整 DN 在展开详情里 -->
+        <el-table-column :label="$t('user.610wkzjin800')" min-width="220">
           <template #default="scope">
-            <el-tooltip :content="$t('common.edit')" effect="dark" placement="top">
-              <el-button size="small" :icon="Edit" circle type="primary" @click="update(scope.row)" />
-            </el-tooltip>
-            <el-tooltip :content="$t('common.delete')" effect="dark" placement="top">
-              <span class="delete-popover">
-                <el-popconfirm :title="$t('user.610wkzjinjg0')" @confirm="singleDelete(scope.row.ID)">
-                  <template #reference>
-                    <el-button size="small" :icon="Delete" circle type="danger" />
-                  </template>
-                </el-popconfirm>
-              </span>
-            </el-tooltip>
-            <el-tooltip
-              v-if="scope.row.syncState === 2 && scope.row.status === 1"
-              :content="$t('user.610wkzjinlc0')"
-              effect="dark"
-              placement="top"
-            >
-              <span class="delete-popover">
-                <el-popconfirm :title="$t('user.610wkzjinn40')" @confirm="singleSync(scope.row.ID)">
-                  <template #reference>
-                    <el-button size="small" :icon="Upload" circle type="success" />
-                  </template>
-                </el-popconfirm>
-              </span>
-            </el-tooltip>
+            <div v-if="scope.row.groups && scope.row.groups.length" class="cell-tags cell-tags--nowrap">
+              <el-tooltip
+                v-for="group in scope.row.groups.slice(0, 2)"
+                :key="group.ID"
+                :content="group.groupDn"
+                placement="top"
+              >
+                <el-tag size="small" type="info" effect="plain">{{ groupLabel(group) }}</el-tag>
+              </el-tooltip>
+              <el-popover v-if="scope.row.groups.length > 2" placement="bottom" :width="320" trigger="hover">
+                <template #reference>
+                  <el-tag size="small" type="info" class="cell-tags__more">+{{ scope.row.groups.length - 2 }}</el-tag>
+                </template>
+                <ul class="group-popover">
+                  <li v-for="group in scope.row.groups" :key="group.ID">
+                    <span class="group-popover__name">{{ groupLabel(group) }}</span>
+                    <span class="group-popover__dn">{{ group.groupDn }}</span>
+                  </li>
+                </ul>
+              </el-popover>
+            </div>
+            <span v-else class="cell-empty">—</span>
+          </template>
+        </el-table-column>
+        <el-table-column show-overflow-tooltip sortable prop="CreatedAt" :label="$t('common.createTime')" width="180" />
+        <el-table-column show-overflow-tooltip sortable prop="UpdatedAt" :label="$t('common.updateTime')" width="180" />
+        <el-table-column fixed="right" :label="$t('common.management')" align="left" width="230">
+          <template #default="scope">
+            <div class="row-actions">
+              <el-button link type="primary" :icon="Edit" @click="update(scope.row)">{{ $t('common.edit') }}</el-button>
+              <el-popconfirm :title="$t('user.610wkzjinjg0')" @confirm="singleDelete(scope.row.ID)">
+                <template #reference>
+                  <el-button link type="danger" :icon="Delete">{{ $t('common.delete') }}</el-button>
+                </template>
+              </el-popconfirm>
+              <el-popconfirm v-if="scope.row.syncState === 2 && scope.row.status === 1" :title="$t('user.610wkzjinn40')" @confirm="singleSync(scope.row.ID)">
+                <template #reference>
+                  <el-button link type="primary" :icon="Upload">{{ $t('user.610wkzjinlc0') }}</el-button>
+                </template>
+              </el-popconfirm>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -210,14 +201,14 @@
         @current-change="handleCurrentChange"
       />
 
-      <el-dialog v-model="dialogFormVisible" :title="dialogFormTitle" width="50%" @closed="resetForm">
+      <el-dialog v-model="dialogFormVisible" :title="dialogFormTitle" width="720px" @closed="resetForm">
         <el-form
           ref="dialogFormRef"
           :model="dialogFormData"
           :rules="dialogFormRules"
-          label-width="150px"
+          label-position="top"
         >
-          <el-row>
+          <el-row :gutter="16">
             <el-col :span="12">
               <el-form-item :label="$t('user.610wkzjikzs0')" prop="username">
                 <el-input
@@ -257,10 +248,13 @@
                   autocomplete="off"
                   :type="passwordType"
                   :placeholder="dialogType === 'create' ? $t('user.610wkzjinwc0') : $t('user.610wkzjio000')"
-                />
-                <span class="show-pwd" @click="showPwd">
-                  <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
-                </span>
+                >
+                  <template #suffix>
+                    <span class="show-pwd" @click="showPwd">
+                      <component :is="passwordType === 'password' ? IconEyeOff : IconEye" :size="18" stroke="1.75" />
+                    </span>
+                  </template>
+                </el-input>
               </el-form-item>
             </el-col>
             <el-col :span="12">
@@ -341,9 +335,9 @@
         </el-form>
         <template #footer>
           <div class="dialog-footer">
-            <el-switch v-model="notice" :active-text="$t('user.610wkzjiook0')" style="margin-right: 10px" />
-            <el-button size="small" @click="cancelForm">{{ $t('common.cancel') }}</el-button>
-            <el-button size="small" :loading="submitLoading" type="primary" @click="submitForm">{{ $t('common.confirm') }}</el-button>
+            <el-switch v-model="notice" :active-text="$t('user.610wkzjiook0')" />
+            <el-button @click="cancelForm">{{ $t('common.cancel') }}</el-button>
+            <el-button :loading="submitLoading" type="primary" @click="submitForm">{{ $t('common.confirm') }}</el-button>
           </div>
         </template>
       </el-dialog>
@@ -356,8 +350,9 @@ import { ref, reactive, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import type { FormInstance, FormRules } from 'element-plus';
-import { Search, Plus, Delete, Upload, Download, Edit } from '@/icons/tabler';
+import { Search, Plus, Delete, Upload, Download, Edit, IconEye, IconEyeOff } from '@/icons/tabler';
 import TreeSelect from '@zanmato/vue3-treeselect';
+import RowDetail from '@/components/RowDetail/index.vue';
 import '@zanmato/vue3-treeselect/dist/vue3-treeselect.min.css';
 import JSEncrypt from 'jsencrypt';
 import { getGroupTree } from '@/api/personnel/group';
@@ -378,6 +373,13 @@ import { getRoles as getRolesApi } from '@/api/system/role';
 defineOptions({ name: 'User' });
 
 const { t } = useI18n();
+
+// 部门标签显示组名；没有组名时取 DN 的第一段值（cn=xxx / ou=xxx）
+function groupLabel(group: { groupName?: string; groupDn?: string }) {
+  if (group.groupName) return group.groupName;
+  const first = (group.groupDn || '').split(',')[0] || '';
+  return first.includes('=') ? first.split('=')[1] : first;
+}
 
 const publicKey = import.meta.env.VITE_PUBLIC_KEY;
 
@@ -750,7 +752,40 @@ onMounted(() => {
 });
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+.username-tag {
+  max-width: 100%;
+  cursor: default;
+}
+
+.group-popover {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    flex-direction: column;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+}
+
+.group-popover__name {
+  font-weight: 500;
+  color: var(--el-text-color-primary);
+}
+
+.group-popover__dn {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  word-break: break-all;
+}
+
 .container-card {
   margin: 10px;
   margin-bottom: 100px;
@@ -761,24 +796,11 @@ onMounted(() => {
 }
 
 .show-pwd {
-  position: absolute;
-  right: 10px;
-  top: 3px;
-  font-size: 16px;
-  color: #889aa4;
+  display: inline-flex;
+  align-items: center;
+  color: var(--el-text-color-secondary);
   cursor: pointer;
   user-select: none;
 }
 
-.table-expand :deep(label) {
-  display: inline-block;
-  width: 90px;
-  color: #99a9bf;
-}
-
-.table-expand :deep(.el-form-item) {
-  margin-right: 0;
-  margin-bottom: 0;
-  width: 50%;
-}
 </style>

@@ -21,58 +21,37 @@
           <el-input v-model.trim="params.creator" clearable :placeholder="$t('api.611p62ddm980')" @keyup.enter="search" @clear="search" />
         </el-form-item>
         <el-form-item>
-          <el-button :loading="loading" @click="search">
-            <el-icon><SearchIcon /></el-icon>
-            {{ $t('api.611p62ddmdc0') }}
-          </el-button>
+          <el-button :loading="loading" @click="search" :icon="Search">{{ $t('api.611p62ddmdc0') }}</el-button>
         </el-form-item>
         <el-form-item>
-          <el-button :loading="loading" type="primary" @click="create">
-            <el-icon><Plus /></el-icon>
-            {{ $t('api.611p62ddmg40') }}
-          </el-button>
+          <el-button :loading="loading" type="primary" @click="create" :icon="Plus">{{ $t('api.611p62ddmg40') }}</el-button>
         </el-form-item>
         <el-form-item>
-          <el-button :disabled="multipleSelection.length === 0" :loading="loading" type="danger" @click="batchDelete">
-            <el-icon><Delete /></el-icon>
-            {{ $t('api.611p62ddmis0') }}
-          </el-button>
+          <el-button :disabled="multipleSelection.length === 0" :loading="loading" type="danger" @click="batchDelete" :icon="Delete">{{ $t('api.611p62ddmis0') }}</el-button>
         </el-form-item>
       </el-form>
 
-      <el-table v-loading="loading" :data="tableData" border stripe style="width: 100%" @selection-change="handleSelectionChange">
-        <el-table-column type="selection" width="55" align="center" />
-        <el-table-column show-overflow-tooltip sortable prop="path" :label="$t('api.611p62ddlio0')" />
-        <el-table-column show-overflow-tooltip sortable prop="category" :label="$t('api.611p62ddlz40')" />
-        <el-table-column show-overflow-tooltip sortable prop="method" :label="$t('api.611p62ddm6c0')" align="center">
+      <el-table v-loading="loading" :data="tableData" stripe style="width: 100%" @selection-change="handleSelectionChange">
+        <el-table-column type="selection" width="48" align="center" />
+        <el-table-column show-overflow-tooltip sortable prop="path" :label="$t('api.611p62ddlio0')" min-width="220" />
+        <el-table-column show-overflow-tooltip sortable prop="category" :label="$t('api.611p62ddlz40')" min-width="130" />
+        <el-table-column show-overflow-tooltip sortable prop="method" :label="$t('api.611p62ddm6c0')" width="150" align="center">
           <template #default="scope">
             <el-tag size="small" :type="methodTagFilter(scope.row.method)" disable-transitions>{{ scope.row.method }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column show-overflow-tooltip sortable prop="creator" :label="$t('api.611p62ddm980')" />
-        <el-table-column show-overflow-tooltip sortable prop="remark" :label="$t('api.611p62ddmlo0')" />
-        <el-table-column fixed="right" :label="$t('api.611p62ddmoc0')" align="center" width="120">
+        <el-table-column show-overflow-tooltip sortable prop="creator" :label="$t('api.611p62ddm980')" width="120" />
+        <el-table-column show-overflow-tooltip sortable prop="remark" :label="$t('api.611p62ddmlo0')" min-width="160" />
+        <el-table-column fixed="right" :label="$t('api.611p62ddmoc0')" align="left" width="160">
           <template #default="scope">
-            <el-tooltip :content="$t('api.611p62ddmr40')" effect="dark" placement="top">
-              <template #default>
-                <el-button size="small" circle type="primary" @click="update(scope.row)">
-                  <el-icon><Edit /></el-icon>
-                </el-button>
-              </template>
-            </el-tooltip>
-            <el-tooltip class="delete-popover" :content="$t('api.611p62ddmu00')" effect="dark" placement="top">
-              <template #default>
-                <span>
-                  <el-popconfirm :title="$t('api.611p62ddmwo0')" @confirm="singleDelete(scope.row.ID)">
-                    <template #reference>
-                      <el-button size="small" circle type="danger">
-                        <el-icon><Delete /></el-icon>
-                  </el-button>
-                    </template>
-                  </el-popconfirm>
-                </span>
-              </template>
-            </el-tooltip>
+            <div class="row-actions">
+              <el-button link type="primary" :icon="Edit" @click="update(scope.row)">{{ $t('common.edit') }}</el-button>
+              <el-popconfirm :title="$t('api.611p62ddmwo0')" @confirm="singleDelete(scope.row.ID)">
+                <template #reference>
+                  <el-button link type="danger" :icon="Delete">{{ $t('common.delete') }}</el-button>
+                </template>
+              </el-popconfirm>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -90,7 +69,7 @@
       />
 
       <el-dialog :title="dialogFormTitle" v-model="dialogFormVisible">
-        <el-form ref="dialogForm" :model="dialogFormData" :rules="dialogFormRules" label-width="120px">
+        <el-form ref="dialogForm" :model="dialogFormData" :rules="dialogFormRules" label-position="top">
           <el-form-item :label="$t('api.611p62ddlio0')" prop="path">
             <el-input v-model.trim="dialogFormData.path" :placeholder="$t('api.611p62ddlio0')" />
           </el-form-item>
@@ -111,8 +90,8 @@
           </el-form-item>
         </el-form>
         <template #footer>
-          <el-button size="small" @click="cancelForm()">{{ $t('api.611p62ddn240') }}</el-button>
-          <el-button size="small" :loading="submitLoading" type="primary" @click="submitForm()">{{ $t('api.611p62ddn4s0') }}</el-button>
+          <el-button @click="cancelForm()">{{ $t('api.611p62ddn240') }}</el-button>
+          <el-button :loading="submitLoading" type="primary" @click="submitForm()">{{ $t('api.611p62ddn4s0') }}</el-button>
         </template>
       </el-dialog>
 
@@ -127,11 +106,10 @@ import { Search, Plus, Delete, Edit } from '@/icons/tabler';
 
 export default defineComponent({
   name: 'Api',
-  components: {
-    SearchIcon: Search,
-    Plus,
-    Delete,
-    Edit
+
+  setup() {
+    // 供模板里 el-button 的 :icon 使用
+    return { Edit, Delete, Plus, Search };
   },
   data() {
     return {

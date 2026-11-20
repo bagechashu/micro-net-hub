@@ -167,7 +167,26 @@
     "6112v35e7z00": "Update Site",
     "6112v35e8140": "Operation successful",
     "deleteSiteTips": "This action will permanently delete the navigation group and its contained records. Do you want to continue?",
-    "invalidLink": "Link is not a valid http(s) URL"
+    "invalidLink": "Link is not a valid http(s) URL",
+    "iconPicker": {
+      "brand": "Brand logo",
+      "generic": "Icon",
+      "favicon": "Favicon",
+      "image": "Image URL",
+      "initial": "Initial",
+      "initialDesc": "No icon set; the first letter of the site name is shown",
+      "searchBrand": "Search brands, e.g. gitlab, grafana",
+      "searchGeneric": "Search icons, e.g. server, database",
+      "noBrand": "Brand not found. Try \"Favicon\" or \"Image URL\".",
+      "faviconDesc": "Use the site's own favicon. Falls back to the initial if it fails to load.",
+      "faviconNeedLink": "Fill in the site link first",
+      "use": "Use",
+      "imagePlaceholder": "https://example.com/logo.svg",
+      "imageDesc": "Only http:// or https:// image URLs. SVG recommended.",
+      "clear": "Clear icon",
+      "clearDesc": "The first letter of the site name will be shown",
+      "invalid": "Invalid icon (legacy built-in images were removed). Please choose again."
+    }
   },
   "user": {
     "610wkzjikzs0": "Username",
@@ -293,7 +312,9 @@
     "610yx3aun440": "Sync canceled",
     "selectGroupTypeTips": "please select Group Type",
     "batchDeleteTips": "This operation will permanently delete the items, do you want to continue?",
-    "betchSyncLdapTips": "This operation will batch sync database groups to LDAP, do you want to continue?"
+    "betchSyncLdapTips": "This operation will batch sync database groups to LDAP, do you want to continue?",
+    "members": "Members",
+    "addMembersTips": "Search and select users to add"
   },
   "fieldRelation": {
     "610zu0w6ymo0": "Field Identifier",

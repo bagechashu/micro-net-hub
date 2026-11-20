@@ -11,7 +11,7 @@
           <el-input v-model.trim="dnsZoneForm.name" placeholder="eg: example.com" />
         </el-form-item>
         <el-form-item>
-          <el-button size="small" :loading="loading" type="primary" @click="addZone()">
+          <el-button :loading="loading" type="primary" @click="addZone()">
             {{ $t('dns.6112hr284k00') }} Zone
           </el-button>
         </el-form-item>
@@ -46,32 +46,26 @@
           <el-table
             v-loading="loading"
             :data="item.records"
-            border
             stripe
-            size="small"
             style="width: 100%"
             @selection-change="handleSelectionChange"
           >
-            <el-table-column type="selection" width="55" align="center" />
-            <el-table-column show-overflow-tooltip sortable prop="type" label="Type" />
-            <el-table-column show-overflow-tooltip sortable prop="host" label="Host" />
-            <el-table-column show-overflow-tooltip sortable prop="value" label="Value" />
-            <el-table-column show-overflow-tooltip sortable prop="ttl" label="TTL" />
-            <el-table-column show-overflow-tooltip sortable prop="creator" :label="$t('dns.6112hr285980')" />
-            <el-table-column fixed="right" :label="$t('dns.6112hr285c40')" align="center" width="120">
+            <el-table-column type="selection" width="48" align="center" />
+            <el-table-column show-overflow-tooltip sortable prop="type" label="Type" width="100" />
+            <el-table-column show-overflow-tooltip sortable prop="host" label="Host" min-width="160" />
+            <el-table-column show-overflow-tooltip sortable prop="value" label="Value" min-width="220" />
+            <el-table-column show-overflow-tooltip sortable prop="ttl" label="TTL" width="90" />
+            <el-table-column show-overflow-tooltip sortable prop="creator" :label="$t('dns.6112hr285980')" width="120" />
+            <el-table-column fixed="right" :label="$t('dns.6112hr285c40')" align="left" width="160">
               <template #default="scope">
-                <el-tooltip :content="$t('dns.6112hr285ew0')" effect="dark" placement="top">
-                  <el-button size="small" :icon="Edit" circle type="primary" @click="updateRecord(scope.row)" />
-                </el-tooltip>
-                <el-tooltip class="delete-popover" :content="$t('dns.6112hr285hs0')" effect="dark" placement="top">
-                  <template #default>
-                    <el-popconfirm :title="$t('dns.6112hr285kk0')" @confirm="deleteRecord(scope.row.ID)">
-                      <template #reference>
-                        <el-button size="small" :icon="Delete" circle type="danger" />
-                      </template>
-                    </el-popconfirm>
-                  </template>
-                </el-tooltip>
+                <div class="row-actions">
+                  <el-button link type="primary" :icon="Edit" @click="updateRecord(scope.row)">{{ $t('common.edit') }}</el-button>
+                  <el-popconfirm :title="$t('dns.6112hr285kk0')" @confirm="deleteRecord(scope.row.ID)">
+                    <template #reference>
+                      <el-button link type="danger" :icon="Delete">{{ $t('common.delete') }}</el-button>
+                    </template>
+                  </el-popconfirm>
+                </div>
               </template>
             </el-table-column>
           </el-table>
@@ -84,7 +78,7 @@
           ref="dnsRecordFormRef"
           :model="dnsRecordForm"
           :rules="dnsRecordFormRules"
-          label-width="auto"
+          label-position="top"
         >
           <el-form-item label="Zone" prop="zone_id">
             <el-select v-model="dnsRecordForm.zone_id" placeholder="choose one">
@@ -108,8 +102,8 @@
         </el-form>
         <template #footer>
           <div class="dialog-footer">
-            <el-button size="small" @click="dnsRecordFormCancel()">{{ $t('dns.6112hr285q00') }}</el-button>
-            <el-button size="small" :loading="loading" type="primary" @click="dnsRecordFormSubmit()">
+            <el-button @click="dnsRecordFormCancel()">{{ $t('dns.6112hr285q00') }}</el-button>
+            <el-button :loading="loading" type="primary" @click="dnsRecordFormSubmit()">
               {{ $t('dns.6112hr285so0') }}
             </el-button>
           </div>

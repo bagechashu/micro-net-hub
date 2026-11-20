@@ -15,45 +15,39 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button :loading="loading" @click="search"><el-icon><SearchIcon /></el-icon>{{ $t('role.611p12povjw0') }}</el-button>
+          <el-button :loading="loading" @click="search" :icon="Search">{{ $t('role.611p12povjw0') }}</el-button>
         </el-form-item>
         <el-form-item>
-          <el-button :loading="loading" type="primary" @click="create"><el-icon><Plus /></el-icon>{{ $t('role.611p12povn40') }}</el-button>
+          <el-button :loading="loading" type="primary" @click="create" :icon="Plus">{{ $t('role.611p12povn40') }}</el-button>
         </el-form-item>
         <el-form-item>
-          <el-button :disabled="multipleSelection.length === 0" :loading="loading" type="danger" @click="batchDelete"><el-icon><Delete /></el-icon>{{ $t('role.611p12povqk0') }}</el-button>
+          <el-button :disabled="multipleSelection.length === 0" :loading="loading" type="danger" @click="batchDelete" :icon="Delete">{{ $t('role.611p12povqk0') }}</el-button>
         </el-form-item>
       </el-form>
 
-      <el-table v-loading="loading" :data="tableData" border stripe style="width: 100%" @selection-change="handleSelectionChange">
-        <el-table-column type="selection" width="55" align="center" />
-        <el-table-column show-overflow-tooltip sortable prop="name" :label="$t('role.611p12potc80')" />
-        <el-table-column show-overflow-tooltip sortable prop="keyword" :label="$t('role.611p12pov3g0')" />
-        <el-table-column show-overflow-tooltip sortable prop="sort" :label="$t('role.611p12povu40')" />
-        <el-table-column show-overflow-tooltip sortable prop="status" :label="$t('role.611p12pov9c0')" align="center">
+      <el-table v-loading="loading" :data="tableData" stripe style="width: 100%" @selection-change="handleSelectionChange">
+        <el-table-column type="selection" width="48" align="center" />
+        <el-table-column show-overflow-tooltip sortable prop="name" :label="$t('role.611p12potc80')" min-width="140" />
+        <el-table-column show-overflow-tooltip sortable prop="keyword" :label="$t('role.611p12pov3g0')" min-width="130" />
+        <el-table-column show-overflow-tooltip sortable prop="sort" :label="$t('role.611p12povu40')" width="90" />
+        <el-table-column show-overflow-tooltip sortable prop="status" :label="$t('role.611p12pov9c0')" width="140" align="center">
           <template #default="scope">
             <el-tag size="small" :type="scope.row.status === 1 ? 'success':'danger'" disable-transitions>{{ scope.row.status === 1 ? $t('role.611p12povd80'):$t('role.611p12povgg0') }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column show-overflow-tooltip sortable prop="creator" :label="$t('role.611p12pow400')" />
-        <el-table-column show-overflow-tooltip sortable prop="remark" :label="$t('role.611p12powdg0')" />
-        <el-table-column fixed="right" :label="$t('role.611p12powhw0')" align="center" width="140">
+        <el-table-column show-overflow-tooltip sortable prop="creator" :label="$t('role.611p12pow400')" width="120" />
+        <el-table-column show-overflow-tooltip sortable prop="remark" :label="$t('role.611p12powdg0')" min-width="160" />
+        <el-table-column fixed="right" :label="$t('role.611p12powhw0')" align="left" width="270">
           <template #default="scope">
-            <el-tooltip :content="$t('role.611p12powkk0')" effect="dark" placement="top">
-              <el-button size="small" circle type="primary" @click="update(scope.row)" ><el-icon><Edit /></el-icon></el-button>
-            </el-tooltip>
-            <el-tooltip :content="$t('role.611p12pown80')" effect="dark" placement="top">
-              <el-button size="small" circle type="warning" @click="updatePermission(scope.row.ID)" ><el-icon><Lock /></el-icon></el-button>
-            </el-tooltip>
-            <el-tooltip :content="$t('role.611p12powpk0')" effect="dark" placement="top">
-              <span>
-                <el-popconfirm style="margin-left:10px" :title="$t('role.611p12powrw0')" @confirm="singleDelete(scope.row.ID)">
-                  <template #reference>
-                    <el-button size="small" circle type="danger" ><el-icon><Delete /></el-icon></el-button>
-                  </template>
-                </el-popconfirm>
-              </span>
-            </el-tooltip>
+            <div class="row-actions">
+              <el-button link type="primary" :icon="Edit" @click="update(scope.row)">{{ $t('common.edit') }}</el-button>
+              <el-button link type="primary" :icon="Lock" @click="updatePermission(scope.row.ID)">{{ $t('role.611p12pown80') }}</el-button>
+              <el-popconfirm :title="$t('role.611p12powrw0')" @confirm="singleDelete(scope.row.ID)">
+                <template #reference>
+                  <el-button link type="danger" :icon="Delete">{{ $t('common.delete') }}</el-button>
+                </template>
+              </el-popconfirm>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -70,16 +64,16 @@
         @current-change="handleCurrentChange"
       />
 
-      <el-dialog :title="dialogFormTitle" v-model="dialogFormVisible" width="580px">
-        <el-form ref="dialogForm" :inline="true" :model="dialogFormData" :rules="dialogFormRules" label-width="100px">
+      <el-dialog :title="dialogFormTitle" v-model="dialogFormVisible">
+        <el-form ref="dialogForm" class="form-grid" :model="dialogFormData" :rules="dialogFormRules" label-position="top">
           <el-form-item :label="$t('role.611p12potc80')" prop="name">
-            <el-input v-model.trim="dialogFormData.name" :placeholder="$t('role.611p12potc80')" style="width: 420px" />
+            <el-input v-model.trim="dialogFormData.name" :placeholder="$t('role.611p12potc80')" />
           </el-form-item>
           <el-form-item :label="$t('role.611p12pov3g0')" prop="keyword">
-            <el-input v-model.trim="dialogFormData.keyword" :placeholder="$t('role.611p12pov3g0')" style="width: 420px" />
+            <el-input v-model.trim="dialogFormData.keyword" :placeholder="$t('role.611p12pov3g0')" />
           </el-form-item>
           <el-form-item :label="$t('role.611p12pov9c0')" prop="status">
-            <el-select v-model.trim="dialogFormData.status" :placeholder="$t('role.611p12powu00')" style="width: 180px">
+            <el-select v-model.trim="dialogFormData.status" :placeholder="$t('role.611p12powu00')">
               <el-option :label="$t('role.611p12povd80')" :value="1" />
               <el-option :label="$t('role.611p12povgg0')" :value="2" />
             </el-select>
@@ -87,17 +81,17 @@
           <el-form-item :label="$t('role.611p12powwk0')" prop="sort">
             <el-input-number v-model.number="dialogFormData.sort" controls-position="right" :min="1" :max="999" />
           </el-form-item>
-          <el-form-item :label="$t('role.611p12powdg0')" prop="remark">
-            <el-input v-model.trim="dialogFormData.remark" style="width: 420px" type="textarea" :placeholder="$t('role.611p12powdg0')" show-word-limit maxlength="100" />
+          <el-form-item class="span-2" :label="$t('role.611p12powdg0')" prop="remark">
+            <el-input v-model.trim="dialogFormData.remark" type="textarea" :placeholder="$t('role.611p12powdg0')" show-word-limit maxlength="100" />
           </el-form-item>
         </el-form>
         <template #footer>
-          <el-button size="small" @click="cancelForm()">{{ $t('role.611p12powys0') }}</el-button>
-          <el-button size="small" :loading="submitLoading" type="primary" @click="submitForm()">{{ $t('role.611p12pox180') }}</el-button>
+          <el-button @click="cancelForm()">{{ $t('role.611p12powys0') }}</el-button>
+          <el-button :loading="submitLoading" type="primary" @click="submitForm()">{{ $t('role.611p12pox180') }}</el-button>
         </template>
       </el-dialog>
 
-      <el-dialog :title="$t('role.611p12pox540')" v-model="permsDialogVisible" width="580px" custom-class="perms-dialog">
+      <el-dialog :title="$t('role.611p12pox540')" v-model="permsDialogVisible" width="600px" class="perms-dialog">
         <el-tabs>
           <el-tab-pane>
             <template #label><svg-icon icon-class="tree-table" class-name="role-menu" /> {{ $t('role.611p12pox740') }}</template>
@@ -127,8 +121,8 @@
           </el-tab-pane>
         </el-tabs>
         <template #footer>
-          <el-button size="small" :loading="permissionLoading" @click="cancelPermissionForm()">{{ $t('role.611p12powys0') }}</el-button>
-          <el-button size="small" type="primary" @click="submitPermissionForm()">{{ $t('role.611p12pox180') }}</el-button>
+          <el-button :loading="permissionLoading" @click="cancelPermissionForm()">{{ $t('role.611p12powys0') }}</el-button>
+          <el-button type="primary" @click="submitPermissionForm()">{{ $t('role.611p12pox180') }}</el-button>
         </template>
       </el-dialog>
 
@@ -145,12 +139,10 @@ import { Search, Plus, Delete, Edit, Lock } from '@/icons/tabler';
 
 export default defineComponent({
   name: 'Role',
-  components: {
-    SearchIcon: Search,
-    Plus,
-    Delete,
-    Edit,
-    Lock
+
+  setup() {
+    // 供模板里 el-button 的 :icon 使用
+    return { Edit, Delete, Lock, Plus, Search };
   },
   data() {
     return {

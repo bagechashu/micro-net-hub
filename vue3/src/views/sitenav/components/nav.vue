@@ -4,22 +4,20 @@
       v-for="(item, index) in sites"
       :key="item.ID ?? index"
       placement="top"
-      :width="180"
+      :width="200"
+      popper-class="site-actions-popper"
       trigger="hover"
       :show-after="500"
       :hide-after="100">
       <div class="site-actions">
-        <el-button size="small" :icon="Position" @click="jumpLink(item.link)">{{ $t('sitenav.visit') }}</el-button>
-        <el-button v-if="item.doc" size="small" :icon="Document" @click="jumpLink(item.doc)">{{ $t('sitenav.doc') }}</el-button>
-        <el-button size="small" :icon="CopyDocument" @click="copyLink(item.link)">{{ $t('sitenav.copyURL') }}</el-button>
-        <el-button size="small" :icon="StarFilled" @click="addBookmarks">{{ $t('sitenav.addBookmark') }}</el-button>
+        <el-button text :icon="Position" @click="jumpLink(item.link)">{{ $t('sitenav.visit') }}</el-button>
+        <el-button text v-if="item.doc" :icon="Document" @click="jumpLink(item.doc)">{{ $t('sitenav.doc') }}</el-button>
+        <el-button text :icon="CopyDocument" @click="copyLink(item.link)">{{ $t('sitenav.copyURL') }}</el-button>
+        <el-button text :icon="StarFilled" @click="addBookmarks">{{ $t('sitenav.addBookmark') }}</el-button>
       </div>
       <template #reference>
         <div class="site-card" role="link" tabindex="0" @click="jumpLink(item.link)" @keyup.enter="jumpLink(item.link)">
-          <span class="site-card__avatar">
-            <img v-if="item.icon" :src="item.icon" loading="lazy" alt="">
-            <span v-else>{{ (item.name || '?').slice(0, 1).toUpperCase() }}</span>
-          </span>
+          <SiteIcon :value="item.icon" :name="item.name" :link="item.link" :size="40" />
           <div class="site-card__body">
             <div class="site-card__name">{{ item.name }}</div>
             <div class="site-card__desc">{{ item.desc || item.link }}</div>
@@ -35,6 +33,7 @@
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { Position, Document, CopyDocument, StarFilled } from '@/icons/tabler';
+import SiteIcon from '@/components/SiteIcon/index.vue';
 
 defineProps({
   sites: {
@@ -108,25 +107,6 @@ function addBookmarks() {
   }
 }
 
-.site-card__avatar {
-  flex: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  background: var(--el-fill-color-light);
-  color: var(--el-color-primary);
-  font-weight: 600;
-  overflow: hidden;
-
-  img {
-    width: 28px;
-    height: 28px;
-    object-fit: contain;
-  }
-}
 
 .site-card__body {
   min-width: 0;
@@ -156,15 +136,31 @@ function addBookmarks() {
   color: var(--app-muted-text);
 }
 
+// 悬停菜单：Tabler dropdown 风格，整行可点、悬停高亮
 .site-actions {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 2px;
 
   .el-button {
     width: 100%;
+    height: 34px;
     margin: 0;
+    padding: 0 10px;
     justify-content: flex-start;
+    font-weight: 400;
+    color: var(--el-text-color-regular);
+
+    &:hover {
+      color: var(--el-color-primary);
+      background: var(--el-color-primary-light-9);
+    }
   }
+}
+</style>
+
+<style lang="scss">
+.el-popover.site-actions-popper {
+  padding: 6px;
 }
 </style>

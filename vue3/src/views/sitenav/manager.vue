@@ -18,7 +18,7 @@
           />
         </el-form-item>
         <el-form-item>
-          <el-button size="small" :loading="loading" type="primary" @click="addGroup()">
+          <el-button :loading="loading" type="primary" @click="addGroup()">
             {{ $t('sitenav.6112v35e5v40') }}
           </el-button>
         </el-form-item>
@@ -54,34 +54,32 @@
           <el-table
             v-loading="loading"
             :data="item.sites"
-            border
             stripe
-            size="small"
             style="width: 100%"
             @selection-change="handleSelectionChange"
           >
-            <el-table-column type="selection" width="55" align="center" />
-            <el-table-column show-overflow-tooltip sortable prop="name" :label="$t('sitenav.6112v35e63c0')" />
-            <el-table-column show-overflow-tooltip sortable prop="icon" :label="$t('sitenav.6112v35e66c0')" />
-            <el-table-column show-overflow-tooltip sortable prop="desc" :label="$t('sitenav.6112v35e68w0')" />
-            <el-table-column show-overflow-tooltip sortable prop="link" :label="$t('sitenav.6112v35e6bw0')" />
-            <el-table-column show-overflow-tooltip sortable prop="doc" :label="$t('sitenav.6112v35e6eo0')" />
-            <el-table-column fixed="right" :label="$t('sitenav.6112v35e6ho0')" align="center" width="120">
+            <el-table-column type="selection" width="48" align="center" />
+            <el-table-column show-overflow-tooltip sortable prop="name" :label="$t('sitenav.6112v35e63c0')" min-width="140" />
+            <el-table-column prop="icon" :label="$t('sitenav.6112v35e66c0')" width="90">
               <template #default="scope">
-                <el-tooltip :content="$t('sitenav.6112v35e6k80')" effect="dark" placement="top">
-                  <el-button size="small" :icon="Edit" circle type="primary" @click="updateSite(scope.row)" />
+                <el-tooltip :content="scope.row.icon || '—'" placement="top">
+                  <SiteIcon :value="scope.row.icon" :name="scope.row.name" :link="scope.row.link" :size="28" />
                 </el-tooltip>
-                <el-tooltip class="delete-popover" :content="$t('sitenav.6112v35e6mw0')" effect="dark" placement="top">
-                  <template #default>
-                    <span>
-                      <el-popconfirm :title="$t('sitenav.6112v35e6pk0')" @confirm="deleteSite(scope.row.ID)">
-                        <template #reference>
-                          <el-button size="small" :icon="Delete" circle type="danger" />
-                        </template>
-                      </el-popconfirm>
-                    </span>
-                  </template>
-                </el-tooltip>
+              </template>
+            </el-table-column>
+            <el-table-column show-overflow-tooltip sortable prop="desc" :label="$t('sitenav.6112v35e68w0')" min-width="160" />
+            <el-table-column show-overflow-tooltip sortable prop="link" :label="$t('sitenav.6112v35e6bw0')" min-width="220" />
+            <el-table-column show-overflow-tooltip sortable prop="doc" :label="$t('sitenav.6112v35e6eo0')" min-width="160" />
+            <el-table-column fixed="right" :label="$t('sitenav.6112v35e6ho0')" align="left" width="160">
+              <template #default="scope">
+                <div class="row-actions">
+                  <el-button link type="primary" :icon="Edit" @click="updateSite(scope.row)">{{ $t('common.edit') }}</el-button>
+                  <el-popconfirm :title="$t('sitenav.6112v35e6pk0')" @confirm="deleteSite(scope.row.ID)">
+                    <template #reference>
+                      <el-button link type="danger" :icon="Delete">{{ $t('common.delete') }}</el-button>
+                    </template>
+                  </el-popconfirm>
+                </div>
               </template>
             </el-table-column>
           </el-table>
@@ -94,7 +92,7 @@
           ref="navSiteFormRef"
           :model="navSiteForm"
           :rules="navSiteFormRules"
-          label-width="auto"
+          label-position="top"
         >
           <el-form-item :label="$t('sitenav.6112v35e6s80')" prop="groupid">
             <el-select v-model="navSiteForm.groupid" :placeholder="$t('sitenav.6112v35e6v40')">
@@ -108,23 +106,19 @@
               @blur="navSiteForm.name = navSiteForm.name.trim()"
             />
           </el-form-item>
-          <el-form-item :label="$t('sitenav.6112v35e66c0')" prop="icon">
-            <el-select
-              v-model="navSiteForm.icon"
-              filterable
-              allow-create
-              default-first-option
-              :placeholder="$t('sitenav.6112v35e6y00')"
-              @blur="navSiteForm.icon = (navSiteForm.icon || '').trim()"
-            >
-              <el-option v-for="item in iconOptions" :key="item.url" :label="item.url" :value="item.url" />
-            </el-select>
-          </el-form-item>
           <el-form-item :label="$t('sitenav.6112v35e6bw0')" prop="link">
             <el-input
               v-model="navSiteForm.link"
               :placeholder="$t('sitenav.6112v35e6bw0')"
               @blur="navSiteForm.link = navSiteForm.link.trim()"
+            />
+          </el-form-item>
+          <el-form-item :label="$t('sitenav.6112v35e66c0')" prop="icon">
+            <IconPicker
+              v-model="navSiteForm.icon"
+              :name="navSiteForm.name"
+              :link="navSiteForm.link"
+              @update:model-value="navSiteFormRef?.validateField('icon')"
             />
           </el-form-item>
           <el-form-item :label="$t('sitenav.6112v35e6eo0')" prop="doc">
@@ -147,8 +141,8 @@
         </el-form>
         <template #footer>
           <div class="dialog-footer">
-            <el-button size="small" @click="navSiteFormCancel()">{{ $t('sitenav.6112v35e74g0') }}</el-button>
-            <el-button size="small" :loading="loading" type="primary" @click="navSiteFormSubmit()">
+            <el-button @click="navSiteFormCancel()">{{ $t('sitenav.6112v35e74g0') }}</el-button>
+            <el-button :loading="loading" type="primary" @click="navSiteFormSubmit()">
               {{ $t('sitenav.6112v35e76o0') }}
             </el-button>
           </div>
@@ -164,9 +158,11 @@ import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import type { FormInstance, FormItemRule } from 'element-plus';
 import { Plus, Delete, Edit } from '@/icons/tabler';
+import SiteIcon from '@/components/SiteIcon/index.vue';
+import IconPicker from '@/components/SiteIcon/IconPicker.vue';
+import { isValidSiteIcon } from '@/components/SiteIcon/icon';
 import {
   getNav,
-  getIcons,
   createNavGroup,
   batchDeleteNavGroupByIds,
   createNavSite,
@@ -204,19 +200,13 @@ function invalidUrlMessage() {
 }
 
 /**
- * Absolute http(s) URL check. `allowRootRelative` additionally accepts same-origin
- * paths such as "/ui/assets/logo/xx.png" (used by the built-in icon list).
- * The WHATWG URL parser is used so that tricks like " javascript:" or "java\tscript:"
- * are normalised the same way a browser would before the protocol check.
+ * Absolute http(s) URL check. The WHATWG URL parser is used so that tricks like
+ * " javascript:" or "java\tscript:" are normalised the same way a browser would.
  */
-function isSafeHttpUrl(value: string, allowRootRelative = false): boolean {
+function isSafeHttpUrl(value: string): boolean {
   const v = (value || '').trim();
   if (!v) return false;
   try {
-    if (allowRootRelative && v.startsWith('/') && !v.startsWith('//') && !v.startsWith('/\\')) {
-      const u = new URL(v, window.location.origin);
-      return u.origin === window.location.origin;
-    }
     const u = new URL(v);
     return u.protocol === 'http:' || u.protocol === 'https:';
   } catch {
@@ -224,12 +214,12 @@ function isSafeHttpUrl(value: string, allowRootRelative = false): boolean {
   }
 }
 
-function urlRule(allowRootRelative = false): FormItemRule {
+function urlRule(): FormItemRule {
   return {
     trigger: 'blur',
     validator: (_rule, value, callback) => {
       if (!value || !String(value).trim()) return callback(); // emptiness handled by `required`
-      if (!isSafeHttpUrl(String(value), allowRootRelative)) return callback(new Error(invalidUrlMessage()));
+      if (!isSafeHttpUrl(String(value))) return callback(new Error(invalidUrlMessage()));
       callback();
     }
   };
@@ -254,10 +244,13 @@ const navSiteFormRules = {
     { required: true, message: t('sitenav.6112v35e7dc0'), trigger: 'blur' },
     { min: 1, max: 50, message: t('valid.length', [1, 50]), trigger: 'blur' }
   ],
+  // 图标可选：si:/ti:/favicon/图片地址，留空显示首字头像
   icon: [
-    { required: true, message: t('sitenav.6112v35e7fw0'), trigger: 'blur' },
-    { min: 1, max: 100, message: t('valid.length', [1, 100]), trigger: 'blur' },
-    urlRule(true)
+    { max: 100, message: t('valid.length', [0, 100]), trigger: 'change' },
+    {
+      trigger: 'change',
+      validator: (_rule, value, callback) => (isValidSiteIcon(value) ? callback() : callback(new Error(t('sitenav.iconPicker.invalid'))))
+    }
   ],
   link: [
     { required: true, message: t('sitenav.6112v35e7hw0'), trigger: 'change' },
@@ -275,7 +268,6 @@ const navSiteFormRules = {
   ],
   groupid: [{ required: true, message: t('sitenav.6112v35e7o40'), trigger: 'blur' }]
 };
-const iconOptions = ref<{ url: string }[]>([]);
 const groupOptions = ref<{ id: number; name: string }[]>([]);
 const multipleSelection = ref<any[]>([]);
 
@@ -291,15 +283,6 @@ async function getData() {
     /* already shown */
   } finally {
     loading.value = false;
-  }
-}
-
-async function getIconOptions() {
-  try {
-    const res: any = await getIcons();
-    iconOptions.value = res.logos || [];
-  } catch {
-    /* already shown */
   }
 }
 
@@ -437,7 +420,7 @@ async function navSiteFormSubmit() {
   const valid = await navSiteFormRef.value?.validate().catch(() => false);
   // Defence in depth: never submit a non-http(s) link/doc/icon even if the rules were bypassed.
   const urlsOk =
-    isSafeHttpUrl(form.link) && (!form.doc || isSafeHttpUrl(form.doc)) && isSafeHttpUrl(form.icon, true);
+    isSafeHttpUrl(form.link) && (!form.doc || isSafeHttpUrl(form.doc)) && isValidSiteIcon(form.icon);
   if (!valid || !urlsOk) {
     validateFailedMessage();
     return;
@@ -479,7 +462,6 @@ function handleSelectionChange(val: any[]) {
 
 onMounted(() => {
   getData();
-  getIconOptions();
 });
 </script>
 

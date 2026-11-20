@@ -24,19 +24,17 @@
         v-if="noticeData.length > 0"
         v-loading="loading"
         :data="noticeData"
-        border
         stripe
-        size="small"
         style="width: 100%"
         @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" width="55" align="center" />
+        <el-table-column type="selection" width="48" align="center" />
         <el-table-column
           show-overflow-tooltip
           sortable
           prop="level"
           :label="$t('notice.6112860xxyo0')"
-          width="80"
+          width="100"
           align="center"
         >
           <template #default="scope">
@@ -45,29 +43,25 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column show-overflow-tooltip sortable prop="content" :label="$t('notice.6112860xy1c0')" />
-        <el-table-column show-overflow-tooltip sortable prop="creator" :label="$t('notice.6112860xy3w0')" width="100" />
-        <el-table-column fixed="right" :label="$t('notice.6112860xy700')" align="center" width="120">
+        <el-table-column show-overflow-tooltip sortable prop="content" :label="$t('notice.6112860xy1c0')" min-width="300" />
+        <el-table-column show-overflow-tooltip sortable prop="creator" :label="$t('notice.6112860xy3w0')" width="120" />
+        <el-table-column fixed="right" :label="$t('notice.6112860xy700')" align="left" width="160">
           <template #default="scope">
-            <el-tooltip :content="$t('notice.6112860xya40')" effect="dark" placement="top">
-              <el-button size="small" :icon="Edit" circle type="primary" @click="updateNoticeRow(scope.row)" />
-            </el-tooltip>
-            <el-tooltip class="delete-popover" :content="$t('notice.6112860xycw0')" effect="dark" placement="top">
-              <template #default>
-                <el-popconfirm :title="$t('notice.6112860xyfk0')" @confirm="deleteNotice(scope.row.ID)">
-                  <template #reference>
-                    <el-button size="small" :icon="Delete" circle type="danger" />
-                  </template>
-                </el-popconfirm>
-              </template>
-            </el-tooltip>
+            <div class="row-actions">
+              <el-button link type="primary" :icon="Edit" @click="updateNoticeRow(scope.row)">{{ $t('common.edit') }}</el-button>
+              <el-popconfirm :title="$t('notice.6112860xyfk0')" @confirm="deleteNotice(scope.row.ID)">
+                <template #reference>
+                  <el-button link type="danger" :icon="Delete">{{ $t('common.delete') }}</el-button>
+                </template>
+              </el-popconfirm>
+            </div>
           </template>
         </el-table-column>
       </el-table>
       <el-empty v-else :description="$t('common.nodata')" />
 
       <el-dialog v-model="noticeFormVisible" :title="noticeFormTitle" @closed="resetNoticeFormFields">
-        <el-form ref="noticeFormRef" :model="noticeForm" :rules="noticeFormRules" label-width="auto">
+        <el-form ref="noticeFormRef" :model="noticeForm" :rules="noticeFormRules" label-position="top">
           <el-form-item :label="$t('notice.6112860xxyo0')" prop="level">
             <el-select v-model="noticeForm.level" :placeholder="$t('notice.6112860xyjw0')">
               <el-option v-for="item in levelOptions" :key="item.id" :label="item.name" :value="item.id" />
@@ -86,8 +80,8 @@
         </el-form>
         <template #footer>
           <div class="dialog-footer">
-            <el-button size="small" @click="noticeFormCancel()">{{ $t('notice.6112860xymw0') }}</el-button>
-            <el-button size="small" :loading="loading" type="primary" @click="noticeFormSubmit()">
+            <el-button @click="noticeFormCancel()">{{ $t('notice.6112860xymw0') }}</el-button>
+            <el-button :loading="loading" type="primary" @click="noticeFormSubmit()">
               {{ $t('notice.6112860xyq00') }}
             </el-button>
           </div>

@@ -109,24 +109,24 @@
         :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
         row-key="ID"
         :data="infoTableData"
-        border
         stripe
         style="width: 100%"
         @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" width="55" align="center" />
+        <el-table-column type="selection" width="48" align="center" />
         <el-table-column
           show-overflow-tooltip
           sortable
           prop="groupName"
           :label="$t('group.610yx3auj8w0')"
+          min-width="180"
         />
         <el-table-column
           show-overflow-tooltip
           sortable
           prop="groupType"
           :label="$t('group.610yx3aul140')"
-          width="180"
+          width="190"
         >
           <template #default="scope">
             {{ scope.row.groupType === 'ou' ? 'organizationalUnit' : 'groupOfUniqueNames' }}
@@ -137,96 +137,45 @@
           sortable
           prop="groupDn"
           label="DN"
-          width="500"
+          min-width="300"
         />
         <el-table-column
           show-overflow-tooltip
           sortable
           prop="remark"
           :label="$t('group.610yx3auk3k0')"
-          width="320"
+          min-width="160"
         />
         <el-table-column
           show-overflow-tooltip
           sortable
           prop="CreatedAt"
           :label="$t('group.610yx3aul380')"
+          width="180"
         />
         <el-table-column
           show-overflow-tooltip
           sortable
           prop="UpdatedAt"
           :label="$t('group.610yx3aul5c0')"
+          width="180"
         />
-        <el-table-column fixed="right" :label="$t('group.610yx3aul7g0')" align="center" width="220">
+        <el-table-column fixed="right" :label="$t('group.610yx3aul7g0')" align="left" width="320">
           <template #default="scope">
-            <el-tooltip
-              v-if="scope.row.groupType != 'ou' && scope.row.groupName != 'root'"
-              :content="$t('group.610yx3aul9g0')"
-              effect="dark"
-              placement="top"
-            >
-              <el-button
-                size="small"
-                :icon="Setting"
-                circle
-                type="info"
-                @click="handleGetUserOfGroup(scope.row)"
-              />
-            </el-tooltip>
-            <el-tooltip :content="$t('group.610yx3aulbs0')" effect="dark" placement="top">
-              <el-button
-                size="small"
-                :icon="Edit"
-                circle
-                type="primary"
-                @click="update(scope.row)"
-              />
-            </el-tooltip>
-            <el-tooltip
-              class="delete-popover"
-              :content="$t('group.610yx3auleo0')"
-              effect="dark"
-              placement="top"
-            >
-              <span class="delete-popover">
-                <el-popconfirm
-                  :title="$t('group.610yx3aulgo0')"
-                  @confirm="singleDelete(scope.row.ID)"
-                >
-                  <template #reference>
-                    <el-button
-                      size="small"
-                      :icon="Delete"
-                      circle
-                      type="danger"
-                    />
-                  </template>
-                </el-popconfirm>
-              </span>
-            </el-tooltip>
-            <el-tooltip
-              v-if="scope.row.syncState === 2"
-              :content="$t('group.610yx3aulis0')"
-              effect="dark"
-              placement="top"
-            >
-              <span class="delete-popover">
-                <el-popconfirm
-                  :title="$t('group.610yx3aulks0')"
-                  @confirm="singleSync(scope.row.ID)"
-                >
-                  <template #reference>
-                    <el-button
-                      size="small"
-                      :icon="Upload"
-                      circle
-                      type="success"
-                    />
-                  </template>
-                </el-popconfirm>
-              </span>
-            </el-tooltip>
+            <div class="row-actions">
+              <el-button v-if="scope.row.groupType != 'ou' && scope.row.groupName != 'root'" link type="primary" :icon="Users" @click="handleGetUserOfGroup(scope.row)">{{ $t('group.members') }}</el-button>
+              <el-button link type="primary" :icon="Edit" @click="update(scope.row)">{{ $t('common.edit') }}</el-button>
+              <el-popconfirm :title="$t('group.610yx3aulgo0')" @confirm="singleDelete(scope.row.ID)">
+                <template #reference>
+                  <el-button link type="danger" :icon="Delete">{{ $t('common.delete') }}</el-button>
+                </template>
+              </el-popconfirm>
+              <el-popconfirm v-if="scope.row.syncState === 2" :title="$t('group.610yx3aulks0')" @confirm="singleSync(scope.row.ID)">
+                <template #reference>
+                  <el-button link type="primary" :icon="Upload">{{ $t('group.610yx3aulis0') }}</el-button>
+                </template>
+              </el-popconfirm>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -236,7 +185,7 @@
           ref="addFormRef"
           :model="dialogFormData"
           :rules="dialogFormRules"
-          label-width="120px"
+          label-position="top"
         >
           <el-form-item :label="$t('group.610yx3auj8w0')" prop="groupName">
             <el-input
@@ -275,9 +224,8 @@
           </el-form-item>
         </el-form>
         <template #footer>
-          <el-button size="small" @click="cancelForm()">{{ $t('group.610yx3aulv00') }}</el-button>
+          <el-button @click="cancelForm()">{{ $t('group.610yx3aulv00') }}</el-button>
           <el-button
-            size="small"
             :loading="submitLoading"
             type="primary"
             @click="submitForm()"
@@ -290,7 +238,7 @@
           ref="editFormRef"
           :model="dialogFormData"
           :rules="dialogFormRules"
-          label-width="120px"
+          label-position="top"
         >
           <el-form-item :label="$t('group.610yx3auj8w0')" prop="groupName">
             <el-input
@@ -311,9 +259,8 @@
           </el-form-item>
         </el-form>
         <template #footer>
-          <el-button size="small" @click="cancelForm()">{{ $t('group.610yx3aulv00') }}</el-button>
+          <el-button @click="cancelForm()">{{ $t('group.610yx3aulv00') }}</el-button>
           <el-button
-            size="small"
             :loading="submitLoading"
             type="primary"
             @click="submitForm()"
@@ -321,100 +268,84 @@
         </template>
       </el-dialog>
       <!-- 组用户管理 -->
-      <el-dialog v-model="dialogUsersMgrVisible" :title="dialogUsersMgrTitle">
-        <el-row>
-          <el-col :span="9">
-            <el-form :inline="true" :model="userOfGroupParams">
-              <el-form-item>
-                <el-input
-                  v-model.trim="userOfGroupParams.nickname"
-                  clearable
-                  :placeholder="$t('group.610yx3aulyk0')"
-                  @keyup.enter="getUsersOfGroupData()"
-                  @clear="getUsersOfGroupData()"
-                />
-              </el-form-item>
-              <el-button
-                size="small"
-                :loading="submitLoading"
-                :icon="Search"
-                @click="getUsersOfGroupData()"
-              >{{ $t('group.610yx3aum0c0') }}</el-button>
-            </el-form>
-          </el-col>
-          <el-col :span="9">
-            <el-form :inline="true" :model="groupAddUserParams">
-              <el-form-item>
-                <el-select
-                  v-model="groupAddUserList"
-                  multiple
-                  filterable
-                  remote
-                  reserve-keyword
-                  style="width: 200px"
-                  :placeholder="$t('group.610yx3aulyk0')"
-                  :remote-method="getUsersNoInGroupData"
-                  :loading="submitLoading"
-                >
-                  <el-option
-                    v-for="item in groupAddUserListOption"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value"
-                  />
-                </el-select>
-              </el-form-item>
-              <el-button-group>
-                <el-button
-                  size="small"
-                  :disabled="groupAddUserList.length === 0"
-                  :loading="submitLoading"
-                  :icon="Delete"
-                  type="success"
-                  @click="handleGroupAddUser()"
-                >{{ $t('group.610yx3aum1w0') }}</el-button>
-              </el-button-group>
-            </el-form>
-          </el-col>
-          <el-col :span="4">
-            <el-form class="flex-inline-form" :inline="true">
-              <el-button
-                size="small"
-                :disabled="userOfGroupListMultipleSelection.length === 0"
-                :loading="submitLoading"
-                :icon="Delete"
-                type="danger"
-                @click="handleGroupDelUser()"
-              >{{ $t('group.610yx3aum3o0') }}</el-button>
-            </el-form>
-          </el-col>
-        </el-row>
+      <el-dialog v-model="dialogUsersMgrVisible" :title="dialogUsersMgrTitle" width="860px">
+        <!-- 添加成员：远程搜索不在组内的用户，可多选 -->
+        <div class="members-add">
+          <el-select
+            v-model="groupAddUserList"
+            class="members-add__select"
+            multiple
+            filterable
+            remote
+            reserve-keyword
+            collapse-tags
+            collapse-tags-tooltip
+            :max-collapse-tags="3"
+            :placeholder="$t('group.addMembersTips')"
+            :remote-method="getUsersNoInGroupData"
+            :loading="submitLoading"
+          >
+            <template #prefix><el-icon><Plus /></el-icon></template>
+            <el-option
+              v-for="item in groupAddUserListOption"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+          <el-button
+            type="primary"
+            :disabled="groupAddUserList.length === 0"
+            :loading="submitLoading"
+            :icon="Plus"
+            @click="handleGroupAddUser()"
+          >{{ $t('group.610yx3aum1w0') }}</el-button>
+        </div>
+
+        <!-- 当前成员：筛选 + 批量移除 -->
+        <div class="members-toolbar">
+          <el-input
+            v-model.trim="userOfGroupParams.nickname"
+            class="members-toolbar__search"
+            clearable
+            :prefix-icon="Search"
+            :placeholder="$t('group.610yx3aulyk0')"
+            @keyup.enter="getUsersOfGroupData()"
+            @clear="getUsersOfGroupData()"
+          />
+          <el-button :loading="submitLoading" @click="getUsersOfGroupData()">{{ $t('group.610yx3aum0c0') }}</el-button>
+          <el-button
+            class="members-toolbar__remove"
+            type="danger"
+            plain
+            :disabled="userOfGroupListMultipleSelection.length === 0"
+            :loading="submitLoading"
+            :icon="Delete"
+            @click="handleGroupDelUser()"
+          >{{ $t('group.610yx3aum3o0') }}<template v-if="userOfGroupListMultipleSelection.length"> ({{ userOfGroupListMultipleSelection.length }})</template></el-button>
+        </div>
 
         <el-table
           :data="userOfGroupList"
-          stripe
-          height="500"
+          height="360"
           style="width: 100%"
-          max-height="500"
           :default-sort="{ prop: 'userName', order: 'ascending' }"
           @selection-change="handleUserOfGroupListSelectionChange"
         >
-          <el-table-column type="selection" />
-          <el-table-column type="expand">
+          <el-table-column type="selection" width="48" />
+          <el-table-column type="expand" width="44">
             <template #default="props">
-              <el-form label-position="left" class="table-expand">
-                <el-form-item :label="$t('group.610yx3aum5k0')">
-                  <span>{{ props.row.mobile }}</span>
-                </el-form-item>
-                <el-form-item :label="$t('group.610yx3aum7g0')">
-                  <span>{{ props.row.mail }}</span>
-                </el-form-item>
-              </el-form>
+              <RowDetail
+                :items="[
+                  { label: $t('group.610yx3aum7g0'), value: props.row.mail },
+                  { label: $t('group.610yx3aum5k0'), value: props.row.mobile }
+                ]"
+              />
             </template>
           </el-table-column>
-          <el-table-column prop="userName" :label="$t('group.610yx3aum940')" sortable />
-          <el-table-column prop="nickName" :label="$t('group.610yx3aumb40')" />
-          <el-table-column prop="introduction" :label="$t('group.610yx3aumcw0')" />
+          <el-table-column prop="userName" :label="$t('group.610yx3aum940')" min-width="140" sortable />
+          <el-table-column prop="nickName" :label="$t('group.610yx3aumb40')" min-width="120" />
+          <el-table-column prop="introduction" :label="$t('group.610yx3aumcw0')" min-width="160" />
         </el-table>
       </el-dialog>
     </el-card>
@@ -426,8 +357,9 @@ import { reactive, ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import type { FormInstance, FormRules } from 'element-plus';
-import { Search, Plus, Delete, Upload, Download, Setting, Edit } from '@/icons/tabler';
+import { Search, Plus, Delete, Upload, Download, Edit, Users } from '@/icons/tabler';
 import TreeSelect from '@zanmato/vue3-treeselect';
+import RowDetail from '@/components/RowDetail/index.vue';
 import '@zanmato/vue3-treeselect/dist/vue3-treeselect.min.css';
 import {
   getGroupTree,
@@ -828,6 +760,34 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.members-add,
+.members-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.members-add {
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px dashed var(--el-border-color);
+}
+
+.members-add__select {
+  flex: 1;
+  min-width: 240px;
+}
+
+.members-toolbar__search {
+  width: 240px;
+}
+
+.members-toolbar__remove {
+  margin-left: auto !important;
+}
+
 .container-card {
   margin: 10px;
   margin-bottom: 100px;
@@ -837,15 +797,4 @@ onMounted(() => {
   margin-left: 10px;
 }
 
-.table-expand :deep(.el-form-item__label) {
-  display: inline-block;
-  width: 90px;
-  color: #99a9bf;
-}
-
-.table-expand :deep(.el-form-item) {
-  margin-right: 0;
-  margin-bottom: 0;
-  width: 50%;
-}
 </style>

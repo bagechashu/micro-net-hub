@@ -77,6 +77,7 @@ export const Sunny = tabler(IconSun, 'Sunny');
 export const SwitchButton = tabler(IconLogout, 'SwitchButton');
 export const Upload = tabler(IconUpload, 'Upload');
 export const User = tabler(IconUser, 'User');
+export const Users = tabler(IconUsers, 'Users');
 
 // ---- 其他直接使用的 Tabler 图标 ----
 export { IconEye, IconEyeOff, IconLanguage, IconLock, IconUser } from '@tabler/icons-vue';

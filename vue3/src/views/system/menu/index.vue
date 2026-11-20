@@ -3,65 +3,75 @@
     <el-card class="container-card" shadow="always">
       <el-form :inline="true" class="demo-form-inline">
         <el-form-item>
-          <el-button :loading="loading" type="primary" @click="create"><el-icon><Plus /></el-icon>{{ $t('menu.61131vuglrw0') }}</el-button>
+          <el-button :loading="loading" type="primary" @click="create" :icon="Plus">{{ $t('menu.61131vuglrw0') }}</el-button>
         </el-form-item>
         <el-form-item>
-          <el-button :disabled="multipleSelection.length === 0" :loading="loading" type="danger" @click="batchDelete"><el-icon><Delete /></el-icon>{{ $t('menu.61131vugmb40') }}</el-button>
+          <el-button :disabled="multipleSelection.length === 0" :loading="loading" type="danger" @click="batchDelete" :icon="Delete">{{ $t('menu.61131vugmb40') }}</el-button>
         </el-form-item>
       </el-form>
 
-      <el-table v-loading="loading" :tree-props="{children: 'children', hasChildren: 'hasChildren'}" row-key="ID" :data="tableData" border stripe style="width: 100%" @selection-change="handleSelectionChange">
-        <el-table-column type="selection" width="55" align="center" />
+      <el-table v-loading="loading" :tree-props="{children: 'children', hasChildren: 'hasChildren'}" row-key="ID" :data="tableData" stripe style="width: 100%" @selection-change="handleSelectionChange">
+        <el-table-column type="selection" width="48" align="center" />
         <el-table-column show-overflow-tooltip prop="name" :label="$t('menu.61131vugmf40')" width="200" />
-        <el-table-column show-overflow-tooltip prop="icon" :label="$t('menu.61131vugmhg0')">
+        <el-table-column show-overflow-tooltip prop="icon" :label="$t('menu.61131vugmhg0')" width="120">
           <template v-slot="scope">
             <span>{{ scope.row.icon }}</span>
           </template>
         </el-table-column>
-        <el-table-column show-overflow-tooltip prop="path" :label="$t('menu.61131vugmjo0')" />
-        <el-table-column show-overflow-tooltip prop="component" :label="$t('menu.61131vugmm40')" />
-        <el-table-column show-overflow-tooltip prop="redirect" :label="$t('menu.61131vugmoo0')" />
-        <el-table-column show-overflow-tooltip prop="sort" :label="$t('menu.61131vugmqw0')" align="center" width="80" />
-        <el-table-column show-overflow-tooltip prop="status" :label="$t('menu.61131vugmts0')" align="center" width="80">
+        <el-table-column show-overflow-tooltip prop="path" :label="$t('menu.61131vugmjo0')" min-width="160" />
+        <el-table-column show-overflow-tooltip prop="component" :label="$t('menu.61131vugmm40')" min-width="160" />
+        <el-table-column show-overflow-tooltip prop="redirect" :label="$t('menu.61131vugmoo0')" min-width="140" />
+        <el-table-column show-overflow-tooltip prop="sort" :label="$t('menu.61131vugmqw0')" width="80" align="center" />
+        <el-table-column show-overflow-tooltip prop="status" :label="$t('menu.61131vugmts0')" width="90" align="center">
           <template v-slot="scope">
             <el-tag size="small" :type="scope.row.status === 1 ? 'success':'danger'">{{ scope.row.status === 1 ? '否':'是' }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column show-overflow-tooltip prop="hidden" :label="$t('menu.61131vugmw40')" align="center" width="80">
+        <el-table-column show-overflow-tooltip prop="hidden" :label="$t('menu.61131vugmw40')" width="90" align="center">
           <template v-slot="scope">
             <el-tag size="small" :type="scope.row.hidden === 1 ? 'danger':'success'">{{ scope.row.hidden === 1 ? '是':'否' }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column show-overflow-tooltip prop="noCache" :label="$t('menu.61131vugmy80')" align="center" width="80">
+        <el-table-column show-overflow-tooltip prop="noCache" :label="$t('menu.61131vugmy80')" width="90" align="center">
           <template v-slot="scope">
             <el-tag size="small" :type="scope.row.noCache === 1 ? 'danger':'success'">{{ scope.row.noCache === 1 ? '否':'是' }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column fixed="right" :label="$t('menu.61131vugn0s0')" align="center" width="120">
+        <el-table-column fixed="right" :label="$t('menu.61131vugn0s0')" align="left" width="160">
           <template v-slot="scope">
-            <el-tooltip fixed :content="$t('menu.61131vugn2w0')" effect="dark" placement="top">
-              <el-button size="small" circle type="primary" @click="update(scope.row)"><el-icon><Edit /></el-icon></el-button>
-            </el-tooltip>
-            <el-tooltip class="delete-popover" fixed :content="$t('menu.61131vugn5g0')" effect="dark" placement="top">
-              <span>
-                <el-popconfirm :title="$t('menu.61131vugn7s0')" @confirm="singleDelete(scope.row.ID)">
-                  <template #reference>
-                    <el-button size="small" circle type="danger"><el-icon><Delete /></el-icon></el-button>
-                  </template>
-                </el-popconfirm>
-              </span>
-            </el-tooltip>
+            <div class="row-actions">
+              <el-button link type="primary" :icon="Edit" @click="update(scope.row)">{{ $t('common.edit') }}</el-button>
+              <el-popconfirm :title="$t('menu.61131vugn7s0')" @confirm="singleDelete(scope.row.ID)">
+                <template #reference>
+                  <el-button link type="danger" :icon="Delete">{{ $t('common.delete') }}</el-button>
+                </template>
+              </el-popconfirm>
+            </div>
           </template>
         </el-table-column>
       </el-table>
 
-      <el-dialog :title="dialogFormTitle" v-model="dialogFormVisible" width="800px">
-        <el-form ref="dialogForm" :inline="true" :model="dialogFormData" :rules="dialogFormRules" label-width="140px">
+      <el-dialog :title="dialogFormTitle" v-model="dialogFormVisible" width="720px">
+        <el-form ref="dialogForm" class="form-grid" :model="dialogFormData" :rules="dialogFormRules" label-position="top">
           <el-form-item :label="$t('menu.61131vugmf40')" prop="name">
-            <el-input v-model.trim="dialogFormData.name" :placeholder="$t('menu.61131vugna00')" style="width: 600px" />
+            <el-input v-model.trim="dialogFormData.name" :placeholder="$t('menu.61131vugna00')" />
           </el-form-item>
-          <el-form-item :label="$t('menu.61131vugmqw0')" prop="sort" style="width: 600px">
-            <el-input-number v-model.number="dialogFormData.sort" controls-position="right" :min="1" :max="999" />
+          <el-form-item :label="$t('menu.61131vugnt40')" prop="parentId">
+            <TreeSelect
+              v-model="dialogFormData.parentId"
+              :options="treeselectData"
+              :normalizer="normalizer"
+              @input="treeselectInput"
+            />
+          </el-form-item>
+          <el-form-item :label="$t('menu.61131vugmjo0')" prop="path">
+            <el-input v-model.trim="dialogFormData.path" :placeholder="$t('menu.61131vugneo0')" />
+          </el-form-item>
+          <el-form-item :label="$t('menu.61131vugmm40')" prop="component">
+            <el-input v-model.trim="dialogFormData.component" :placeholder="$t('menu.61131vugngs0')" />
+          </el-form-item>
+          <el-form-item :label="$t('menu.61131vugmoo0')" prop="redirect">
+            <el-input v-model.trim="dialogFormData.redirect" :placeholder="$t('menu.61131vugnj40')" />
           </el-form-item>
           <el-form-item :label="$t('menu.61131vugmhg0')" prop="icon">
             <el-popover
@@ -72,23 +82,16 @@
             >
               <IconSelect ref="iconSelect" @selected="selected" />
               <template #reference>
-                <el-input v-model="dialogFormData.icon" style="width: 600px;" :placeholder="$t('menu.61131vugncg0')" readonly>
-                  <template #prefix>
-                    <svg-icon v-if="dialogFormData.icon" :icon-class="dialogFormData.icon" class="el-input__icon" style="height: 32px;width: 16px;" />
-                    <i v-else class="el-icon-search el-input__icon" />
+                <el-input v-model="dialogFormData.icon" :placeholder="$t('menu.61131vugncg0')" readonly>
+                  <template v-if="dialogFormData.icon" #prefix>
+                    <svg-icon :icon-class="dialogFormData.icon" class="el-input__icon" style="height: 32px;width: 16px;" />
                   </template>
                 </el-input>
               </template>
             </el-popover>
           </el-form-item>
-          <el-form-item :label="$t('menu.61131vugmjo0')" prop="path">
-            <el-input v-model.trim="dialogFormData.path" :placeholder="$t('menu.61131vugneo0')" style="width: 600px" />
-          </el-form-item>
-          <el-form-item :label="$t('menu.61131vugmm40')" prop="component">
-            <el-input v-model.trim="dialogFormData.component" :placeholder="$t('menu.61131vugngs0')" style="width: 600px" />
-          </el-form-item>
-          <el-form-item :label="$t('menu.61131vugmoo0')" prop="redirect">
-            <el-input v-model.trim="dialogFormData.redirect" :placeholder="$t('menu.61131vugnj40')" style="width: 600px" />
+          <el-form-item :label="$t('menu.61131vugmqw0')" prop="sort">
+            <el-input-number v-model.number="dialogFormData.sort" controls-position="right" :min="1" :max="999" />
           </el-form-item>
           <el-form-item :label="$t('menu.61131vugmts0')" prop="status">
             <el-radio-group v-model="dialogFormData.status">
@@ -108,19 +111,10 @@
               <el-radio-button :label="$t('menu.61131vugnow0')" />
             </el-radio-group>
           </el-form-item>
-          <el-form-item :label="$t('menu.61131vugnt40')" prop="parentId">
-            <TreeSelect
-              v-model="dialogFormData.parentId"
-              :options="treeselectData"
-              :normalizer="normalizer"
-              style="width:600px"
-              @input="treeselectInput"
-            />
-          </el-form-item>
         </el-form>
         <template #footer>
-          <el-button size="small" @click="cancelForm()">{{ $t('menu.61131vugnuw0') }}</el-button>
-          <el-button size="small" :loading="submitLoading" type="primary" @click="submitForm()">{{ $t('menu.61131vugnwo0') }}</el-button>
+          <el-button @click="cancelForm()">{{ $t('menu.61131vugnuw0') }}</el-button>
+          <el-button :loading="submitLoading" type="primary" @click="submitForm()">{{ $t('menu.61131vugnwo0') }}</el-button>
         </template>
       </el-dialog>
 
@@ -140,10 +134,11 @@ export default defineComponent({
   name: 'SystemMenu',
   components: {
     IconSelect,
-    TreeSelect,
-    Edit,
-    Delete,
-    Plus
+    TreeSelect
+  },
+  setup() {
+    // 供模板里 el-button 的 :icon 使用
+    return { Edit, Delete, Plus };
   },
   data() {
     return {

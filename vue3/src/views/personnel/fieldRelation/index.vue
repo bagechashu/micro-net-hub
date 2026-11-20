@@ -34,34 +34,29 @@
         :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
         row-key="ID"
         :data="infoTableData"
-        border
         stripe
         style="width: 100%"
         @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" width="55" align="center" />
-        <el-table-column show-overflow-tooltip sortable prop="ID" :label="$t('fieldRelation.610zu0w6zgo0')" width="80" />
-        <el-table-column show-overflow-tooltip sortable prop="CreatedAt" :label="$t('fieldRelation.610zu0w6ziw0')" />
-        <el-table-column show-overflow-tooltip sortable prop="Flag" :label="$t('fieldRelation.610zu0w6ymo0')" />
-        <el-table-column show-overflow-tooltip sortable :label="$t('fieldRelation.610zu0w6zm80')">
+        <el-table-column type="selection" width="48" align="center" />
+        <el-table-column show-overflow-tooltip sortable prop="ID" :label="$t('fieldRelation.610zu0w6zgo0')" width="90" />
+        <el-table-column show-overflow-tooltip sortable prop="CreatedAt" :label="$t('fieldRelation.610zu0w6ziw0')" width="180" />
+        <el-table-column show-overflow-tooltip sortable prop="Flag" :label="$t('fieldRelation.610zu0w6ymo0')" min-width="190" />
+        <el-table-column show-overflow-tooltip sortable :label="$t('fieldRelation.610zu0w6zm80')" min-width="240">
           <template #default="props">
             <span>{{ props.row.Attributes }}</span>
           </template>
         </el-table-column>
-        <el-table-column fixed="right" :label="$t('fieldRelation.610zu0w6zos0')" align="center" width="150">
+        <el-table-column fixed="right" :label="$t('fieldRelation.610zu0w6zos0')" align="left" width="160">
           <template #default="scope">
-            <el-tooltip :content="$t('fieldRelation.610zu0w6zr00')" effect="dark" placement="top">
-              <el-button size="small" :icon="Edit" circle type="primary" @click="update(scope.row)" />
-            </el-tooltip>
-            <el-tooltip :content="$t('fieldRelation.610zu0w6zu00')" effect="dark" placement="top">
-              <span class="delete-popover">
-                <el-popconfirm :title="$t('fieldRelation.610zu0w6zwk0')" @confirm="singleDelete(scope.row.ID)">
-                  <template #reference>
-                    <el-button size="small" :icon="Delete" circle type="danger" />
-                  </template>
-                </el-popconfirm>
-              </span>
-            </el-tooltip>
+            <div class="row-actions">
+              <el-button link type="primary" :icon="Edit" @click="update(scope.row)">{{ $t('common.edit') }}</el-button>
+              <el-popconfirm :title="$t('fieldRelation.610zu0w6zwk0')" @confirm="singleDelete(scope.row.ID)">
+                <template #reference>
+                  <el-button link type="danger" :icon="Delete">{{ $t('common.delete') }}</el-button>
+                </template>
+              </el-popconfirm>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -74,7 +69,7 @@
             <a href="http://ldapdoc.eryajf.net/pages/84953d/" target="_blank">{{ $t('fieldRelation.610zu0w70140') }}</a>
           </aside>
         </div>
-        <el-form ref="createFormRef" :model="dialogFormData" :rules="dialogFormRules" label-width="180px">
+        <el-form ref="createFormRef" :model="dialogFormData" :rules="dialogFormRules" label-position="top">
           <el-form-item :label="$t('fieldRelation.610zu0w703g0')">
             <el-checkbox-group v-model="fieldRelationChecked">
               <el-checkbox-button
@@ -113,8 +108,8 @@
           </template>
         </el-form>
         <template #footer>
-          <el-button size="small" @click="cancelForm()">{{ $t('fieldRelation.610zu0w71ec0') }}</el-button>
-          <el-button size="small" :loading="submitLoading" type="primary" @click="submitForm()">{{ $t('fieldRelation.610zu0w71gc0') }}</el-button>
+          <el-button @click="cancelForm()">{{ $t('fieldRelation.610zu0w71ec0') }}</el-button>
+          <el-button :loading="submitLoading" type="primary" @click="submitForm()">{{ $t('fieldRelation.610zu0w71gc0') }}</el-button>
         </template>
       </el-dialog>
 
@@ -126,7 +121,7 @@
             <a href="http://ldapdoc.eryajf.net/pages/84953d/" target="_blank">{{ $t('fieldRelation.610zu0w70140') }}</a>
           </aside>
         </div>
-        <el-form ref="updateFormRef" :model="dialogFormData" :rules="dialogFormRules" label-width="180px">
+        <el-form ref="updateFormRef" :model="dialogFormData" :rules="dialogFormRules" label-position="top">
           <template v-if="isUserRelation">
             <el-form-item :label="$t('fieldRelation.610zu0w703g0')">
               <el-button type="primary">{{ $t('fieldRelation.610zu0w70600') }}</el-button>
@@ -155,8 +150,8 @@
           </template>
         </el-form>
         <template #footer>
-          <el-button size="small" @click="cancelForm()">{{ $t('fieldRelation.610zu0w71ec0') }}</el-button>
-          <el-button size="small" :loading="submitLoading" type="primary" @click="submitForm()">{{ $t('fieldRelation.610zu0w71gc0') }}</el-button>
+          <el-button @click="cancelForm()">{{ $t('fieldRelation.610zu0w71ec0') }}</el-button>
+          <el-button :loading="submitLoading" type="primary" @click="submitForm()">{{ $t('fieldRelation.610zu0w71gc0') }}</el-button>
         </template>
       </el-dialog>
     </el-card>

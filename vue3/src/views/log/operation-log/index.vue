@@ -22,35 +22,33 @@
         </el-form-item>
       </el-form>
 
-      <el-table v-loading="loading" :data="tableData" border stripe style="width: 100%" @selection-change="handleSelectionChange">
-        <el-table-column type="selection" width="55" align="center" />
-        <el-table-column show-overflow-tooltip sortable prop="username" :label="$t('operation-log.6111tvyrbi80')" width="120" />
-        <el-table-column show-overflow-tooltip sortable prop="ip" :label="$t('operation-log.ipaddr')" width="120" />
-        <el-table-column show-overflow-tooltip sortable prop="method" :label="$t('operation-log.6111tvyrc2s0')" width="100" />
-        <el-table-column show-overflow-tooltip sortable prop="path" :label="$t('operation-log.6111tvyrbt00')" />
-        <el-table-column show-overflow-tooltip sortable prop="status" :label="$t('operation-log.6111tvyrbw80')" width="100" align="center">
+      <el-table v-loading="loading" :data="tableData" stripe style="width: 100%" @selection-change="handleSelectionChange">
+        <el-table-column type="selection" width="48" align="center" />
+        <el-table-column show-overflow-tooltip sortable prop="username" :label="$t('operation-log.6111tvyrbi80')" width="130" />
+        <el-table-column show-overflow-tooltip sortable prop="ip" :label="$t('operation-log.ipaddr')" width="140" />
+        <el-table-column show-overflow-tooltip sortable prop="method" :label="$t('operation-log.6111tvyrc2s0')" width="110" />
+        <el-table-column show-overflow-tooltip sortable prop="path" :label="$t('operation-log.6111tvyrbt00')" min-width="220" />
+        <el-table-column show-overflow-tooltip sortable prop="status" :label="$t('operation-log.6111tvyrbw80')" width="110" align="center">
           <template #default="scope">
             <el-tag size="small" :type="statusTagType(scope.row.status)" disable-transitions>{{ scope.row.status }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column show-overflow-tooltip sortable prop="startTime" :label="$t('operation-log.6111tvyrc4w0')" width="300" />
-        <el-table-column show-overflow-tooltip sortable prop="timeCost" :label="$t('operation-log.6111tvyrc8s0')" width="130" align="center">
+        <el-table-column show-overflow-tooltip sortable prop="startTime" :label="$t('operation-log.6111tvyrc4w0')" width="180" />
+        <el-table-column show-overflow-tooltip sortable prop="timeCost" :label="$t('operation-log.6111tvyrc8s0')" width="160" align="center">
           <template #default="scope">
             <el-tag size="small" :type="timeCostTagType(scope.row.timeCost)" disable-transitions>{{ scope.row.timeCost }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column show-overflow-tooltip sortable prop="desc" :label="$t('operation-log.6111tvyrcaw0')" />
-        <el-table-column fixed="right" :label="$t('operation-log.6111tvyrccw0')" align="center" width="80">
+        <el-table-column show-overflow-tooltip sortable prop="desc" :label="$t('operation-log.6111tvyrcaw0')" min-width="160" />
+        <el-table-column fixed="right" :label="$t('operation-log.6111tvyrccw0')" align="left" width="100">
           <template #default="scope">
-            <el-tooltip :content="$t('operation-log.6111tvyrcf40')" effect="dark" placement="top">
-              <span>
-                <el-popconfirm :title="$t('operation-log.6111tvyrchk0')" @confirm="singleDelete(scope.row.ID)">
-                  <template #reference>
-                    <el-button size="small" :icon="Delete" circle type="danger" />
-                  </template>
-                </el-popconfirm>
-              </span>
-            </el-tooltip>
+            <div class="row-actions">
+              <el-popconfirm :title="$t('operation-log.6111tvyrchk0')" @confirm="singleDelete(scope.row.ID)">
+                <template #reference>
+                  <el-button link type="danger" :icon="Delete">{{ $t('common.delete') }}</el-button>
+                </template>
+              </el-popconfirm>
+            </div>
           </template>
         </el-table-column>
       </el-table>

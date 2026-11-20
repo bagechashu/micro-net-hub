@@ -212,6 +212,38 @@ a {
   .el-table__cell {
     padding: 10px 0;
   }
+
+  // 表头始终单行：列宽按表头文字规划，万一放不下用省略号而不是把表头撑高
+  th.el-table__cell > .cell {
+    white-space: nowrap;
+    word-break: keep-all;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  // 展开行：浅底色，内容自己控制内边距
+  .el-table__expanded-cell {
+    padding: 0 !important;
+    background: var(--el-fill-color-lighter) !important;
+  }
+
+  .el-table__expanded-cell:hover {
+    background: var(--el-fill-color-lighter) !important;
+  }
+}
+
+// 页面与弹窗里的表格：去掉竖线后用一圈外框收边（Tabler card-table 风格）
+.page-body .el-table,
+.el-dialog .el-table {
+  border: 1px solid var(--el-table-border-color);
+
+  .el-table__inner-wrapper::before {
+    display: none;
+  }
+
+  .el-table__body tr:last-child > td.el-table__cell {
+    border-bottom: 0;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -234,12 +266,129 @@ a {
   font-weight: 500;
 }
 
+// ---------------------------------------------------------------------------
+// 弹出框（Tabler modal）：标题栏、底部操作栏各有分隔线，内容区留白，窄屏自适应
+// 未指定 width 的弹出框默认 560px；页面传入的 width 也不会超出屏幕
+// ---------------------------------------------------------------------------
 .el-dialog {
+  --el-dialog-width: 560px;
   --el-dialog-border-radius: var(--app-card-radius);
+  --el-dialog-margin-top: 10vh;
+  padding: 0;
+  max-width: calc(100vw - 32px);
+  overflow: hidden;
+  border: 1px solid var(--app-card-border, var(--el-border-color-lighter));
+  box-shadow: 0 16px 48px rgba(24, 36, 51, 0.18);
+
+  .el-dialog__header {
+    padding: 16px 52px 16px 20px;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+    cursor: default;
+  }
 
   .el-dialog__title {
+    font-size: 16px;
     font-weight: 600;
+    line-height: 1.5;
   }
+
+  .el-dialog__headerbtn {
+    width: 52px;
+    height: 56px;
+  }
+
+  .el-dialog__body {
+    padding: 20px;
+    max-height: calc(80vh - 140px);
+    overflow-y: auto;
+  }
+
+  // 表单最后一项不留底部空白
+  .el-dialog__body > .el-form > .el-form-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .el-dialog__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 20px;
+    background: var(--el-fill-color-lighter);
+    border-top: 1px solid var(--el-border-color-lighter);
+
+    .el-button + .el-button {
+      margin-left: 0;
+    }
+  }
+}
+
+html.dark .el-dialog {
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+}
+
+// 弹出框里的表单：输入类控件占满整行
+.el-dialog .el-form--label-top {
+  .el-select,
+  .el-input-number,
+  .el-cascader,
+  .el-date-editor.el-input {
+    width: 100%;
+  }
+
+  .el-input-number .el-input__inner {
+    text-align: left;
+  }
+}
+
+// 两列表单：<el-form class="form-grid">，整行的项加 class="span-2"
+.el-form.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 16px;
+
+  > .span-2 {
+    grid-column: 1 / -1;
+  }
+
+  // 网格里最后一行可能有两项，统一去掉底部间距由 body padding 控制
+  > .el-form-item:nth-last-child(-n + 2) {
+    margin-bottom: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .el-form.form-grid {
+    grid-template-columns: 1fr;
+
+    > .el-form-item:nth-last-child(2) {
+      margin-bottom: 18px;
+    }
+  }
+}
+
+// 旧页面在 footer 里包了一层 .dialog-footer
+.el-dialog__footer .dialog-footer {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+
+  .el-button + .el-button {
+    margin-left: 0;
+  }
+
+  // 开关等附加选项放左侧
+  > .el-switch,
+  > .el-checkbox {
+    margin-right: auto !important;
+  }
+}
+
+// 遮罩稍深一点，与 Tabler 一致
+.el-overlay {
+  background-color: rgba(24, 36, 51, 0.24);
+  backdrop-filter: blur(2px);
 }
 
 .el-pagination {
@@ -284,6 +433,11 @@ a {
   &.is-circle {
     padding: 0;
   }
+}
+
+// 下拉框同理（Element Plus 写死 min-height: 32px），与输入框统一为 36px
+.el-select:not(.el-select--small):not(.el-select--large) .el-select__wrapper {
+  min-height: var(--el-component-size);
 }
 
 // Element Plus 默认按钮写死 32px，与 36px 的输入框并排时高低不齐；统一跟随控件尺寸
@@ -344,6 +498,13 @@ a {
   line-height: var(--el-component-size);
 }
 
+// 标签在上方时（弹出框、个人中心）不需要与控件对齐，收紧标签与控件的距离
+.el-form--label-top .el-form-item .el-form-item__label {
+  height: auto;
+  margin-bottom: 6px;
+  line-height: 1.5;
+}
+
 /* ---- 设置类卡片（个人中心等）：图标 + 标题 + 说明，底部操作右对齐 ---- */
 .settings-card {
   .settings-card__header {
@@ -383,4 +544,53 @@ a {
     justify-content: flex-end;
     gap: 8px;
   }
+}
+
+/* ---- 表格操作列：文字按钮（图标 + 文字），同一行排列不换行 ---- */
+.row-actions {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 14px;
+  white-space: nowrap;
+
+  .el-button.is-link {
+    margin-left: 0;
+    padding: 2px 0;
+    font-weight: 500;
+  }
+
+  .el-button.is-link > [class*='el-icon'] + span {
+    margin-left: 4px;
+  }
+}
+
+/* ---- 表格单元格里的常用内容 ---- */
+.cell-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.cell-tags--nowrap {
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.cell-tags__more {
+  flex-shrink: 0;
+  cursor: default;
+}
+
+.cell-dn {
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.6;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--el-text-color-regular);
+}
+
+.cell-empty {
+  color: var(--el-text-color-placeholder);
 }
