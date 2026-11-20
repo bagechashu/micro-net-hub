@@ -7,6 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"fmt"
+	"net/http"
+	"os"
 
 	"micro-net-hub/internal/config"
 	"micro-net-hub/internal/module/goldap/ldapmgr"
@@ -128,6 +130,39 @@ func ForgetPwd(c *gin.Context) {
 // EncryptPasswdReq
 type EncryptPasswdReq struct {
 	Passwd string `json:"passwd" form:"passwd" validate:"required"`
+}
+
+// SiteInfo 站点信息（无需登录）：前端用来显示站点名称和 logo
+func SiteInfo(c *gin.Context) {
+	logo := ""
+	if _, _, modTime, ok := config.SiteLogoFile(); ok {
+		// 带上文件修改时间，换图后浏览器不会继续用旧缓存
+		logo = fmt.Sprintf("/%s/base/sitelogo?v=%d", config.Conf.System.UrlPathPrefix, modTime.Unix())
+	}
+	helper.Success(c, gin.H{"name": config.SiteName(), "logo": logo})
+}
+
+// SiteLogo 返回 system.site-logo 配置的 logo 图片（无需登录）
+func SiteLogo(c *gin.Context) {
+	path, contentType, modTime, ok := config.SiteLogoFile()
+	if !ok {
+		c.Status(http.StatusNotFound)
+		return
+	}
+	f, err := os.Open(path)
+	if err != nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
+	defer f.Close()
+
+	h := c.Writer.Header()
+	h.Set("Content-Type", contentType)
+	h.Set("Cache-Control", "public, max-age=86400")
+	h.Set("X-Content-Type-Options", "nosniff")
+	// SVG 被直接打开时也不允许执行其中的脚本
+	h.Set("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'; sandbox")
+	http.ServeContent(c.Writer, c.Request, "", modTime, f)
 }
 
 // EncryptPasswd 生成加密密码

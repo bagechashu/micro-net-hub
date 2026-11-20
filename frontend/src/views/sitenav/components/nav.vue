@@ -13,16 +13,26 @@
         <el-button text :icon="Position" @click="jumpLink(item.link)">{{ $t('sitenav.visit') }}</el-button>
         <el-button text v-if="item.doc" :icon="Document" @click="jumpLink(item.doc)">{{ $t('sitenav.doc') }}</el-button>
         <el-button text :icon="CopyDocument" @click="copyLink(item.link)">{{ $t('sitenav.copyURL') }}</el-button>
-        <el-button text :icon="StarFilled" @click="addBookmarks">{{ $t('sitenav.addBookmark') }}</el-button>
+        <el-button text :icon="isBookmarked(item.ID) ? IconStarOff : StarFilled" @click="onToggleBookmark(item)">
+          {{ isBookmarked(item.ID) ? $t('sitenav.removeBookmark') : $t('sitenav.addBookmark') }}
+        </el-button>
       </div>
       <template #reference>
-        <div class="site-card" role="link" tabindex="0" @click="jumpLink(item.link)" @keyup.enter="jumpLink(item.link)">
+        <div
+          class="site-card"
+          :class="{ 'is-bookmarked': isBookmarked(item.ID) }"
+          role="link"
+          tabindex="0"
+          @click="jumpLink(item.link)"
+          @keyup.enter="jumpLink(item.link)">
           <SiteIcon :value="item.icon" :name="item.name" :link="item.link" :size="40" />
           <div class="site-card__body">
             <div class="site-card__name">{{ item.name }}</div>
             <div class="site-card__desc">{{ item.desc || item.link }}</div>
             <div class="site-card__link">{{ item.link }}</div>
           </div>
+          <!-- 已收藏标记 -->
+          <IconStarFilled v-if="isBookmarked(item.ID)" class="site-card__star" :size="14" />
         </div>
       </template>
     </el-popover>
@@ -33,6 +43,8 @@
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { Position, Document, CopyDocument, StarFilled } from '@/icons/tabler';
+import { IconStarFilled, IconStarOff } from '@tabler/icons-vue';
+import { useBookmarks } from '../bookmarks';
 import SiteIcon from '@/components/SiteIcon/index.vue';
 
 defineProps({
@@ -73,12 +85,30 @@ async function copyLink(link: string) {
   }
 }
 
-function addBookmarks() {
-  ElMessage({ message: t('tips.addBookmarkInfo'), type: 'info' });
+// 收藏只保存在当前浏览器（localStorage），收藏的站点显示在导航页最上方
+const { isBookmarked, toggleBookmark } = useBookmarks();
+
+function onToggleBookmark(item: { ID?: number; name?: string }) {
+  const added = toggleBookmark(item.ID);
+  ElMessage({
+    message: added ? t('sitenav.bookmarkAdded', [item.name]) : t('sitenav.bookmarkRemoved', [item.name]),
+    type: added ? 'success' : 'info'
+  });
 }
 </script>
 
 <style lang="scss" scoped>
+.site-card.is-bookmarked {
+  padding-right: 28px;
+}
+
+.site-card__star {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: var(--el-color-warning);
+}
+
 .site-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -86,6 +116,7 @@ function addBookmarks() {
 }
 
 .site-card {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;

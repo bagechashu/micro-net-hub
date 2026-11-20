@@ -2,8 +2,8 @@
   <header class="app-header">
     <div class="app-container-xl app-header__inner">
       <router-link to="/" class="app-header__brand">
-        <img :src="logo" alt="Micro Net Hub" class="app-header__logo">
-        <span class="app-header__title">Micro Net Hub</span>
+        <img :src="app.siteLogo || logo" :alt="app.siteName" class="app-header__logo" @error="app.siteLogo && app.resetSiteLogo()">
+        <span class="app-header__title">{{ app.siteName }}</span>
       </router-link>
 
       <div class="app-header__actions">
@@ -55,6 +55,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { ArrowDown, Document, SwitchButton, User } from '@/icons/tabler';
 import useUserStore from '@/store/modules/user';
+import useAppStore from '@/store/modules/app';
 import ThemeSwitch from '@/components/ThemeSwitch/index.vue';
 import LanguageSelect from '@/components/LanguageSelect/index.vue';
 import Login from '@/layout/components/Login/index.vue';
@@ -63,6 +64,7 @@ import logo from '@/assets/logo.svg';
 defineOptions({ name: 'AppHeader' });
 
 const user = useUserStore();
+const app = useAppStore();
 const router = useRouter();
 const loginVisible = ref(false);
 const defaultAvatar = 'https://q1.qlogo.cn/g?b=qq&nk=10002&s=100';
@@ -97,6 +99,7 @@ async function logout() {
 .app-header__logo {
   width: 32px;
   height: 32px;
+  object-fit: contain;
 }
 
 .app-header__title {

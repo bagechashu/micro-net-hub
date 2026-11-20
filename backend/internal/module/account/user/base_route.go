@@ -18,6 +18,8 @@ func InitBaseRoutes(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) gi
 		base.GET("/refreshToken", authMiddleware.RefreshHandler)
 		base.POST("/sendcode", SendCode)   // 给用户邮箱发送验证码
 		base.POST("/changePwd", ForgetPwd) // 修改用户密码
+		base.GET("/siteinfo", SiteInfo)    // 站点名称等公开信息，无需鉴权
+		base.GET("/sitelogo", SiteLogo)    // 自定义 logo 图片，无需鉴权
 	}
 	return r
 }

@@ -128,7 +128,7 @@
     "visit": "Visit",
     "doc": "Related Documents",
     "copyURL": "Copy URL",
-    "addBookmark": "Add to Bookmarks",
+    "addBookmark": "Add to bookmarks",
     "totolInfo": "Total: {0} sites",
     "6112v35e5140": "Identifier Name",
     "6112v35e5ik0": "Unique identifier of the navigation group",
@@ -186,7 +186,12 @@
       "clear": "Clear icon",
       "clearDesc": "The first letter of the site name will be shown",
       "invalid": "Invalid icon (legacy built-in images were removed). Please choose again."
-    }
+    },
+    "removeBookmark": "Remove bookmark",
+    "bookmarks": "Bookmarks",
+    "bookmarksHint": "Saved in this browser only",
+    "bookmarkAdded": "Bookmarked \"{0}\". It now appears at the top of the page.",
+    "bookmarkRemoved": "Removed \"{0}\" from bookmarks"
   },
   "user": {
     "610wkzjikzs0": "Username",

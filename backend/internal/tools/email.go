@@ -283,11 +283,14 @@ func SendUserInfo(sendto []string, username string, password string, qrRawPngBas
 // 渲染
 // ---------------------------------------------------------------------------
 
+// projectName 邮件里的项目名：优先 notice.project-name，其次 system.site-name
 func projectName() string {
-	if p := strings.TrimSpace(config.Conf.Notice.ProjectName); p != "" {
-		return p
+	if config.Conf.Notice != nil {
+		if p := strings.TrimSpace(config.Conf.Notice.ProjectName); p != "" {
+			return p
+		}
 	}
-	return "Micro Net Hub"
+	return config.SiteName()
 }
 
 // portalURL 门户地址（service-domain 未配置时返回空，模板里不显示按钮/链接）

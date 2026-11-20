@@ -18,19 +18,21 @@
     <!-- 公告：独占一行；没有公告时不渲染，导航内容直接贴着标题 -->
     <Notice class="sitenav-notice" />
 
-    <NavSub v-if="data.length > 0" :data="data" />
+    <!-- 我的收藏（localStorage）放在最上面，后面是原有的导航分组 -->
+    <NavSub v-if="groups.length > 0" :data="groups" />
     <el-empty v-else :description="$t('common.nodata')" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { Search, Refresh } from '@/icons/tabler';
 import NavSub from '@/views/sitenav/components/sub.vue';
 import Notice from '@/views/notice/index.vue';
 import { getNav } from '@/api/sitenav';
+import { useBookmarks } from './bookmarks';
 
 defineOptions({ name: 'SiteNav' });
 
@@ -40,6 +42,15 @@ const search = ref('');
 const searchStatus = ref(false);
 const data = ref<any[]>([]);
 let sourceData: any[] = [];
+
+// 收藏分组：从当前展示的数据里取（搜索时也随之过滤），站点被删除后自动不再显示
+const { pickBookmarked } = useBookmarks();
+const groups = computed(() => {
+  const all = data.value.flatMap(g => g.sites || []);
+  const sites = pickBookmarked(all);
+  if (!sites.length) return data.value;
+  return [{ ID: 'bookmarks', title: t('sitenav.bookmarks'), bookmark: true, sites }, ...data.value];
+});
 
 async function getNavJson() {
   try {

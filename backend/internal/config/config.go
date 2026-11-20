@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"micro-net-hub/internal/global"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
@@ -106,6 +108,10 @@ func RSAReadKeyFromFile(filename string) []byte {
 }
 
 type System struct {
+	// 页面上显示的站点名称（顶部品牌、浏览器标题），为空时使用 DefaultSiteName
+	SiteName string `mapstructure:"site-name" json:"siteName"`
+	// 自定义 logo 图片文件（svg/png/jpg/webp/ico），相对路径以工作目录（config.yml 所在目录）为准；为空用内置 logo
+	SiteLogo        string        `mapstructure:"site-logo" json:"siteLogo"`
 	Mode            string        `mapstructure:"mode" json:"mode"`
 	UrlPathPrefix   string        `mapstructure:"url-path-prefix" json:"urlPathPrefix"`
 	Host            string        `mapstructure:"host" json:"host"`
@@ -241,4 +247,51 @@ type FeiShu struct {
 	AppID     string   `mapstructure:"app-id" json:"appId"`
 	AppSecret string   `mapstructure:"app-secret" json:"appSecret"`
 	DeptList  []string `mapstructure:"dept-list" json:"deptList"`
+}
+
+// DefaultSiteName 未配置 system.site-name 时使用的站点名称
+const DefaultSiteName = "Micro Net Hub"
+
+// SiteName 返回页面上显示的站点名称
+func SiteName() string {
+	if Conf != nil && Conf.System != nil {
+		if n := strings.TrimSpace(Conf.System.SiteName); n != "" {
+			return n
+		}
+	}
+	return DefaultSiteName
+}
+
+// siteLogoTypes 允许作为 logo 的图片类型
+var siteLogoTypes = map[string]string{
+	".svg":  "image/svg+xml",
+	".png":  "image/png",
+	".jpg":  "image/jpeg",
+	".jpeg": "image/jpeg",
+	".webp": "image/webp",
+	".ico":  "image/x-icon",
+}
+
+// siteLogoMaxBytes logo 文件大小上限
+const siteLogoMaxBytes = 2 << 20
+
+// SiteLogoFile 返回配置的自定义 logo 文件；未配置、文件不存在、类型或大小不符合时 ok 为 false
+func SiteLogoFile() (path string, contentType string, modTime time.Time, ok bool) {
+	if Conf == nil || Conf.System == nil {
+		return "", "", time.Time{}, false
+	}
+	p := strings.TrimSpace(Conf.System.SiteLogo)
+	if p == "" {
+		return "", "", time.Time{}, false
+	}
+	p = filepath.Clean(p)
+	ct, allowed := siteLogoTypes[strings.ToLower(filepath.Ext(p))]
+	if !allowed {
+		return "", "", time.Time{}, false
+	}
+	fi, err := os.Stat(p)
+	if err != nil || !fi.Mode().IsRegular() || fi.Size() > siteLogoMaxBytes {
+		return "", "", time.Time{}, false
+	}
+	return p, ct, fi.ModTime(), true
 }

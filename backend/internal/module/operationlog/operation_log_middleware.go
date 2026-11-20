@@ -33,8 +33,8 @@ func OperationLogMiddleware() gin.HandlerFunc {
 		// 请求方式
 		method := c.Request.Method
 
-		// 不审计 UI 访问
-		if strings.HasPrefix(c.FullPath(), "/ui") {
+		// 不审计 UI 访问，以及每次打开页面都会请求的站点名称、logo
+		if strings.HasPrefix(c.FullPath(), "/ui") || path == "/base/siteinfo" || path == "/base/sitelogo" {
 			return
 		}
 		// 审计 GET 日志, 默认不审计

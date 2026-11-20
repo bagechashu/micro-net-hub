@@ -7,7 +7,9 @@
 </template>
 
 <script>
-import { defineComponent, computed } from 'vue';
+import { defineComponent, computed, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import getPageTitle from '@/utils/get-page-title';
 import zhLocale from 'element-plus/dist/locale/zh-cn.mjs';
 import enLocale from 'element-plus/dist/locale/en.mjs';
 import Cookies from 'js-cookie';
@@ -20,6 +22,15 @@ export default defineComponent({
   setup() {
     const app = appStore();
     const user = userStore();
+    const route = useRoute();
+    // 站点名称来自后端配置；拿到后更新浏览器标题（路由守卫里设置的标题用的可能还是旧名称）
+    app.loadSiteName();
+    watch(
+      () => app.siteName,
+      () => {
+        document.title = getPageTitle(route.meta.title);
+      }
+    );
     // 登录后以用户名作为页面水印（与 Vue2 版本一致）
     const userName = computed(() => user.name || '');
     const size = computed(() => app.size);

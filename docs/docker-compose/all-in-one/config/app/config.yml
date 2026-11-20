@@ -1,5 +1,10 @@
 # delelopment
 system:
+  # 页面上显示的站点名称（顶部品牌、浏览器标题）；邮件里的项目名未配置 notice.project-name 时也用它
+  site-name: "Micro Net Hub"
+  # 自定义 logo 图片文件（svg/png/jpg/webp/ico，≤2MB），相对路径以 config.yml 所在目录为准；留空使用内置 logo。
+  # 同时会替换浏览器标签页图标。例如: site-logo: "logo.svg"
+  site-logo: ""
   # 设定模式(debug/release/test,正式版改为release)
   mode: release
   # url前缀

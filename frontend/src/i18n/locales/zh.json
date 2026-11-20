@@ -128,7 +128,7 @@
         "visit": "跳转",
         "doc": "相关文档",
         "copyURL": "拷贝网址",
-        "addBookmark": "加入书签",
+        "addBookmark": "加入收藏",
         "totolInfo": "共计：{0} 个站点",
         "6112v35e5140": "标识名",
         "6112v35e5ik0": "导航组的唯一标识",
@@ -186,7 +186,12 @@
             "clear": "清除图标",
             "clearDesc": "清除后显示站点名称首字",
             "invalid": "图标无效（旧的内置图片已移除），请重新选择"
-        }
+        },
+        "removeBookmark": "取消收藏",
+        "bookmarks": "我的收藏",
+        "bookmarksHint": "收藏只保存在当前浏览器",
+        "bookmarkAdded": "已收藏「{0}」，显示在导航页最上方",
+        "bookmarkRemoved": "已取消收藏「{0}」"
     },
     "user": {
         "610wkzjikzs0": "用户名",

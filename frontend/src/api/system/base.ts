@@ -21,3 +21,11 @@ export function logout() {
     method: 'post'
   });
 }
+
+// 站点名称等公开信息（无需登录），名称在后端 config.yml 的 system.site-name 配置
+export function getSiteInfo() {
+  return request({
+    url: '/api/base/siteinfo',
+    method: 'get'
+  });
+}
