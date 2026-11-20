@@ -14,7 +14,7 @@
           <el-input
             v-model="navGroupForm.title"
             :placeholder="$t('sitenav.6112v35e5r40')"
-            @blur="navGroupForm.title = navGroupForm.title.trim()"
+            @blur="navGroupForm.title = (navGroupForm.title || '').trim()"
           />
         </el-form-item>
         <el-form-item>
@@ -103,14 +103,14 @@
             <el-input
               v-model="navSiteForm.name"
               :placeholder="$t('sitenav.6112v35e63c0')"
-              @blur="navSiteForm.name = navSiteForm.name.trim()"
+              @blur="navSiteForm.name = (navSiteForm.name || '').trim()"
             />
           </el-form-item>
           <el-form-item :label="$t('sitenav.6112v35e6bw0')" prop="link">
             <el-input
               v-model="navSiteForm.link"
               :placeholder="$t('sitenav.6112v35e6bw0')"
-              @blur="navSiteForm.link = navSiteForm.link.trim()"
+              @blur="navSiteForm.link = (navSiteForm.link || '').trim()"
             />
           </el-form-item>
           <el-form-item :label="$t('sitenav.6112v35e66c0')" prop="icon">
@@ -125,7 +125,7 @@
             <el-input
               v-model="navSiteForm.doc"
               :placeholder="$t('sitenav.6112v35e70o0')"
-              @blur="navSiteForm.doc = navSiteForm.doc.trim()"
+              @blur="navSiteForm.doc = (navSiteForm.doc || '').trim()"
             />
           </el-form-item>
           <el-form-item :label="$t('sitenav.6112v35e68w0')" prop="desc">
@@ -135,7 +135,7 @@
               :placeholder="$t('sitenav.6112v35e68w0')"
               show-word-limit
               maxlength="100"
-              @blur="navSiteForm.desc = navSiteForm.desc.trim()"
+              @blur="navSiteForm.desc = (navSiteForm.desc || '').trim()"
             />
           </el-form-item>
         </el-form>
@@ -359,13 +359,14 @@ function addSite() {
 
 function updateSite(row: any) {
   getGroupOptions();
+  // 后端对空的 doc 等字段用了 omitempty，接口里可能没有，统一补成空字符串
   navSiteForm.value = {
     ID: row.ID,
-    name: row.name,
-    icon: row.icon,
-    desc: row.desc,
-    link: row.link,
-    doc: row.doc,
+    name: row.name ?? '',
+    icon: row.icon ?? '',
+    desc: row.desc ?? '',
+    link: row.link ?? '',
+    doc: row.doc ?? '',
     groupid: row.groupid
   };
   navSiteFormTitle.value = t('sitenav.6112v35e7z00');
@@ -411,11 +412,11 @@ async function batchDeleteSites() {
 
 async function navSiteFormSubmit() {
   const form = navSiteForm.value;
-  form.name = form.name.trim();
+  form.name = (form.name || '').trim();
   form.icon = (form.icon || '').trim();
-  form.link = form.link.trim();
-  form.doc = form.doc.trim();
-  form.desc = form.desc.trim();
+  form.link = (form.link || '').trim();
+  form.doc = (form.doc || '').trim();
+  form.desc = (form.desc || '').trim();
 
   const valid = await navSiteFormRef.value?.validate().catch(() => false);
   // Defence in depth: never submit a non-http(s) link/doc/icon even if the rules were bypassed.

@@ -40,14 +40,31 @@ export const constantRoutes: RouteRecordRaw[] = [
     ]
   },
   {
+    // 错误页：放在 Layout 里，保留顶部导航和页脚
     path: '/404',
-    component: () => import('@/views/error-page/404.vue'),
-    meta: { hidden: true }
+    component: Layout,
+    meta: { hidden: true },
+    children: [
+      {
+        path: '',
+        name: 'Page404',
+        component: () => import('@/views/error-page/404.vue'),
+        meta: { title: t('errorPage.notFoundTitle'), hidden: true, hidePageHeader: true }
+      }
+    ]
   },
   {
     path: '/401',
-    component: () => import('@/views/error-page/401.vue'),
-    meta: { hidden: true }
+    component: Layout,
+    meta: { hidden: true },
+    children: [
+      {
+        path: '',
+        name: 'Page401',
+        component: () => import('@/views/error-page/401.vue'),
+        meta: { title: t('errorPage.forbiddenTitle'), hidden: true, hidePageHeader: true }
+      }
+    ]
   },
   {
     path: '/',

@@ -1,6 +1,7 @@
 <template>
   <main class="page-wrapper">
-    <div class="app-container-xl page-header">
+    <!-- 页面自带大标题的（如 404）通过 meta.hidePageHeader 隐藏这里的标题区 -->
+    <div v-if="!route.meta.hidePageHeader" class="app-container-xl page-header">
       <div class="page-header__titles">
         <div v-if="pretitle" class="page-pretitle">{{ pretitle }}</div>
         <h2 class="page-title">{{ title }}</h2>

@@ -74,7 +74,7 @@
               :placeholder="$t('notice.6112860xy1c0')"
               show-word-limit
               maxlength="100"
-              @blur="noticeForm.content = noticeForm.content.trim()"
+              @blur="noticeForm.content = (noticeForm.content || '').trim()"
             />
           </el-form-item>
         </el-form>

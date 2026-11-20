@@ -318,7 +318,9 @@ func page(p mailPage) (string, error) {
 }
 
 // 邮件样式：表格布局 + 内联样式（很多客户端会去掉 <style>），配色与管理后台一致（Tabler）。
-// <style> 里只放增强项，以及 header-html / footer-html 里会用到的 .note、.key 等 class。
+// 明暗主题跟随系统：color-scheme 声明支持两种主题，暗色时用 prefers-color-scheme 覆盖内联颜色
+// （Apple Mail、iOS、Outlook for Mac 等）；Outlook.com 用 [data-ogsc] 前缀；Gmail 会自行反色。
+// 元素上的 mail-* class 只用于暗色覆盖；<style> 里另有 header-html / footer-html 会用到的 .note、.key 等。
 var mailTemplates = template.Must(template.New("mail").Funcs(template.FuncMap{
 	"btn": func(text, url string) map[string]string { return map[string]string{"Text": text, "URL": url} },
 }).Parse(`
@@ -327,9 +329,11 @@ var mailTemplates = template.Must(template.New("mail").Funcs(template.FuncMap{
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
 <title>{{.Title}}</title>
 <style>
+  :root { color-scheme: light dark; supported-color-schemes: light dark; }
   body { margin: 0; padding: 0; background: #f6f8fb; }
   a { color: #066fd1; }
   .content h3 { margin: 20px 0 8px; font-size: 15px; color: #182433; }
@@ -344,35 +348,58 @@ var mailTemplates = template.Must(template.New("mail").Funcs(template.FuncMap{
     .card { border-radius: 0 !important; }
     .pad { padding-left: 20px !important; padding-right: 20px !important; }
   }
+  @media (prefers-color-scheme: dark) {
+    body, .mail-bg { background: #0f1724 !important; }
+    .card { background: #182433 !important; border-color: #2c3a4f !important; }
+    .mail-text, .content h3, .content h5 { color: #e6e9ee !important; }
+    .mail-sub { color: #b8c3d1 !important; }
+    .mail-muted, .description { color: #8a97a8 !important; }
+    .mail-border { border-color: #2c3a4f !important; }
+    .mail-soft { background: #1f2c3e !important; border-color: #2c3a4f !important; }
+    .mail-note, .note { background: #18304d !important; border-left-color: #4299e1 !important; color: #c9d6e6 !important; }
+    .mail-link, a { color: #6cb4f5 !important; }
+    .mail-btn, .mail-btn a { background: #2683dc !important; color: #ffffff !important; }
+    .mail-badge-success { background: #173c26 !important; color: #5dd37b !important; }
+    .mail-badge-danger { background: #43191c !important; color: #f27b7b !important; }
+    .key { background: #1f2c3e !important; border-color: #2c3a4f !important; color: #e6e9ee !important; }
+  }
+  [data-ogsc] .mail-bg { background: #0f1724 !important; }
+  [data-ogsc] .card { background: #182433 !important; border-color: #2c3a4f !important; }
+  [data-ogsc] .mail-text { color: #e6e9ee !important; }
+  [data-ogsc] .mail-sub { color: #b8c3d1 !important; }
+  [data-ogsc] .mail-muted { color: #8a97a8 !important; }
+  [data-ogsc] .mail-border { border-color: #2c3a4f !important; }
+  [data-ogsc] .mail-soft { background: #1f2c3e !important; }
+  [data-ogsc] .mail-note { background: #18304d !important; color: #c9d6e6 !important; }
 </style>
 </head>
-<body style="margin:0;padding:0;background:#f6f8fb;">
+<body class="mail-bg" style="margin:0;padding:0;background:#f6f8fb;">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;">{{.Preheader}}</div>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f6f8fb;">
+<table role="presentation" class="mail-bg" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f6f8fb;">
 <tr><td align="center" style="padding:32px 12px;">
   <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;">
     <!-- 品牌栏 -->
     <tr><td style="padding:0 4px 16px;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
         <td width="32" height="32" align="center" valign="middle" style="width:32px;height:32px;background:#066fd1;border-radius:8px;color:#ffffff;font:700 16px/32px -apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">{{.Initial}}</td>
-        <td style="padding-left:10px;font:600 16px/1.4 -apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#182433;">{{.Project}}</td>
+        <td class="mail-text" style="padding-left:10px;font:600 16px/1.4 -apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#182433;">{{.Project}}</td>
       </tr></table>
     </td></tr>
     <!-- 卡片 -->
     <tr><td class="card" style="background:#ffffff;border:1px solid #dce1e7;border-radius:8px;overflow:hidden;">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr><td style="height:4px;background:#066fd1;font-size:0;line-height:0;">&nbsp;</td></tr>
-        <tr><td class="pad content" style="padding:32px 40px;font:14px/1.6 -apple-system,'Segoe UI',Roboto,'PingFang SC','Microsoft YaHei',Helvetica,Arial,sans-serif;color:#182433;">
-          <h1 style="margin:0 0 16px;font-size:20px;line-height:1.4;font-weight:600;color:#182433;">{{.Title}}</h1>
-          <p style="margin:0 0 16px;">Hi <strong>{{.Salutation}}</strong>,</p>
-          {{if .Header}}<div style="margin:0 0 20px;color:#3a4859;">{{.Header}}</div>{{end}}
+        <tr><td class="pad content mail-text" style="padding:32px 40px;font:14px/1.6 -apple-system,'Segoe UI',Roboto,'PingFang SC','Microsoft YaHei',Helvetica,Arial,sans-serif;color:#182433;">
+          <h1 class="mail-text" style="margin:0 0 16px;font-size:20px;line-height:1.4;font-weight:600;color:#182433;">{{.Title}}</h1>
+          <p class="mail-text" style="margin:0 0 16px;">Hi <strong>{{.Salutation}}</strong>,</p>
+          {{if .Header}}<div class="mail-sub" style="margin:0 0 20px;color:#3a4859;">{{.Header}}</div>{{end}}
           {{.Content}}
-          {{if .Footer}}<div style="margin:28px 0 0;padding-top:20px;border-top:1px solid #e6e9ee;color:#3a4859;">{{.Footer}}</div>{{end}}
+          {{if .Footer}}<div class="mail-sub mail-border" style="margin:28px 0 0;padding-top:20px;border-top:1px solid #e6e9ee;color:#3a4859;">{{.Footer}}</div>{{end}}
         </td></tr>
       </table>
     </td></tr>
     <!-- 页脚 -->
-    <tr><td align="center" style="padding:20px 12px;font:12px/1.6 -apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#8a97a8;">
+    <tr><td class="mail-muted" align="center" style="padding:20px 12px;font:12px/1.6 -apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#8a97a8;">
       This is a system-generated email from {{.Project}}. Please do not reply.
     </td></tr>
   </table>
@@ -382,40 +409,40 @@ var mailTemplates = template.Must(template.New("mail").Funcs(template.FuncMap{
 </html>{{end}}
 
 {{define "button"}}<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0 4px;"><tr>
-  <td style="background:#066fd1;border-radius:6px;"><a href="{{.URL}}" target="_blank" style="display:inline-block;padding:10px 20px;font-weight:600;font-size:14px;color:#ffffff;text-decoration:none;border-radius:6px;">{{.Text}}</a></td>
+  <td class="mail-btn" style="background:#066fd1;border-radius:6px;"><a href="{{.URL}}" target="_blank" style="display:inline-block;padding:10px 20px;font-weight:600;font-size:14px;color:#ffffff;text-decoration:none;border-radius:6px;">{{.Text}}</a></td>
 </tr></table>{{end}}
 
-{{define "code"}}<p style="margin:0 0 12px;">{{.Lead}}</p>
+{{define "code"}}<p class="mail-text" style="margin:0 0 12px;">{{.Lead}}</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 16px;">
-  <tr><td align="center" style="padding:18px 12px;background:#f6f8fb;border:1px solid #e6e9ee;border-radius:8px;font:600 28px/1.2 SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;letter-spacing:6px;color:#182433;">{{.Code}}</td></tr>
+  <tr><td class="mail-soft mail-text" align="center" style="padding:18px 12px;background:#f6f8fb;border:1px solid #e6e9ee;border-radius:8px;font:600 28px/1.2 SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;letter-spacing:6px;color:#182433;">{{.Code}}</td></tr>
 </table>
-{{range .Notes}}<p style="margin:0 0 6px;font-size:13px;color:#667382;">{{.}}</p>{{end}}
+{{range .Notes}}<p class="mail-muted" style="margin:0 0 6px;font-size:13px;color:#667382;">{{.}}</p>{{end}}
 {{if and .BtnURL .BtnText}}{{template "button" (btn .BtnText .BtnURL)}}{{end}}{{end}}
 
-{{define "status"}}<p style="margin:0 0 12px;">The following account(s) have been
-  <span style="display:inline-block;padding:1px 8px;border-radius:4px;font-weight:600;{{if eq .Tone "success"}}color:#2fb344;background:#eaf7ec;{{else}}color:#d63939;background:#fbebeb;{{end}}">{{.Status}}</span>:</p>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 16px;border:1px solid #e6e9ee;border-radius:8px;">
-  {{range $i, $u := .Users}}<tr><td style="padding:10px 14px;{{if $i}}border-top:1px solid #e6e9ee;{{end}}font:13px/1.4 SFMono-Regular,Menlo,Consolas,monospace;color:#182433;">{{$u}}</td></tr>{{end}}
+{{define "status"}}<p class="mail-text" style="margin:0 0 12px;">The following account(s) have been
+  <span class="{{if eq .Tone "success"}}mail-badge-success{{else}}mail-badge-danger{{end}}" style="display:inline-block;padding:1px 8px;border-radius:4px;font-weight:600;{{if eq .Tone "success"}}color:#2fb344;background:#eaf7ec;{{else}}color:#d63939;background:#fbebeb;{{end}}">{{.Status}}</span>:</p>
+<table role="presentation" class="mail-border" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 16px;border:1px solid #e6e9ee;border-radius:8px;">
+  {{range $i, $u := .Users}}<tr><td class="mail-text mail-border" style="padding:10px 14px;{{if $i}}border-top:1px solid #e6e9ee;{{end}}font:13px/1.4 SFMono-Regular,Menlo,Consolas,monospace;color:#182433;">{{$u}}</td></tr>{{end}}
 </table>
-<p style="margin:0 0 6px;font-size:13px;color:#3a4859;">{{.Explain}}</p>
-<p style="margin:0;font-size:13px;color:#667382;">{{.Reminder}}</p>{{end}}
+<p class="mail-sub" style="margin:0 0 6px;font-size:13px;color:#3a4859;">{{.Explain}}</p>
+<p class="mail-muted" style="margin:0;font-size:13px;color:#667382;">{{.Reminder}}</p>{{end}}
 
-{{define "kv"}}<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;border:1px solid #e6e9ee;border-radius:8px;">
+{{define "kv"}}<table role="presentation" class="mail-border" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;border:1px solid #e6e9ee;border-radius:8px;">
   {{range $i, $r := .}}<tr>
-    <td width="130" style="width:130px;padding:10px 14px;{{if $i}}border-top:1px solid #e6e9ee;{{end}}font-size:13px;color:#667382;vertical-align:top;">{{$r.Label}}</td>
-    <td style="padding:10px 14px;{{if $i}}border-top:1px solid #e6e9ee;{{end}}font-size:13px;color:#182433;word-break:break-all;{{if $r.Mono}}font-family:SFMono-Regular,Menlo,Consolas,monospace;{{end}}">{{if $r.Link}}<a href="{{$r.Link}}" target="_blank" style="color:#066fd1;text-decoration:none;">{{$r.Value}}</a>{{else}}{{$r.Value}}{{end}}</td>
+    <td class="mail-muted mail-border" width="130" style="width:130px;padding:10px 14px;{{if $i}}border-top:1px solid #e6e9ee;{{end}}font-size:13px;color:#667382;vertical-align:top;">{{$r.Label}}</td>
+    <td class="mail-text mail-border" style="padding:10px 14px;{{if $i}}border-top:1px solid #e6e9ee;{{end}}font-size:13px;color:#182433;word-break:break-all;{{if $r.Mono}}font-family:SFMono-Regular,Menlo,Consolas,monospace;{{end}}">{{if $r.Link}}<a class="mail-link" href="{{$r.Link}}" target="_blank" style="color:#066fd1;text-decoration:none;">{{$r.Value}}</a>{{else}}{{$r.Value}}{{end}}</td>
   </tr>{{end}}
 </table>{{end}}
 
-{{define "userInfo"}}<h2 style="margin:8px 0 10px;font-size:15px;font-weight:600;color:#182433;">Account</h2>
+{{define "userInfo"}}<h2 class="mail-text" style="margin:8px 0 10px;font-size:15px;font-weight:600;color:#182433;">Account</h2>
 {{template "kv" .Account}}
-{{if .WithVPN}}{{if .QRSrc}}<h2 style="margin:8px 0 10px;font-size:15px;font-weight:600;color:#182433;">TOTP</h2>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;border:1px solid #e6e9ee;border-radius:8px;"><tr>
-  <td width="168" style="width:168px;padding:12px;"><img src="{{.QRSrc}}" width="144" height="144" alt="TOTP QR code" style="display:block;width:144px;height:144px;border:0;"></td>
-  <td style="padding:12px 16px 12px 0;font-size:13px;color:#3a4859;vertical-align:middle;">Scan this QR code with an authenticator app (e.g. Google Authenticator, andOTP). The app then shows a 6-digit <strong>TOTP code</strong> that changes every 30 seconds.</td>
+{{if .WithVPN}}{{if .QRSrc}}<h2 class="mail-text" style="margin:8px 0 10px;font-size:15px;font-weight:600;color:#182433;">TOTP</h2>
+<table role="presentation" class="mail-border" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;border:1px solid #e6e9ee;border-radius:8px;"><tr>
+  <td width="168" style="width:168px;padding:12px;"><!-- 二维码始终白底，暗色下也能扫码 --><img src="{{.QRSrc}}" width="144" height="144" alt="TOTP QR code" style="display:block;width:144px;height:144px;border:0;background:#ffffff;padding:6px;border-radius:6px;"></td>
+  <td class="mail-sub" style="padding:12px 16px 12px 0;font-size:13px;color:#3a4859;vertical-align:middle;">Scan this QR code with an authenticator app (e.g. Google Authenticator, andOTP). The app then shows a 6-digit <strong>TOTP code</strong> that changes every 30 seconds.</td>
 </tr></table>{{end}}{{end}}
-<h2 style="margin:8px 0 10px;font-size:15px;font-weight:600;color:#182433;">Getting started</h2>
-<ol style="margin:0 0 16px;padding-left:20px;font-size:13px;color:#3a4859;">
+<h2 class="mail-text" style="margin:8px 0 10px;font-size:15px;font-weight:600;color:#182433;">Getting started</h2>
+<ol class="mail-sub" style="margin:0 0 16px;padding-left:20px;font-size:13px;color:#3a4859;">
   {{if .WithVPN}}<li style="margin:0 0 6px;">Scan the TOTP QR code with an authenticator app.</li>
   <li style="margin:0 0 6px;">Connect to the VPN with an OpenConnect client (e.g. Cisco Secure Client) using your username and the <strong>VPN password</strong> (see below).</li>{{end}}
   <li style="margin:0 0 6px;">Sign in to intranet systems (GitLab, Nexus, the intranet portal, etc.) with your LDAP username and password.</li>
@@ -424,10 +451,10 @@ var mailTemplates = template.Must(template.New("mail").Funcs(template.FuncMap{
 </ol>
 {{if .PortalURL}}{{template "button" (btn "Open intranet portal" .PortalURL)}}{{end}}
 {{if .WithVPN}}<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0 0;"><tr>
-  <td style="padding:12px 16px;background:#e9f2fc;border-left:3px solid #066fd1;border-radius:4px;font-size:13px;color:#3a4859;">
-    <strong style="color:#182433;">VPN password</strong> = LDAP password + current TOTP code<br>
+  <td class="mail-note" style="padding:12px 16px;background:#e9f2fc;border-left:3px solid #066fd1;border-radius:4px;font-size:13px;color:#3a4859;">
+    <strong class="mail-text" style="color:#182433;">VPN password</strong> = LDAP password + current TOTP code<br>
     e.g. LDAP password <span style="font-family:SFMono-Regular,Menlo,Consolas,monospace;">ldappasswd</span> and TOTP code <span style="font-family:SFMono-Regular,Menlo,Consolas,monospace;">123456</span>
-    &rarr; VPN password <span style="font-family:SFMono-Regular,Menlo,Consolas,monospace;font-weight:600;color:#182433;">ldappasswd123456</span>
+    &rarr; VPN password <span class="mail-text" style="font-family:SFMono-Regular,Menlo,Consolas,monospace;font-weight:600;color:#182433;">ldappasswd123456</span>
   </td>
 </tr></table>{{end}}{{end}}
 `))
