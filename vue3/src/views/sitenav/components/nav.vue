@@ -1,45 +1,33 @@
 <template>
-  <div>
-    <el-row :gutter="0">
-      <el-col
-        v-for="(item, index) in sites"
-        :key="index"
-        :xs="12"
-        :sm="8"
-        :md="6"
-        :lg="4"
-        :xl="4"
-        class="site-card"
-      >
-        <div @click="jumpLink(item.link)">
-          <el-popover placement="top" :width="200" trigger="hover" :show-after="500" :hide-after="100">
-            <el-button-group class="vertical">
-              <el-button size="small" :icon="Position" @click="jumpLink(item.link)">
-                {{ $t('sitenav.visit') }}
-              </el-button>
-              <el-button v-if="item.doc" size="small" :icon="Document" @click="jumpLink(item.doc)">
-                {{ $t('sitenav.doc') }}
-              </el-button>
-              <el-button size="small" :icon="CopyDocument" class="clip-btn" @click="copyLink(item.link)">
-                {{ $t('sitenav.copyURL') }}
-              </el-button>
-              <el-button size="small" :icon="StarFilled" @click="addBookmarks">
-                {{ $t('sitenav.addBookmark') }}
-              </el-button>
-            </el-button-group>
-            <template #reference>
-              <el-card shadow="hover" :body-style="{ padding: '8px' }">
-                <span><img :src="item.icon" loading="lazy" class="icon" alt=""></span>
-                <span>{{ item.name }}</span>
-                <p />
-                <div class="desc">{{ item.desc }}</div>
-                <div class="desclink">{{ item.link }}</div>
-              </el-card>
-            </template>
-          </el-popover>
+  <div class="site-grid">
+    <el-popover
+      v-for="(item, index) in sites"
+      :key="item.ID ?? index"
+      placement="top"
+      :width="180"
+      trigger="hover"
+      :show-after="500"
+      :hide-after="100">
+      <div class="site-actions">
+        <el-button size="small" :icon="Position" @click="jumpLink(item.link)">{{ $t('sitenav.visit') }}</el-button>
+        <el-button v-if="item.doc" size="small" :icon="Document" @click="jumpLink(item.doc)">{{ $t('sitenav.doc') }}</el-button>
+        <el-button size="small" :icon="CopyDocument" @click="copyLink(item.link)">{{ $t('sitenav.copyURL') }}</el-button>
+        <el-button size="small" :icon="StarFilled" @click="addBookmarks">{{ $t('sitenav.addBookmark') }}</el-button>
+      </div>
+      <template #reference>
+        <div class="site-card" role="link" tabindex="0" @click="jumpLink(item.link)" @keyup.enter="jumpLink(item.link)">
+          <span class="site-card__avatar">
+            <img v-if="item.icon" :src="item.icon" loading="lazy" alt="">
+            <span v-else>{{ (item.name || '?').slice(0, 1).toUpperCase() }}</span>
+          </span>
+          <div class="site-card__body">
+            <div class="site-card__name">{{ item.name }}</div>
+            <div class="site-card__desc">{{ item.desc || item.link }}</div>
+            <div class="site-card__link">{{ item.link }}</div>
+          </div>
         </div>
-      </el-col>
-    </el-row>
+      </template>
+    </el-popover>
   </div>
 </template>
 
@@ -91,47 +79,92 @@ function addBookmarks() {
 }
 </script>
 
-<style lang="css" scoped>
+<style lang="scss" scoped>
+.site-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
 .site-card {
-  margin: 5px;
-}
-.el-button-group.vertical {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--el-border-color-light);
+  border-radius: var(--app-card-radius);
+  background: var(--el-bg-color);
+  box-shadow: var(--app-shadow);
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--el-color-primary-light-5);
+    box-shadow: var(--app-shadow-hover);
+    transform: translateY(-1px);
+    outline: none;
+  }
 }
 
-.el-button-group.vertical .el-button + .el-button {
-  margin-left: 0;
+.site-card__avatar {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--el-fill-color-light);
+  color: var(--el-color-primary);
+  font-weight: 600;
+  overflow: hidden;
+
+  img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+  }
 }
 
-.el-button-group.vertical .el-button {
-  width: 100%;
-  margin-left: 0;
+.site-card__body {
+  min-width: 0;
+  line-height: 1.4;
 }
 
-.icon {
-  width: 30px;
-  height: 30px;
-  vertical-align: middle;
-  border-radius: 50%;
-  pointer-events: none;
-  margin-right: 1rem;
+.site-card__name {
+  font-weight: 600;
+  color: var(--el-text-color-primary);
 }
 
-.desc {
-  padding-top: 5px;
-  border-top: 1px solid var(--el-border-color-lighter);
-  margin-top: 5px;
-  font-size: 0.6rem;
-  color: var(--app-muted-text);
-}
-.desclink {
-  margin-top: 5px;
-  font-size: 0.6rem;
-  width: 100%;
+.site-card__name,
+.site-card__desc,
+.site-card__link {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.site-card__desc {
+  font-size: 13px;
+  color: var(--el-text-color-regular);
+}
+
+.site-card__link {
+  font-size: 12px;
   color: var(--app-muted-text);
+}
+
+.site-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  .el-button {
+    width: 100%;
+    margin: 0;
+    justify-content: flex-start;
+  }
 }
 </style>

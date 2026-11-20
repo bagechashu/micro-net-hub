@@ -1,0 +1,266 @@
+// Tabler 风格主题（https://tabler.io/admin-template）
+// 通过覆盖 Element Plus 的 CSS 变量实现，业务页面无需逐个修改。
+// 亮色：浅灰页面 + 白色卡片 + 细边框；暗色：中性深灰。暗色由 <html class="dark"> 触发（store/modules/theme.ts）。
+
+:root {
+  // ---- 字体 ----
+  --app-font-family: Inter, -apple-system, BlinkMacSystemFont, "San Francisco", "Segoe UI", Roboto,
+    "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --el-font-family: var(--app-font-family);
+  --el-font-size-base: 14px;
+
+  // ---- 圆角与阴影 ----
+  --el-border-radius-base: 6px;
+  --el-border-radius-small: 4px;
+  --el-border-radius-round: 20px;
+  --app-card-radius: 8px;
+  --app-shadow: 0 2px 4px 0 rgba(31, 41, 55, 0.04);
+  --app-shadow-hover: 0 4px 12px 0 rgba(31, 41, 55, 0.1);
+
+  // ---- 品牌色（Tabler 调色板）----
+  --el-color-primary: #066fd1;
+  --el-color-primary-light-3: #519adf;
+  --el-color-primary-light-5: #82b7e8;
+  --el-color-primary-light-7: #b4d4f1;
+  --el-color-primary-light-8: #cde2f6;
+  --el-color-primary-light-9: #e6f1fa;
+  --el-color-primary-dark-2: #0559a7;
+
+  --el-color-success: #2fb344;
+  --el-color-success-light-3: #6dca7c;
+  --el-color-success-light-5: #97d9a2;
+  --el-color-success-light-7: #c1e8c7;
+  --el-color-success-light-8: #d5f0da;
+  --el-color-success-light-9: #eaf7ec;
+  --el-color-success-dark-2: #268f36;
+
+  --el-color-warning: #f76707;
+  --el-color-warning-light-3: #f99551;
+  --el-color-warning-light-5: #fbb383;
+  --el-color-warning-light-7: #fdd1b5;
+  --el-color-warning-light-8: #fde1cd;
+  --el-color-warning-light-9: #fef0e6;
+  --el-color-warning-dark-2: #c65206;
+
+  --el-color-danger: #d63939;
+  --el-color-danger-light-3: #e27474;
+  --el-color-danger-light-5: #ea9c9c;
+  --el-color-danger-light-7: #f3c4c4;
+  --el-color-danger-light-8: #f7d7d7;
+  --el-color-danger-light-9: #fbebeb;
+  --el-color-danger-dark-2: #ab2e2e;
+  --el-color-error: var(--el-color-danger);
+
+  --el-color-info: #667382;
+
+  // ---- 表面与文字 ----
+  --el-bg-color-page: #f6f8fb;
+  --el-bg-color: #ffffff;
+  --el-bg-color-overlay: #ffffff;
+  --el-text-color-primary: #182433;
+  --el-text-color-regular: #3a4859;
+  --el-text-color-secondary: #667382;
+  --el-text-color-placeholder: #929dab;
+  --el-border-color: #dadfe5;
+  --el-border-color-light: #e6e7e9;
+  --el-border-color-lighter: #eef0f2;
+  --el-fill-color-light: #f6f8fb;
+  --el-fill-color-lighter: #f9fafb;
+
+  // ---- 布局 ----
+  --app-header-bg: #ffffff;
+  --app-header-border: #e6e7e9;
+  --app-nav-text: #3a4859;
+  --app-icon-btn-hover: rgba(4, 32, 69, 0.06);
+  --app-table-header-bg: #f9fafb;
+  --app-muted-text: #667382;
+  --app-container-width: 1320px;
+}
+
+html.dark {
+  --app-shadow: none;
+  --app-shadow-hover: 0 4px 16px 0 rgba(0, 0, 0, 0.4);
+
+  --el-color-primary: #066fd1;
+  --el-color-primary-light-3: #0d579c;
+  --el-color-primary-light-5: #124778;
+  --el-color-primary-light-7: #183754;
+  --el-color-primary-light-8: #1a2f43;
+  --el-color-primary-light-9: #1d2731;
+  --el-color-primary-dark-2: #388cda;
+
+  --el-color-success-light-3: #2a8739;
+  --el-color-success-light-5: #276932;
+  --el-color-success-light-7: #244b2a;
+  --el-color-success-light-8: #223d26;
+  --el-color-success-light-9: #212e23;
+  --el-color-success-dark-2: #59c269;
+
+  --el-color-warning-light-3: #b6510e;
+  --el-color-warning-light-5: #8b4313;
+  --el-color-warning-light-7: #603518;
+  --el-color-warning-light-8: #4a2d1a;
+  --el-color-warning-light-9: #35261d;
+  --el-color-warning-dark-2: #f98539;
+
+  --el-color-danger-light-3: #9f3131;
+  --el-color-danger-light-5: #7a2c2c;
+  --el-color-danger-light-7: #562727;
+  --el-color-danger-light-8: #442424;
+  --el-color-danger-light-9: #312222;
+  --el-color-danger-dark-2: #de6161;
+
+  --el-bg-color-page: #181818;
+  --el-bg-color: #1f1f1f;
+  --el-bg-color-overlay: #262626;
+  --el-text-color-primary: #f0f2f5;
+  --el-text-color-regular: #c8ced6;
+  --el-text-color-secondary: #9aa0a6;
+  --el-text-color-placeholder: #6b7280;
+  --el-border-color: #353535;
+  --el-border-color-light: #2e2e2e;
+  --el-border-color-lighter: #2a2a2a;
+  --el-fill-color-light: #262626;
+  --el-fill-color-lighter: #222222;
+  --el-fill-color-blank: #1f1f1f;
+
+  --app-header-bg: #1f1f1f;
+  --app-header-border: #2e2e2e;
+  --app-nav-text: #c8ced6;
+  --app-icon-btn-hover: rgba(255, 255, 255, 0.06);
+  --app-table-header-bg: #232323;
+  --app-muted-text: #9aa0a6;
+}
+
+// ---------------------------------------------------------------------------
+// 全局元素
+// ---------------------------------------------------------------------------
+body {
+  font-family: var(--app-font-family);
+  font-size: 14px;
+  line-height: 1.4286;
+  background-color: var(--el-bg-color-page);
+  color: var(--el-text-color-primary);
+  font-feature-settings: "cv03", "cv04", "cv11";
+}
+
+label {
+  font-weight: 500;
+}
+
+a {
+  color: var(--el-color-primary);
+}
+
+// 页面内容在布局里已有内边距，业务页面的 .app-container 不再额外留白
+.page-body .app-container {
+  padding: 0;
+}
+
+// ---------------------------------------------------------------------------
+// 卡片
+// ---------------------------------------------------------------------------
+.el-card {
+  --el-card-border-radius: var(--app-card-radius);
+  --el-card-padding: 20px;
+  border-color: var(--el-border-color-light);
+  background-color: var(--el-bg-color);
+
+  &.is-always-shadow,
+  &.is-hover-shadow:hover {
+    box-shadow: var(--app-shadow-hover);
+  }
+
+  &.is-never-shadow,
+  &:not(.is-always-shadow):not(.is-hover-shadow) {
+    box-shadow: var(--app-shadow);
+  }
+
+  .el-card__header {
+    padding: 14px 20px;
+    font-weight: 600;
+    font-size: 15px;
+    border-bottom-color: var(--el-border-color-light);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 表格：表头小号大写、浅灰底（Tabler table 风格）
+// ---------------------------------------------------------------------------
+.el-table {
+  --el-table-header-bg-color: var(--app-table-header-bg);
+  --el-table-header-text-color: var(--app-muted-text);
+  --el-table-border-color: var(--el-border-color-light);
+  --el-table-row-hover-bg-color: var(--el-fill-color-light);
+  --el-table-tr-bg-color: var(--el-bg-color);
+  --el-table-bg-color: var(--el-bg-color);
+  border-radius: var(--el-border-radius-base);
+
+  th.el-table__cell {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .el-table__cell {
+    padding: 10px 0;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 按钮、输入框、标签
+// ---------------------------------------------------------------------------
+.el-button {
+  font-weight: 500;
+}
+
+.el-button--primary:not(.is-plain):not(.is-link):not(.is-text) {
+  box-shadow: 0 1px 1px rgba(4, 32, 69, 0.08);
+}
+
+.el-form-item__label {
+  font-weight: 500;
+  color: var(--el-text-color-primary);
+}
+
+.el-tag {
+  font-weight: 500;
+}
+
+.el-dialog {
+  --el-dialog-border-radius: var(--app-card-radius);
+
+  .el-dialog__title {
+    font-weight: 600;
+  }
+}
+
+.el-pagination {
+  margin-top: 16px;
+  justify-content: flex-end;
+}
+
+// 页面标题区的小标题（Tabler 的 page-pretitle）
+.page-pretitle {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.6;
+  text-transform: uppercase;
+  color: var(--app-muted-text);
+}
+
+.page-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--el-text-color-primary);
+}
+
+// 业务页面外层卡片（.container-card）原本自带外边距，在新布局里与页面标题对齐
+.page-body .container-card {
+  margin: 0 !important;
+}

@@ -1,16 +1,14 @@
 <template>
-  <div>
-    <div v-for="(item, index) in data" :id="item.title" :key="index">
-      <el-card v-if="item.sites" class="node-card" shadow="hover" :body-style="{ padding: '5px' }">
-        <template #header>
-          <div class="clearfix card-header">
-            <span style="float: left; padding: 3px 0">{{ item.title }}<a :href="'#' + item.title" /> </span>
-            <span style="float: right; padding: 3px 0">{{ $t('sitenav.totolInfo', [item.sites.length]) }}</span>
-          </div>
-        </template>
+  <div class="nav-groups">
+    <section v-for="item in data" :id="item.title" :key="item.ID ?? item.title" class="nav-group">
+      <template v-if="item.sites">
+        <header class="nav-group__header">
+          <h3 class="nav-group__title">{{ item.title }}</h3>
+          <span class="nav-group__count">{{ $t('sitenav.totolInfo', [item.sites.length]) }}</span>
+        </header>
         <Nav :sites="item.sites" />
-      </el-card>
-    </div>
+      </template>
+    </section>
   </div>
 </template>
 
@@ -25,22 +23,31 @@ defineProps({
 });
 </script>
 
-<style scoped>
-.card-header {
-  font-size: 14px;
+<style lang="scss" scoped>
+.nav-group + .nav-group {
+  margin-top: 28px;
 }
-:deep(.el-card__header) {
-  padding: 8px;
+
+.nav-group__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 12px;
 }
-.node-card {
-  margin-top: 1rem;
+
+.nav-group__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
 }
-.clearfix:before,
-.clearfix:after {
-  display: table;
-  content: "";
-}
-.clearfix:after {
-  clear: both;
+
+.nav-group__count {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--app-muted-text);
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--el-fill-color-light);
 }
 </style>

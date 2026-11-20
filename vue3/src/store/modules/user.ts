@@ -3,7 +3,6 @@ import { login as apiLogin, logout as apiLogout, refreshToken as apiRefreshToken
 import { getInfo as apiGetInfo } from '@/api/system/user';
 import { getToken, setToken, removeToken } from '@/utils/auth';
 import { resetRouter, addDynamicRoutes } from '@/router';
-import tagsViewStore from './tagsView';
 import usePermissionStore from './permission';
 
 export interface IUserState {
@@ -75,9 +74,6 @@ const useUserStore = defineStore('user', {
         this.resetToken();
         resetRouter();
         usePermissionStore().generateRoutesAnonymous();
-        // reset visited views and cached views
-        // to fixed https://github.com/PanJiaChen/vue-element-admin/issues/2485
-        tagsViewStore().delAllViews();
       }
     },
 
@@ -105,7 +101,6 @@ const useUserStore = defineStore('user', {
       resetRouter();
       const accessRoutes = await usePermissionStore().generateRoutes(info);
       addDynamicRoutes(accessRoutes);
-      tagsViewStore().delAllViews();
     }
   }
 });

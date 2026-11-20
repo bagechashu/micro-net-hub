@@ -1,79 +1,81 @@
 <template>
-  <section class="app-main">
-    <router-view v-slot="{ Component, route }">
-      <transition name="fade-transform" mode="out-in">
-        <keep-alive :include="cachedViews">
-          <component :is="Component" :key="route.fullPath" />
-        </keep-alive>
-      </transition>
-    </router-view>
-    <el-footer class="footer-copyright" height="20px">
-      <div>
-        <span>Since 2024 </span>
-        <el-divider direction="vertical" />
-        <span>Powered by Open Source</span>
-        <el-divider direction="vertical" />
-        <span>LICENSE </span>
-        <a href="https://github.com/bagechashu/micro-net-hub/blob/main/LICENSE" target="_blank" rel="noopener">GPLv3</a>
-      </div>
-    </el-footer>
-  </section>
+  <main class="page-wrapper">
+    <div class="app-container-xl page-header">
+      <div v-if="pretitle" class="page-pretitle">{{ pretitle }}</div>
+      <h2 class="page-title">{{ title }}</h2>
+    </div>
+
+    <div class="app-container-xl page-body">
+      <router-view v-slot="{ Component, route: r }">
+        <transition name="fade-transform" mode="out-in">
+          <component :is="Component" :key="r.fullPath" />
+        </transition>
+      </router-view>
+    </div>
+
+    <footer class="app-container-xl page-footer">
+      <span>Since 2024</span>
+      <span class="page-footer__dot">·</span>
+      <span>Powered by Open Source</span>
+      <span class="page-footer__dot">·</span>
+      <span>LICENSE</span>
+      <a href="https://github.com/bagechashu/micro-net-hub/blob/main/LICENSE" target="_blank" rel="noopener">GPLv3</a>
+    </footer>
+  </main>
 </template>
 
-<script>
-import { defineComponent } from 'vue';
-import tagsViewStore from '@/store/modules/tagsView';
+<script setup lang="ts">
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 
-export default defineComponent({
-  name: 'AppMain',
-  computed: {
-    cachedViews() {
-      return tagsViewStore().cachedViews;
-    }
-  }
+defineOptions({ name: 'AppMain' });
+
+const route = useRoute();
+const { t } = useI18n();
+
+const titled = computed(() => route.matched.filter(r => r.meta?.title));
+
+// 页面大标题：当前页面；小标题：上级菜单（没有上级时显示“首页”）
+const title = computed(() => (route.meta.title as string) || '');
+const pretitle = computed(() => {
+  const parents = titled.value.slice(0, -1);
+  return parents.length ? (parents[parents.length - 1].meta.title as string) : t('common.index');
 });
 </script>
 
 <style lang="scss" scoped>
-.footer-copyright {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  font-size: xx-small;
-  line-height: 10px;
-  text-align: center;
+.page-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
-.app-main {
-  /* 50= navbar  50  */
-  min-height: calc(100vh - 50px);
-  width: 100%;
-  position: relative;
-  overflow: hidden;
+.page-header {
+  padding-top: 24px;
+  padding-bottom: 16px;
 }
 
-.fixed-header+.app-main {
-  padding-top: 50px;
+.page-body {
+  flex: 1;
+  padding-bottom: 24px;
 }
 
-.hasTagsView {
-  .app-main {
-    /* 84 = navbar + tags-view = 50 + 34 */
-    min-height: calc(100vh - 84px);
-  }
-
-  .fixed-header+.app-main {
-    padding-top: 84px;
-  }
+.page-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  font-size: 12px;
+  color: var(--app-muted-text);
+  border-top: 1px solid var(--app-header-border);
 }
-</style>
 
-<style lang="scss">
-// fix css style bug in open el-dialog
-.el-popup-parent--hidden {
-  .fixed-header {
-    padding-right: 15px;
-  }
+.page-footer__dot {
+  opacity: 0.6;
 }
 </style>

@@ -1,112 +1,39 @@
 <template>
-  <div :class="classObj" class="app-wrapper">
-    <div v-if="device === 'mobile' && sidebar.opened" class="drawer-bg" @click="handleClickOutside" />
-    <sidebar class="sidebar-container" />
-    <div :class="{ hasTagsView: needTagsView }" class="main-container">
-      <div :class="{ 'fixed-header': fixedHeader }">
-        <navbar />
-        <tags-view v-if="needTagsView" />
-      </div>
-      <app-main />
-      <right-panel v-if="showSettings">
-        <settings />
-      </right-panel>
-    </div>
+  <div class="app-layout">
+    <AppHeader />
+    <AppNav />
+    <AppMain />
   </div>
 </template>
 
-<script>
-import RightPanel from '@/components/RightPanel';
-import { AppMain, Navbar, Settings, Sidebar, TagsView } from './components';
-import ResizeMixin from './mixin/ResizeHandler';
-import appStore from '@/store/modules/app';
-import settingsStore from '@/store/modules/settings';
-import { defineComponent } from 'vue';
+<script setup lang="ts">
+import AppHeader from './components/AppHeader.vue';
+import AppNav from './components/AppNav.vue';
+import AppMain from './components/AppMain.vue';
 
-export default defineComponent({
-  name: 'LayoutIndex',
-  components: {
-    AppMain,
-    Navbar,
-    RightPanel,
-    Settings,
-    Sidebar,
-    TagsView
-  },
-  mixins: [ResizeMixin],
-  computed: {
-    sidebar() {
-      return appStore().sidebar;
-    },
-    device() {
-      return appStore().device;
-    },
-    showSettings() {
-      return settingsStore().showSettings;
-    },
-    needTagsView() {
-      return settingsStore().tagsView;
-    },
-    fixedHeader() {
-      return settingsStore().fixedHeader;
-    },
-    classObj() {
-      return {
-        hideSidebar: !this.sidebar.opened,
-        openSidebar: this.sidebar.opened,
-        withoutAnimation: this.sidebar.withoutAnimation,
-        mobile: this.device === 'mobile'
-      };
-    }
-  },
-  methods: {
-    handleClickOutside() {
-      appStore().closeSidebar({ withoutAnimation: false });
-    }
-  }
-});
+defineOptions({ name: 'LayoutIndex' });
 </script>
 
-<style lang="scss" scoped>
-@use "@/styles/mixin.scss";
-// @use "@/styles/variables.module.scss";
+<style lang="scss">
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--el-bg-color-page);
+}
 
-.app-wrapper {
-  @include mixin.clearfix;
-  position: relative;
-  height: 100%;
+// 居中限宽容器（Tabler 的 container-xl）
+.app-container-xl {
   width: 100%;
+  max-width: var(--app-container-width);
+  margin: 0 auto;
+  padding-left: 24px;
+  padding-right: 24px;
+  box-sizing: border-box;
 
-  &.mobile.openSidebar {
-    position: fixed;
-    top: 0;
+  @media (max-width: 768px) {
+    padding-left: 12px;
+    padding-right: 12px;
   }
-}
-
-.drawer-bg {
-  background: #000;
-  opacity: 0.3;
-  width: 100%;
-  top: 0;
-  height: 100%;
-  position: absolute;
-  z-index: 999;
-}
-
-.fixed-header {
-  position: fixed;
-  top: 0;
-  right: 0;
-  z-index: 9;
-  width: calc(100% - var(--side-bar-width));
-  transition: width 0.28s;
-}
-
-.hideSidebar .fixed-header {
-  width: calc(100% - 54px)
-}
-
-.mobile .fixed-header {
-  width: 100%;
 }
 </style>

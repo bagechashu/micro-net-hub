@@ -1,24 +1,20 @@
 <template>
-  <div class="app-container">
-    <el-row>
-      <el-col :xs="24" :sm="12" :md="10" :lg="10" :xl="6">
-        <div class="header-bar">
-          <el-input
-            v-model="search"
-            :placeholder="$t('sitenav.searchTips')"
-            class="search"
-            @keyup.enter="searchData"
-          />
-          <span class="search-text">
-            <el-button type="primary" :icon="Search" @click="searchData">{{ $t('common.search') }}</el-button>
-          </span>
-          <el-button v-show="searchStatus" type="success" :icon="Refresh" @click="resetSearch">
-            {{ $t('common.reset') }}
-          </el-button>
-        </div>
-      </el-col>
-      <el-col :xs="24" :sm="10" :md="13" :lg="13" :xl="17"><Notice /></el-col>
-    </el-row>
+  <div class="app-container sitenav">
+    <div class="sitenav-toolbar">
+      <div class="sitenav-search">
+        <el-input
+          v-model="search"
+          :placeholder="$t('sitenav.searchTips')"
+          :prefix-icon="Search"
+          clearable
+          class="sitenav-search__input"
+          @keyup.enter="searchData"
+          @clear="searchStatus && resetSearch()" />
+        <el-button type="primary" @click="searchData">{{ $t('common.search') }}</el-button>
+        <el-button v-show="searchStatus" :icon="Refresh" @click="resetSearch">{{ $t('common.reset') }}</el-button>
+      </div>
+      <div class="sitenav-notice"><Notice /></div>
+    </div>
 
     <NavSub v-if="data.length > 0" :data="data" />
     <el-empty v-else :description="$t('common.nodata')" />
@@ -92,24 +88,34 @@ function resetSearch() {
 getNavJson();
 </script>
 
-<style lang="css" scoped>
-.header-bar {
+<style lang="scss" scoped>
+.sitenav-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.sitenav-search {
   display: flex;
   align-items: center;
-  background: transparent;
+  gap: 8px;
 }
 
-.search {
-  width: 300px;
+.sitenav-search__input {
+  width: 320px;
 }
 
-@media screen and (max-width: 768px) {
-  .search {
-    width: auto;
-  }
+.sitenav-notice {
+  flex: 1;
+  min-width: 240px;
+}
 
-  .search-text {
-    margin: 0 3px;
+@media (max-width: 768px) {
+  .sitenav-search,
+  .sitenav-search__input {
+    width: 100%;
   }
 }
 </style>
