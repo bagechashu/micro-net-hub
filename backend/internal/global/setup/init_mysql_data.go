@@ -137,7 +137,7 @@ func InitData() {
 		},
 		{
 			Name:      "Profile",
-			Icon:      "people",
+			Icon:      "profile",
 			Path:      "/profile/index",
 			Component: "Layout",
 			Sort:      4,
@@ -169,7 +169,7 @@ func InitData() {
 		},
 		{
 			Name:      "FieldRelation",
-			Icon:      "el-icon-s-tools",
+			Icon:      "relation",
 			Path:      "fieldRelation",
 			Component: "/personnel/fieldRelation/index",
 			Sort:      13,

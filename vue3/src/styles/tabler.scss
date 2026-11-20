@@ -1,0 +1,596 @@
+// Tabler 风格主题（https://tabler.io/admin-template）
+// 通过覆盖 Element Plus 的 CSS 变量实现，业务页面无需逐个修改。
+// 亮色：浅灰页面 + 白色卡片 + 细边框；暗色：中性深灰。暗色由 <html class="dark"> 触发（store/modules/theme.ts）。
+
+:root {
+  // ---- 字体 ----
+  --app-font-family: Inter, -apple-system, BlinkMacSystemFont, "San Francisco", "Segoe UI", Roboto,
+    "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --el-font-family: var(--app-font-family);
+  --el-font-size-base: 14px;
+
+  // ---- 控件尺寸（Tabler 表单控件高 36px）----
+  --el-component-size: 36px;
+  --el-component-size-small: 28px;
+  --el-component-size-large: 44px;
+
+  // ---- 圆角与阴影 ----
+  --el-border-radius-base: 6px;
+  --el-border-radius-small: 4px;
+  --el-border-radius-round: 20px;
+  --app-card-radius: 8px;
+  --app-shadow: 0 2px 4px 0 rgba(31, 41, 55, 0.04);
+  --app-shadow-hover: 0 4px 12px 0 rgba(31, 41, 55, 0.1);
+
+  // ---- 品牌色（Tabler 调色板）----
+  --el-color-primary: #066fd1;
+  --el-color-primary-light-3: #519adf;
+  --el-color-primary-light-5: #82b7e8;
+  --el-color-primary-light-7: #b4d4f1;
+  --el-color-primary-light-8: #cde2f6;
+  --el-color-primary-light-9: #e6f1fa;
+  --el-color-primary-dark-2: #0559a7;
+
+  --el-color-success: #2fb344;
+  --el-color-success-light-3: #6dca7c;
+  --el-color-success-light-5: #97d9a2;
+  --el-color-success-light-7: #c1e8c7;
+  --el-color-success-light-8: #d5f0da;
+  --el-color-success-light-9: #eaf7ec;
+  --el-color-success-dark-2: #268f36;
+
+  --el-color-warning: #f76707;
+  --el-color-warning-light-3: #f99551;
+  --el-color-warning-light-5: #fbb383;
+  --el-color-warning-light-7: #fdd1b5;
+  --el-color-warning-light-8: #fde1cd;
+  --el-color-warning-light-9: #fef0e6;
+  --el-color-warning-dark-2: #c65206;
+
+  --el-color-danger: #d63939;
+  --el-color-danger-light-3: #e27474;
+  --el-color-danger-light-5: #ea9c9c;
+  --el-color-danger-light-7: #f3c4c4;
+  --el-color-danger-light-8: #f7d7d7;
+  --el-color-danger-light-9: #fbebeb;
+  --el-color-danger-dark-2: #ab2e2e;
+  --el-color-error: var(--el-color-danger);
+
+  --el-color-info: #667382;
+
+  // ---- 表面与文字 ----
+  --el-bg-color-page: #f6f8fb;
+  --el-bg-color: #ffffff;
+  --el-bg-color-overlay: #ffffff;
+  --el-text-color-primary: #182433;
+  --el-text-color-regular: #3a4859;
+  --el-text-color-secondary: #667382;
+  --el-text-color-placeholder: #929dab;
+  --el-border-color: #dadfe5;
+  --el-border-color-light: #e6e7e9;
+  --el-border-color-lighter: #eef0f2;
+  --el-fill-color-light: #f6f8fb;
+  --el-fill-color-lighter: #f9fafb;
+
+  // ---- 布局 ----
+  --app-header-bg: #ffffff;
+  --app-header-border: #e6e7e9;
+  --app-nav-text: #3a4859;
+  --app-icon-btn-hover: rgba(4, 32, 69, 0.06);
+  --app-table-header-bg: #f9fafb;
+  --app-muted-text: #667382;
+  --app-container-width: 1320px;
+}
+
+html.dark {
+  --app-shadow: none;
+  --app-shadow-hover: 0 4px 16px 0 rgba(0, 0, 0, 0.4);
+
+  --el-color-primary: #066fd1;
+  --el-color-primary-light-3: #0d579c;
+  --el-color-primary-light-5: #124778;
+  --el-color-primary-light-7: #183754;
+  --el-color-primary-light-8: #1a2f43;
+  --el-color-primary-light-9: #1d2731;
+  --el-color-primary-dark-2: #388cda;
+
+  --el-color-success-light-3: #2a8739;
+  --el-color-success-light-5: #276932;
+  --el-color-success-light-7: #244b2a;
+  --el-color-success-light-8: #223d26;
+  --el-color-success-light-9: #212e23;
+  --el-color-success-dark-2: #59c269;
+
+  --el-color-warning-light-3: #b6510e;
+  --el-color-warning-light-5: #8b4313;
+  --el-color-warning-light-7: #603518;
+  --el-color-warning-light-8: #4a2d1a;
+  --el-color-warning-light-9: #35261d;
+  --el-color-warning-dark-2: #f98539;
+
+  --el-color-danger-light-3: #9f3131;
+  --el-color-danger-light-5: #7a2c2c;
+  --el-color-danger-light-7: #562727;
+  --el-color-danger-light-8: #442424;
+  --el-color-danger-light-9: #312222;
+  --el-color-danger-dark-2: #de6161;
+
+  --el-bg-color-page: #181818;
+  --el-bg-color: #1f1f1f;
+  --el-bg-color-overlay: #262626;
+  --el-text-color-primary: #f0f2f5;
+  --el-text-color-regular: #c8ced6;
+  --el-text-color-secondary: #9aa0a6;
+  --el-text-color-placeholder: #6b7280;
+  --el-border-color: #353535;
+  --el-border-color-light: #2e2e2e;
+  --el-border-color-lighter: #2a2a2a;
+  --el-fill-color-light: #262626;
+  --el-fill-color-lighter: #222222;
+  --el-fill-color-blank: #1f1f1f;
+
+  --app-header-bg: #1f1f1f;
+  --app-header-border: #2e2e2e;
+  --app-nav-text: #c8ced6;
+  --app-icon-btn-hover: rgba(255, 255, 255, 0.06);
+  --app-table-header-bg: #232323;
+  --app-muted-text: #9aa0a6;
+}
+
+// ---------------------------------------------------------------------------
+// 全局元素
+// ---------------------------------------------------------------------------
+body {
+  font-family: var(--app-font-family);
+  font-size: 14px;
+  line-height: 1.4286;
+  background-color: var(--el-bg-color-page);
+  color: var(--el-text-color-primary);
+  font-feature-settings: "cv03", "cv04", "cv11";
+}
+
+label {
+  font-weight: 500;
+}
+
+a {
+  color: var(--el-color-primary);
+}
+
+// 页面内容在布局里已有内边距，业务页面的 .app-container 不再额外留白
+.page-body .app-container {
+  padding: 0;
+}
+
+// ---------------------------------------------------------------------------
+// 卡片
+// ---------------------------------------------------------------------------
+.el-card {
+  --el-card-border-radius: var(--app-card-radius);
+  --el-card-padding: 20px;
+  border-color: var(--el-border-color-light);
+  background-color: var(--el-bg-color);
+
+  &.is-always-shadow,
+  &.is-hover-shadow:hover {
+    box-shadow: var(--app-shadow-hover);
+  }
+
+  &.is-never-shadow,
+  &:not(.is-always-shadow):not(.is-hover-shadow) {
+    box-shadow: var(--app-shadow);
+  }
+
+  .el-card__header {
+    padding: 14px 20px;
+    font-weight: 600;
+    font-size: 15px;
+    border-bottom-color: var(--el-border-color-light);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 表格：表头小号大写、浅灰底（Tabler table 风格）
+// ---------------------------------------------------------------------------
+.el-table {
+  --el-table-header-bg-color: var(--app-table-header-bg);
+  --el-table-header-text-color: var(--app-muted-text);
+  --el-table-border-color: var(--el-border-color-light);
+  --el-table-row-hover-bg-color: var(--el-fill-color-light);
+  --el-table-tr-bg-color: var(--el-bg-color);
+  --el-table-bg-color: var(--el-bg-color);
+  border-radius: var(--el-border-radius-base);
+
+  th.el-table__cell {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .el-table__cell {
+    padding: 10px 0;
+  }
+
+  // 表头始终单行：列宽按表头文字规划，万一放不下用省略号而不是把表头撑高
+  th.el-table__cell > .cell {
+    white-space: nowrap;
+    word-break: keep-all;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  // 展开行：浅底色，内容自己控制内边距
+  .el-table__expanded-cell {
+    padding: 0 !important;
+    background: var(--el-fill-color-lighter) !important;
+  }
+
+  .el-table__expanded-cell:hover {
+    background: var(--el-fill-color-lighter) !important;
+  }
+}
+
+// 页面与弹窗里的表格：去掉竖线后用一圈外框收边（Tabler card-table 风格）
+.page-body .el-table,
+.el-dialog .el-table {
+  border: 1px solid var(--el-table-border-color);
+
+  .el-table__inner-wrapper::before {
+    display: none;
+  }
+
+  .el-table__body tr:last-child > td.el-table__cell {
+    border-bottom: 0;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 按钮、输入框、标签
+// ---------------------------------------------------------------------------
+.el-button {
+  font-weight: 500;
+}
+
+.el-button--primary:not(.is-plain):not(.is-link):not(.is-text) {
+  box-shadow: 0 1px 1px rgba(4, 32, 69, 0.08);
+}
+
+.el-form-item__label {
+  font-weight: 500;
+  color: var(--el-text-color-primary);
+}
+
+.el-tag {
+  font-weight: 500;
+}
+
+// ---------------------------------------------------------------------------
+// 弹出框（Tabler modal）：标题栏、底部操作栏各有分隔线，内容区留白，窄屏自适应
+// 未指定 width 的弹出框默认 560px；页面传入的 width 也不会超出屏幕
+// ---------------------------------------------------------------------------
+.el-dialog {
+  --el-dialog-width: 560px;
+  --el-dialog-border-radius: var(--app-card-radius);
+  --el-dialog-margin-top: 10vh;
+  padding: 0;
+  max-width: calc(100vw - 32px);
+  overflow: hidden;
+  border: 1px solid var(--app-card-border, var(--el-border-color-lighter));
+  box-shadow: 0 16px 48px rgba(24, 36, 51, 0.18);
+
+  .el-dialog__header {
+    padding: 16px 52px 16px 20px;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+    cursor: default;
+  }
+
+  .el-dialog__title {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  .el-dialog__headerbtn {
+    width: 52px;
+    height: 56px;
+  }
+
+  .el-dialog__body {
+    padding: 20px;
+    max-height: calc(80vh - 140px);
+    overflow-y: auto;
+  }
+
+  // 表单最后一项不留底部空白
+  .el-dialog__body > .el-form > .el-form-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .el-dialog__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 20px;
+    background: var(--el-fill-color-lighter);
+    border-top: 1px solid var(--el-border-color-lighter);
+
+    .el-button + .el-button {
+      margin-left: 0;
+    }
+  }
+}
+
+html.dark .el-dialog {
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+}
+
+// 弹出框里的表单：输入类控件占满整行
+.el-dialog .el-form--label-top {
+  .el-select,
+  .el-input-number,
+  .el-cascader,
+  .el-date-editor.el-input {
+    width: 100%;
+  }
+
+  .el-input-number .el-input__inner {
+    text-align: left;
+  }
+}
+
+// 两列表单：<el-form class="form-grid">，整行的项加 class="span-2"
+.el-form.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 16px;
+
+  > .span-2 {
+    grid-column: 1 / -1;
+  }
+
+  // 网格里最后一行可能有两项，统一去掉底部间距由 body padding 控制
+  > .el-form-item:nth-last-child(-n + 2) {
+    margin-bottom: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .el-form.form-grid {
+    grid-template-columns: 1fr;
+
+    > .el-form-item:nth-last-child(2) {
+      margin-bottom: 18px;
+    }
+  }
+}
+
+// 旧页面在 footer 里包了一层 .dialog-footer
+.el-dialog__footer .dialog-footer {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+
+  .el-button + .el-button {
+    margin-left: 0;
+  }
+
+  // 开关等附加选项放左侧
+  > .el-switch,
+  > .el-checkbox {
+    margin-right: auto !important;
+  }
+}
+
+// 遮罩稍深一点，与 Tabler 一致
+.el-overlay {
+  background-color: rgba(24, 36, 51, 0.24);
+  backdrop-filter: blur(2px);
+}
+
+.el-pagination {
+  margin-top: 16px;
+  justify-content: flex-end;
+}
+
+// 页面标题区的小标题（Tabler 的 page-pretitle）
+.page-pretitle {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.6;
+  text-transform: uppercase;
+  color: var(--app-muted-text);
+}
+
+.page-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--el-text-color-primary);
+}
+
+// 业务页面外层卡片（.container-card）原本自带外边距，在新布局里与页面标题对齐
+.page-body .container-card {
+  margin: 0 !important;
+}
+
+// ---------------------------------------------------------------------------
+// 间距：按钮、表单
+// ---------------------------------------------------------------------------
+.el-button {
+  --el-button-font-weight: 500;
+  padding: 8px 14px;
+
+  &.el-button--small {
+    padding: 5px 10px;
+  }
+
+  &.is-circle {
+    padding: 0;
+  }
+}
+
+// 下拉框同理（Element Plus 写死 min-height: 32px），与输入框统一为 36px
+.el-select:not(.el-select--small):not(.el-select--large) .el-select__wrapper {
+  min-height: var(--el-component-size);
+}
+
+// Element Plus 默认按钮写死 32px，与 36px 的输入框并排时高低不齐；统一跟随控件尺寸
+.el-button:not(.el-button--small):not(.el-button--large):not(.is-link):not(.is-text) {
+  height: var(--el-component-size);
+
+  &.is-circle {
+    width: var(--el-component-size);
+  }
+}
+
+// 相邻按钮统一 8px 间距（Element Plus 默认 12px）
+.el-button + .el-button {
+  margin-left: 8px;
+}
+
+// 页面上的筛选栏/工具栏（行内表单）：用 gap 控制间距，换行后上下对齐
+.page-body .el-form--inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  margin-bottom: 16px;
+
+  .el-form-item {
+    margin: 0;
+  }
+
+  .el-form-item__label {
+    padding-right: 8px;
+  }
+}
+
+// 弹窗里的表单项间距
+.el-dialog .el-form-item {
+  margin-bottom: 18px;
+}
+
+.el-input__wrapper,
+.el-select__wrapper,
+.el-textarea__inner {
+  box-shadow: 0 0 0 1px var(--el-border-color) inset;
+}
+
+// 表格与上方工具栏之间留出间距
+.page-body .el-table {
+  margin-top: 4px;
+}
+
+// 表单标签与 36px 高的控件垂直居中对齐
+.el-form-item--default .el-form-item__label,
+.el-form--inline .el-form-item__label {
+  height: var(--el-component-size);
+  line-height: var(--el-component-size);
+}
+
+.el-form-item--default .el-form-item__content {
+  line-height: var(--el-component-size);
+}
+
+// 标签在上方时（弹出框、个人中心）不需要与控件对齐，收紧标签与控件的距离
+.el-form--label-top .el-form-item .el-form-item__label {
+  height: auto;
+  margin-bottom: 6px;
+  line-height: 1.5;
+}
+
+/* ---- 设置类卡片（个人中心等）：图标 + 标题 + 说明，底部操作右对齐 ---- */
+.settings-card {
+  .settings-card__header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .settings-card__icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    color: var(--el-color-primary);
+    background: var(--el-color-primary-light-9);
+    border-radius: 8px;
+  }
+
+  .settings-card__title {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--el-text-color-primary);
+  }
+
+  .settings-card__desc {
+    margin-top: 2px;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--el-text-color-secondary);
+  }
+
+  .settings-card__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+}
+
+/* ---- 表格操作列：文字按钮（图标 + 文字），同一行排列不换行 ---- */
+.row-actions {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 14px;
+  white-space: nowrap;
+
+  .el-button.is-link {
+    margin-left: 0;
+    padding: 2px 0;
+    font-weight: 500;
+  }
+
+  .el-button.is-link > [class*='el-icon'] + span {
+    margin-left: 4px;
+  }
+}
+
+/* ---- 表格单元格里的常用内容 ---- */
+.cell-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.cell-tags--nowrap {
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.cell-tags__more {
+  flex-shrink: 0;
+  cursor: default;
+}
+
+.cell-dn {
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.6;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--el-text-color-regular);
+}
+
+.cell-empty {
+  color: var(--el-text-color-placeholder);
+}

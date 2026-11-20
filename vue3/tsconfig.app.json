@@ -1,0 +1,27 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "include": [
+    "env.d.ts",
+    "auto-imports.d.ts",
+    "components.d.ts",
+    "src/**/*",
+    "src/**/*.vue"
+  ],
+  "exclude": [
+    "src/**/__tests__/*"
+  ],
+  "compilerOptions": {
+    "composite": false,
+    "types": [
+      "vite/client"
+    ],
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    },
+    "noImplicitAny": false,
+    "allowJs": true,
+    "noEmit": true
+  }
+}

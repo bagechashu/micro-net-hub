@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="alternate icon" href="/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Micro Net Hub</title>
+    <script>
+      // 与 src/store/modules/theme.ts 一致：在页面渲染前应用亮/暗主题，避免刷新时闪烁
+      (function () {
+        try {
+          var mode = localStorage.getItem('theme-mode') || 'system';
+          var dark = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (dark) document.documentElement.classList.add('dark');
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
