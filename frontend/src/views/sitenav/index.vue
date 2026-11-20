@@ -1,163 +1,115 @@
 <template>
-  <div class="app-container">
-    <el-row>
-      <el-col :xs="24" :sm="12" :md="10" :lg="10" :xl="6">
-        <div class="header-bar">
-          <el-input
-            v-model="search"
-            :placeholder="$t('sitenav.searchTips')"
-            class="search"
-            @keyup.enter.native="searchData"
-          />
-          <span
-            class="search-text"
-          ><el-button type="primary" icon="search" @click="searchData">{{
-            $t("common.search")
-          }}</el-button></span>
-          <el-button
-            v-show="searchStatus"
-            type="success"
-            icon="plus-round"
-            @click="resetSearch"
-          >{{ $t("common.reset") }}</el-button>
-        </div></el-col>
-      <el-col :xs="24" :sm="10" :md="13" :lg="13" :xl="17"><Notice /></el-col>
-    </el-row>
+  <div class="app-container sitenav">
+    <Teleport to="#page-header-actions" defer>
+      <div class="sitenav-search">
+        <el-input
+          v-model="search"
+          :placeholder="$t('sitenav.searchTips')"
+          :prefix-icon="Search"
+          clearable
+          class="sitenav-search__input"
+          @keyup.enter="searchData"
+          @clear="searchStatus && resetSearch()" />
+        <el-button type="primary" @click="searchData">{{ $t('common.search') }}</el-button>
+        <el-button v-show="searchStatus" :icon="Refresh" @click="resetSearch">{{ $t('common.reset') }}</el-button>
+      </div>
+    </Teleport>
+
+    <!-- 公告：独占一行；没有公告时不渲染，导航内容直接贴着标题 -->
+    <Notice class="sitenav-notice" />
 
     <NavSub v-if="data.length > 0" :data="data" />
     <el-empty v-else :description="$t('common.nodata')" />
   </div>
 </template>
 
-<script>
-import { Message } from "element-ui";
-import NavSub from "@/views/sitenav/components/sub";
-import Notice from "@/views/notice";
-import { getNav } from "@/api/sitenav/sitenav";
-export default {
-  name: "SiteNav",
-  components: {
-    NavSub,
-    Notice
-  },
-  data() {
-    return {
-      isCollapsed: false,
-      search: "",
-      searchStatus: false,
-      data: [],
-      sourceData: "",
-      searchNum: 0
-    };
-  },
-  created: function() {
-    this._getNavJson();
-  },
-  methods: {
-    async _getNavJson() {
-      try {
-        const { data } = await getNav();
-        this.data = data;
-      } catch (e) {
-        console.log(e);
-      }
-    },
-    jumpAnchor(name) {
-      if (document.documentElement.clientWidth <= 768) {
-        this.isCollapsed = true;
-      }
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { ElMessage } from 'element-plus';
+import { Search, Refresh } from '@/icons/tabler';
+import NavSub from '@/views/sitenav/components/sub.vue';
+import Notice from '@/views/notice/index.vue';
+import { getNav } from '@/api/sitenav';
 
-      const offset = 66;
-      const el = document.querySelector("#" + name);
-      window.scroll({
-        top: el.offsetTop - offset,
-        left: 0,
-        behavior: "smooth"
-      });
-    },
-    searchData() {
-      if (
-        typeof this.search === "undefined" ||
-        this.search === null ||
-        this.search.trim() === ""
-      ) {
-        Message({
-          message: this.$t("valid.pleaseInput"),
-          type: "error"
-        });
-        return;
-      }
+defineOptions({ name: 'SiteNav' });
 
-      if (!this.searchStatus) {
-        this.sourceData = JSON.parse(JSON.stringify(this.data));
-      } else {
-        this.data = JSON.parse(JSON.stringify(this.sourceData));
-      }
+const { t } = useI18n();
 
-      this.searchStatus = true;
-      this.searchNum = 0;
+const search = ref('');
+const searchStatus = ref(false);
+const data = ref<any[]>([]);
+let sourceData: any[] = [];
 
-      this.data = this.data
-        .map((group) => {
-          const filteredSites = group.sites.filter((site) => {
-            const keyword = this.search.toLowerCase();
-            return (
-              site.name.toLowerCase().includes(keyword) ||
-              site.link.toLowerCase().includes(keyword)
-            );
-          });
-
-          this.searchNum += filteredSites.length;
-
-          return {
-            ...group,
-            sites: filteredSites
-          };
-        })
-        .filter((group) => group.sites.length > 0);
-
-      if (this.searchNum === 0) {
-        Message({
-          message: this.$t("tips.notFoundAndRetry"),
-          type: "error"
-        });
-      } else {
-        Message({
-          message: this.$t("tips.foundSome", [this.searchNum]),
-          type: "success"
-        });
-      }
-    },
-
-    resetSearch() {
-      this.searchStatus = false;
-      this.search = "";
-      this.searchNum = 0;
-      this.data = JSON.parse(JSON.stringify(this.sourceData));
-    }
+async function getNavJson() {
+  try {
+    const res = await getNav();
+    data.value = Array.isArray(res.data) ? res.data : [];
+  } catch {
+    // error already shown by request wrapper
   }
-};
+}
+
+function searchData() {
+  const keyword = (search.value || '').trim().toLowerCase();
+  if (!keyword) {
+    ElMessage({ message: t('valid.pleaseInput'), type: 'error' });
+    return;
+  }
+
+  if (!searchStatus.value) {
+    sourceData = JSON.parse(JSON.stringify(data.value));
+  }
+  searchStatus.value = true;
+
+  let searchNum = 0;
+  data.value = (JSON.parse(JSON.stringify(sourceData)) as any[])
+    .map(group => {
+      const sites = (group.sites || []).filter((site: any) =>
+        String(site.name ?? '').toLowerCase().includes(keyword) ||
+        String(site.link ?? '').toLowerCase().includes(keyword)
+      );
+      searchNum += sites.length;
+      return { ...group, sites };
+    })
+    .filter(group => group.sites.length > 0);
+
+  if (searchNum === 0) {
+    ElMessage({ message: t('tips.notFoundAndRetry'), type: 'error' });
+  } else {
+    ElMessage({ message: t('tips.foundSome', [searchNum]), type: 'success' });
+  }
+}
+
+function resetSearch() {
+  searchStatus.value = false;
+  search.value = '';
+  data.value = JSON.parse(JSON.stringify(sourceData));
+}
+
+getNavJson();
 </script>
 
-<style lang="css" scoped>
-.header-bar {
-  background: #fff;
-  /* position: "fixed"; */
-  /* width: "100%"; */
+<style lang="scss" scoped>
+// 搜索框通过 Teleport 渲染在页面标题行右侧，scoped 样式仍然生效
+.sitenav-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.search {
-  /* margin-left: 10px; */
-  width: 300px;
+.sitenav-search__input {
+  width: 320px;
 }
 
-@media screen and (max-width: 768px) {
-  .search {
-    width: auto;
-  }
+.sitenav-notice {
+  margin-bottom: 20px;
+}
 
-  .search-text {
-    margin: 0 3px;
+@media (max-width: 768px) {
+  .sitenav-search,
+  .sitenav-search__input {
+    width: 100%;
   }
 }
 </style>

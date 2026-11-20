@@ -1,6 +1,6 @@
 # Test Data of SiteNav
 
-`icon_url` 的写法（前端 `vue3/src/components/SiteIcon/icon.ts`）：
+`icon_url` 的写法（前端 `frontend/src/components/SiteIcon/icon.ts`）：
 
 - `si:<slug>`：品牌 Logo，如 `si:jenkins`、`si:gitlab`（simple-icons 精选）
 - `ti:<name>[:<color>]`：Tabler 通用图标，如 `ti:server`、`ti:database:green`

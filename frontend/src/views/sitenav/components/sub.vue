@@ -1,61 +1,53 @@
 <template>
-  <div>
-    <div v-for="(item, index) in data" :id="item.title" :key="index">
-      <el-card v-if="item.sites" class="node-card" shadow="hover" :body-style="{ padding: '5px' }">
-        <div slot="header" class="clearfix card-header">
-          <span style="float: left; padding: 3px 0">{{ item.title }}<a :href="'#' + item.title" /> </span>
-          <span
-            style="float: right; padding: 3px 0"
-            type="text"
-          >{{ $t('sitenav.totolInfo', [item.sites.length]) }}</span>
-        </div>
-        <Nav
-          :sites="item.sites"
-        />
-      </el-card>
-    </div>
+  <div class="nav-groups">
+    <section v-for="item in data" :id="item.title" :key="item.ID ?? item.title" class="nav-group">
+      <template v-if="item.sites">
+        <header class="nav-group__header">
+          <h3 class="nav-group__title">{{ item.title }}</h3>
+          <span class="nav-group__count">{{ $t('sitenav.totolInfo', [item.sites.length]) }}</span>
+        </header>
+        <Nav :sites="item.sites" />
+      </template>
+    </section>
   </div>
 </template>
 
-<script>
-import Nav from "./nav";
-export default {
-  components: {
-    Nav
-  },
-  props: {
-    data: {
-      type: Array,
-      default: () => []
-    }
+<script setup lang="ts">
+import Nav from './nav.vue';
+
+defineProps({
+  data: {
+    type: Array as () => any[],
+    default: () => []
   }
-};
+});
 </script>
 
-<style scoped>
-.anchor a {
-  opacity: 0;
-  font-size: 14px;
-  transition: opacity 0.2s ease-in-out;
-  margin-left: 5px;
-  position: relative;
-  top: 2px;
+<style lang="scss" scoped>
+.nav-group + .nav-group {
+  margin-top: 28px;
 }
-.card-header {
-  font-size: 14px;
+
+.nav-group__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 12px;
 }
-::v-deep .el-card__header {
-  padding: 8px;
+
+.nav-group__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
 }
-.node-card {
-  margin-top: 1rem;
-}
-.clearfix:before,
-.clearfix:after {
-  display: table;
-  content: "";
-}
-.clearfix:after {
-  clear: both;
+
+.nav-group__count {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--app-muted-text);
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--el-fill-color-light);
 }
 </style>

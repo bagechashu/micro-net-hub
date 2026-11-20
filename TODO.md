@@ -1,6 +1,6 @@
 # TODO
 
-> 以下功能等 `frontend-vue3` 分支（Vue3 前端）合入 `main` 之后再实现。
+> Vue3 前端已合入 `main`（v0.6.0，代码在 `frontend/`），以下功能可以开始实现；只改 `frontend/`，旧版 `vue2/` 不再维护。
 
 ## 1. 导航页按用户组展示链接
 

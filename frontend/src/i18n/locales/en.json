@@ -32,7 +32,8 @@
     "pleaseInput": "Please enter the query item",
     "notAllowEmpty": "This field is required",
     "InvalidName": "The name can only contain letters, numbers, underscores, and hyphens",
-    "invalidDnsZone":  "Only second-level domain names are supported."
+    "invalidDnsZone": "Only second-level domain names are supported.",
+    "invalidUrlScheme": "Only http:// or https:// URLs are allowed"
   },
   "tips": {
     "switchSizeSuccess": "Successfully switched table size",
@@ -80,7 +81,8 @@
     "newpassValidErrMustComplex": "Password must include at least three of the following: numbers, uppercase letters, lowercase letters, special characters",
     "confirmNewPassErr": "Passwords do not match",
     "changePasswordSuccess": "Password changed successfully, please log in again",
-    "changePasswordErr": "Failed to change password"
+    "changePasswordErr": "Failed to change password",
+    "capsLockOn": "Caps Lock is on"
   },
   "profile": {
     "profile": "Profile",
@@ -88,7 +90,31 @@
     "changePassword": "Change Password",
     "changeTotp": "Change TOTP Key",
     "changeTotpTips": "Please enter the OTP",
-    "changeTotpTipsValid": "OTP must be a 6-digit numeric code"
+    "changeTotpTipsValid": "OTP must be a 6-digit numeric code",
+    "username": "Username",
+    "nickname": "Name",
+    "givenName": "Alias",
+    "mail": "Email",
+    "mobile": "Mobile",
+    "jobNumber": "Job Number",
+    "position": "Position",
+    "source": "Account Source",
+    "roles": "Roles",
+    "notSet": "Not set",
+    "security": "Security",
+    "changePasswordDesc": "You will need to sign in again with the new password.",
+    "pwdRuleTitle": "Password requirements",
+    "pwdRules": [
+      "At least 8 characters",
+      "At least 3 of: uppercase, lowercase, digits, special characters",
+      "Different from the current password"
+    ],
+    "totpTitle": "Two-factor authentication (TOTP)",
+    "totpDesc": "After resetting the TOTP key, re-add your account in your authenticator app (e.g. Google Authenticator, Microsoft Authenticator).",
+    "totpConfirm": "Reset the TOTP key? The old key stops working immediately.",
+    "totpScanTitle": "Scan the QR code with your authenticator app",
+    "totpScanDesc": "The QR code is shown only once and cannot be viewed again after leaving or refreshing the page.",
+    "done": "Done"
   },
   "totpNotice": {
     "notice": "Note:",
@@ -140,7 +166,27 @@
     "6112v35e7ww0": "Add Site",
     "6112v35e7z00": "Update Site",
     "6112v35e8140": "Operation successful",
-    "deleteSiteTips": "This action will permanently delete the navigation group and its contained records. Do you want to continue?"
+    "deleteSiteTips": "This action will permanently delete the navigation group and its contained records. Do you want to continue?",
+    "invalidLink": "Link is not a valid http(s) URL",
+    "iconPicker": {
+      "brand": "Brand logo",
+      "generic": "Icon",
+      "favicon": "Favicon",
+      "image": "Image URL",
+      "initial": "Initial",
+      "initialDesc": "No icon set; the first letter of the site name is shown",
+      "searchBrand": "Search brands, e.g. gitlab, grafana",
+      "searchGeneric": "Search icons, e.g. server, database",
+      "noBrand": "Brand not found. Try \"Favicon\" or \"Image URL\".",
+      "faviconDesc": "Use the site's own favicon. Falls back to the initial if it fails to load.",
+      "faviconNeedLink": "Fill in the site link first",
+      "use": "Use",
+      "imagePlaceholder": "https://example.com/logo.svg",
+      "imageDesc": "Only http:// or https:// image URLs. SVG recommended.",
+      "clear": "Clear icon",
+      "clearDesc": "The first letter of the site name will be shown",
+      "invalid": "Invalid icon (legacy built-in images were removed). Please choose again."
+    }
   },
   "user": {
     "610wkzjikzs0": "Username",
@@ -266,7 +312,9 @@
     "610yx3aun440": "Sync canceled",
     "selectGroupTypeTips": "please select Group Type",
     "batchDeleteTips": "This operation will permanently delete the items, do you want to continue?",
-    "betchSyncLdapTips": "This operation will batch sync database groups to LDAP, do you want to continue?"
+    "betchSyncLdapTips": "This operation will batch sync database groups to LDAP, do you want to continue?",
+    "members": "Members",
+    "addMembersTips": "Search and select users to add"
   },
   "fieldRelation": {
     "610zu0w6ymo0": "Field Identifier",
@@ -341,7 +389,9 @@
     "6111lkey4wg0": "Verification Code",
     "6111lkey4zc0": "Please enter the verification code",
     "otpSendTips": "Verification code sent, you can resend after 60s",
-    "resetSuccessTips": "Execution Successful, returning to homepage in 3s"
+    "resetSuccessTips": "Execution Successful, returning to homepage in 3s",
+    "desc": "Enter the email bound to your account and we will send a verification code. Once verified, a new password is sent to that email.",
+    "backHome": "Back to home"
   },
   "operation-log": {
     "6111tvyrbi80": "Requester",
@@ -515,5 +565,11 @@
     "611p62ddnm40": "Form validation failed",
     "611p62ddnos0": "Tip",
     "611p62ddnr00": "Deletion Cancelled"
+  },
+  "theme": {
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark",
+    "tooltip": "Theme"
   }
 }

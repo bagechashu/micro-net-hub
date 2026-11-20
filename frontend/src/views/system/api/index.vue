@@ -1,15 +1,15 @@
 <template>
   <div>
     <el-card class="container-card" shadow="always">
-      <el-form size="mini" :inline="true" :model="params" class="demo-form-inline">
+      <el-form :inline="true" :model="params" class="demo-form-inline">
         <el-form-item :label="$t('api.611p62ddlio0')">
-          <el-input v-model.trim="params.path" clearable :placeholder="$t('api.611p62ddlio0')" @keyup.enter.native="search" @clear="search" />
+          <el-input v-model.trim="params.path" clearable :placeholder="$t('api.611p62ddlio0')" @keyup.enter="search" @clear="search" />
         </el-form-item>
         <el-form-item :label="$t('api.611p62ddlz40')">
-          <el-input v-model.trim="params.category" clearable :placeholder="$t('api.611p62ddlz40')" @keyup.enter.native="search" @clear="search" />
+          <el-input v-model.trim="params.category" clearable :placeholder="$t('api.611p62ddlz40')" @keyup.enter="search" @clear="search" />
         </el-form-item>
         <el-form-item :label="$t('api.611p62ddm380')">
-          <el-select v-model.trim="params.method" clearable :placeholder="$t('api.611p62ddm6c0')" @change="search" @clear="search">
+          <el-select v-model="params.method" clearable :placeholder="$t('api.611p62ddm6c0')" @change="search" @clear="search">
             <el-option label="GET" value="GET" />
             <el-option label="POST" value="POST" />
             <el-option label="PUT" value="PUT" />
@@ -18,40 +18,40 @@
           </el-select>
         </el-form-item>
         <el-form-item :label="$t('api.611p62ddm980')">
-          <el-input v-model.trim="params.creator" clearable :placeholder="$t('api.611p62ddm980')" @keyup.enter.native="search" @clear="search" />
+          <el-input v-model.trim="params.creator" clearable :placeholder="$t('api.611p62ddm980')" @keyup.enter="search" @clear="search" />
         </el-form-item>
         <el-form-item>
-          <el-button :loading="loading" icon="el-icon-search" type="primary" @click="search">{{ $t('api.611p62ddmdc0') }}</el-button>
+          <el-button :loading="loading" @click="search" :icon="Search">{{ $t('api.611p62ddmdc0') }}</el-button>
         </el-form-item>
         <el-form-item>
-          <el-button :loading="loading" icon="el-icon-plus" type="warning" @click="create">{{ $t('api.611p62ddmg40') }}</el-button>
+          <el-button :loading="loading" type="primary" @click="create" :icon="Plus">{{ $t('api.611p62ddmg40') }}</el-button>
         </el-form-item>
         <el-form-item>
-          <el-button :disabled="multipleSelection.length === 0" :loading="loading" icon="el-icon-delete" type="danger" @click="batchDelete">{{ $t('api.611p62ddmis0') }}</el-button>
+          <el-button :disabled="multipleSelection.length === 0" :loading="loading" type="danger" @click="batchDelete" :icon="Delete">{{ $t('api.611p62ddmis0') }}</el-button>
         </el-form-item>
       </el-form>
 
-      <el-table v-loading="loading" :data="tableData" border stripe style="width: 100%" @selection-change="handleSelectionChange">
-        <el-table-column type="selection" width="55" align="center" />
-        <el-table-column show-overflow-tooltip sortable prop="path" :label="$t('api.611p62ddlio0')" />
-        <el-table-column show-overflow-tooltip sortable prop="category" :label="$t('api.611p62ddlz40')" />
-        <el-table-column show-overflow-tooltip sortable prop="method" :label="$t('api.611p62ddm6c0')" align="center">
-          <template slot-scope="scope">
-            <el-tag size="small" :type="scope.row.method | methodTagFilter" disable-transitions>{{ scope.row.method }}</el-tag>
+      <el-table v-loading="loading" :data="tableData" stripe style="width: 100%" @selection-change="handleSelectionChange">
+        <el-table-column type="selection" width="48" align="center" />
+        <el-table-column show-overflow-tooltip sortable prop="path" :label="$t('api.611p62ddlio0')" min-width="220" />
+        <el-table-column show-overflow-tooltip sortable prop="category" :label="$t('api.611p62ddlz40')" min-width="130" />
+        <el-table-column show-overflow-tooltip sortable prop="method" :label="$t('api.611p62ddm6c0')" width="150" align="center">
+          <template #default="scope">
+            <el-tag size="small" :type="methodTagFilter(scope.row.method)" disable-transitions>{{ scope.row.method }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column show-overflow-tooltip sortable prop="creator" :label="$t('api.611p62ddm980')" />
-        <el-table-column show-overflow-tooltip sortable prop="remark" :label="$t('api.611p62ddmlo0')" />
-        <el-table-column fixed="right" :label="$t('api.611p62ddmoc0')" align="center" width="120">
-          <template slot-scope="scope">
-            <el-tooltip :content="$t('api.611p62ddmr40')" effect="dark" placement="top">
-              <el-button size="mini" icon="el-icon-edit" circle type="primary" @click="update(scope.row)" />
-            </el-tooltip>
-            <el-tooltip class="delete-popover" :content="$t('api.611p62ddmu00')" effect="dark" placement="top">
+        <el-table-column show-overflow-tooltip sortable prop="creator" :label="$t('api.611p62ddm980')" width="120" />
+        <el-table-column show-overflow-tooltip sortable prop="remark" :label="$t('api.611p62ddmlo0')" min-width="160" />
+        <el-table-column fixed="right" :label="$t('api.611p62ddmoc0')" align="left" width="160">
+          <template #default="scope">
+            <div class="row-actions">
+              <el-button link type="primary" :icon="Edit" @click="update(scope.row)">{{ $t('common.edit') }}</el-button>
               <el-popconfirm :title="$t('api.611p62ddmwo0')" @confirm="singleDelete(scope.row.ID)">
-                <el-button slot="reference" size="mini" icon="el-icon-delete" circle type="danger" />
+                <template #reference>
+                  <el-button link type="danger" :icon="Delete">{{ $t('common.delete') }}</el-button>
+                </template>
               </el-popconfirm>
-            </el-tooltip>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -68,8 +68,8 @@
         @current-change="handleCurrentChange"
       />
 
-      <el-dialog :title="dialogFormTitle" :visible.sync="dialogFormVisible">
-        <el-form ref="dialogForm" size="small" :model="dialogFormData" :rules="dialogFormRules" label-width="120px">
+      <el-dialog :title="dialogFormTitle" v-model="dialogFormVisible">
+        <el-form ref="dialogForm" :model="dialogFormData" :rules="dialogFormRules" label-position="top">
           <el-form-item :label="$t('api.611p62ddlio0')" prop="path">
             <el-input v-model.trim="dialogFormData.path" :placeholder="$t('api.611p62ddlio0')" />
           </el-form-item>
@@ -89,10 +89,10 @@
             <el-input v-model.trim="dialogFormData.remark" type="textarea" :placeholder="$t('api.611p62ddmlo0')" show-word-limit maxlength="100" />
           </el-form-item>
         </el-form>
-        <div slot="footer" class="dialog-footer">
-          <el-button size="mini" @click="cancelForm()">{{ $t('api.611p62ddn240') }}</el-button>
-          <el-button size="mini" :loading="submitLoading" type="primary" @click="submitForm()">{{ $t('api.611p62ddn4s0') }}</el-button>
-        </div>
+        <template #footer>
+          <el-button @click="cancelForm()">{{ $t('api.611p62ddn240') }}</el-button>
+          <el-button :loading="submitLoading" type="primary" @click="submitForm()">{{ $t('api.611p62ddn4s0') }}</el-button>
+        </template>
       </el-dialog>
 
     </el-card>
@@ -100,77 +100,59 @@
 </template>
 
 <script>
-import { getApis, createApi, updateApiById, batchDeleteApiByIds } from "@/api/system/api";
-import { Message } from "element-ui";
+import { defineComponent } from 'vue';
+import { getApis, createApi, updateApiById, batchDeleteApiByIds } from '@/api/system/api';
+import { Search, Plus, Delete, Edit } from '@/icons/tabler';
 
-export default {
-  name: "Api",
-  filters: {
-    methodTagFilter(val) {
-      if (val === "GET") {
-        return "";
-      } else if (val === "POST") {
-        return "success";
-      } else if (val === "PUT") {
-        return "info";
-      } else if (val === "PATCH") {
-        return "warning";
-      } else if (val === "DELETE") {
-        return "danger";
-      } else {
-        return "info";
-      }
-    }
+export default defineComponent({
+  name: 'Api',
+
+  setup() {
+    // 供模板里 el-button 的 :icon 使用
+    return { Edit, Delete, Plus, Search };
   },
   data() {
     return {
-      // 查询参数
       params: {
-        path: "",
-        method: "",
-        category: "",
-        creator: "",
+        path: '',
+        method: '',
+        category: '',
+        creator: '',
         pageNum: 1,
         pageSize: 10
       },
-      // 表格数据
       tableData: [],
       total: 0,
       loading: false,
-
-      // dialog对话框
       submitLoading: false,
-      dialogFormTitle: "",
-      dialogType: "",
+      dialogFormTitle: '',
+      dialogType: '',
       dialogFormVisible: false,
       dialogFormData: {
-        ID: "",
-        path: "",
-        category: "",
-        method: "",
-        remark: ""
+        ID: '',
+        path: '',
+        category: '',
+        method: '',
+        remark: ''
       },
       dialogFormRules: {
         path: [
-          { required: true, message: this.$t("api.611p62ddn7s0"), trigger: "blur" },
-          { min: 1, max: 100, message: this.$t("valid.length", [1, 100]), trigger: "blur" }
+          { required: true, message: this.$t('api.611p62ddn7s0'), trigger: 'blur' },
+          { min: 1, max: 100, message: this.$t('valid.length', [1, 100]), trigger: 'blur' }
         ],
         category: [
-          { required: true, message: this.$t("api.611p62ddnao0"), trigger: "blur" },
-          { min: 1, max: 50, message: this.$t("valid.length", [1, 50]), trigger: "blur" }
+          { required: true, message: this.$t('api.611p62ddnao0'), trigger: 'blur' },
+          { min: 1, max: 50, message: this.$t('valid.length', [1, 50]), trigger: 'blur' }
         ],
         method: [
-          { required: true, message: this.$t("api.611p62ddmzc0"), trigger: "change" }
+          { required: true, message: this.$t('api.611p62ddmzc0'), trigger: 'change' }
         ],
         remark: [
-          { required: false, message: this.$t("api.611p62ddmlo0"), trigger: "blur" },
-          { min: 0, max: 100, message: this.$t("valid.length", [0, 100]), trigger: "blur" }
+          { required: false, message: this.$t('api.611p62ddmlo0'), trigger: 'blur' },
+          { min: 0, max: 100, message: this.$t('valid.length', [0, 100]), trigger: 'blur' }
         ]
       },
-
-      // 删除按钮弹出框
       popoverVisible: false,
-      // 表格多选
       multipleSelection: []
     };
   },
@@ -178,13 +160,26 @@ export default {
     this.getTableData();
   },
   methods: {
-    // 查询
     search() {
       this.params.pageNum = 1;
       this.getTableData();
     },
-
-    // 获取表格数据
+    methodTagFilter(val) {
+      switch (val) {
+        case 'GET':
+          return 'info';
+        case 'POST':
+          return 'success';
+        case 'PUT':
+          return 'info';
+        case 'PATCH':
+          return 'warning';
+        case 'DELETE':
+          return 'danger';
+        default:
+          return 'info';
+      }
+    },
     async getTableData() {
       this.loading = true;
       try {
@@ -195,15 +190,11 @@ export default {
         this.loading = false;
       }
     },
-
-    // 新增
     create() {
-      this.dialogFormTitle = this.$t("api.611p62ddnd40");
-      this.dialogType = "create";
+      this.dialogFormTitle = this.$t('api.611p62ddnd40');
+      this.dialogType = 'create';
       this.dialogFormVisible = true;
     },
-
-    // 修改
     update(row) {
       this.dialogFormData.ID = row.ID;
       this.dialogFormData.path = row.path;
@@ -211,29 +202,26 @@ export default {
       this.dialogFormData.method = row.method;
       this.dialogFormData.remark = row.remark;
 
-      this.dialogFormTitle = this.$t("api.611p62ddng00");
-      this.dialogType = "update";
+      this.dialogFormTitle = this.$t('api.611p62ddng00');
+      this.dialogType = 'update';
       this.dialogFormVisible = true;
     },
-
-    // 判断结果
     judgeResult(res) {
       if (res.code === 200 || res.code === 0) {
-        Message({
+        ElMessage({
           showClose: true,
-          message: this.$t("api.611p62ddnjk0"),
-          type: "success"
+          message: this.$t('api.611p62ddnjk0'),
+          type: 'success'
         });
       }
     },
-
-    // 提交表单
     submitForm() {
-      this.$refs["dialogForm"].validate(async valid => {
+      // @ts-expect-error refs
+      this.$refs['dialogForm'].validate(async (valid) => {
         if (valid) {
           this.submitLoading = true;
           try {
-            if (this.dialogType === "create") {
+            if (this.dialogType === 'create') {
               await createApi(this.dialogFormData).then(res => {
                 this.judgeResult(res);
               });
@@ -248,40 +236,36 @@ export default {
           this.resetForm();
           this.getTableData();
         } else {
-          Message({
+          ElMessage({
             showClose: true,
-            message: this.$t("api.611p62ddnm40"),
-            type: "warn"
+            message: this.$t('api.611p62ddnm40'),
+            type: 'warn'
           });
           return false;
         }
       });
     },
-
-    // 提交表单
     cancelForm() {
       this.resetForm();
     },
-
     resetForm() {
       this.dialogFormVisible = false;
-      this.$refs["dialogForm"].resetFields();
+      // @ts-expect-error refs
+      this.$refs['dialogForm'].resetFields();
       this.dialogFormData = {
-        ID: "",
-        path: "",
-        category: "",
-        method: "",
-        remark: ""
+        ID: '',
+        path: '',
+        category: '',
+        method: '',
+        remark: ''
       };
     },
-
-    // 批量删除
     batchDelete() {
-      this.$confirm(this.$t("tips.deleteWarning"), this.$t("api.611p62ddnos0"), {
-        confirmButtonText: this.$t("api.611p62ddn4s0"),
-        cancelButtonText: this.$t("api.611p62ddn240"),
-        type: "warning"
-      }).then(async res => {
+      ElMessageBox.confirm(this.$t('tips.deleteWarning'), this.$t('api.611p62ddnos0'), {
+        confirmButtonText: this.$t('api.611p62ddn4s0'),
+        cancelButtonText: this.$t('api.611p62ddn240'),
+        type: 'warning'
+      }).then(async () => {
         this.loading = true;
         const apiIds = [];
         this.multipleSelection.forEach(x => {
@@ -296,20 +280,16 @@ export default {
         }
         this.getTableData();
       }).catch(() => {
-        Message({
+        ElMessage({
           showClose: true,
-          type: "info",
-          message: this.$t("api.611p62ddnr00")
+          type: 'info',
+          message: this.$t('api.611p62ddnr00')
         });
       });
     },
-
-    // 表格多选
     handleSelectionChange(val) {
       this.multipleSelection = val;
     },
-
-    // 单个删除
     async singleDelete(Id) {
       this.loading = true;
       try {
@@ -321,8 +301,6 @@ export default {
       }
       this.getTableData();
     },
-
-    // 分页
     handleSizeChange(val) {
       this.params.pageSize = val;
       this.getTableData();
@@ -332,7 +310,7 @@ export default {
       this.getTableData();
     }
   }
-};
+});
 </script>
 
 <style scoped>

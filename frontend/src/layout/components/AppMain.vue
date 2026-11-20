@@ -1,83 +1,100 @@
 <template>
-  <section class="app-main">
-    <transition name="fade-transform" mode="out-in">
-      <keep-alive :include="cachedViews">
-        <router-view :key="key" />
-      </keep-alive>
-    </transition>
-    <el-footer class="footer-copyright" style="height: 20px;">
-      <div>
-        <span>Since 2024 </span>
-        <el-divider direction="vertical" />
-        <span>Powered by </span>
-        <span>
-          Open Source
-        </span>
-        <el-divider direction="vertical" />
-        <span>LICENSE </span>
-        <span>
-          <a href="https://github.com/bagechashu/micro-net-hub/blob/main/LICENSE" target="_blank">GPLv3</a>
-        </span>
+  <main class="page-wrapper">
+    <div class="app-container-xl page-header">
+      <div class="page-header__titles">
+        <div v-if="pretitle" class="page-pretitle">{{ pretitle }}</div>
+        <h2 class="page-title">{{ title }}</h2>
       </div>
-    </el-footer>
-  </section>
+      <!-- 页面右上角操作区：页面通过 <Teleport to="#page-header-actions" defer> 放入内容 -->
+      <div id="page-header-actions" class="page-header__actions" />
+    </div>
+
+    <div class="app-container-xl page-body">
+      <router-view v-slot="{ Component, route: r }">
+        <transition name="fade-transform" mode="out-in">
+          <component :is="Component" :key="r.fullPath" />
+        </transition>
+      </router-view>
+    </div>
+
+    <footer class="app-container-xl page-footer">
+      <span>Since 2024</span>
+      <span class="page-footer__dot">·</span>
+      <span>Powered by Open Source</span>
+      <span class="page-footer__dot">·</span>
+      <span>LICENSE</span>
+      <a href="https://github.com/bagechashu/micro-net-hub/blob/main/LICENSE" target="_blank" rel="noopener">GPLv3</a>
+    </footer>
+  </main>
 </template>
 
-<script>
-export default {
-  name: "AppMain",
-  computed: {
-    cachedViews() {
-      return this.$store.state.tagsView.cachedViews;
-    },
-    key() {
-      return this.$route.path;
-    }
-  }
-};
+<script setup lang="ts">
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
+
+defineOptions({ name: 'AppMain' });
+
+const route = useRoute();
+const { t } = useI18n();
+
+const titled = computed(() => route.matched.filter(r => r.meta?.title));
+
+// 页面大标题：当前页面；小标题：上级菜单（没有上级时显示“首页”）
+const title = computed(() => (route.meta.title as string) || '');
+const pretitle = computed(() => {
+  const parents = titled.value.slice(0, -1);
+  return parents.length ? (parents[parents.length - 1].meta.title as string) : t('common.index');
+});
 </script>
 
 <style lang="scss" scoped>
-.app-main {
-  /* 50= navbar  50  */
-  min-height: calc(100vh - 50px);
-  width: 100%;
-  position: relative;
-  overflow: hidden;
+.page-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
-.fixed-header+.app-main {
-  padding-top: 50px;
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 24px;
+  padding-top: 24px;
+  padding-bottom: 16px;
 }
 
-.footer-copyright {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  font-size: xx-small;
-  line-height: 10px;
-  text-align: center;
-  // border-top: 1px dashed #dcdfe6;
-}
+.page-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 
-.hasTagsView {
-  .app-main {
-    /* 84 = navbar + tags-view = 50 + 34 */
-    min-height: calc(100vh - 84px);
-  }
-
-  .fixed-header+.app-main {
-    padding-top: 84px;
+  &:empty {
+    display: none;
   }
 }
-</style>
 
-<style lang="scss">
-// fix css style bug in open el-dialog
-.el-popup-parent--hidden {
-  .fixed-header {
-    padding-right: 15px;
-  }
+.page-body {
+  flex: 1;
+  padding-bottom: 24px;
+}
+
+.page-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  font-size: 12px;
+  color: var(--app-muted-text);
+  border-top: 1px solid var(--app-header-border);
+}
+
+.page-footer__dot {
+  opacity: 0.6;
 }
 </style>

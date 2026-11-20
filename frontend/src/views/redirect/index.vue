@@ -1,12 +1,15 @@
 <script>
-export default {
+import { defineComponent, h } from 'vue';
+
+export default defineComponent({
   created() {
-    const { params, query } = this.$route
-    const { path } = params
-    this.$router.replace({ path: '/' + path, query })
+    // console.log('redirect', this.$route);
+    const { params, query } = this.$route;
+    const { path } = params;
+    this.$router.replace({ path: '/' + path, query });
   },
-  render: function(h) {
-    return h() // avoid warning message
+  render() {
+    return h('div'); // avoid warning message
   }
-}
+});
 </script>

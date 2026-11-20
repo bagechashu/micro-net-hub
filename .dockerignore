@@ -1,0 +1,3 @@
+# Dockerfile 只需要编译好的二进制，其余（node_modules、源码等）不进入构建上下文
+*
+!bin/micro-net-hub-linux-amd64

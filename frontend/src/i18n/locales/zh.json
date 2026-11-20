@@ -27,12 +27,13 @@
         "management": "管理"
     },
     "valid": {
-      "length": "长度在 {0} 到 {1} 个字符",
-      "mustInput": "必须填写",
-      "pleaseInput": "请输入查询项",
-      "notAllowEmpty": "不能为空",
-      "InvalidName": "只能包括字母、数字、下划线、中划线",
-      "invalidDnsZone": "仅支持二级域名"
+        "length": "长度在 {0} 到 {1} 个字符",
+        "mustInput": "必须填写",
+        "pleaseInput": "请输入查询项",
+        "notAllowEmpty": "不能为空",
+        "InvalidName": "只能包括字母、数字、下划线、中划线",
+        "invalidDnsZone": "仅支持二级域名",
+        "invalidUrlScheme": "仅支持 http:// 或 https:// 开头的地址"
     },
     "tips": {
         "switchSizeSuccess": "切换表格尺寸成功",
@@ -80,7 +81,8 @@
         "newpassValidErrMustComplex": "密码要包含数字、大写字母、小写字母、特殊字符中的至少三种",
         "confirmNewPassErr": "两次输入密码不一致",
         "changePasswordSuccess": "修改密码成功，请重新登录",
-        "changePasswordErr": "修改密码失败"
+        "changePasswordErr": "修改密码失败",
+        "capsLockOn": "大写锁定已开启"
     },
     "profile": {
         "profile": "个人中心",
@@ -88,7 +90,31 @@
         "changePassword": "修改个人密码",
         "changeTotp": "修改 TOTP 秘钥",
         "changeTotpTips": "请输入OTP",
-        "changeTotpTipsValid": "OTP 为6位数字码"
+        "changeTotpTipsValid": "OTP 为6位数字码",
+        "username": "用户名",
+        "nickname": "中文名",
+        "givenName": "花名",
+        "mail": "邮箱",
+        "mobile": "手机号",
+        "jobNumber": "工号",
+        "position": "职位",
+        "source": "账号来源",
+        "roles": "角色",
+        "notSet": "未设置",
+        "security": "账号安全",
+        "changePasswordDesc": "修改后需要使用新密码重新登录。",
+        "pwdRuleTitle": "密码要求",
+        "pwdRules": [
+            "至少 8 位",
+            "包含大写字母、小写字母、数字、特殊字符中的至少 3 种",
+            "不要与旧密码相同"
+        ],
+        "totpTitle": "两步验证（TOTP）",
+        "totpDesc": "重置 TOTP 秘钥后，需要在身份验证器（如 Google Authenticator、Microsoft Authenticator）中重新添加账号。",
+        "totpConfirm": "确定重置 TOTP 秘钥吗？旧秘钥将立即失效。",
+        "totpScanTitle": "用身份验证器扫描二维码",
+        "totpScanDesc": "二维码只显示一次，离开或刷新页面后将无法再次查看。",
+        "done": "完成"
     },
     "totpNotice": {
         "notice": "注意:",
@@ -140,7 +166,27 @@
         "6112v35e7ww0": "新增站点",
         "6112v35e7z00": "更新站点",
         "6112v35e8140": "操作成功",
-        "deleteSiteTips": "此操作将永久删除该导航组及其包含的记录, 是否继续?"
+        "deleteSiteTips": "此操作将永久删除该导航组及其包含的记录, 是否继续?",
+        "invalidLink": "链接不是有效的 http(s) 地址",
+        "iconPicker": {
+            "brand": "品牌 Logo",
+            "generic": "通用图标",
+            "favicon": "网站图标",
+            "image": "图片地址",
+            "initial": "首字头像",
+            "initialDesc": "未设置图标，显示站点名称的首字",
+            "searchBrand": "搜索品牌，如 gitlab、grafana",
+            "searchGeneric": "搜索图标，如 服务器、数据库、server",
+            "noBrand": "没有找到这个品牌，可以试试「网站图标」或「图片地址」",
+            "faviconDesc": "自动使用该站点自己的 favicon，加载失败时显示首字头像。",
+            "faviconNeedLink": "先填写站点链接",
+            "use": "使用",
+            "imagePlaceholder": "https://example.com/logo.svg",
+            "imageDesc": "仅支持 http:// 或 https:// 开头的图片地址，推荐 SVG。",
+            "clear": "清除图标",
+            "clearDesc": "清除后显示站点名称首字",
+            "invalid": "图标无效（旧的内置图片已移除），请重新选择"
+        }
     },
     "user": {
         "610wkzjikzs0": "用户名",
@@ -266,7 +312,9 @@
         "610yx3aun440": "已取消同步",
         "selectGroupTypeTips": "ou、cn或者其他",
         "batchDeleteTips": "此操作将永久删除, 是否继续?",
-        "betchSyncLdapTips": "此操作批量同步组数据到Ldap, 是否继续?"
+        "betchSyncLdapTips": "此操作批量同步组数据到Ldap, 是否继续?",
+        "members": "成员",
+        "addMembersTips": "搜索并选择要添加的用户"
     },
     "fieldRelation": {
         "610zu0w6ymo0": "字段标识",
@@ -341,7 +389,9 @@
         "6111lkey4wg0": "验证码",
         "6111lkey4zc0": "请输入验证码",
         "otpSendTips": "验证码已发送, 60s后再次发送",
-        "resetSuccessTips": "操作成功, 3s后返回首页"
+        "resetSuccessTips": "操作成功, 3s后返回首页",
+        "desc": "输入账号绑定的邮箱，我们会发送验证码。验证通过后，新密码将发送到该邮箱。",
+        "backHome": "返回首页"
     },
     "operation-log": {
         "6111tvyrbi80": "请求人",
@@ -515,5 +565,11 @@
         "611p62ddnm40": "表单校验失败",
         "611p62ddnos0": "提示",
         "611p62ddnr00": "已取消删除"
+    },
+    "theme": {
+        "system": "跟随系统",
+        "light": "亮色",
+        "dark": "暗色",
+        "tooltip": "主题"
     }
 }

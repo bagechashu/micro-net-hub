@@ -2,25 +2,18 @@
   <div>
     <el-card class="container-card" shadow="always">
       <el-form
-        ref="dnsZoneForm"
+        ref="dnsZoneFormRef"
         :inline="true"
-        size="small"
         :model="dnsZoneForm"
         :rules="dnsZoneFormRules"
       >
         <el-form-item label="Zone:" prop="name">
-          <el-input
-            v-model.trim="dnsZoneForm.name"
-            placeholder="eg: example.com"
-          />
+          <el-input v-model.trim="dnsZoneForm.name" placeholder="eg: example.com" />
         </el-form-item>
         <el-form-item>
-          <el-button
-            size="small"
-            :loading="loading"
-            type="primary"
-            @click="addZone()"
-          >{{ $t('dns.6112hr284k00') }} Zone</el-button>
+          <el-button :loading="loading" type="primary" @click="addZone()">
+            {{ $t('dns.6112hr284k00') }} Zone
+          </el-button>
         </el-form-item>
       </el-form>
       <el-tabs
@@ -30,149 +23,71 @@
         closable
         @tab-remove="deleteZone"
       >
-        <el-tab-pane
-          v-for="item in dnsData"
-          :key="item.ID"
-          :label="item.name"
-          :name="item.name"
-        >
-          <template>
-            <el-form size="mini" :inline="true" class="demo-form-inline">
-              <el-form-item>
-                <el-button
-                  :loading="loading"
-                  icon="el-icon-plus"
-                  type="warning"
-                  @click="addRecord"
-                >{{ $t('dns.6112hr2851s0') }}</el-button>
-              </el-form-item>
-              <el-form-item>
-                <el-button
-                  :disabled="multipleSelection.length === 0"
-                  :loading="loading"
-                  icon="el-icon-delete"
-                  type="danger"
-                  @click="batchDeleteRecords"
-                >{{ $t('dns.6112hr2856c0') }}</el-button>
-              </el-form-item>
-            </el-form>
-
-            <el-table
-              v-loading="loading"
-              :data="item.records"
-              border
-              stripe
-              size="mini"
-              style="width: 100%"
-              @selection-change="handleSelectionChange"
-            >
-              <el-table-column type="selection" width="55" align="center" />
-              <el-table-column
-                show-overflow-tooltip
-                sortable
-                prop="type"
-                label="Type"
-              />
-              <el-table-column
-                show-overflow-tooltip
-                sortable
-                prop="host"
-                label="Host"
-              />
-              <el-table-column
-                show-overflow-tooltip
-                sortable
-                prop="value"
-                label="Value"
-              />
-              <el-table-column
-                show-overflow-tooltip
-                sortable
-                prop="ttl"
-                label="TTL"
-              />
-              <el-table-column
-                show-overflow-tooltip
-                sortable
-                prop="creator"
-                :label="$t('dns.6112hr285980')"
-              />
-              <el-table-column
-                fixed="right"
-                :label="$t('dns.6112hr285c40')"
-                align="center"
-                width="120"
+        <el-tab-pane v-for="item in dnsData" :key="item.ID" :label="item.name" :name="item.name">
+          <el-form :inline="true" class="demo-form-inline">
+            <el-form-item>
+              <el-button :loading="loading" :icon="Plus" type="primary" @click="addRecord">
+                {{ $t('dns.6112hr2851s0') }}
+              </el-button>
+            </el-form-item>
+            <el-form-item>
+              <el-button
+                :disabled="multipleSelection.length === 0"
+                :loading="loading"
+                :icon="Delete"
+                type="danger"
+                @click="batchDeleteRecords"
               >
-                <template slot-scope="scope">
-                  <el-tooltip :content="$t('dns.6112hr285ew0')" effect="dark" placement="top">
-                    <el-button
-                      size="mini"
-                      icon="el-icon-edit"
-                      circle
-                      type="primary"
-                      @click="updateRecord(scope.row)"
-                    />
-                  </el-tooltip>
-                  <el-tooltip
-                    class="delete-popover"
-                    :content="$t('dns.6112hr285hs0')"
-                    effect="dark"
-                    placement="top"
-                  >
-                    <el-popconfirm
-                      :title="$t('dns.6112hr285kk0')"
-                      @confirm="deleteRecord(scope.row.ID)"
-                    >
-                      <el-button
-                        slot="reference"
-                        size="mini"
-                        icon="el-icon-delete"
-                        circle
-                        type="danger"
-                      />
-                    </el-popconfirm>
-                  </el-tooltip>
-                </template>
-              </el-table-column>
-            </el-table>
-          </template>
+                {{ $t('dns.6112hr2856c0') }}
+              </el-button>
+            </el-form-item>
+          </el-form>
+
+          <el-table
+            v-loading="loading"
+            :data="item.records"
+            stripe
+            style="width: 100%"
+            @selection-change="handleSelectionChange"
+          >
+            <el-table-column type="selection" width="48" align="center" />
+            <el-table-column show-overflow-tooltip sortable prop="type" label="Type" width="100" />
+            <el-table-column show-overflow-tooltip sortable prop="host" label="Host" min-width="160" />
+            <el-table-column show-overflow-tooltip sortable prop="value" label="Value" min-width="220" />
+            <el-table-column show-overflow-tooltip sortable prop="ttl" label="TTL" width="90" />
+            <el-table-column show-overflow-tooltip sortable prop="creator" :label="$t('dns.6112hr285980')" width="120" />
+            <el-table-column fixed="right" :label="$t('dns.6112hr285c40')" align="left" width="160">
+              <template #default="scope">
+                <div class="row-actions">
+                  <el-button link type="primary" :icon="Edit" @click="updateRecord(scope.row)">{{ $t('common.edit') }}</el-button>
+                  <el-popconfirm :title="$t('dns.6112hr285kk0')" @confirm="deleteRecord(scope.row.ID)">
+                    <template #reference>
+                      <el-button link type="danger" :icon="Delete">{{ $t('common.delete') }}</el-button>
+                    </template>
+                  </el-popconfirm>
+                </div>
+              </template>
+            </el-table-column>
+          </el-table>
         </el-tab-pane>
       </el-tabs>
       <el-empty v-else :description="$t('common.nodata')" />
-      <el-dialog
-        :title="dnsRecordFormTitle"
-        :visible.sync="dnsRecordFormVisible"
-      >
+
+      <el-dialog v-model="dnsRecordFormVisible" :title="dnsRecordFormTitle" @closed="resetRecordFormFields">
         <el-form
-          ref="dnsRecordForm"
-          size="small"
+          ref="dnsRecordFormRef"
           :model="dnsRecordForm"
           :rules="dnsRecordFormRules"
-          label-width="auto"
+          label-position="top"
         >
           <el-form-item label="Zone" prop="zone_id">
             <el-select v-model="dnsRecordForm.zone_id" placeholder="choose one">
-              <el-option
-                v-for="item in zoneOptions"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id"
-              />
+              <el-option v-for="item in zoneOptions" :key="item.id" :label="item.name" :value="item.id" />
             </el-select>
           </el-form-item>
           <el-form-item label="Type" prop="type">
-            <el-select
-              v-model.trim="dnsRecordForm.type"
-              filterable
-              default-first-option
-              placeholder="choose one"
-            >
-              <el-option
-                v-for="item in typeOptions"
-                :key="item"
-                :label="item"
-                :value="item"
-              />
+            <el-select v-model="dnsRecordForm.type" filterable default-first-option placeholder="choose one">
+              <el-option v-for="item in typeOptions" :key="item" :label="item" :value="item" />
             </el-select>
           </el-form-item>
           <el-form-item label="Host" prop="host">
@@ -182,30 +97,28 @@
             <el-input v-model.trim="dnsRecordForm.value" placeholder="value" />
           </el-form-item>
           <el-form-item label="TTL" prop="ttl">
-            <el-input
-              v-model.number="dnsRecordForm.ttl"
-              :placeholder="$t('dns.6112hr285n40')"
-            />
+            <el-input v-model.number="dnsRecordForm.ttl" :placeholder="$t('dns.6112hr285n40')" />
           </el-form-item>
         </el-form>
-        <div slot="footer" class="dialog-footer">
-          <el-button
-            size="mini"
-            @click="dnsRecordFormCancel()"
-          >{{ $t('dns.6112hr285q00') }}</el-button>
-          <el-button
-            size="mini"
-            :loading="loading"
-            type="primary"
-            @click="dnsRecordFormSubmit()"
-          >{{ $t('dns.6112hr285so0') }}</el-button>
-        </div>
+        <template #footer>
+          <div class="dialog-footer">
+            <el-button @click="dnsRecordFormCancel()">{{ $t('dns.6112hr285q00') }}</el-button>
+            <el-button :loading="loading" type="primary" @click="dnsRecordFormSubmit()">
+              {{ $t('dns.6112hr285so0') }}
+            </el-button>
+          </div>
+        </template>
       </el-dialog>
     </el-card>
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
+import { onMounted, reactive, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import type { FormInstance } from 'element-plus';
+import { Plus, Delete, Edit } from '@/icons/tabler';
 import {
   getDnsRecords,
   createDnsZone,
@@ -213,306 +126,253 @@ import {
   createDnsRecord,
   updateDnsRecord,
   batchDeleteDnsRecordByIds
-} from "@/api/dns/dns";
-import { validateSecondLevelDomain } from "@/utils/validate";
-import { Message } from "element-ui";
+} from '@/api/dns';
 
-export default {
-  name: "DnsManager",
-  data() {
-    return {
-      loading: false,
+defineOptions({ name: 'DnsManager' });
 
-      dnsData: [], // Dns 数据
-      dnsZoneForm: {
-        name: ""
-      },
-      dnsZoneFormRules: {
-        name: [
-          {
-            required: true,
-            message: this.$t("dns.inputZoneNameTips"),
-            trigger: "blur"
-          },
-          {
-            min: 4,
-            max: 20,
-            message: this.$t("valid.length", [4, 20]),
-            trigger: "blur"
-          },
-          { required: true, validator: validateSecondLevelDomain, trigger: "blur" }
-        ]
-      },
-      dnsZoneActiveTab: "",
+const { t } = useI18n();
 
-      dnsRecordFormTitle: "",
-      dnsRecordFormType: "",
-      dnsRecordFormVisible: false,
-      dnsRecordForm: {
-        id: "",
-        zone_id: "",
-        type: "",
-        host: "",
-        value: "",
-        ttl: ""
-      },
-      dnsRecordFormRules: {
-        zone_id: [{ required: true, message: this.$t("dns.6112hr285v80"), trigger: "blur" }],
-        type: [{ required: true, message: this.$t("dns.6112hr285xs0"), trigger: "blur" }],
-        host: [
-          { required: true, message: this.$t("dns.inputHostNameTips"), trigger: "blur" },
-          {
-            min: 1,
-            max: 30,
-            message: this.$t("valid.length", [1, 30]),
-            trigger: "blur"
-          }
-        ],
-        value: [
-          { required: true, message: this.$t("dns.6112hr2860o0"), trigger: "change" },
-          {
-            min: 1,
-            max: 100,
-            message: this.$t("valid.length", [1, 100]),
-            trigger: "blur"
-          }
-        ],
-        ttl: [
-          { required: true, message: this.$t("dns.inputTtlTips"), trigger: "blur" },
-          { type: "number", message: "must be number", trigger: "blur" }
-        ]
-      },
-      typeOptions: ["A", "CNAME", "TXT"],
-      zoneOptions: [],
-      // 表格多选
-      multipleSelection: []
-    };
-  },
-  created() {
-    this.getData();
-  },
-  methods: {
-    // 获取表格数据
-    async getData() {
-      this.loading = true;
-      try {
-        const { data } = await getDnsRecords();
-        this.dnsData = data;
-
-        // console.log(`dnsZoneActiveTab type: ${typeof(this.dnsZoneActiveTab)}, value: ${this.dnsZoneActiveTab}`);
-        // default dnsZoneActiveTab type: string, value: 0
-        if ((this.dnsZoneActiveTab === "0" || this.dnsZoneActiveTab === "") && this.dnsData.length > 0) {
-          this.dnsZoneActiveTab = this.dnsData[0].name;
-        }
-      } finally {
-        this.loading = false;
-      }
-    },
-    getZoneOptions() {
-      this.zoneOptions = this.dnsData.map((item) => {
-        return {
-          id: item.ID,
-          name: item.name
-        };
-      });
-    },
-    addZone() {
-      this.$refs["dnsZoneForm"].validate(async(valid) => {
-        if (valid) {
-          this.loading = true;
-          try {
-            await createDnsZone(this.dnsZoneForm).then((res) => {
-              this.judgeResult(res);
-            });
-          } finally {
-            this.loading = false;
-          }
-          this.getData();
-        } else {
-          Message({
-            showClose: true,
-            message: this.$t("dns.6112hr2864k0"),
-            type: "warn"
-          });
-          return false;
-        }
-      });
-    },
-    // 根据 tabname 查找 zone 的 ID
-    getZoneIDFromTabname(tabname) {
-      for (let i = 0; i < this.dnsData.length; i++) {
-        if (this.dnsData[i].name === tabname) {
-          // console.log(this.dnsData[i].ID);
-          return this.dnsData[i].ID;
-        }
-      }
-    },
-    async deleteZone(tabname) {
-      const dnsZoneId = this.getZoneIDFromTabname(tabname);
-      this.$confirm(
-        this.$t("dns.deleteZoneTips"),
-        this.$t("dns.6112hr286740"),
-        {
-          confirmButtonText: this.$t("dns.6112hr285so0"),
-          cancelButtonText: this.$t("dns.6112hr285q00"),
-          type: "warning"
-        }
-      )
-        .then(async() => {
-          try {
-            await batchDeleteDnsZoneByIds({
-              ids: [dnsZoneId]
-            }).then((res) => {
-              this.judgeResult(res);
-            });
-            this.dnsZoneActiveTab = "0";
-            this.getData();
-          } finally {
-            this.loading = false;
-          }
-        })
-        .catch(() => {
-          Message({
-            showClose: true,
-            type: "info",
-            message: this.$t("dns.6112hr2869s0")
-          });
-        });
-    },
-    // 新增
-    addRecord() {
-      this.getZoneOptions();
-      const dnsZoneId = this.getZoneIDFromTabname(this.dnsZoneActiveTab);
-      this.dnsRecordForm.zone_id = dnsZoneId;
-
-      this.dnsRecordFormTitle = this.$t("dns.6112hr286cc0");
-      this.dnsRecordFormType = "add";
-      this.dnsRecordFormVisible = true;
-    },
-
-    // 修改
-    updateRecord(row) {
-      this.getZoneOptions();
-      this.dnsRecordForm.id = row.ID;
-      this.dnsRecordForm.zone_id = row.zone_id;
-      this.dnsRecordForm.type = row.type;
-      this.dnsRecordForm.host = row.host;
-      this.dnsRecordForm.value = row.value;
-      this.dnsRecordForm.ttl = row.ttl;
-
-      this.dnsRecordFormTitle = this.$t("dns.6112hr286f40");
-      this.dnsRecordFormType = "update";
-      this.dnsRecordFormVisible = true;
-    },
-
-    // 单个删除
-    async deleteRecord(id) {
-      this.loading = true;
-      try {
-        await batchDeleteDnsRecordByIds({ ids: [id] }).then((res) => {
-          this.judgeResult(res);
-        });
-      } finally {
-        this.loading = false;
-      }
-      this.getData();
-    },
-    // 批量删除
-    batchDeleteRecords() {
-      this.$confirm(this.$t("tips.deleteWarning"), this.$t("dns.6112hr286740"), {
-        confirmButtonText: this.$t("dns.6112hr285so0"),
-        cancelButtonText: this.$t("dns.6112hr285q00"),
-        type: "warning"
-      })
-        .then(async() => {
-          this.loading = true;
-          const ids = [];
-          this.multipleSelection.forEach((x) => {
-            ids.push(x.ID);
-          });
-          try {
-            await batchDeleteDnsRecordByIds({ ids: ids }).then((res) => {
-              this.judgeResult(res);
-            });
-          } finally {
-            this.loading = false;
-          }
-          this.getData();
-        })
-        .catch(() => {
-          Message({
-            showClose: true,
-            type: "info",
-            message: this.$t("dns.6112hr2869s0")
-          });
-        });
-    },
-    // 提交表单
-    // https://stackoverflow.com/questions/73772552/typeerror-this-refs-is-not-a-function
-    dnsRecordFormSubmit() {
-      this.$refs["dnsRecordForm"].validate(async(valid) => {
-        if (valid) {
-          this.loading = true;
-          try {
-            if (this.dnsRecordFormType === "add") {
-              await createDnsRecord(this.dnsRecordForm).then((res) => {
-                this.judgeResult(res);
-              });
-            } else if (this.dnsRecordFormType === "update") {
-              await updateDnsRecord(this.dnsRecordForm).then((res) => {
-                this.judgeResult(res);
-              });
-            }
-          } finally {
-            this.loading = false;
-          }
-          this.dnsRecordFormReset();
-          this.getData();
-        } else {
-          Message({
-            showClose: true,
-            message: this.$t("dns.6112hr2864k0"),
-            type: "warn"
-          });
-          return false;
-        }
-      });
-    },
-
-    // 提交表单
-    dnsRecordFormCancel() {
-      this.dnsRecordFormReset();
-    },
-
-    dnsRecordFormReset() {
-      this.dnsRecordFormVisible = false;
-      this.$refs["dnsRecordForm"].resetFields();
-      this.dnsRecordForm = {
-        id: "",
-        zone_id: "",
-        type: "",
-        host: "",
-        value: "",
-        ttl: ""
-      };
-    },
-
-    // 判断结果
-    judgeResult(res) {
-      if (res.code === 200) {
-        Message({
-          showClose: true,
-          message: this.$t("dns.6112hr286i40"),
-          type: "success"
-        });
-      }
-    },
-    // 表格多选
-    handleSelectionChange(val) {
-      this.multipleSelection = val;
-    }
+// Ported from Vue2 utils/validate.js validateSecondLevelDomain (not present in utils/validate.ts).
+function validateSecondLevelDomain(_rule: unknown, value: unknown, callback: (e?: Error) => void) {
+  if (!value || typeof value !== 'string' || value.trim() === '') {
+    return callback(new Error(t('valid.notAllowEmpty')));
   }
+  const domainRegex = /^[a-zA-Z0-9-_]+\.[a-zA-Z]{2,}$/;
+  if (!domainRegex.test(value)) {
+    callback(new Error(t('valid.invalidDnsZone')));
+  } else {
+    callback();
+  }
+}
+
+const loading = ref(false);
+const dnsData = ref<any[]>([]);
+
+const dnsZoneFormRef = ref<FormInstance>();
+const dnsZoneForm = reactive({ name: '' });
+const dnsZoneFormRules = {
+  name: [
+    { required: true, message: t('dns.inputZoneNameTips'), trigger: 'blur' },
+    { min: 4, max: 20, message: t('valid.length', [4, 20]), trigger: 'blur' },
+    { required: true, validator: validateSecondLevelDomain, trigger: 'blur' }
+  ]
 };
+const dnsZoneActiveTab = ref<string | number>('');
+
+const dnsRecordFormRef = ref<FormInstance>();
+const dnsRecordFormTitle = ref('');
+const dnsRecordFormType = ref('');
+const dnsRecordFormVisible = ref(false);
+const emptyRecordForm = () => ({
+  id: '' as number | string,
+  zone_id: '' as number | string | undefined,
+  type: '',
+  host: '',
+  value: '',
+  ttl: '' as number | string
+});
+const dnsRecordForm = ref(emptyRecordForm());
+const dnsRecordFormRules = {
+  zone_id: [{ required: true, message: t('dns.6112hr285v80'), trigger: 'blur' }],
+  type: [{ required: true, message: t('dns.6112hr285xs0'), trigger: 'blur' }],
+  host: [
+    { required: true, message: t('dns.inputHostNameTips'), trigger: 'blur' },
+    { min: 1, max: 30, message: t('valid.length', [1, 30]), trigger: 'blur' }
+  ],
+  value: [
+    { required: true, message: t('dns.6112hr2860o0'), trigger: 'change' },
+    { min: 1, max: 100, message: t('valid.length', [1, 100]), trigger: 'blur' }
+  ],
+  ttl: [
+    { required: true, message: t('dns.inputTtlTips'), trigger: 'blur' },
+    { type: 'number' as const, message: 'must be number', trigger: 'blur' }
+  ]
+};
+const typeOptions = ['A', 'CNAME', 'TXT'];
+const zoneOptions = ref<{ id: number; name: string }[]>([]);
+const multipleSelection = ref<any[]>([]);
+
+async function getData() {
+  loading.value = true;
+  try {
+    const { data } = await getDnsRecords();
+    dnsData.value = data || [];
+    if ((dnsZoneActiveTab.value === '0' || dnsZoneActiveTab.value === '') && dnsData.value.length > 0) {
+      dnsZoneActiveTab.value = dnsData.value[0].name;
+    }
+  } catch {
+    /* already shown */
+  } finally {
+    loading.value = false;
+  }
+}
+
+function getZoneOptions() {
+  zoneOptions.value = dnsData.value.map(item => ({ id: item.ID, name: item.name }));
+}
+
+function successMessage() {
+  ElMessage({ showClose: true, message: t('dns.6112hr286i40'), type: 'success' });
+}
+
+function validateFailedMessage() {
+  ElMessage({ showClose: true, message: t('dns.6112hr2864k0'), type: 'warning' });
+}
+
+function cancelledMessage() {
+  ElMessage({ showClose: true, type: 'info', message: t('dns.6112hr2869s0') });
+}
+
+async function addZone() {
+  const valid = await dnsZoneFormRef.value?.validate().catch(() => false);
+  if (!valid) {
+    validateFailedMessage();
+    return;
+  }
+  loading.value = true;
+  try {
+    await createDnsZone({ ...dnsZoneForm });
+    successMessage();
+  } catch {
+    /* already shown */
+  } finally {
+    loading.value = false;
+  }
+  getData();
+}
+
+function getZoneIDFromTabname(tabname: string | number) {
+  return dnsData.value.find(item => item.name === tabname)?.ID;
+}
+
+async function deleteZone(tabname: string | number) {
+  const dnsZoneId = getZoneIDFromTabname(tabname);
+  try {
+    await ElMessageBox.confirm(t('dns.deleteZoneTips'), t('dns.6112hr286740'), {
+      confirmButtonText: t('dns.6112hr285so0'),
+      cancelButtonText: t('dns.6112hr285q00'),
+      type: 'warning'
+    });
+  } catch {
+    cancelledMessage();
+    return;
+  }
+  loading.value = true;
+  try {
+    await batchDeleteDnsZoneByIds({ ids: [dnsZoneId] });
+    successMessage();
+    dnsZoneActiveTab.value = '0';
+  } catch {
+    /* already shown */
+  } finally {
+    loading.value = false;
+  }
+  getData();
+}
+
+function addRecord() {
+  getZoneOptions();
+  dnsRecordForm.value.zone_id = getZoneIDFromTabname(dnsZoneActiveTab.value);
+  dnsRecordFormTitle.value = t('dns.6112hr286cc0');
+  dnsRecordFormType.value = 'add';
+  dnsRecordFormVisible.value = true;
+}
+
+function updateRecord(row: any) {
+  getZoneOptions();
+  dnsRecordForm.value = {
+    id: row.ID,
+    zone_id: row.zone_id,
+    type: row.type,
+    host: row.host,
+    value: row.value,
+    ttl: row.ttl
+  };
+  dnsRecordFormTitle.value = t('dns.6112hr286f40');
+  dnsRecordFormType.value = 'update';
+  dnsRecordFormVisible.value = true;
+}
+
+async function deleteRecord(id: number) {
+  loading.value = true;
+  try {
+    await batchDeleteDnsRecordByIds({ ids: [id] });
+    successMessage();
+  } catch {
+    /* already shown */
+  } finally {
+    loading.value = false;
+  }
+  getData();
+}
+
+async function batchDeleteRecords() {
+  try {
+    await ElMessageBox.confirm(t('tips.deleteWarning'), t('dns.6112hr286740'), {
+      confirmButtonText: t('dns.6112hr285so0'),
+      cancelButtonText: t('dns.6112hr285q00'),
+      type: 'warning'
+    });
+  } catch {
+    cancelledMessage();
+    return;
+  }
+  loading.value = true;
+  try {
+    await batchDeleteDnsRecordByIds({ ids: multipleSelection.value.map(x => x.ID) });
+    successMessage();
+  } catch {
+    /* already shown */
+  } finally {
+    loading.value = false;
+  }
+  getData();
+}
+
+async function dnsRecordFormSubmit() {
+  const valid = await dnsRecordFormRef.value?.validate().catch(() => false);
+  if (!valid) {
+    validateFailedMessage();
+    return;
+  }
+  loading.value = true;
+  try {
+    if (dnsRecordFormType.value === 'add') {
+      await createDnsRecord({ ...dnsRecordForm.value });
+    } else if (dnsRecordFormType.value === 'update') {
+      await updateDnsRecord({ ...dnsRecordForm.value });
+    }
+    successMessage();
+  } catch {
+    loading.value = false;
+    return;
+  }
+  loading.value = false;
+  dnsRecordFormReset();
+  getData();
+}
+
+function dnsRecordFormCancel() {
+  dnsRecordFormReset();
+}
+
+function resetRecordFormFields() {
+  dnsRecordFormRef.value?.resetFields();
+  dnsRecordForm.value = emptyRecordForm();
+}
+
+function dnsRecordFormReset() {
+  dnsRecordFormVisible.value = false;
+  resetRecordFormFields();
+}
+
+function handleSelectionChange(val: any[]) {
+  multipleSelection.value = val;
+}
+
+onMounted(() => {
+  getData();
+});
 </script>
 
 <style scoped>

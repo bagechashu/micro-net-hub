@@ -2,30 +2,25 @@ package ui
 
 import (
 	"embed"
-	"micro-net-hub/internal/config"
-	"micro-net-hub/internal/global"
 	"net/http"
 	"strings"
 	"time"
 
+	"micro-net-hub/internal/config"
+	"micro-net-hub/internal/global"
+
 	"github.com/gin-gonic/gin"
 )
 
-//go:embed index.html favicon.ico static assets
+//go:embed index.html favicon.ico favicon.svg assets
 var Static embed.FS
 
 // cacheMiddleware 为静态文件添加缓存头
 func cacheMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 检查请求路径是否为静态资源
-		if strings.HasPrefix(c.Request.URL.Path, "/ui/static/") {
-			// 设置缓存头 - 7天的缓存时间
-			c.Header("Cache-Control", "public, max-age=604800")
-			// 设置Expires头
-			expires := time.Now().AddDate(0, 0, 7) // 7天后过期
-			c.Header("Expires", expires.Format(time.RFC1123))
-		} else if strings.HasPrefix(c.Request.URL.Path, "/ui/assets/") {
-			// 对于assets目录也设置长时间缓存 - 30天
+		if strings.HasPrefix(c.Request.URL.Path, "/ui/assets/") {
+			// Vite 产物文件名带内容哈希，可以长时间缓存 - 30天
 			c.Header("Cache-Control", "public, max-age=2592000")
 			expires := time.Now().AddDate(0, 0, 30)
 			c.Header("Expires", expires.Format(time.RFC1123))

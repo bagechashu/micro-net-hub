@@ -1,59 +1,33 @@
 <template>
-  <div class="app-container">
-    <div v-if="user">
-      <el-row :gutter="20">
-        <el-col :span="6" :xs="24">
-          <user-card :user="user" />
-        </el-col>
-        <el-col :span="8" :xs="24">
-          <TotpCard :user="user" />
-        </el-col>
-        <el-col :span="10" :xs="24">
-          <Account />
-        </el-col>
-
-      </el-row>
-    </div>
-  </div>
+  <el-row :gutter="16" class="profile-page">
+    <el-col :xs="24" :md="8" :lg="7">
+      <UserCard />
+    </el-col>
+    <el-col :xs="24" :md="16" :lg="17">
+      <div class="profile-stack">
+        <Account />
+        <TotpCard />
+      </div>
+    </el-col>
+  </el-row>
 </template>
 
-<script>
-import { mapGetters } from "vuex";
-import UserCard from "./components/UserCard";
-import Account from "./components/Account";
-import TotpCard from "./components/TotpCard";
+<script setup lang="ts">
+import UserCard from './components/UserCard.vue';
+import TotpCard from './components/TotpCard.vue';
+import Account from './components/Account.vue';
 
-export default {
-  name: "Profile",
-  components: { UserCard, Account, TotpCard },
-  data() {
-    return {
-      user: {},
-      activeTab: "activity"
-    };
-  },
-  computed: {
-    ...mapGetters([
-      "name",
-      "mail",
-      "avatar",
-      "introduction",
-      "roles"
-    ])
-  },
-  created() {
-    this.getUser();
-  },
-  methods: {
-    getUser() {
-      this.user = {
-        name: this.name,
-        role: this.roles.join(" | "),
-        mail: this.mail,
-        avatar: this.avatar ? this.avatar : "https://q1.qlogo.cn/g?b=qq&nk=10002&s=100",
-        introduction: this.introduction
-      };
-    }
-  }
-};
+defineOptions({ name: 'Profile' });
 </script>
+
+<style scoped>
+.profile-page {
+  row-gap: 16px;
+}
+
+.profile-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+</style>

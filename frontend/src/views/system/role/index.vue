@@ -1,55 +1,53 @@
 <template>
   <div>
     <el-card class="container-card" shadow="always">
-      <el-form size="mini" :inline="true" :model="params" class="demo-form-inline">
+      <el-form :inline="true" :model="params" class="demo-form-inline">
         <el-form-item :label="$t('role.611p12potc80')">
-          <el-input v-model.trim="params.name" clearable :placeholder="$t('role.611p12potc80')" @keyup.enter.native="search" @clear="search" />
+          <el-input v-model.trim="params.name" clearable :placeholder="$t('role.611p12potc80')" @keyup.enter="search" @clear="search" />
         </el-form-item>
         <el-form-item :label="$t('role.611p12pov3g0')">
-          <el-input v-model.trim="params.keyword" clearable :placeholder="$t('role.611p12pov3g0')" @keyup.enter.native="search" @clear="search" />
+          <el-input v-model.trim="params.keyword" clearable :placeholder="$t('role.611p12pov3g0')" @keyup.enter="search" @clear="search" />
         </el-form-item>
         <el-form-item :label="$t('role.611p12pov9c0')">
-          <el-select v-model.trim="params.status" clearable :placeholder="$t('role.611p12pov9c0')" @change="search" @clear="search">
+          <el-select v-model="params.status" clearable :placeholder="$t('role.611p12pov9c0')" @change="search" @clear="search">
             <el-option :label="$t('role.611p12povd80')" :value="1" />
             <el-option :label="$t('role.611p12povgg0')" :value="2" />
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button :loading="loading" icon="el-icon-search" type="primary" @click="search">{{ $t('role.611p12povjw0') }}</el-button>
+          <el-button :loading="loading" @click="search" :icon="Search">{{ $t('role.611p12povjw0') }}</el-button>
         </el-form-item>
         <el-form-item>
-          <el-button :loading="loading" icon="el-icon-plus" type="warning" @click="create">{{ $t('role.611p12povn40') }}</el-button>
+          <el-button :loading="loading" type="primary" @click="create" :icon="Plus">{{ $t('role.611p12povn40') }}</el-button>
         </el-form-item>
         <el-form-item>
-          <el-button :disabled="multipleSelection.length === 0" :loading="loading" icon="el-icon-delete" type="danger" @click="batchDelete">{{ $t('role.611p12povqk0') }}</el-button>
+          <el-button :disabled="multipleSelection.length === 0" :loading="loading" type="danger" @click="batchDelete" :icon="Delete">{{ $t('role.611p12povqk0') }}</el-button>
         </el-form-item>
       </el-form>
 
-      <el-table v-loading="loading" :data="tableData" border stripe style="width: 100%" @selection-change="handleSelectionChange">
-        <el-table-column type="selection" width="55" align="center" />
-        <el-table-column show-overflow-tooltip sortable prop="name" :label="$t('role.611p12potc80')" />
-        <el-table-column show-overflow-tooltip sortable prop="keyword" :label="$t('role.611p12pov3g0')" />
-        <el-table-column show-overflow-tooltip sortable prop="sort" :label="$t('role.611p12povu40')" />
-        <el-table-column show-overflow-tooltip sortable prop="status" :label="$t('role.611p12pov9c0')" align="center">
-          <template slot-scope="scope">
+      <el-table v-loading="loading" :data="tableData" stripe style="width: 100%" @selection-change="handleSelectionChange">
+        <el-table-column type="selection" width="48" align="center" />
+        <el-table-column show-overflow-tooltip sortable prop="name" :label="$t('role.611p12potc80')" min-width="140" />
+        <el-table-column show-overflow-tooltip sortable prop="keyword" :label="$t('role.611p12pov3g0')" min-width="130" />
+        <el-table-column show-overflow-tooltip sortable prop="sort" :label="$t('role.611p12povu40')" width="90" />
+        <el-table-column show-overflow-tooltip sortable prop="status" :label="$t('role.611p12pov9c0')" width="140" align="center">
+          <template #default="scope">
             <el-tag size="small" :type="scope.row.status === 1 ? 'success':'danger'" disable-transitions>{{ scope.row.status === 1 ? $t('role.611p12povd80'):$t('role.611p12povgg0') }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column show-overflow-tooltip sortable prop="creator" :label="$t('role.611p12pow400')" />
-        <el-table-column show-overflow-tooltip sortable prop="remark" :label="$t('role.611p12powdg0')" />
-        <el-table-column fixed="right" :label="$t('role.611p12powhw0')" align="center" width="140">
-          <template slot-scope="scope">
-            <el-tooltip :content="$t('role.611p12powkk0')" effect="dark" placement="top">
-              <el-button size="mini" icon="el-icon-edit" circle type="primary" @click="update(scope.row)" />
-            </el-tooltip>
-            <el-tooltip :content="$t('role.611p12pown80')" effect="dark" placement="top">
-              <el-button size="mini" icon="el-icon-key" circle type="warning" @click="updatePermission(scope.row.ID)" />
-            </el-tooltip>
-            <el-tooltip :content="$t('role.611p12powpk0')" effect="dark" placement="top">
-              <el-popconfirm style="margin-left:10px" :title="$t('role.611p12powrw0')" @confirm="singleDelete(scope.row.ID)">
-                <el-button slot="reference" size="mini" icon="el-icon-delete" circle type="danger" />
+        <el-table-column show-overflow-tooltip sortable prop="creator" :label="$t('role.611p12pow400')" width="120" />
+        <el-table-column show-overflow-tooltip sortable prop="remark" :label="$t('role.611p12powdg0')" min-width="160" />
+        <el-table-column fixed="right" :label="$t('role.611p12powhw0')" align="left" width="270">
+          <template #default="scope">
+            <div class="row-actions">
+              <el-button link type="primary" :icon="Edit" @click="update(scope.row)">{{ $t('common.edit') }}</el-button>
+              <el-button link type="primary" :icon="Lock" @click="updatePermission(scope.row.ID)">{{ $t('role.611p12pown80') }}</el-button>
+              <el-popconfirm :title="$t('role.611p12powrw0')" @confirm="singleDelete(scope.row.ID)">
+                <template #reference>
+                  <el-button link type="danger" :icon="Delete">{{ $t('common.delete') }}</el-button>
+                </template>
               </el-popconfirm>
-            </el-tooltip>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -66,16 +64,16 @@
         @current-change="handleCurrentChange"
       />
 
-      <el-dialog :title="dialogFormTitle" :visible.sync="dialogFormVisible" width="580px">
-        <el-form ref="dialogForm" :inline="true" size="small" :model="dialogFormData" :rules="dialogFormRules" label-width="100px">
+      <el-dialog :title="dialogFormTitle" v-model="dialogFormVisible">
+        <el-form ref="dialogForm" class="form-grid" :model="dialogFormData" :rules="dialogFormRules" label-position="top">
           <el-form-item :label="$t('role.611p12potc80')" prop="name">
-            <el-input v-model.trim="dialogFormData.name" :placeholder="$t('role.611p12potc80')" style="width: 420px" />
+            <el-input v-model.trim="dialogFormData.name" :placeholder="$t('role.611p12potc80')" />
           </el-form-item>
           <el-form-item :label="$t('role.611p12pov3g0')" prop="keyword">
-            <el-input v-model.trim="dialogFormData.keyword" :placeholder="$t('role.611p12pov3g0')" style="width: 420px" />
+            <el-input v-model.trim="dialogFormData.keyword" :placeholder="$t('role.611p12pov3g0')" />
           </el-form-item>
           <el-form-item :label="$t('role.611p12pov9c0')" prop="status">
-            <el-select v-model.trim="dialogFormData.status" :placeholder="$t('role.611p12powu00')" style="width: 180px">
+            <el-select v-model.trim="dialogFormData.status" :placeholder="$t('role.611p12powu00')">
               <el-option :label="$t('role.611p12povd80')" :value="1" />
               <el-option :label="$t('role.611p12povgg0')" :value="2" />
             </el-select>
@@ -83,20 +81,20 @@
           <el-form-item :label="$t('role.611p12powwk0')" prop="sort">
             <el-input-number v-model.number="dialogFormData.sort" controls-position="right" :min="1" :max="999" />
           </el-form-item>
-          <el-form-item :label="$t('role.611p12powdg0')" prop="remark">
-            <el-input v-model.trim="dialogFormData.remark" style="width: 420px" type="textarea" :placeholder="$t('role.611p12powdg0')" show-word-limit maxlength="100" />
+          <el-form-item class="span-2" :label="$t('role.611p12powdg0')" prop="remark">
+            <el-input v-model.trim="dialogFormData.remark" type="textarea" :placeholder="$t('role.611p12powdg0')" show-word-limit maxlength="100" />
           </el-form-item>
         </el-form>
-        <div slot="footer">
-          <el-button size="mini" @click="cancelForm()">{{ $t('role.611p12powys0') }}</el-button>
-          <el-button size="mini" :loading="submitLoading" type="primary" @click="submitForm()">{{ $t('role.611p12pox180') }}</el-button>
-        </div>
+        <template #footer>
+          <el-button @click="cancelForm()">{{ $t('role.611p12powys0') }}</el-button>
+          <el-button :loading="submitLoading" type="primary" @click="submitForm()">{{ $t('role.611p12pox180') }}</el-button>
+        </template>
       </el-dialog>
 
-      <el-dialog :title="$t('role.611p12pox540')" :visible.sync="permsDialogVisible" width="580px" custom-class="perms-dialog">
+      <el-dialog :title="$t('role.611p12pox540')" v-model="permsDialogVisible" width="600px" class="perms-dialog">
         <el-tabs>
           <el-tab-pane>
-            <span slot="label"><svg-icon icon-class="menu1" class-name="role-menu" /> {{ $t('role.611p12pox740') }}</span>
+            <template #label><svg-icon icon-class="tree-table" class-name="role-menu" /> {{ $t('role.611p12pox740') }}</template>
             <el-tree
               ref="roleMenuTree"
               v-loading="menuTreeLoading"
@@ -107,11 +105,10 @@
               check-strictly
               :default-checked-keys="defaultCheckedRoleMenu"
             />
-
           </el-tab-pane>
 
           <el-tab-pane>
-            <span slot="label"><svg-icon icon-class="api1" class-name="role-menu" /> {{ $t('role.611p12pox9c0') }}</span>
+            <template #label><svg-icon icon-class="tree" class-name="role-menu" /> {{ $t('role.611p12pox9c0') }}</template>
             <el-tree
               ref="roleApiTree"
               v-loading="apiTreeLoading"
@@ -121,13 +118,12 @@
               node-key="ID"
               :default-checked-keys="defaultCheckedRoleApi"
             />
-
           </el-tab-pane>
         </el-tabs>
-        <div slot="footer">
-          <el-button size="mini" :loading="permissionLoading" @click="cancelPermissionForm()">{{ $t('role.611p12powys0') }}</el-button>
-          <el-button size="mini" type="primary" @click="submitPermissionForm()">{{ $t('role.611p12pox180') }}</el-button>
-        </div>
+        <template #footer>
+          <el-button :loading="permissionLoading" @click="cancelPermissionForm()">{{ $t('role.611p12powys0') }}</el-button>
+          <el-button type="primary" @click="submitPermissionForm()">{{ $t('role.611p12pox180') }}</el-button>
+        </template>
       </el-dialog>
 
     </el-card>
@@ -135,74 +131,71 @@
 </template>
 
 <script>
-import { getRoles, createRole, updateRoleById, batchDeleteRoleByIds, getRoleMenusById, getRoleApisById, updateRoleMenusById, updateRoleApisById } from "@/api/system/role";
-import { getMenuTree } from "@/api/system/menu";
-import { getApiTree } from "@/api/system/api";
-import { Message } from "element-ui";
+import { defineComponent } from 'vue';
+import { getRoles, createRole, updateRoleById, batchDeleteRoleByIds, getRoleMenusById, getRoleApisById, updateRoleMenusById, updateRoleApisById } from '@/api/system/role';
+import { getMenuTree } from '@/api/system/menu';
+import { getApiTree } from '@/api/system/api';
+import { Search, Plus, Delete, Edit, Lock } from '@/icons/tabler';
 
-export default {
-  name: "Role",
+export default defineComponent({
+  name: 'Role',
+
+  setup() {
+    // 供模板里 el-button 的 :icon 使用
+    return { Edit, Delete, Lock, Plus, Search };
+  },
   data() {
     return {
-      // 查询参数
       params: {
-        name: "",
-        keyword: "",
-        status: "",
+        name: '',
+        keyword: '',
+        status: '',
         pageNum: 1,
         pageSize: 10
       },
-      // 表格数据
       tableData: [],
       total: 0,
       loading: false,
-
-      // dialog对话框
       submitLoading: false,
-      dialogFormTitle: "",
-      dialogType: "",
+      dialogFormTitle: '',
+      dialogType: '',
       dialogFormVisible: false,
       dialogFormData: {
-        ID: "",
-        name: "",
-        keyword: "",
+        ID: '',
+        name: '',
+        keyword: '',
         status: 1,
         sort: 999,
-        remark: ""
+        remark: ''
       },
       dialogFormRules: {
         name: [
-          { required: true, message: this.$t("role.611p12poxb40"), trigger: "blur" },
-          { min: 1, max: 20, message: this.$t("valid.length", [1, 20]), trigger: "blur" }
+          { required: true, message: this.$t('role.611p12poxb40'), trigger: 'blur' },
+          { min: 1, max: 20, message: this.$t('valid.length', [1, 20]), trigger: 'blur' }
         ],
         keyword: [
-          { required: true, message: this.$t("role.611p12poxcw0"), trigger: "blur" },
-          { min: 1, max: 20, message: this.$t("valid.length", [1, 20]), trigger: "blur" }
+          { required: true, message: this.$t('role.611p12poxcw0'), trigger: 'blur' },
+          { min: 1, max: 20, message: this.$t('valid.length', [1, 20]), trigger: 'blur' }
         ],
         status: [
-          { required: true, message: this.$t("role.611p12powu00"), trigger: "change" }
+          { required: true, message: this.$t('role.611p12powu00'), trigger: 'change' }
         ],
         remark: [
-          { required: false, message: this.$t("role.611p12powdg0"), trigger: "blur" },
-          { min: 0, max: 100, message: this.$t("valid.length", [0, 100]), trigger: "blur" }
+          { required: false, message: this.$t('role.611p12powdg0'), trigger: 'blur' },
+          { min: 0, max: 100, message: this.$t('valid.length', [0, 100]), trigger: 'blur' }
         ]
       },
-
-      // 删除按钮弹出框
       popoverVisible: false,
-      // 表格多选
       multipleSelection: [],
-
-      // 修改权限
       permsDialogVisible: false,
       permissionLoading: false,
       menuTree: [],
       defaultCheckedRoleMenu: [],
       apiTree: [],
       defaultCheckedRoleApi: [],
-
-      // 被修改权限的角色ID
-      roleId: 0
+      roleId: 0,
+      menuTreeLoading: false,
+      apiTreeLoading: false
     };
   },
   created() {
@@ -211,13 +204,10 @@ export default {
     this.getApiTree();
   },
   methods: {
-    // 查询
     search() {
       this.params.pageNum = 1;
       this.getTableData();
     },
-
-    // 获取表格数据
     async getTableData() {
       this.loading = true;
       try {
@@ -228,15 +218,11 @@ export default {
         this.loading = false;
       }
     },
-
-    // 新增
     create() {
-      this.dialogFormTitle = this.$t("role.611p12poxf40");
-      this.dialogType = "create";
+      this.dialogFormTitle = this.$t('role.611p12poxf40');
+      this.dialogType = 'create';
       this.dialogFormVisible = true;
     },
-
-    // 修改
     update(row) {
       this.dialogFormData.ID = row.ID;
       this.dialogFormData.name = row.name;
@@ -245,29 +231,26 @@ export default {
       this.dialogFormData.status = row.status;
       this.dialogFormData.remark = row.remark;
 
-      this.dialogFormTitle = this.$t("role.611p12poxgw0");
-      this.dialogType = "update";
+      this.dialogFormTitle = this.$t('role.611p12poxgw0');
+      this.dialogType = 'update';
       this.dialogFormVisible = true;
     },
-
-    // 判断结果
     judgeResult(res) {
       if (res.code === 200 || res.code === 0) {
-        Message({
+        ElMessage({
           showClose: true,
-          message: this.$t("role.611p12poxik0"),
-          type: "success"
+          message: this.$t('role.611p12poxik0'),
+          type: 'success'
         });
       }
     },
-
-    // 提交表单
     submitForm() {
-      this.$refs["dialogForm"].validate(async valid => {
+      // @ts-expect-error refs
+      this.$refs['dialogForm'].validate(async (valid) => {
         if (valid) {
           this.submitLoading = true;
           try {
-            if (this.dialogType === "create") {
+            if (this.dialogType === 'create') {
               await createRole(this.dialogFormData).then(res => {
                 this.judgeResult(res);
               });
@@ -284,32 +267,27 @@ export default {
         }
       });
     },
-
-    // 取消表单提交
     cancelForm() {
       this.resetForm();
     },
-
-    // 重置表单
     resetForm() {
       this.dialogFormVisible = false;
-      this.$refs["dialogForm"].resetFields();
+      // @ts-expect-error refs
+      this.$refs['dialogForm'].resetFields();
       this.dialogFormData = {
-        name: "",
-        keyword: "",
+        name: '',
+        keyword: '',
         status: 1,
         sort: 999,
-        remark: ""
+        remark: ''
       };
     },
-
-    // 批量删除
     batchDelete() {
-      this.$confirm(this.$t("tips.deleteWarning"), this.$t("role.611p12poxkg0"), {
-        confirmButtonText: this.$t("role.611p12pox180"),
-        cancelButtonText: this.$t("role.611p12powys0"),
-        type: "warning"
-      }).then(async res => {
+      ElMessageBox.confirm(this.$t('tips.deleteWarning'), this.$t('role.611p12poxkg0'), {
+        confirmButtonText: this.$t('role.611p12pox180'),
+        cancelButtonText: this.$t('role.611p12powys0'),
+        type: 'warning'
+      }).then(async () => {
         this.loading = true;
         const roleIds = [];
         this.multipleSelection.forEach(x => {
@@ -324,19 +302,15 @@ export default {
         }
         this.getTableData();
       }).catch(() => {
-        Message({
-          type: "info",
-          message: this.$t("role.611p12poxm80")
+        ElMessage({
+          type: 'info',
+          message: this.$t('role.611p12poxm80')
         });
       });
     },
-
-    // 表格多选
     handleSelectionChange(val) {
       this.multipleSelection = val;
     },
-
-    // 单个删除
     async singleDelete(id) {
       this.loading = true;
       try {
@@ -347,8 +321,6 @@ export default {
         this.loading = false;
       }
     },
-
-    // 修改权限按钮
     async updatePermission(roleId) {
       this.roleId = roleId;
       this.permsDialogVisible = true;
@@ -357,8 +329,6 @@ export default {
       this.getRoleMenusById(roleId);
       this.getRoleApisById(roleId);
     },
-
-    // 获取菜单树
     async getMenuTree() {
       this.menuTreeLoading = true;
       try {
@@ -368,8 +338,6 @@ export default {
         this.menuTreeLoading = false;
       }
     },
-
-    // 获取接口树
     async getApiTree() {
       this.apiTreeLoading = true;
       try {
@@ -379,11 +347,9 @@ export default {
         this.apiTreeLoading = false;
       }
     },
-
-    // 获取角色的权限菜单
     async getRoleMenusById(roleId) {
       this.permissionLoading = true;
-      let rseData = [];
+      let rseData;
       const params = {};
       params.roleId = roleId;
       try {
@@ -397,83 +363,61 @@ export default {
       const ids = [];
       menus.forEach(x => { ids.push(x.ID); });
       this.defaultCheckedRoleMenu = ids;
+      // @ts-expect-error refs
       this.$refs.roleMenuTree.setCheckedKeys(this.defaultCheckedRoleMenu);
     },
-
-    // 获取角色的权限接口
     async getRoleApisById(roleId) {
       this.permissionLoading = true;
-      let resData = [];
+      let rseData;
       const params = {};
       params.roleId = roleId;
       try {
         const { data } = await getRoleApisById(params);
-        resData = data;
+        rseData = data;
       } finally {
         this.permissionLoading = false;
       }
-
-      const apis = resData;
+      const apis = rseData;
       const ids = [];
       apis.forEach(x => { ids.push(x.ID); });
       this.defaultCheckedRoleApi = ids;
+      // @ts-expect-error refs
       this.$refs.roleApiTree.setCheckedKeys(this.defaultCheckedRoleApi);
     },
-
-    // 修改角色菜单
-    async updateRoleMenusById() {
-      this.permissionLoading = true;
-      let ids = this.$refs.roleMenuTree.getCheckedKeys();
-      const idsHalf = this.$refs.roleMenuTree.getHalfCheckedKeys();
-      ids = ids.concat(idsHalf);
-      ids = [...new Set(ids)];
-      try {
-        await updateRoleMenusById({ roleId: this.roleId, menuIds: ids }).then(res => {
-          this.judgeResult(res);
-        });
-      } finally {
-        this.permissionLoading = false;
-      }
-
-      this.permsDialogVisible = false;
-    },
-
-    // 修改角色接口
-    async updateRoleApisById() {
-      this.permissionLoading = true;
-      const ids = this.$refs.roleApiTree.getCheckedKeys(true);
-      try {
-        await updateRoleApisById({ roleId: this.roleId, apiIds: ids }).then(res => {
-          this.judgeResult(res);
-        });
-      } finally {
-        this.permissionLoading = false;
-      }
-      this.permsDialogVisible = false;
-    },
-
-    // 确定修改角色权限
-    submitPermissionForm() {
-      this.updateRoleMenusById();
-      this.updateRoleApisById();
-    },
-
-    // 取消修改角色权限
     cancelPermissionForm() {
       this.permsDialogVisible = false;
+      this.defaultCheckedRoleApi = [];
+      this.defaultCheckedRoleMenu = [];
     },
-
-    // 分页
-    handleSizeChange(val) {
-      this.params.pageSize = val;
+    submitPermissionForm() {
+      // @ts-expect-error refs
+      const menuCheckedKeys = this.$refs.roleMenuTree.getCheckedKeys(true);
+      // @ts-expect-error refs
+      const apiCheckedKeys = this.$refs.roleApiTree.getCheckedKeys(true);
+      const menus = menuCheckedKeys.checked;
+      const apis = apiCheckedKeys.checked;
+      this.permissionLoading = true;
+      try {
+        updateRoleMenusById({ roleId: this.roleId, menuIds: menus });
+        updateRoleApisById({ roleId: this.roleId, apiIds: apis });
+        ElMessage({ message: this.$t('role.611p12poxik0'), type: 'success' });
+      } finally {
+        this.permissionLoading = false;
+        this.permsDialogVisible = false;
+        this.defaultCheckedRoleApi = [];
+        this.defaultCheckedRoleMenu = [];
+      }
+    },
+    handleSizeChange(size) {
+      this.params.pageSize = size;
       this.getTableData();
     },
-    handleCurrentChange(val) {
-      this.params.pageNum = val;
+    handleCurrentChange(page) {
+      this.params.pageNum = page;
       this.getTableData();
     }
   }
-};
+});
 </script>
 
 <style scoped >
@@ -483,7 +427,8 @@ export default {
   }
 
   .role-menu{
-    font-size: 15px;
+    font-size: 1rem;
+    margin-right: 5px;
   }
 </style>
 
@@ -493,4 +438,3 @@ export default {
     padding-bottom: 15px;
   }
 </style>
-

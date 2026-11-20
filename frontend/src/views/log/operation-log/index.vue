@@ -1,56 +1,54 @@
 <template>
   <div>
     <el-card class="container-card" shadow="always">
-      <el-form size="mini" :inline="true" :model="params" class="demo-form-inline">
+      <el-form :inline="true" :model="params" class="demo-form-inline">
         <el-form-item :label="$t('operation-log.6111tvyrbi80')">
-          <el-input v-model.trim="params.username" clearable :placeholder="$t('operation-log.6111tvyrbi80')" @keyup.enter.native="search" @clear="search" />
+          <el-input v-model.trim="params.username" clearable :placeholder="$t('operation-log.6111tvyrbi80')" @keyup.enter="search" @clear="search" />
         </el-form-item>
         <el-form-item :label="$t('operation-log.ipaddr')">
-          <el-input v-model.trim="params.ip" clearable :placeholder="$t('operation-log.ipaddr')" @keyup.enter.native="search" @clear="search" />
+          <el-input v-model.trim="params.ip" clearable :placeholder="$t('operation-log.ipaddr')" @keyup.enter="search" @clear="search" />
         </el-form-item>
         <el-form-item :label="$t('operation-log.6111tvyrbt00')">
-          <el-input v-model.trim="params.path" clearable :placeholder="$t('operation-log.6111tvyrbt00')" @keyup.enter.native="search" @clear="search" />
+          <el-input v-model.trim="params.path" clearable :placeholder="$t('operation-log.6111tvyrbt00')" @keyup.enter="search" @clear="search" />
         </el-form-item>
         <el-form-item :label="$t('operation-log.6111tvyrbw80')">
-          <el-input v-model.trim="params.status" clearable :placeholder="$t('operation-log.6111tvyrbw80')" @keyup.enter.native="search" @clear="search" />
+          <el-input v-model.trim="params.status" clearable :placeholder="$t('operation-log.6111tvyrbw80')" @keyup.enter="search" @clear="search" />
         </el-form-item>
         <el-form-item>
-          <el-button :loading="loading" icon="el-icon-search" type="primary" @click="search">{{ $t('operation-log.6111tvyrbyo0') }}</el-button>
+          <el-button :loading="loading" :icon="Search" @click="search">{{ $t('operation-log.6111tvyrbyo0') }}</el-button>
         </el-form-item>
         <el-form-item>
-          <el-button :disabled="multipleSelection.length === 0" :loading="loading" icon="el-icon-delete" type="danger" @click="batchDelete">{{ $t('operation-log.6111tvyrc0o0') }}</el-button>
+          <el-button :disabled="multipleSelection.length === 0" :loading="loading" :icon="Delete" type="danger" @click="batchDelete">{{ $t('operation-log.6111tvyrc0o0') }}</el-button>
         </el-form-item>
       </el-form>
 
-      <el-table v-loading="loading" :data="tableData" border stripe style="width: 100%" @selection-change="handleSelectionChange">
-        <el-table-column type="selection" width="55" align="center" />
-        <el-table-column show-overflow-tooltip sortable prop="username" :label="$t('operation-log.6111tvyrbi80')" width="120" />
-        <el-table-column show-overflow-tooltip sortable prop="ip" :label="$t('operation-log.ipaddr')" width="120" />
-        <el-table-column show-overflow-tooltip sortable prop="method" :label="$t('operation-log.6111tvyrc2s0')" width="100" />
-        <el-table-column show-overflow-tooltip sortable prop="path" :label="$t('operation-log.6111tvyrbt00')" />
-        <el-table-column show-overflow-tooltip sortable prop="status" :label="$t('operation-log.6111tvyrbw80')" width="100" align="center">
-          <template slot-scope="scope">
-            <el-tag size="small" :type="scope.row.status | statusTagFilter" disable-transitions>{{ scope.row.status }}</el-tag>
+      <el-table v-loading="loading" :data="tableData" stripe style="width: 100%" @selection-change="handleSelectionChange">
+        <el-table-column type="selection" width="48" align="center" />
+        <el-table-column show-overflow-tooltip sortable prop="username" :label="$t('operation-log.6111tvyrbi80')" width="130" />
+        <el-table-column show-overflow-tooltip sortable prop="ip" :label="$t('operation-log.ipaddr')" width="140" />
+        <el-table-column show-overflow-tooltip sortable prop="method" :label="$t('operation-log.6111tvyrc2s0')" width="110" />
+        <el-table-column show-overflow-tooltip sortable prop="path" :label="$t('operation-log.6111tvyrbt00')" min-width="220" />
+        <el-table-column show-overflow-tooltip sortable prop="status" :label="$t('operation-log.6111tvyrbw80')" width="110" align="center">
+          <template #default="scope">
+            <el-tag size="small" :type="statusTagType(scope.row.status)" disable-transitions>{{ scope.row.status }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column show-overflow-tooltip sortable prop="startTime" :label="$t('operation-log.6111tvyrc4w0')" width="300">
-          <!-- <template slot-scope="scope">
-            {{ parseGoTime(scope.row.startTime) }}
-          </template> -->
-        </el-table-column>
-        <el-table-column show-overflow-tooltip sortable prop="timeCost" :label="$t('operation-log.6111tvyrc8s0')" width="130" align="center">
-          <template slot-scope="scope">
-            <el-tag size="small" :type="scope.row.timeCost | timeCostTagFilter" disable-transitions>{{ scope.row.timeCost }}</el-tag>
+        <el-table-column show-overflow-tooltip sortable prop="startTime" :label="$t('operation-log.6111tvyrc4w0')" width="180" />
+        <el-table-column show-overflow-tooltip sortable prop="timeCost" :label="$t('operation-log.6111tvyrc8s0')" width="160" align="center">
+          <template #default="scope">
+            <el-tag size="small" :type="timeCostTagType(scope.row.timeCost)" disable-transitions>{{ scope.row.timeCost }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column show-overflow-tooltip sortable prop="desc" :label="$t('operation-log.6111tvyrcaw0')" />
-        <el-table-column fixed="right" :label="$t('operation-log.6111tvyrccw0')" align="center" width="80">
-          <template slot-scope="scope">
-            <el-tooltip :content="$t('operation-log.6111tvyrcf40')" effect="dark" placement="top">
+        <el-table-column show-overflow-tooltip sortable prop="desc" :label="$t('operation-log.6111tvyrcaw0')" min-width="160" />
+        <el-table-column fixed="right" :label="$t('operation-log.6111tvyrccw0')" align="left" width="100">
+          <template #default="scope">
+            <div class="row-actions">
               <el-popconfirm :title="$t('operation-log.6111tvyrchk0')" @confirm="singleDelete(scope.row.ID)">
-                <el-button slot="reference" size="mini" icon="el-icon-delete" circle type="danger" />
+                <template #reference>
+                  <el-button link type="danger" :icon="Delete">{{ $t('common.delete') }}</el-button>
+                </template>
               </el-popconfirm>
-            </el-tooltip>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -70,155 +68,132 @@
   </div>
 </template>
 
-<script>
-import { getOperationLogs, batchDeleteOperationLogByIds } from "@/api/log/operationLog";
-import { parseGoTime } from "@/utils/index";
-import { Message } from "element-ui";
+<script setup lang="ts">
+import { reactive, ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { Search, Delete } from '@/icons/tabler';
+import { getOperationLogs, batchDeleteOperationLogByIds } from '@/api/log/operationLog';
 
-export default {
-  name: "OperationLog",
-  filters: {
-    statusTagFilter(val) {
-      if (val === 200) {
-        return "success";
-      } else if (val === 400) {
-        return "warning";
-      } else if (val === 401) {
-        return "danger";
-      } else if (val === 403) {
-        return "danger";
-      } else if (val === 500) {
-        return "danger";
-      } else {
-        return "info";
-      }
-    },
-    timeCostTagFilter(val) {
-      if (val <= 200) {
-        return "success";
-      } else if (val > 200 && val <= 1000) {
-        return "";
-      } else if (val > 1000 && val <= 2000) {
-        return "warning";
-      } else {
-        return "danger";
-      }
-    }
-  },
-  data() {
-    return {
-      // 查询参数
-      params: {
-        username: "",
-        ip: "",
-        path: "",
-        status: "",
-        pageNum: 1,
-        pageSize: 10
-      },
-      // 表格数据
-      tableData: [],
-      total: 0,
-      loading: false,
+defineOptions({ name: 'OperationLog' });
 
-      // 删除按钮弹出框
-      popoverVisible: false,
-      // 表格多选
-      multipleSelection: []
-    };
-  },
-  created() {
-    this.getTableData();
-  },
-  methods: {
-    parseGoTime,
-    // 查询
-    search() {
-      this.params.pageNum = 1;
-      this.getTableData();
-    },
+type TagType = 'success' | 'warning' | 'danger' | 'info' | 'primary';
 
-    // 获取表格数据
-    async getTableData() {
-      this.loading = true;
-      try {
-        const { data } = await getOperationLogs(this.params);
-        this.tableData = data.logs;
-        this.total = data.total;
-      } finally {
-        this.loading = false;
-      }
-    },
+const { t } = useI18n();
 
-    // 判断结果
-    judgeResult(res) {
-      if (res.code === 200 || res.code === 0) {
-        Message({
-          showClose: true,
-          message: this.$t("operation-log.6111tvyrcjk0"),
-          type: "success"
-        });
-      }
-    },
+// 查询参数
+const params = reactive({
+  username: '',
+  ip: '',
+  path: '',
+  status: '',
+  pageNum: 1,
+  pageSize: 10
+});
+// 表格数据
+const tableData = ref<any[]>([]);
+const total = ref(0);
+const loading = ref(false);
+// 表格多选
+const multipleSelection = ref<any[]>([]);
 
-    // 批量删除
-    batchDelete() {
-      this.$confirm(this.$t("tips.deleteWarning"), this.$t("operation-log.6111tvyrcls0"), {
-        confirmButtonText: this.$t("operation-log.6111tvyrcnw0"),
-        cancelButtonText: this.$t("operation-log.6111tvyrcq40"),
-        type: "warning"
-      }).then(async res => {
-        this.loading = true;
-        const operationLogIds = [];
-        this.multipleSelection.forEach(x => {
-          operationLogIds.push(x.ID);
-        });
-        try {
-          await batchDeleteOperationLogByIds({ operationLogIds: operationLogIds }).then(res => {
-            this.judgeResult(res);
-          });
-        } finally {
-          this.loading = false;
-        }
-        this.getTableData();
-      }).catch(() => {
-        Message({
-          showClose: true,
-          type: "info",
-          message: this.$t("operation-log.6111tvyrcs40")
-        });
-      });
-    },
+function statusTagType(val: number): TagType {
+  if (val === 200) return 'success';
+  if (val === 400) return 'warning';
+  if (val === 401 || val === 403 || val === 500) return 'danger';
+  return 'info';
+}
 
-    // 表格多选
-    handleSelectionChange(val) {
-      this.multipleSelection = val;
-    },
+function timeCostTagType(val: number): TagType {
+  if (val <= 200) return 'success';
+  if (val <= 1000) return 'primary';
+  if (val <= 2000) return 'warning';
+  return 'danger';
+}
 
-    // 单个删除
-    async singleDelete(Id) {
-      this.loading = true;
-      try {
-        await batchDeleteOperationLogByIds({ operationLogIds: [Id] }).then(res => {
-          this.judgeResult(res);
-        });
-      } finally {
-        this.loading = false;
-      }
-      this.getTableData();
-    },
+// 查询
+function search() {
+  params.pageNum = 1;
+  getTableData();
+}
 
-    // 分页
-    handleSizeChange(val) {
-      this.params.pageSize = val;
-      this.getTableData();
-    },
-    handleCurrentChange(val) {
-      this.params.pageNum = val;
-      this.getTableData();
-    }
+// 获取表格数据
+async function getTableData() {
+  loading.value = true;
+  try {
+    const { data } = await getOperationLogs(params);
+    tableData.value = data.logs;
+    total.value = data.total;
+  } catch {
+    // error already shown
+  } finally {
+    loading.value = false;
   }
-};
+}
+
+function showDeleteSuccess() {
+  ElMessage({
+    showClose: true,
+    message: t('operation-log.6111tvyrcjk0'),
+    type: 'success'
+  });
+}
+
+async function deleteByIds(operationLogIds: number[]) {
+  loading.value = true;
+  try {
+    await batchDeleteOperationLogByIds({ operationLogIds });
+    showDeleteSuccess();
+  } catch {
+    // error already shown
+  } finally {
+    loading.value = false;
+  }
+  getTableData();
+}
+
+// 批量删除
+async function batchDelete() {
+  try {
+    await ElMessageBox.confirm(t('tips.deleteWarning'), t('operation-log.6111tvyrcls0'), {
+      confirmButtonText: t('operation-log.6111tvyrcnw0'),
+      cancelButtonText: t('operation-log.6111tvyrcq40'),
+      type: 'warning'
+    });
+  } catch {
+    ElMessage({
+      showClose: true,
+      type: 'info',
+      message: t('operation-log.6111tvyrcs40')
+    });
+    return;
+  }
+  await deleteByIds(multipleSelection.value.map(x => x.ID));
+}
+
+// 表格多选
+function handleSelectionChange(val: any[]) {
+  multipleSelection.value = val;
+}
+
+// 单个删除
+function singleDelete(id: number) {
+  return deleteByIds([id]);
+}
+
+// 分页
+function handleSizeChange(val: number) {
+  params.pageSize = val;
+  getTableData();
+}
+function handleCurrentChange(val: number) {
+  params.pageNum = val;
+  getTableData();
+}
+
+onMounted(() => {
+  getTableData();
+});
 </script>
 
 <style scoped>

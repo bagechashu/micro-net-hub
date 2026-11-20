@@ -1,60 +1,77 @@
 <template>
   <div>
     <el-card class="container-card" shadow="always">
-      <el-form size="mini" :inline="true" class="demo-form-inline">
+      <el-form :inline="true" class="demo-form-inline">
         <el-form-item>
-          <el-button :loading="loading" icon="el-icon-plus" type="warning" @click="create">{{ $t('menu.61131vuglrw0') }}</el-button>
+          <el-button :loading="loading" type="primary" @click="create" :icon="Plus">{{ $t('menu.61131vuglrw0') }}</el-button>
         </el-form-item>
         <el-form-item>
-          <el-button :disabled="multipleSelection.length === 0" :loading="loading" icon="el-icon-delete" type="danger" @click="batchDelete">{{ $t('menu.61131vugmb40') }}</el-button>
+          <el-button :disabled="multipleSelection.length === 0" :loading="loading" type="danger" @click="batchDelete" :icon="Delete">{{ $t('menu.61131vugmb40') }}</el-button>
         </el-form-item>
       </el-form>
 
-      <el-table v-loading="loading" :tree-props="{children: 'children', hasChildren: 'hasChildren'}" row-key="ID" :data="tableData" border stripe style="width: 100%" @selection-change="handleSelectionChange">
-        <el-table-column type="selection" width="55" align="center" />
+      <el-table v-loading="loading" :tree-props="{children: 'children', hasChildren: 'hasChildren'}" row-key="ID" :data="tableData" stripe style="width: 100%" @selection-change="handleSelectionChange">
+        <el-table-column type="selection" width="48" align="center" />
         <el-table-column show-overflow-tooltip prop="name" :label="$t('menu.61131vugmf40')" width="200" />
-        <el-table-column show-overflow-tooltip prop="icon" :label="$t('menu.61131vugmhg0')" />
-        <el-table-column show-overflow-tooltip prop="path" :label="$t('menu.61131vugmjo0')" />
-        <el-table-column show-overflow-tooltip prop="component" :label="$t('menu.61131vugmm40')" />
-        <el-table-column show-overflow-tooltip prop="redirect" :label="$t('menu.61131vugmoo0')" />
-        <el-table-column show-overflow-tooltip prop="sort" :label="$t('menu.61131vugmqw0')" align="center" width="80" />
-        <el-table-column show-overflow-tooltip prop="status" :label="$t('menu.61131vugmts0')" align="center" width="80">
-          <template slot-scope="scope">
+        <el-table-column show-overflow-tooltip prop="icon" :label="$t('menu.61131vugmhg0')" width="120">
+          <template v-slot="scope">
+            <span>{{ scope.row.icon }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column show-overflow-tooltip prop="path" :label="$t('menu.61131vugmjo0')" min-width="160" />
+        <el-table-column show-overflow-tooltip prop="component" :label="$t('menu.61131vugmm40')" min-width="160" />
+        <el-table-column show-overflow-tooltip prop="redirect" :label="$t('menu.61131vugmoo0')" min-width="140" />
+        <el-table-column show-overflow-tooltip prop="sort" :label="$t('menu.61131vugmqw0')" width="80" align="center" />
+        <el-table-column show-overflow-tooltip prop="status" :label="$t('menu.61131vugmts0')" width="90" align="center">
+          <template v-slot="scope">
             <el-tag size="small" :type="scope.row.status === 1 ? 'success':'danger'">{{ scope.row.status === 1 ? '否':'是' }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column show-overflow-tooltip prop="hidden" :label="$t('menu.61131vugmw40')" align="center" width="80">
-          <template slot-scope="scope">
+        <el-table-column show-overflow-tooltip prop="hidden" :label="$t('menu.61131vugmw40')" width="90" align="center">
+          <template v-slot="scope">
             <el-tag size="small" :type="scope.row.hidden === 1 ? 'danger':'success'">{{ scope.row.hidden === 1 ? '是':'否' }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column show-overflow-tooltip prop="noCache" :label="$t('menu.61131vugmy80')" align="center" width="80">
-          <template slot-scope="scope">
+        <el-table-column show-overflow-tooltip prop="noCache" :label="$t('menu.61131vugmy80')" width="90" align="center">
+          <template v-slot="scope">
             <el-tag size="small" :type="scope.row.noCache === 1 ? 'danger':'success'">{{ scope.row.noCache === 1 ? '否':'是' }}</el-tag>
           </template>
         </el-table-column>
-        <!-- <el-table-column show-overflow-tooltip prop="activeMenu" label="高亮菜单" /> -->
-        <el-table-column fixed="right" :label="$t('menu.61131vugn0s0')" align="center" width="120">
-          <template slot-scope="scope">
-            <el-tooltip fixed :content="$t('menu.61131vugn2w0')" effect="dark" placement="top">
-              <el-button size="mini" icon="el-icon-edit" circle type="primary" @click="update(scope.row)" />
-            </el-tooltip>
-            <el-tooltip class="delete-popover" fixed :content="$t('menu.61131vugn5g0')" effect="dark" placement="top">
+        <el-table-column fixed="right" :label="$t('menu.61131vugn0s0')" align="left" width="160">
+          <template v-slot="scope">
+            <div class="row-actions">
+              <el-button link type="primary" :icon="Edit" @click="update(scope.row)">{{ $t('common.edit') }}</el-button>
               <el-popconfirm :title="$t('menu.61131vugn7s0')" @confirm="singleDelete(scope.row.ID)">
-                <el-button slot="reference" size="mini" icon="el-icon-delete" circle type="danger" />
+                <template #reference>
+                  <el-button link type="danger" :icon="Delete">{{ $t('common.delete') }}</el-button>
+                </template>
               </el-popconfirm>
-            </el-tooltip>
+            </div>
           </template>
         </el-table-column>
       </el-table>
 
-      <el-dialog :title="dialogFormTitle" :visible.sync="dialogFormVisible" width="800px">
-        <el-form ref="dialogForm" :inline="true" size="small" :model="dialogFormData" :rules="dialogFormRules" label-width="140px">
+      <el-dialog :title="dialogFormTitle" v-model="dialogFormVisible" width="720px">
+        <el-form ref="dialogForm" class="form-grid" :model="dialogFormData" :rules="dialogFormRules" label-position="top">
           <el-form-item :label="$t('menu.61131vugmf40')" prop="name">
-            <el-input v-model.trim="dialogFormData.name" :placeholder="$t('menu.61131vugna00')" style="width: 600px" />
+            <el-input v-model.trim="dialogFormData.name" :placeholder="$t('menu.61131vugna00')" />
           </el-form-item>
-          <el-form-item :label="$t('menu.61131vugmqw0')" prop="sort" style="width: 600px">
-            <el-input-number v-model.number="dialogFormData.sort" controls-position="right" :min="1" :max="999" />
+          <el-form-item :label="$t('menu.61131vugnt40')" prop="parentId">
+            <TreeSelect
+              v-model="dialogFormData.parentId"
+              :options="treeselectData"
+              :normalizer="normalizer"
+              @input="treeselectInput"
+            />
+          </el-form-item>
+          <el-form-item :label="$t('menu.61131vugmjo0')" prop="path">
+            <el-input v-model.trim="dialogFormData.path" :placeholder="$t('menu.61131vugneo0')" />
+          </el-form-item>
+          <el-form-item :label="$t('menu.61131vugmm40')" prop="component">
+            <el-input v-model.trim="dialogFormData.component" :placeholder="$t('menu.61131vugngs0')" />
+          </el-form-item>
+          <el-form-item :label="$t('menu.61131vugmoo0')" prop="redirect">
+            <el-input v-model.trim="dialogFormData.redirect" :placeholder="$t('menu.61131vugnj40')" />
           </el-form-item>
           <el-form-item :label="$t('menu.61131vugmhg0')" prop="icon">
             <el-popover
@@ -64,20 +81,17 @@
               @show="$refs['iconSelect'].reset()"
             >
               <IconSelect ref="iconSelect" @selected="selected" />
-              <el-input slot="reference" v-model="dialogFormData.icon" style="width: 600px;" :placeholder="$t('menu.61131vugncg0')" readonly>
-                <svg-icon v-if="dialogFormData.icon" slot="prefix" :icon-class="dialogFormData.icon" class="el-input__icon" style="height: 32px;width: 16px;" />
-                <i v-else slot="prefix" class="el-icon-search el-input__icon" />
-              </el-input>
+              <template #reference>
+                <el-input v-model="dialogFormData.icon" :placeholder="$t('menu.61131vugncg0')" readonly>
+                  <template v-if="dialogFormData.icon" #prefix>
+                    <svg-icon :icon-class="dialogFormData.icon" class="el-input__icon" style="height: 32px;width: 16px;" />
+                  </template>
+                </el-input>
+              </template>
             </el-popover>
           </el-form-item>
-          <el-form-item :label="$t('menu.61131vugmjo0')" prop="path">
-            <el-input v-model.trim="dialogFormData.path" :placeholder="$t('menu.61131vugneo0')" style="width: 600px" />
-          </el-form-item>
-          <el-form-item :label="$t('menu.61131vugmm40')" prop="component">
-            <el-input v-model.trim="dialogFormData.component" :placeholder="$t('menu.61131vugngs0')" style="width: 600px" />
-          </el-form-item>
-          <el-form-item :label="$t('menu.61131vugmoo0')" prop="redirect">
-            <el-input v-model.trim="dialogFormData.redirect" :placeholder="$t('menu.61131vugnj40')" style="width: 600px" />
+          <el-form-item :label="$t('menu.61131vugmqw0')" prop="sort">
+            <el-input-number v-model.number="dialogFormData.sort" controls-position="right" :min="1" :max="999" />
           </el-form-item>
           <el-form-item :label="$t('menu.61131vugmts0')" prop="status">
             <el-radio-group v-model="dialogFormData.status">
@@ -97,31 +111,11 @@
               <el-radio-button :label="$t('menu.61131vugnow0')" />
             </el-radio-group>
           </el-form-item>
-          <!-- <el-form-item label="高亮菜单" prop="activeMenu">
-            <el-input v-model.trim="dialogFormData.activeMenu" :placeholder="$t('menu.61131vugnr80')" style="width: 440px" />
-          </el-form-item> -->
-          <el-form-item :label="$t('menu.61131vugnt40')" prop="parentId">
-            <!-- <el-cascader
-              v-model="dialogFormData.parentId"
-              :show-all-levels="false"
-              :options="treeselectData"
-              :props="{ checkStrictly: true, label:'title', value:'ID', emitPath:false}"
-              clearable
-              filterable
-            /> -->
-            <treeselect
-              v-model="dialogFormData.parentId"
-              :options="treeselectData"
-              :normalizer="normalizer"
-              style="width:600px"
-              @input="treeselectInput"
-            />
-          </el-form-item>
         </el-form>
-        <div slot="footer" class="dialog-footer">
-          <el-button size="mini" @click="cancelForm()">{{ $t('menu.61131vugnuw0') }}</el-button>
-          <el-button size="mini" :loading="submitLoading" type="primary" @click="submitForm()">{{ $t('menu.61131vugnwo0') }}</el-button>
-        </div>
+        <template #footer>
+          <el-button @click="cancelForm()">{{ $t('menu.61131vugnuw0') }}</el-button>
+          <el-button :loading="submitLoading" type="primary" @click="submitForm()">{{ $t('menu.61131vugnwo0') }}</el-button>
+        </template>
       </el-dialog>
 
     </el-card>
@@ -129,86 +123,78 @@
 </template>
 
 <script>
-import IconSelect from "@/components/IconSelect";
-import Treeselect from "@riophae/vue-treeselect";
-import "@riophae/vue-treeselect/dist/vue-treeselect.css";
-import { getMenuTree, createMenu, updateMenuById, batchDeleteMenuByIds } from "@/api/system/menu";
-import { Message } from "element-ui";
+import { defineComponent } from 'vue';
+import IconSelect from '@/components/IconSelect';
+import TreeSelect from '@zanmato/vue3-treeselect';
+import '@zanmato/vue3-treeselect/dist/vue3-treeselect.min.css';
+import { getMenuTree, createMenu, updateMenuById, batchDeleteMenuByIds } from '@/api/system/menu';
+import { Edit, Delete, Plus } from '@/icons/tabler';
 
-export default {
-  name: "Menu",
+export default defineComponent({
+  name: 'SystemMenu',
   components: {
     IconSelect,
-    Treeselect
+    TreeSelect
+  },
+  setup() {
+    // 供模板里 el-button 的 :icon 使用
+    return { Edit, Delete, Plus };
   },
   data() {
     return {
-      // 表格数据
       tableData: [],
       loading: false,
-
-      // 上级目录数据
       treeselectData: [],
       treeselectValue: undefined,
-
-      // dialog对话框
       submitLoading: false,
-      dialogFormTitle: "",
-      dialogType: "",
+      dialogFormTitle: '',
+      dialogType: '',
       dialogFormVisible: false,
       dialogFormData: {
-        ID: "",
-        name: "",
-        icon: "",
-        path: "",
-        component: "Layout",
-        redirect: "",
+        ID: '',
+        name: '',
+        icon: '',
+        path: '',
+        component: 'Layout',
+        redirect: '',
         sort: 999,
-        status: this.$t("menu.61131vugnow0"),
-        hidden: this.$t("menu.61131vugnow0"),
-        noCache: this.$t("menu.61131vugnmc0"),
+        status: this.$t('menu.61131vugnow0'),
+        hidden: this.$t('menu.61131vugnow0'),
+        noCache: this.$t('menu.61131vugnmc0'),
         alwaysShow: 2,
         breadcrumb: 1,
-        // activeMenu: '',
         parentId: 0
       },
       dialogFormRules: {
         name: [
-          { required: true, message: this.$t("menu.61131vugo7s0"), trigger: "blur" },
-          { min: 1, max: 20, message: this.$t("valid.length", [1, 20]), trigger: "blur" },
+          { required: true, message: this.$t('menu.61131vugo7s0'), trigger: 'blur' },
+          { min: 1, max: 20, message: this.$t('valid.length', [1, 20]), trigger: 'blur' },
           { validator: (rule, value, callback) => {
             if (!value || !/\s/.test(value)) {
               callback();
             } else {
-              callback(new Error("因为i18n引用了该字段, 不能有空格"));
+              callback(new Error('因为i18n引用了该字段, 不能有空格'));
             }
-          }, trigger: "blur" }
+          }, trigger: 'blur' }
         ],
         path: [
-          { required: true, message: this.$t("menu.61131vugoa40"), trigger: "blur" },
-          { min: 1, max: 100, message: this.$t("valid.length", [1, 100]), trigger: "blur" }
+          { required: true, message: this.$t('menu.61131vugoa40'), trigger: 'blur' },
+          { min: 1, max: 100, message: this.$t('valid.length', [1, 100]), trigger: 'blur' }
         ],
         component: [
-          { required: false, message: this.$t("menu.61131vugoc00"), trigger: "blur" },
-          { min: 0, max: 100, message: this.$t("valid.length", [0, 100]), trigger: "blur" }
+          { required: false, message: this.$t('menu.61131vugoc00'), trigger: 'blur' },
+          { min: 0, max: 100, message: this.$t('valid.length', [0, 100]), trigger: 'blur' }
         ],
         redirect: [
-          { required: false, message: this.$t("menu.61131vugoe40"), trigger: "blur" },
-          { min: 0, max: 100, message: this.$t("valid.length", [0, 100]), trigger: "blur" }
+          { required: false, message: this.$t('menu.61131vugoe40'), trigger: 'blur' },
+          { min: 0, max: 100, message: this.$t('valid.length', [0, 100]), trigger: 'blur' }
         ],
-        // activeMenu: [
-        //   { required: false, message: '请输入高亮菜单', trigger: 'blur' },
-        //   { min: 0, max: 100, message: '长度在 0 到 100 个字符', trigger: 'blur' }
-        // ],
         parentId: [
-          { required: true, message: this.$t("menu.61131vugofw0"), trigger: "change" }
+          { required: true, message: this.$t('menu.61131vugofw0'), trigger: 'change' }
         ]
 
       },
-
-      // 删除按钮弹出框
       popoverVisible: false,
-      // 表格多选
       multipleSelection: []
     };
   },
@@ -216,27 +202,21 @@ export default {
     this.getTableData();
   },
   methods: {
-    // 获取表格数据
     async getTableData() {
       this.loading = true;
       try {
         const { data } = await getMenuTree();
-
         this.tableData = data;
-        this.treeselectData = [{ ID: 0, name: this.$t("menu.61131vugohw0"), children: data }];
+        this.treeselectData = [{ ID: 0, name: this.$t('menu.61131vugohw0'), children: data }];
       } finally {
         this.loading = false;
       }
     },
-
-    // 新增
     create() {
-      this.dialogFormTitle = this.$t("menu.61131vugojk0");
-      this.dialogType = "create";
+      this.dialogFormTitle = this.$t('menu.61131vugojk0');
+      this.dialogType = 'create';
       this.dialogFormVisible = true;
     },
-
-    // 修改
     update(row) {
       this.dialogFormData.ID = row.ID;
       this.dialogFormData.name = row.name;
@@ -245,54 +225,50 @@ export default {
       this.dialogFormData.component = row.component;
       this.dialogFormData.redirect = row.redirect;
       this.dialogFormData.sort = row.sort;
-      this.dialogFormData.status = row.status === 1 ? this.$t("menu.61131vugnow0") : this.$t("menu.61131vugnmc0");
-      this.dialogFormData.hidden = row.hidden === 1 ? this.$t("menu.61131vugnmc0") : this.$t("menu.61131vugnow0");
-      this.dialogFormData.noCache = row.noCache === 1 ? this.$t("menu.61131vugnow0") : this.$t("menu.61131vugnmc0");
-      // this.dialogFormData.activeMenu = row.activeMenu
+      this.dialogFormData.status = row.status === 1 ? this.$t('menu.61131vugnow0') : this.$t('menu.61131vugnmc0');
+      this.dialogFormData.hidden = row.hidden === 1 ? this.$t('menu.61131vugnmc0') : this.$t('menu.61131vugnow0');
+      this.dialogFormData.noCache = row.noCache === 1 ? this.$t('menu.61131vugnow0') : this.$t('menu.61131vugnmc0');
       this.dialogFormData.parentId = row.parentId;
 
-      this.dialogFormTitle = this.$t("menu.61131vugon80");
-      this.dialogType = "update";
+      this.dialogFormTitle = this.$t('menu.61131vugon80');
+      this.dialogType = 'update';
       this.dialogFormVisible = true;
     },
-
-    // 判断结果
     judgeResult(res) {
       if (res.code === 0 || res.code === 200) {
-        Message({
+        ElMessage({
           showClose: true,
-          message: this.$t("menu.61131vugop80"),
-          type: "success"
+          message: this.$t('menu.61131vugop80'),
+          type: 'success'
         });
       }
     },
-
-    // 提交表单
     submitForm() {
-      this.$refs["dialogForm"].validate(async valid => {
+      // @ts-expect-error refs
+      this.$refs['dialogForm'].validate(async (valid) => {
         if (valid) {
           this.submitLoading = true;
           if (this.dialogFormData.ID === this.dialogFormData.parentId) {
-            return Message({
+            ElMessage({
               showClose: true,
-              message: this.$t("menu.61131vugoqw0"),
-              type: "error"
+              message: this.$t('menu.61131vugoqw0'),
+              type: 'error'
             });
+            this.submitLoading = false;
+            return;
           }
 
-          // 处理表单项
-          this.dialogFormData.component = this.dialogFormData.component || "Layout";
-          this.dialogFormData.status = this.dialogFormData.status === this.$t("menu.61131vugnmc0") ? 2 : 1;
-          this.dialogFormData.hidden = this.dialogFormData.hidden === this.$t("menu.61131vugnmc0") ? 1 : 2;
-          this.dialogFormData.noCache = this.dialogFormData.noCache === this.$t("menu.61131vugnmc0") ? 2 : 1;
+          this.dialogFormData.component = this.dialogFormData.component || 'Layout';
+          this.dialogFormData.status = this.dialogFormData.status === this.$t('menu.61131vugnmc0') ? 2 : 1;
+          this.dialogFormData.hidden = this.dialogFormData.hidden === this.$t('menu.61131vugnmc0') ? 1 : 2;
+          this.dialogFormData.noCache = this.dialogFormData.noCache === this.$t('menu.61131vugnmc0') ? 2 : 1;
 
-          // 创建副本逻辑
-          const dialogFormDataCopy = typeof this.treeselectValue !== "undefined"
+          const dialogFormDataCopy = typeof this.treeselectValue !== 'undefined'
             ? { ...this.dialogFormData, parentId: this.treeselectValue }
             : this.dialogFormData;
 
           try {
-            const res = this.dialogType === "create"
+            const res = this.dialogType === 'create'
               ? await createMenu(dialogFormDataCopy)
               : await updateMenuById(dialogFormDataCopy);
 
@@ -303,48 +279,43 @@ export default {
           this.resetForm();
           this.getTableData();
         } else {
-          Message({
+          ElMessage({
             showClose: true,
-            message: this.$t("menu.61131vugosw0"),
-            type: "error"
+            message: this.$t('menu.61131vugosw0'),
+            type: 'error'
           });
           return false;
         }
       });
     },
-
-    // 提交表单
     cancelForm() {
       this.resetForm();
     },
-
     resetForm() {
       this.dialogFormVisible = false;
-      this.$refs["dialogForm"].resetFields();
+      // @ts-expect-error refs
+      this.$refs['dialogForm'].resetFields();
       this.dialogFormData = {
-        name: "",
-        icon: "",
-        path: "",
-        component: "Layout",
-        redirect: "",
+        name: '',
+        icon: '',
+        path: '',
+        component: 'Layout',
+        redirect: '',
         sort: 999,
-        status: this.$t("menu.61131vugnow0"),
-        hidden: this.$t("menu.61131vugnow0"),
-        noCache: this.$t("menu.61131vugnmc0"),
+        status: this.$t('menu.61131vugnow0'),
+        hidden: this.$t('menu.61131vugnow0'),
+        noCache: this.$t('menu.61131vugnmc0'),
         alwaysShow: 2,
         breadcrumb: 1,
-        // activeMenu: '',
         parentId: 0
       };
     },
-
-    // 批量删除
     batchDelete() {
-      this.$confirm(this.$t("tips.deleteWarning"), this.$t("menu.61131vugov00"), {
-        confirmButtonText: this.$t("menu.61131vugnwo0"),
-        cancelButtonText: this.$t("menu.61131vugnuw0"),
-        type: "warning"
-      }).then(async res => {
+      ElMessageBox.confirm(this.$t('tips.deleteWarning'), this.$t('menu.61131vugov00'), {
+        confirmButtonText: this.$t('menu.61131vugnwo0'),
+        cancelButtonText: this.$t('menu.61131vugnuw0'),
+        type: 'warning'
+      }).then(async () => {
         this.loading = true;
         const menuIds = [];
         this.multipleSelection.forEach(x => {
@@ -359,19 +330,15 @@ export default {
         }
         this.getTableData();
       }).catch(() => {
-        Message({
-          type: "info",
-          message: this.$t("menu.61131vugox00")
+        ElMessage({
+          type: 'info',
+          message: this.$t('menu.61131vugox00')
         });
       });
     },
-
-    // 表格多选
     handleSelectionChange(val) {
       this.multipleSelection = val;
     },
-
-    // 单个删除
     async singleDelete(Id) {
       this.loading = true;
       try {
@@ -383,13 +350,9 @@ export default {
       }
       this.getTableData();
     },
-
-    // 选中图标
     selected(name) {
       this.dialogFormData.icon = name;
     },
-
-    // treeselect
     normalizer(node) {
       return {
         id: node.ID,
@@ -400,9 +363,8 @@ export default {
     treeselectInput(value) {
       this.treeselectValue = value;
     }
-
   }
-};
+});
 </script>
 
 <style scoped>

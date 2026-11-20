@@ -2,17 +2,13 @@
   <div>
     <el-card class="container-card" shadow="always">
       <el-form
-        ref="navGroupForm"
+        ref="navGroupFormRef"
         :inline="true"
-        size="small"
         :model="navGroupForm"
         :rules="navGroupFormRules"
       >
         <el-form-item :label="$t('sitenav.6112v35e5140')" prop="name">
-          <el-input
-            v-model.trim="navGroupForm.name"
-            :placeholder="$t('sitenav.6112v35e5ik0')"
-          />
+          <el-input v-model.trim="navGroupForm.name" :placeholder="$t('sitenav.6112v35e5ik0')" />
         </el-form-item>
         <el-form-item :label="$t('sitenav.6112v35e5o40')" prop="title">
           <el-input
@@ -22,12 +18,9 @@
           />
         </el-form-item>
         <el-form-item>
-          <el-button
-            size="small"
-            :loading="loading"
-            type="primary"
-            @click="addGroup()"
-          >{{ $t("sitenav.6112v35e5v40") }}</el-button>
+          <el-button :loading="loading" type="primary" @click="addGroup()">
+            {{ $t('sitenav.6112v35e5v40') }}
+          </el-button>
         </el-form-item>
       </el-form>
 
@@ -38,139 +31,72 @@
         closable
         @tab-remove="deleteGroup"
       >
-        <el-tab-pane
-          v-for="item in navData"
-          :key="item.name"
-          :label="item.title"
-          :name="item.name"
-        >
-          <template>
-            <el-form size="mini" :inline="true" class="demo-form-inline">
-              <el-form-item>
-                <el-button
-                  :loading="loading"
-                  icon="el-icon-plus"
-                  type="warning"
-                  @click="addSite"
-                >{{ $t("sitenav.6112v35e5xw0") }}</el-button>
-              </el-form-item>
-              <el-form-item>
-                <el-button
-                  :disabled="multipleSelection.length === 0"
-                  :loading="loading"
-                  icon="el-icon-delete"
-                  type="danger"
-                  @click="batchDeleteSites"
-                >{{ $t("sitenav.6112v35e60s0") }}</el-button>
-              </el-form-item>
-            </el-form>
-
-            <el-table
-              v-loading="loading"
-              :data="item.sites"
-              border
-              stripe
-              size="mini"
-              style="width: 100%"
-              @selection-change="handleSelectionChange"
-            >
-              <el-table-column type="selection" width="55" align="center" />
-              <el-table-column
-                show-overflow-tooltip
-                sortable
-                prop="name"
-                :label="$t('sitenav.6112v35e63c0')"
-              />
-              <el-table-column
-                show-overflow-tooltip
-                sortable
-                prop="icon"
-                :label="$t('sitenav.6112v35e66c0')"
-              />
-              <el-table-column
-                show-overflow-tooltip
-                sortable
-                prop="desc"
-                :label="$t('sitenav.6112v35e68w0')"
-              />
-              <el-table-column
-                show-overflow-tooltip
-                sortable
-                prop="link"
-                :label="$t('sitenav.6112v35e6bw0')"
-              />
-              <el-table-column
-                show-overflow-tooltip
-                sortable
-                prop="doc"
-                :label="$t('sitenav.6112v35e6eo0')"
-              />
-              <el-table-column
-                fixed="right"
-                :label="$t('sitenav.6112v35e6ho0')"
-                align="center"
-                width="120"
+        <el-tab-pane v-for="item in navData" :key="item.name" :label="item.title" :name="item.name">
+          <el-form :inline="true" class="demo-form-inline">
+            <el-form-item>
+              <el-button :loading="loading" :icon="Plus" type="primary" @click="addSite">
+                {{ $t('sitenav.6112v35e5xw0') }}
+              </el-button>
+            </el-form-item>
+            <el-form-item>
+              <el-button
+                :disabled="multipleSelection.length === 0"
+                :loading="loading"
+                :icon="Delete"
+                type="danger"
+                @click="batchDeleteSites"
               >
-                <template slot-scope="scope">
-                  <el-tooltip
-                    :content="$t('sitenav.6112v35e6k80')"
-                    effect="dark"
-                    placement="top"
-                  >
-                    <el-button
-                      size="mini"
-                      icon="el-icon-edit"
-                      circle
-                      type="primary"
-                      @click="updateSite(scope.row)"
-                    />
-                  </el-tooltip>
-                  <el-tooltip
-                    class="delete-popover"
-                    :content="$t('sitenav.6112v35e6mw0')"
-                    effect="dark"
-                    placement="top"
-                  >
-                    <el-popconfirm
-                      :title="$t('sitenav.6112v35e6pk0')"
-                      @confirm="deleteSite(scope.row.ID)"
-                    >
-                      <el-button
-                        slot="reference"
-                        size="mini"
-                        icon="el-icon-delete"
-                        circle
-                        type="danger"
-                      />
-                    </el-popconfirm>
-                  </el-tooltip>
-                </template>
-              </el-table-column>
-            </el-table>
-          </template>
+                {{ $t('sitenav.6112v35e60s0') }}
+              </el-button>
+            </el-form-item>
+          </el-form>
+
+          <el-table
+            v-loading="loading"
+            :data="item.sites"
+            stripe
+            style="width: 100%"
+            @selection-change="handleSelectionChange"
+          >
+            <el-table-column type="selection" width="48" align="center" />
+            <el-table-column show-overflow-tooltip sortable prop="name" :label="$t('sitenav.6112v35e63c0')" min-width="140" />
+            <el-table-column prop="icon" :label="$t('sitenav.6112v35e66c0')" width="90">
+              <template #default="scope">
+                <el-tooltip :content="scope.row.icon || '—'" placement="top">
+                  <SiteIcon :value="scope.row.icon" :name="scope.row.name" :link="scope.row.link" :size="28" />
+                </el-tooltip>
+              </template>
+            </el-table-column>
+            <el-table-column show-overflow-tooltip sortable prop="desc" :label="$t('sitenav.6112v35e68w0')" min-width="160" />
+            <el-table-column show-overflow-tooltip sortable prop="link" :label="$t('sitenav.6112v35e6bw0')" min-width="220" />
+            <el-table-column show-overflow-tooltip sortable prop="doc" :label="$t('sitenav.6112v35e6eo0')" min-width="160" />
+            <el-table-column fixed="right" :label="$t('sitenav.6112v35e6ho0')" align="left" width="160">
+              <template #default="scope">
+                <div class="row-actions">
+                  <el-button link type="primary" :icon="Edit" @click="updateSite(scope.row)">{{ $t('common.edit') }}</el-button>
+                  <el-popconfirm :title="$t('sitenav.6112v35e6pk0')" @confirm="deleteSite(scope.row.ID)">
+                    <template #reference>
+                      <el-button link type="danger" :icon="Delete">{{ $t('common.delete') }}</el-button>
+                    </template>
+                  </el-popconfirm>
+                </div>
+              </template>
+            </el-table-column>
+          </el-table>
         </el-tab-pane>
       </el-tabs>
       <el-empty v-else :description="$t('common.nodata')" />
 
-      <el-dialog :title="navSiteFormTitle" :visible.sync="navSiteFormVisible">
+      <el-dialog v-model="navSiteFormVisible" :title="navSiteFormTitle" @closed="resetSiteFormFields">
         <el-form
-          ref="navSiteForm"
-          size="small"
+          ref="navSiteFormRef"
           :model="navSiteForm"
           :rules="navSiteFormRules"
-          label-width="auto"
+          label-position="top"
         >
           <el-form-item :label="$t('sitenav.6112v35e6s80')" prop="groupid">
-            <el-select
-              v-model="navSiteForm.groupid"
-              :placeholder="$t('sitenav.6112v35e6v40')"
-            >
-              <el-option
-                v-for="item in groupOptions"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id"
-              />
+            <el-select v-model="navSiteForm.groupid" :placeholder="$t('sitenav.6112v35e6v40')">
+              <el-option v-for="item in groupOptions" :key="item.id" :label="item.name" :value="item.id" />
             </el-select>
           </el-form-item>
           <el-form-item :label="$t('sitenav.6112v35e63c0')" prop="name">
@@ -180,32 +106,19 @@
               @blur="navSiteForm.name = navSiteForm.name.trim()"
             />
           </el-form-item>
-          <el-form-item :label="$t('sitenav.6112v35e66c0')" prop="icon">
-            <el-select
-              v-model="navSiteForm.icon"
-              filterable
-              allow-create
-              default-first-option
-              :placeholder="$t('sitenav.6112v35e6y00')"
-              @blur="navSiteForm.icon = navSiteForm.icon.trim()"
-            >
-              <el-option
-                v-for="item in iconOptions"
-                :key="item.url"
-                :label="item.url"
-                :value="item.url"
-              />
-            </el-select>
-            <!-- <el-input
-              v-model="navSiteForm.icon"
-              :placeholder="$t('sitenav.6112v35e66c0')"
-            /> -->
-          </el-form-item>
           <el-form-item :label="$t('sitenav.6112v35e6bw0')" prop="link">
             <el-input
               v-model="navSiteForm.link"
               :placeholder="$t('sitenav.6112v35e6bw0')"
               @blur="navSiteForm.link = navSiteForm.link.trim()"
+            />
+          </el-form-item>
+          <el-form-item :label="$t('sitenav.6112v35e66c0')" prop="icon">
+            <IconPicker
+              v-model="navSiteForm.icon"
+              :name="navSiteForm.name"
+              :link="navSiteForm.link"
+              @update:model-value="navSiteFormRef?.validateField('icon')"
             />
           </el-form-item>
           <el-form-item :label="$t('sitenav.6112v35e6eo0')" prop="doc">
@@ -226,405 +139,330 @@
             />
           </el-form-item>
         </el-form>
-        <div slot="footer" class="dialog-footer">
-          <el-button size="mini" @click="navSiteFormCancel()">{{
-            $t("sitenav.6112v35e74g0")
-          }}</el-button>
-          <el-button
-            size="mini"
-            :loading="loading"
-            type="primary"
-            @click="navSiteFormSubmit()"
-          >{{ $t("sitenav.6112v35e76o0") }}</el-button>
-        </div>
+        <template #footer>
+          <div class="dialog-footer">
+            <el-button @click="navSiteFormCancel()">{{ $t('sitenav.6112v35e74g0') }}</el-button>
+            <el-button :loading="loading" type="primary" @click="navSiteFormSubmit()">
+              {{ $t('sitenav.6112v35e76o0') }}
+            </el-button>
+          </div>
+        </template>
       </el-dialog>
     </el-card>
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
+import { onMounted, reactive, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import type { FormInstance, FormItemRule } from 'element-plus';
+import { Plus, Delete, Edit } from '@/icons/tabler';
+import SiteIcon from '@/components/SiteIcon/index.vue';
+import IconPicker from '@/components/SiteIcon/IconPicker.vue';
+import { isValidSiteIcon } from '@/components/SiteIcon/icon';
 import {
   getNav,
-  getIcons,
   createNavGroup,
   batchDeleteNavGroupByIds,
   createNavSite,
   updateNavSite,
   batchDeleteNavSiteByIds
-} from "@/api/sitenav/sitenav";
-import { Message } from "element-ui";
+} from '@/api/sitenav';
 
-export default {
-  name: "SiteManager",
-  data() {
-    return {
-      loading: false,
+defineOptions({ name: 'SiteManager' });
 
-      navData: [], // 导航页数据
-      navGroupForm: {
-        name: "",
-        title: ""
-      },
-      navGroupFormRules: {
-        name: [
-          {
-            required: true,
-            message: this.$t("sitenav.6112v35e7980"),
-            trigger: "blur"
-          },
-          {
-            min: 4,
-            max: 20,
-            message: this.$t("valid.length", [4, 20]),
-            trigger: "blur"
-          }
-        ],
-        title: [
-          {
-            required: true,
-            message: this.$t("sitenav.6112v35e7bc0"),
-            trigger: "blur"
-          },
-          {
-            min: 4,
-            max: 20,
-            message: this.$t("valid.length", [4, 20]),
-            trigger: "blur"
-          }
-        ]
-      },
-      navGroupActiveTab: "",
+const { t, te, locale } = useI18n();
 
-      navSiteFormTitle: "",
-      navSiteFormType: "",
-      navSiteFormVisible: false,
-      navSiteForm: {
-        ID: 0,
-        name: "",
-        icon: "",
-        link: "",
-        doc: "",
-        desc: "",
-        groupid: 1
-      },
-      navSiteFormRules: {
-        name: [
-          {
-            required: true,
-            message: this.$t("sitenav.6112v35e7dc0"),
-            trigger: "blur"
-          },
-          {
-            min: 1,
-            max: 50,
-            message: this.$t("valid.length", [1, 50]),
-            trigger: "blur"
-          }
-        ],
-        icon: [
-          {
-            required: true,
-            message: this.$t("sitenav.6112v35e7fw0"),
-            trigger: "blur"
-          },
-          {
-            min: 1,
-            max: 100,
-            message: this.$t("valid.length", [1, 100]),
-            trigger: "blur"
-          }
-        ],
-        link: [
-          {
-            required: true,
-            message: this.$t("sitenav.6112v35e7hw0"),
-            trigger: "change"
-          },
-          {
-            min: 0,
-            max: 100,
-            message: this.$t("valid.length", [1, 100]),
-            trigger: "blur"
-          }
-        ],
-        doc: [
-          {
-            required: false,
-            message: this.$t("sitenav.6112v35e7k00"),
-            trigger: "blur"
-          },
-          {
-            min: 0,
-            max: 100,
-            message: this.$t("valid.length", [1, 100]),
-            trigger: "blur"
-          }
-        ],
-        desc: [
-          {
-            required: true,
-            message: this.$t("sitenav.6112v35e7m40"),
-            trigger: "blur"
-          },
-          {
-            min: 0,
-            max: 200,
-            message: this.$t("valid.length", [1, 200]),
-            trigger: "blur"
-          }
-        ],
-        groupid: [
-          {
-            required: true,
-            message: this.$t("sitenav.6112v35e7o40"),
-            trigger: "blur"
-          }
-        ]
-      },
-      iconOptions: [],
-      groupOptions: [],
-      // 表格多选
-      multipleSelection: []
-    };
-  },
-  created() {
-    this.getData();
-    this.getIconOptions();
-  },
-  methods: {
-    // 获取表格数据
-    async getData() {
-      this.loading = true;
-      try {
-        const { data } = await getNav();
-        this.navData = data;
+const loading = ref(false);
+const navData = ref<any[]>([]);
 
-        // console.log(`navGroupActiveTab type: ${typeof(this.navGroupActiveTab)}, value: ${this.navGroupActiveTab}`);
-        // default navGroupActiveTab type: string, value: 0
-        if (
-          (this.navGroupActiveTab === "0" || this.navGroupActiveTab === "") &&
-          this.navData.length > 0
-        ) {
-          this.navGroupActiveTab = this.navData[0].name;
-        }
-      } finally {
-        this.loading = false;
-      }
-    },
-    getIconOptions() {
-      getIcons().then((res) => {
-        this.iconOptions = res.logos;
-      });
-    },
-    getGroupOptions() {
-      this.groupOptions = this.navData.map((item) => {
-        return {
-          id: item.ID,
-          name: item.title
-        };
-      });
-    },
-    addGroup() {
-      this.$refs["navGroupForm"].validate(async(valid) => {
-        if (valid) {
-          this.loading = true;
-          try {
-            await createNavGroup(this.navGroupForm).then((res) => {
-              this.judgeResult(res);
-            });
-          } finally {
-            this.loading = false;
-          }
-          this.getData();
-        } else {
-          Message({
-            showClose: true,
-            message: this.$t("sitenav.6112v35e7qg0"),
-            type: "warn"
-          });
-          return false;
-        }
-      });
-    },
-    // 根据 tabname 查找 navgroup的 ID
-    getGroupIDFromTabname(tabname) {
-      for (let i = 0; i < this.navData.length; i++) {
-        if (this.navData[i].name === tabname) {
-          // console.log(this.navData[i].ID);
-          return this.navData[i].ID;
-        }
-      }
-    },
-    async deleteGroup(tabname) {
-      const navGroupId = this.getGroupIDFromTabname(tabname);
-      this.$confirm(
-        this.$t("sitenav.deleteSiteTips"),
-        this.$t("sitenav.6112v35e7sg0"),
-        {
-          confirmButtonText: this.$t("sitenav.6112v35e76o0"),
-          cancelButtonText: this.$t("sitenav.6112v35e74g0"),
-          type: "warning"
-        }
-      )
-        .then(async() => {
-          try {
-            await batchDeleteNavGroupByIds({
-              ids: [navGroupId]
-            }).then((res) => {
-              this.judgeResult(res);
-            });
-            this.navGroupActiveTab = "0";
-            this.getData();
-          } finally {
-            this.loading = false;
-          }
-        })
-        .catch(() => {
-          Message({
-            showClose: true,
-            type: "info",
-            message: this.$t("sitenav.6112v35e7uw0")
-          });
-        });
-    },
-    // 新增
-    addSite() {
-      this.getGroupOptions();
-      const navGroupId = this.getGroupIDFromTabname(this.navGroupActiveTab);
-      this.navSiteForm.groupid = navGroupId;
-
-      this.navSiteFormTitle = this.$t("sitenav.6112v35e7ww0");
-      this.navSiteFormType = "add";
-      this.navSiteFormVisible = true;
-    },
-
-    // 修改
-    updateSite(row) {
-      this.getGroupOptions();
-      this.navSiteForm.ID = row.ID;
-      this.navSiteForm.name = row.name;
-      this.navSiteForm.icon = row.icon;
-      this.navSiteForm.desc = row.desc;
-      this.navSiteForm.link = row.link;
-      this.navSiteForm.doc = row.doc;
-      this.navSiteForm.groupid = row.groupid;
-
-      this.navSiteFormTitle = this.$t("sitenav.6112v35e7z00");
-      this.navSiteFormType = "update";
-      this.navSiteFormVisible = true;
-    },
-
-    // 单个删除
-    async deleteSite(id) {
-      this.loading = true;
-      try {
-        await batchDeleteNavSiteByIds({ ids: [id] }).then((res) => {
-          this.judgeResult(res);
-        });
-      } finally {
-        this.loading = false;
-      }
-      this.getData();
-    },
-    // 批量删除
-    batchDeleteSites() {
-      this.$confirm(
-        this.$t("tips.deleteWarning"),
-        this.$t("sitenav.6112v35e7sg0"),
-        {
-          confirmButtonText: this.$t("sitenav.6112v35e76o0"),
-          cancelButtonText: this.$t("sitenav.6112v35e74g0"),
-          type: "warning"
-        }
-      )
-        .then(async() => {
-          this.loading = true;
-          const ids = [];
-          this.multipleSelection.forEach((x) => {
-            ids.push(x.ID);
-          });
-          try {
-            await batchDeleteNavSiteByIds({ ids: ids }).then((res) => {
-              this.judgeResult(res);
-            });
-          } finally {
-            this.loading = false;
-          }
-          this.getData();
-        })
-        .catch(() => {
-          Message({
-            showClose: true,
-            type: "info",
-            message: this.$t("sitenav.6112v35e7uw0")
-          });
-        });
-    },
-    // 提交表单
-    // https://stackoverflow.com/questions/73772552/typeerror-this-refs-is-not-a-function
-    navSiteFormSubmit() {
-      this.$refs["navSiteForm"].validate(async(valid) => {
-        if (valid) {
-          this.loading = true;
-          try {
-            if (this.navSiteFormType === "add") {
-              await createNavSite(this.navSiteForm).then((res) => {
-                this.judgeResult(res);
-              });
-            } else if (this.navSiteFormType === "update") {
-              await updateNavSite(this.navSiteForm).then((res) => {
-                this.judgeResult(res);
-              });
-            }
-          } finally {
-            this.loading = false;
-          }
-          this.navSiteFormReset();
-          this.getData();
-        } else {
-          Message({
-            showClose: true,
-            message: this.$t("sitenav.6112v35e7qg0"),
-            type: "warn"
-          });
-          return false;
-        }
-      });
-    },
-
-    // 提交表单
-    navSiteFormCancel() {
-      this.navSiteFormReset();
-    },
-
-    navSiteFormReset() {
-      this.navSiteFormVisible = false;
-      this.$refs["navSiteForm"].resetFields();
-      this.navSiteForm = {
-        name: "",
-        icon: "",
-        desc: "",
-        link: "",
-        doc: ""
-      };
-    },
-
-    // 判断结果
-    judgeResult(res) {
-      if (res.code === 200) {
-        Message({
-          showClose: true,
-          message: this.$t("sitenav.6112v35e8140"),
-          type: "success"
-        });
-      }
-    },
-    // 表格多选
-    handleSelectionChange(val) {
-      this.multipleSelection = val;
-    }
-  }
+const navGroupFormRef = ref<FormInstance>();
+const navGroupForm = reactive({ name: '', title: '' });
+const navGroupFormRules = {
+  name: [
+    { required: true, message: t('sitenav.6112v35e7980'), trigger: 'blur' },
+    { min: 4, max: 20, message: t('valid.length', [4, 20]), trigger: 'blur' }
+  ],
+  title: [
+    { required: true, message: t('sitenav.6112v35e7bc0'), trigger: 'blur' },
+    { min: 4, max: 20, message: t('valid.length', [4, 20]), trigger: 'blur' }
+  ]
 };
+const navGroupActiveTab = ref<string | number>('');
+
+// ---- URL scheme validation (only http/https are allowed, blocks javascript:/data: etc.) ----
+function invalidUrlMessage() {
+  if (te('valid.invalidUrlScheme')) return t('valid.invalidUrlScheme');
+  return String(locale.value).startsWith('zh')
+    ? '仅支持 http:// 或 https:// 开头的地址'
+    : 'Only http:// or https:// URLs are allowed';
+}
+
+/**
+ * Absolute http(s) URL check. The WHATWG URL parser is used so that tricks like
+ * " javascript:" or "java\tscript:" are normalised the same way a browser would.
+ */
+function isSafeHttpUrl(value: string): boolean {
+  const v = (value || '').trim();
+  if (!v) return false;
+  try {
+    const u = new URL(v);
+    return u.protocol === 'http:' || u.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+function urlRule(): FormItemRule {
+  return {
+    trigger: 'blur',
+    validator: (_rule, value, callback) => {
+      if (!value || !String(value).trim()) return callback(); // emptiness handled by `required`
+      if (!isSafeHttpUrl(String(value))) return callback(new Error(invalidUrlMessage()));
+      callback();
+    }
+  };
+}
+
+const navSiteFormRef = ref<FormInstance>();
+const navSiteFormTitle = ref('');
+const navSiteFormType = ref('');
+const navSiteFormVisible = ref(false);
+const emptySiteForm = () => ({
+  ID: 0,
+  name: '',
+  icon: '',
+  link: '',
+  doc: '',
+  desc: '',
+  groupid: 1 as number | undefined
+});
+const navSiteForm = ref(emptySiteForm());
+const navSiteFormRules = {
+  name: [
+    { required: true, message: t('sitenav.6112v35e7dc0'), trigger: 'blur' },
+    { min: 1, max: 50, message: t('valid.length', [1, 50]), trigger: 'blur' }
+  ],
+  // 图标可选：si:/ti:/favicon/图片地址，留空显示首字头像
+  icon: [
+    { max: 100, message: t('valid.length', [0, 100]), trigger: 'change' },
+    {
+      trigger: 'change',
+      validator: (_rule, value, callback) => (isValidSiteIcon(value) ? callback() : callback(new Error(t('sitenav.iconPicker.invalid'))))
+    }
+  ],
+  link: [
+    { required: true, message: t('sitenav.6112v35e7hw0'), trigger: 'change' },
+    { min: 0, max: 100, message: t('valid.length', [1, 100]), trigger: 'blur' },
+    urlRule()
+  ],
+  doc: [
+    { required: false, message: t('sitenav.6112v35e7k00'), trigger: 'blur' },
+    { min: 0, max: 100, message: t('valid.length', [1, 100]), trigger: 'blur' },
+    urlRule()
+  ],
+  desc: [
+    { required: true, message: t('sitenav.6112v35e7m40'), trigger: 'blur' },
+    { min: 0, max: 200, message: t('valid.length', [1, 200]), trigger: 'blur' }
+  ],
+  groupid: [{ required: true, message: t('sitenav.6112v35e7o40'), trigger: 'blur' }]
+};
+const groupOptions = ref<{ id: number; name: string }[]>([]);
+const multipleSelection = ref<any[]>([]);
+
+async function getData() {
+  loading.value = true;
+  try {
+    const { data } = await getNav();
+    navData.value = data || [];
+    if ((navGroupActiveTab.value === '0' || navGroupActiveTab.value === '') && navData.value.length > 0) {
+      navGroupActiveTab.value = navData.value[0].name;
+    }
+  } catch {
+    /* already shown */
+  } finally {
+    loading.value = false;
+  }
+}
+
+function getGroupOptions() {
+  groupOptions.value = navData.value.map(item => ({ id: item.ID, name: item.title }));
+}
+
+function successMessage() {
+  ElMessage({ showClose: true, message: t('sitenav.6112v35e8140'), type: 'success' });
+}
+
+function validateFailedMessage() {
+  ElMessage({ showClose: true, message: t('sitenav.6112v35e7qg0'), type: 'warning' });
+}
+
+function cancelledMessage() {
+  ElMessage({ showClose: true, type: 'info', message: t('sitenav.6112v35e7uw0') });
+}
+
+async function addGroup() {
+  const valid = await navGroupFormRef.value?.validate().catch(() => false);
+  if (!valid) {
+    validateFailedMessage();
+    return;
+  }
+  loading.value = true;
+  try {
+    await createNavGroup({ ...navGroupForm });
+    successMessage();
+  } catch {
+    /* already shown */
+  } finally {
+    loading.value = false;
+  }
+  getData();
+}
+
+function getGroupIDFromTabname(tabname: string | number) {
+  return navData.value.find(item => item.name === tabname)?.ID;
+}
+
+async function deleteGroup(tabname: string | number) {
+  const navGroupId = getGroupIDFromTabname(tabname);
+  try {
+    await ElMessageBox.confirm(t('sitenav.deleteSiteTips'), t('sitenav.6112v35e7sg0'), {
+      confirmButtonText: t('sitenav.6112v35e76o0'),
+      cancelButtonText: t('sitenav.6112v35e74g0'),
+      type: 'warning'
+    });
+  } catch {
+    cancelledMessage();
+    return;
+  }
+  loading.value = true;
+  try {
+    await batchDeleteNavGroupByIds({ ids: [navGroupId] });
+    successMessage();
+    navGroupActiveTab.value = '0';
+  } catch {
+    /* already shown */
+  } finally {
+    loading.value = false;
+  }
+  getData();
+}
+
+function addSite() {
+  getGroupOptions();
+  navSiteForm.value.groupid = getGroupIDFromTabname(navGroupActiveTab.value);
+  navSiteFormTitle.value = t('sitenav.6112v35e7ww0');
+  navSiteFormType.value = 'add';
+  navSiteFormVisible.value = true;
+}
+
+function updateSite(row: any) {
+  getGroupOptions();
+  navSiteForm.value = {
+    ID: row.ID,
+    name: row.name,
+    icon: row.icon,
+    desc: row.desc,
+    link: row.link,
+    doc: row.doc,
+    groupid: row.groupid
+  };
+  navSiteFormTitle.value = t('sitenav.6112v35e7z00');
+  navSiteFormType.value = 'update';
+  navSiteFormVisible.value = true;
+}
+
+async function deleteSite(id: number) {
+  loading.value = true;
+  try {
+    await batchDeleteNavSiteByIds({ ids: [id] });
+    successMessage();
+  } catch {
+    /* already shown */
+  } finally {
+    loading.value = false;
+  }
+  getData();
+}
+
+async function batchDeleteSites() {
+  try {
+    await ElMessageBox.confirm(t('tips.deleteWarning'), t('sitenav.6112v35e7sg0'), {
+      confirmButtonText: t('sitenav.6112v35e76o0'),
+      cancelButtonText: t('sitenav.6112v35e74g0'),
+      type: 'warning'
+    });
+  } catch {
+    cancelledMessage();
+    return;
+  }
+  loading.value = true;
+  try {
+    await batchDeleteNavSiteByIds({ ids: multipleSelection.value.map(x => x.ID) });
+    successMessage();
+  } catch {
+    /* already shown */
+  } finally {
+    loading.value = false;
+  }
+  getData();
+}
+
+async function navSiteFormSubmit() {
+  const form = navSiteForm.value;
+  form.name = form.name.trim();
+  form.icon = (form.icon || '').trim();
+  form.link = form.link.trim();
+  form.doc = form.doc.trim();
+  form.desc = form.desc.trim();
+
+  const valid = await navSiteFormRef.value?.validate().catch(() => false);
+  // Defence in depth: never submit a non-http(s) link/doc/icon even if the rules were bypassed.
+  const urlsOk =
+    isSafeHttpUrl(form.link) && (!form.doc || isSafeHttpUrl(form.doc)) && isValidSiteIcon(form.icon);
+  if (!valid || !urlsOk) {
+    validateFailedMessage();
+    return;
+  }
+  loading.value = true;
+  try {
+    if (navSiteFormType.value === 'add') {
+      await createNavSite({ ...form });
+    } else if (navSiteFormType.value === 'update') {
+      await updateNavSite({ ...form });
+    }
+    successMessage();
+  } catch {
+    loading.value = false;
+    return;
+  }
+  loading.value = false;
+  navSiteFormReset();
+  getData();
+}
+
+function navSiteFormCancel() {
+  navSiteFormReset();
+}
+
+function resetSiteFormFields() {
+  navSiteFormRef.value?.resetFields();
+  navSiteForm.value = emptySiteForm();
+}
+
+function navSiteFormReset() {
+  navSiteFormVisible.value = false;
+  resetSiteFormFields();
+}
+
+function handleSelectionChange(val: any[]) {
+  multipleSelection.value = val;
+}
+
+onMounted(() => {
+  getData();
+});
 </script>
 
 <style scoped>

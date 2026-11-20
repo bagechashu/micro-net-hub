@@ -1,6 +1,7 @@
 # Makefile for compiling Golang Linux installation package and frontend package
 
-# TAG name for docker image
+# docker image name and tag, e.g. make dockerimage TAG=v0.6.0
+IMAGE ?= xianleeti/micro-net-hub
 TAG ?= latest
 
 # builder and cleaner
@@ -15,7 +16,7 @@ GOOS := linux
 GOARCH := amd64
 
 # Variables
-WEB_SRC_DIR := vue3
+WEB_SRC_DIR := frontend
 SERVICE_SRC_DIR := backend
 APP_NAME := micro-net-hub-$(GOOS)-$(GOARCH)
 BIN_DIR := ../bin
@@ -32,10 +33,10 @@ fe:
 	@echo "===== compile webui... ====="
 	cd $(WEB_SRC_DIR) && $(NPM) ci && $(NPM) run build:ui
 
-# make dockerimage TAG=v0.2.2
+# make dockerimage TAG=v0.6.0   (Dockerfile 只拷贝 bin/ 下的 linux 二进制，需先 make fe be)
 dockerimage:
-	@echo "===== build docker image... ====="
-	docker build -t micro-net-hub:$(TAG) .
+	@echo "===== build docker image $(IMAGE):$(TAG)... ====="
+	docker build --platform linux/$(GOARCH) -t $(IMAGE):$(TAG) .
 
 run:
 	@echo "===== use Air to start backend... ====="
@@ -46,4 +47,4 @@ clean:
 
 .DEFAULT_GOAL := all
 
-.PHONY: all be fe clean run
+.PHONY: all be fe dockerimage clean run
