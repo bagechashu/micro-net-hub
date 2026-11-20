@@ -9,7 +9,7 @@ interface ISettings {
 }
 
 const settings:ISettings = {
-  title: 'Vue3 Element Admin',
+  title: 'Micro Net Hub',
 
   /**
    * @type {boolean} true | false
@@ -33,7 +33,7 @@ const settings:ISettings = {
    * @type {boolean} true | false
    * @description Whether show the logo in sidebar
    */
-  sidebarLogo: false,
+  sidebarLogo: true,
 
   /**
    * @type {boolean} true | false

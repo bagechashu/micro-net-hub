@@ -32,7 +32,8 @@
     "pleaseInput": "Please enter the query item",
     "notAllowEmpty": "This field is required",
     "InvalidName": "The name can only contain letters, numbers, underscores, and hyphens",
-    "invalidDnsZone":  "Only second-level domain names are supported."
+    "invalidDnsZone": "Only second-level domain names are supported.",
+    "invalidUrlScheme": "Only http:// or https:// URLs are allowed"
   },
   "tips": {
     "switchSizeSuccess": "Successfully switched table size",
@@ -140,7 +141,8 @@
     "6112v35e7ww0": "Add Site",
     "6112v35e7z00": "Update Site",
     "6112v35e8140": "Operation successful",
-    "deleteSiteTips": "This action will permanently delete the navigation group and its contained records. Do you want to continue?"
+    "deleteSiteTips": "This action will permanently delete the navigation group and its contained records. Do you want to continue?",
+    "invalidLink": "Link is not a valid http(s) URL"
   },
   "user": {
     "610wkzjikzs0": "Username",
@@ -515,5 +517,11 @@
     "611p62ddnm40": "Form validation failed",
     "611p62ddnos0": "Tip",
     "611p62ddnr00": "Deletion Cancelled"
+  },
+  "theme": {
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark",
+    "tooltip": "Theme"
   }
 }

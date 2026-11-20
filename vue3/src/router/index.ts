@@ -1,18 +1,19 @@
-// import { markRaw } from 'vue';
-import { createRouter, createWebHashHistory } from 'vue-router'; // createWebHashHistory, createWebHistory
-import type { Router, RouteRecordRaw, RouteComponent } from 'vue-router';
+import { createRouter, createWebHashHistory } from 'vue-router';
+import type { RouteRecordRaw, RouteComponent } from 'vue-router';
+import i18n from '@/i18n';
+
+const t = i18n.global.t;
 
 /* Layout */
-const Layout = ():RouteComponent => import('@/layout/index.vue');
+const Layout = (): RouteComponent => import('@/layout/index.vue');
 
 /**
  * constantRoutes
- * a base page that does not have permission requirements
- * all roles can be accessed
+ * 所有人都能访问的基础页面；其余页面根据后端返回的菜单动态添加（store/modules/permission.ts）。
  *
- * 注意：hidden、alwaysShow 属性配置移动到了meta中！！！
+ * 注意：hidden、alwaysShow 属性配置在 meta 中。
  */
-export const constantRoutes:RouteRecordRaw[] = [
+export const constantRoutes: RouteRecordRaw[] = [
   {
     path: '/redirect',
     component: Layout,
@@ -24,15 +25,11 @@ export const constantRoutes:RouteRecordRaw[] = [
       }
     ]
   },
-  // {
-  //   path: '/login',
-  //   component: () => import('@/views/login/index.vue'),
-  //   meta: { hidden: true }
-  // },
   {
-    path: '/auth-redirect',
-    component: () => import('@/views/login/auth-redirect.vue'),
-    meta: { hidden: true }
+    path: '/changePass',
+    name: 'changePass',
+    component: () => import('@/views/changePassword/index.vue'),
+    meta: { title: t('loginform.forgetPassword'), icon: 'user', noCache: true, hidden: true }
   },
   {
     path: '/404',
@@ -53,16 +50,9 @@ export const constantRoutes:RouteRecordRaw[] = [
         path: '/sitenav',
         component: () => import('@/views/sitenav/index.vue'),
         name: 'SiteNav',
-        meta: { title: '网站导航', icon: 'tree', affix: true, hidden: false }
+        meta: { title: t('sidebar.Sitenav'), icon: 'tree', affix: true, hidden: false }
       }
     ]
-  },
-
-  {
-    path: '/changePass',
-    name: 'changePass',
-    component: () => import('@/views/changePassword/index.vue'),
-    meta: { title: '忘记密码', icon: 'user', noCache: true, hidden: true }
   },
   {
     path: '/profile',
@@ -74,34 +64,46 @@ export const constantRoutes:RouteRecordRaw[] = [
         path: 'index',
         component: () => import('@/views/profile/index.vue'),
         name: 'Profile',
-        meta: { title: '个人中心', icon: 'user', noCache: true }
+        meta: { title: t('profile.profile'), icon: 'user', noCache: true }
       }
     ]
   }
 ];
 
-console.log('BASE_URL=', import.meta.env);
+/** 未匹配的地址统一跳转到 404，需在动态路由之后添加 */
+export const notFoundRoute: RouteRecordRaw = {
+  path: '/:pathMatch(.*)*',
+  name: 'NotFound',
+  redirect: '/404',
+  meta: { hidden: true }
+};
 
-const createTheRouter = ():Router => createRouter({
-  // history: createWebHashHistory(import.meta.env.BASE_URL),
-  // 注意，如果要配置 HTML5 模式，则需要修改nginx配置，参考资料：
-  // https://router.vuejs.org/zh/guide/essentials/history-mode.html
+const router = createRouter({
+  // 后端以 /ui/ 托管静态页面，使用 hash 模式即可，无需额外配置服务端回退
   history: createWebHashHistory(import.meta.env.BASE_URL),
   scrollBehavior: () => ({ top: 0 }),
   routes: constantRoutes
 });
 
-interface RouterPro extends Router {
-  matcher: unknown;
+/** addDynamicRoutes 添加的路由的移除函数，用于退出登录或切换用户时清理 */
+let removeDynamicRoutes: Array<() => void> = [];
+
+export function addDynamicRoutes(routes: RouteRecordRaw[]) {
+  routes.forEach(route => {
+    // 后端菜单里有些条目只是指向前端已有页面的入口（例如“个人中心” /profile/index，组件为 Layout、没有子菜单）。
+    // vue-router 4+ 中后添加的同路径路由会覆盖已有路由，导致只渲染一个空布局；这类条目只保留在侧边栏，不再注册路由。
+    if (!route.children?.length && router.resolve(route.path).matched.length > 0) {
+      return;
+    }
+    removeDynamicRoutes.push(router.addRoute(route));
+  });
+  removeDynamicRoutes.push(router.addRoute(notFoundRoute));
 }
 
-const router = createTheRouter() as RouterPro;
-
-// Detail see: https://github.com/vuejs/vue-router/issues/1234#issuecomment-357941465
+/** 移除所有动态添加的路由，恢复到 constantRoutes */
 export function resetRouter() {
-  // router.clearRoutes(); RangeError: Maximum call stack size exceeded
-  const newRouter = createTheRouter() as RouterPro;
-  router.matcher = newRouter.matcher; // reset router
+  removeDynamicRoutes.forEach(remove => remove());
+  removeDynamicRoutes = [];
 }
 
 export default router;

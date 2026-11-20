@@ -3,7 +3,7 @@
 <template>
   <div>
     <el-dialog v-model="childVisible" @open="onDialogOpen">
-      <template #title>
+      <template #header>
         <div class="dialog-header">
           <div class="dialog-header-text">{{ $t('loginform.login') }}</div>
         </div>
@@ -175,12 +175,13 @@ export default defineComponent({
             .login(payload)
             .then(async () => {
               try {
-                await userStore().getInfo();
+                // 拉取用户信息并按菜单生成动态路由（只调 getInfo 会让路由守卫误以为菜单已加载）
+                await userStore().resetAccessRouter();
               } catch (err) {
-                console.warn('getInfo() failed after login', err);
+                console.warn('load user menus failed after login', err);
               }
-              // navigate to redirect (if any)
-              this.$router.push({ path: this.redirect || '/', query: this.otherQuery }).catch(() => {});
+              // 与 Vue2 版本一致：登录成功后进入个人中心（或 redirect 指定的页面）
+              this.$router.push({ path: this.redirect || '/profile/index', query: this.otherQuery }).catch(() => {});
               this.loading = false;
               this.$emit('update:modelValue', false);
             })

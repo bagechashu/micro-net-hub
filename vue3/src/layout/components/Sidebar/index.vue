@@ -3,8 +3,7 @@
     <logo v-if="showLogo" :collapse="isCollapse" />
     <el-scrollbar wrap-class="scrollbar-wrapper">
       <el-menu class="left-menu" :default-active="activeMenu" :collapse="isCollapse"
-               :background-color="variables.menuBg" :text-color="variables.menuText" :unique-opened="false"
-               :active-text-color="variables.menuActiveText" :collapse-transition="false" mode="vertical">
+               :unique-opened="false" :collapse-transition="false" mode="vertical">
         <sidebar-item v-for="route in permission_routes" :key="route.path" :item="route" :base-path="route.path" :is-top-route="true" />
       </el-menu>
     </el-scrollbar>
@@ -32,11 +31,6 @@ export default defineComponent({
     const settings = settingsStore();
     const route = useRoute();
 
-    const variables = {
-      menuBg: '#304156',
-      menuText: '#fff',
-      menuActiveText: '#409EFF'
-    };
 
     const sidebar = computed(() => app.sidebar);
     const permission_routes = computed(() => permission.routes);
@@ -56,7 +50,6 @@ export default defineComponent({
     });
 
     return {
-      variables,
       sidebar,
       permission_routes,
       secondMenuPopup,

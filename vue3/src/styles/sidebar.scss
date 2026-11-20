@@ -1,3 +1,13 @@
+// el-menu 的配色改用 CSS 变量，以便随亮/暗主题切换（变量定义见 element-variables.scss）
+.sidebar-container .el-menu,
+.el-menu--vertical .el-menu {
+  --el-menu-bg-color: var(--menu-bg);
+  --el-menu-text-color: var(--menu-text);
+  --el-menu-active-color: var(--menu-active-text);
+  --el-menu-hover-bg-color: var(--menu-hover);
+  --el-menu-border-color: transparent;
+}
+
 #app {
 
   .main-container {

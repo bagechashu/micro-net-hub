@@ -1,0 +1,116 @@
+import request from '@/utils/request';
+
+// 获取当前登录用户信息 (已完成)
+export function getInfo() {
+  return request({
+    url: '/api/user/info',
+    method: 'get'
+  });
+}
+
+// 获取用户列表 （已完成）
+export function getUsers(params: unknown) {
+  return request({
+    url: '/api/user/list',
+    method: 'get',
+    params
+  });
+}
+
+// 重置 totp 秘钥
+export function resetTotpSecret(data: unknown) {
+  return request({
+    url: '/api/user/resetTotpSecret',
+    method: 'post',
+    data
+  });
+}
+
+// 更新用户登录密码（已完成）
+export function changePwd(data: unknown) {
+  return request({
+    url: '/api/user/changePwd',
+    method: 'post',
+    data
+  });
+}
+
+// 创建用户（已完成）
+export function createUser(data: unknown) {
+  return request({
+    url: '/api/user/add',
+    method: 'post',
+    data
+  });
+}
+
+// 更新用户（已完成）
+export function updateUserById(data: unknown) {
+  return request({
+    url: '/api/user/update',
+    method: 'post',
+    data
+  });
+}
+// 批量删除记录*（已完成）
+export function batchDeleteUserByIds(data: unknown) {
+  return request({
+    url: '/api/user/delete',
+    method: 'post',
+    data
+  });
+}
+
+// 更改用户状态（已完成）
+export function changeUserStatus(data: unknown) {
+  return request({
+    url: '/api/user/changeUserStatus',
+    method: 'post',
+    data
+  });
+}
+
+// 同步钉钉用户信息
+export function syncDingTalkUsersApi(data: unknown) {
+  return request({
+    url: '/api/goldap/sync/syncDingTalkUsers',
+    method: 'post',
+    data
+  });
+}
+
+// 同步企业微信用户信息
+export function syncWeComUsersApi(data: unknown) {
+  return request({
+    url: '/api/goldap/sync/syncWeComUsers',
+    method: 'post',
+    data
+  });
+}
+
+// 同步飞书用户信息
+export function syncFeiShuUsersApi(data: unknown) {
+  return request({
+    url: '/api/goldap/sync/syncFeiShuUsers',
+    method: 'post',
+    data
+  });
+}
+
+// 同步openldap用户信息
+export function syncOpenLdapUsersApi(data: unknown) {
+  return request({
+    url: '/api/goldap/sync/syncOpenLdapUsers',
+    method: 'post',
+    data
+  });
+}
+
+// 同步Sql中的用户到ldap
+export function syncSqlUsers(data: unknown) {
+  return request({
+    url: '/api/goldap/sync/syncSqlUsers',
+    method: 'post',
+    data
+  });
+}

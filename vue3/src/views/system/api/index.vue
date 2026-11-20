@@ -22,7 +22,7 @@
         </el-form-item>
         <el-form-item>
           <el-button :loading="loading" type="primary" @click="search">
-            <el-icon><Search /></el-icon>
+            <el-icon><SearchIcon /></el-icon>
             {{ $t('api.611p62ddmdc0') }}
           </el-button>
         </el-form-item>
@@ -62,13 +62,15 @@
             </el-tooltip>
             <el-tooltip class="delete-popover" :content="$t('api.611p62ddmu00')" effect="dark" placement="top">
               <template #default>
-                <el-popconfirm :title="$t('api.611p62ddmwo0')" @confirm="singleDelete(scope.row.ID)">
-                  <template #reference>
-                    <el-button size="small" circle type="danger">
-                      <el-icon><Delete /></el-icon>
-                </el-button>
-                  </template>
-                </el-popconfirm>
+                <span>
+                  <el-popconfirm :title="$t('api.611p62ddmwo0')" @confirm="singleDelete(scope.row.ID)">
+                    <template #reference>
+                      <el-button size="small" circle type="danger">
+                        <el-icon><Delete /></el-icon>
+                  </el-button>
+                    </template>
+                  </el-popconfirm>
+                </span>
               </template>
             </el-tooltip>
           </template>
@@ -126,7 +128,7 @@ import { Search, Plus, Delete, Edit } from '@element-plus/icons-vue';
 export default defineComponent({
   name: 'Api',
   components: {
-    Search,
+    SearchIcon: Search,
     Plus,
     Delete,
     Edit

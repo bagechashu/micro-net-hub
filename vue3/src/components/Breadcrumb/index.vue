@@ -37,12 +37,11 @@ export default defineComponent({
   methods: {
     getBreadcrumb() {
       // only show routes with meta.title
-      const matched = this.$route.matched.filter(item => item.meta && item.meta.title);
-      // const first = matched[0];
-      //
-      // if (!this.isDashboard(first)) {
-      //   matched = [{ path: '/dashboard', meta: { title: '首页' }}].concat(matched);
-      // }
+      let matched = this.$route.matched.filter(item => item.meta && item.meta.title);
+      // 与 Vue2 版本一致：最前面总是加上“首页”
+      if (!this.isDashboard(matched[0])) {
+        matched = [{ path: '/', meta: { title: this.$t('common.index') }}].concat(matched);
+      }
 
       this.levelList = matched.filter(item => item.meta && item.meta.title && item.meta.breadcrumb !== false);
     },

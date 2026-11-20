@@ -15,7 +15,7 @@ GOOS := linux
 GOARCH := amd64
 
 # Variables
-WEB_SRC_DIR := frontend
+WEB_SRC_DIR := vue3
 SERVICE_SRC_DIR := backend
 APP_NAME := micro-net-hub-$(GOOS)-$(GOARCH)
 BIN_DIR := ../bin
@@ -30,7 +30,7 @@ be:
 
 fe:
 	@echo "===== compile webui... ====="
-	cd $(WEB_SRC_DIR) && npm run build:prod
+	cd $(WEB_SRC_DIR) && $(NPM) ci && $(NPM) run build:ui
 
 # make dockerimage TAG=v0.2.2
 dockerimage:

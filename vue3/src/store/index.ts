@@ -12,7 +12,6 @@ Object.keys(modulesFiles).forEach((modulePath) => {
   // console.log('modulePath=', modulePath);
   // set './modules/app.js' => 'app'
   const moduleName = modulePath.replace(/^\.\/modules\/(.*)\.\w+$/, '$1');
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const value = modulesFiles[modulePath] as any;
   modules[moduleName] = value.default;
 }, {});

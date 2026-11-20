@@ -78,7 +78,7 @@ export default defineComponent({
 <style scoped>
 .message-title {
   font-size: 16px;
-  color: #333;
+  color: var(--el-text-color-primary);
   font-weight: bold;
   padding-right: 8px;
 }

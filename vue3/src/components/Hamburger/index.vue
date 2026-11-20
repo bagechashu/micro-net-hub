@@ -33,6 +33,7 @@ export default defineComponent({
   vertical-align: middle;
   width: 20px;
   height: 20px;
+  fill: var(--el-text-color-primary);
 }
 
 .hamburger.is-active {

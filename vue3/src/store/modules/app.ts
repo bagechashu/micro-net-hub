@@ -13,7 +13,7 @@ interface IAppState {
 const useAppStore = defineStore('app', {
   state: ():IAppState => ({
     sidebar: {
-      opened: Cookies.get('sidebarStatus') ? !!+Cookies.get('sidebarStatus') : true,
+      opened: Cookies.get('sidebarStatus') ? !!+Cookies.get('sidebarStatus') : false,
       withoutAnimation: false
     },
     device: 'desktop',

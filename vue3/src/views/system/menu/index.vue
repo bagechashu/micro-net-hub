@@ -43,11 +43,13 @@
               <el-button size="small" circle type="primary" @click="update(scope.row)"><el-icon><Edit /></el-icon></el-button>
             </el-tooltip>
             <el-tooltip class="delete-popover" fixed :content="$t('menu.61131vugn5g0')" effect="dark" placement="top">
-              <el-popconfirm :title="$t('menu.61131vugn7s0')" @confirm="singleDelete(scope.row.ID)">
-                <template #reference>
-                  <el-button size="small" circle type="danger"><el-icon><Delete /></el-icon></el-button>
-                </template>
-              </el-popconfirm>
+              <span>
+                <el-popconfirm :title="$t('menu.61131vugn7s0')" @confirm="singleDelete(scope.row.ID)">
+                  <template #reference>
+                    <el-button size="small" circle type="danger"><el-icon><Delete /></el-icon></el-button>
+                  </template>
+                </el-popconfirm>
+              </span>
             </el-tooltip>
           </template>
         </el-table-column>

@@ -88,7 +88,7 @@ export default defineComponent({
 
   .drawer-title {
     margin-bottom: 12px;
-    color: rgba(0, 0, 0, .85);
+    color: var(--el-text-color-primary);
     font-size: 14px;
     line-height: 22px;
   }
@@ -97,7 +97,7 @@ export default defineComponent({
     display: flex;
     align-items: center;
     justify-content: space-between;
-    color: rgba(0, 0, 0, .65);
+    color: var(--el-text-color-regular);
     font-size: 14px;
     padding: 12px 0;
   }

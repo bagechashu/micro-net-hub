@@ -280,7 +280,7 @@ export function debounce(func, wait, immediate) {
     if (!timeout) timeout = setTimeout(later, wait);
     if (callNow) {
       result = func.apply(context, args);
-      context = args = null;
+      context = args = null; // eslint-disable-line no-useless-assignment
     }
 
     return result;

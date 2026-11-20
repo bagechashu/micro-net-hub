@@ -7,6 +7,16 @@
         </keep-alive>
       </transition>
     </router-view>
+    <el-footer class="footer-copyright" height="20px">
+      <div>
+        <span>Since 2024 </span>
+        <el-divider direction="vertical" />
+        <span>Powered by Open Source</span>
+        <el-divider direction="vertical" />
+        <span>LICENSE </span>
+        <a href="https://github.com/bagechashu/micro-net-hub/blob/main/LICENSE" target="_blank" rel="noopener">GPLv3</a>
+      </div>
+    </el-footer>
   </section>
 </template>
 
@@ -25,6 +35,16 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
+.footer-copyright {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  font-size: xx-small;
+  line-height: 10px;
+  text-align: center;
+}
+
 .app-main {
   /* 50= navbar  50  */
   min-height: calc(100vh - 50px);

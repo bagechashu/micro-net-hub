@@ -15,6 +15,7 @@
 
 <script>
 import { defineComponent } from 'vue';
+import logo from '@/assets/sidebar-logo/micro-net-hub.png';
 
 export default defineComponent({
   name: 'SidebarLogo',
@@ -26,8 +27,8 @@ export default defineComponent({
   },
   data() {
     return {
-      title: 'Vue3 Element Admin',
-      logo: 'https://wpimg.wallstcn.com/69a1c46c-eb1c-4b46-8bd4-e9e686ef5251.png'
+      title: 'Micro Net Hub',
+      logo
     };
   }
 });
@@ -48,7 +49,7 @@ export default defineComponent({
   width: 100%;
   height: 50px;
   line-height: 50px;
-  background: #2b2f3a;
+  background: var(--menu-bg);
   text-align: center;
   overflow: hidden;
 
@@ -57,8 +58,7 @@ export default defineComponent({
     width: 100%;
 
     & .sidebar-logo {
-      width: 32px;
-      height: 32px;
+      width: 45px;
       vertical-align: middle;
       margin-right: 12px;
     }
@@ -66,10 +66,10 @@ export default defineComponent({
     & .sidebar-title {
       display: inline-block;
       margin: 0;
-      color: #fff;
-      font-weight: 600;
+      color: var(--el-text-color-primary);
+      font-weight: bold;
       line-height: 50px;
-      font-size: 14px;
+      font-size: large;
       font-family: Avenir, Helvetica Neue, Arial, Helvetica, sans-serif;
       vertical-align: middle;
     }

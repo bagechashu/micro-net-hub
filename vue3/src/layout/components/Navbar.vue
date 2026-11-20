@@ -7,7 +7,7 @@
 
     <div class="right-menu">
       <template v-if="device !== 'mobile'">
-        <search id="header-search" class="right-menu-item" />
+        <header-search id="header-search" class="right-menu-item" />
 
         <error-log class="errLog-container right-menu-item hover-effect" />
 
@@ -17,11 +17,25 @@
           <size-select id="size-select" class="right-menu-item hover-effect" />
         </el-tooltip>
 
+        <el-tooltip :content="$t('theme.tooltip')" effect="dark" placement="bottom">
+          <theme-switch id="theme-switch" class="right-menu-item hover-effect" />
+        </el-tooltip>
+
+        <el-tooltip content="Language" effect="dark" placement="bottom">
+          <language-select id="language-select" class="right-menu-item hover-effect" />
+        </el-tooltip>
+
+        <el-tooltip content="Doc Refs [eryajf]" effect="dark" placement="bottom">
+          <a class="right-menu-item hover-effect doc-link" href="http://ldapdoc.eryajf.net" target="_blank" rel="noopener">
+            <el-icon :size="20"><Document /></el-icon>
+          </a>
+        </el-tooltip>
+
       </template>
 
       <el-dropdown v-if="token" class="avatar-container right-menu-item hover-effect" trigger="click">
         <div class="avatar-wrapper">
-          <img :src="(avatar ? avatar : defaultAvatar) + '?imageView2/1/w/80/h/80'" class="user-avatar">
+          <img :src="avatar || defaultAvatar" class="user-avatar">
           <el-icon class="el-icon-caret-bottom" size="small">
             <CaretBottom />
           </el-icon>
@@ -29,19 +43,10 @@
         <template #dropdown>
           <el-dropdown-menu>
             <router-link to="/profile/index">
-              <el-dropdown-item>个人中心</el-dropdown-item>
+              <el-dropdown-item>{{ $t('profile.profile') }}</el-dropdown-item>
             </router-link>
-            <router-link to="/">
-              <el-dropdown-item>首页</el-dropdown-item>
-            </router-link>
-            <a target="_blank" href="https://github.com/midfar/vue3-element-admin">
-              <el-dropdown-item>项目地址</el-dropdown-item>
-            </a>
-            <a target="_blank" href="https://vue3-element-admin-site.midfar.com/">
-              <el-dropdown-item>文档地址</el-dropdown-item>
-            </a>
             <el-dropdown-item divided @click="logout">
-              <span style="display:block;">退出登录</span>
+              <span style="display:block;">{{ $t('loginform.logout') }}</span>
             </el-dropdown-item>
           </el-dropdown-menu>
         </template>
@@ -62,9 +67,11 @@ import Hamburger from '@/components/Hamburger';
 import ErrorLog from '@/components/ErrorLog';
 import Screenfull from '@/components/Screenfull';
 import SizeSelect from '@/components/SizeSelect';
-import Search from '@/components/HeaderSearch';
+import HeaderSearch from '@/components/HeaderSearch';
+import LanguageSelect from '@/components/LanguageSelect/index.vue';
+import ThemeSwitch from '@/components/ThemeSwitch/index.vue';
 import { defineComponent } from 'vue';
-import { CaretBottom } from '@element-plus/icons-vue';
+import { CaretBottom, Document } from '@element-plus/icons-vue';
 import Login from '@/layout/components/Login';
 
 export default defineComponent({
@@ -74,8 +81,11 @@ export default defineComponent({
     ErrorLog,
     Screenfull,
     SizeSelect,
-    Search,
+    HeaderSearch,
+    LanguageSelect,
+    ThemeSwitch,
     CaretBottom,
+    Document,
     Login
   },
   data() {
@@ -107,19 +117,24 @@ export default defineComponent({
     },
     async logout() {
       await userStore().logout();
-      this.$router.push(`/login?redirect=${this.$route.fullPath}`);
+      this.$router.push('/');
     }
   }
 });
 </script>
 
 <style lang="scss" scoped>
+.doc-link {
+  display: inline-flex !important;
+  align-items: center;
+}
+
 .navbar {
   height: 50px;
   overflow: hidden;
   position: relative;
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(0, 21, 41, .08);
+  background: var(--app-header-bg);
+  box-shadow: var(--app-header-shadow);
 
   .hamburger-container {
     line-height: 46px;
@@ -130,7 +145,7 @@ export default defineComponent({
     -webkit-tap-highlight-color: transparent;
 
     &:hover {
-      background: rgba(0, 0, 0, .025)
+      background: var(--app-hover-bg)
     }
   }
 
@@ -158,7 +173,7 @@ export default defineComponent({
       height: 100%;
       line-height: 50px;
       font-size: 18px;
-      color: #5a5e66;
+      color: var(--el-text-color-regular);
       vertical-align: text-bottom;
 
       &.hover-effect {
@@ -166,7 +181,7 @@ export default defineComponent({
         transition: background .3s;
 
         &:hover {
-          background: rgba(0, 0, 0, .025)
+          background: var(--app-hover-bg)
         }
       }
     }

@@ -83,9 +83,9 @@ const useTagsViewStore = defineStore('tagsView', {
     },
 
     updateVisitedView(view) {
-      for (let v of this.visitedViews) {
+      for (const v of this.visitedViews) {
         if (v.path === view.path) {
-          v = Object.assign(v, view);
+          Object.assign(v, view);
           break;
         }
       }

@@ -1,118 +1,110 @@
 import { defineStore } from 'pinia';
-import { login as apiLogin, logout as apiLogout } from '@/api/system/base';
+import { login as apiLogin, logout as apiLogout, refreshToken as apiRefreshToken } from '@/api/system/base';
 import { getInfo as apiGetInfo } from '@/api/system/user';
 import { getToken, setToken, removeToken } from '@/utils/auth';
-import router, { resetRouter } from '@/router';
+import { resetRouter, addDynamicRoutes } from '@/router';
 import tagsViewStore from './tagsView';
 import usePermissionStore from './permission';
 
 export interface IUserState {
   token: string;
-  userId: string,
+  userId: number | string;
   name: string;
+  mail: string;
   avatar: string;
   introduction: string;
   roles: string[];
 }
 
+/** /api/user/info 返回的用户信息（backend/internal/module/account/model/user.go） */
+export interface IUserInfo {
+  ID: number;
+  username: string;
+  mail?: string;
+  avatar?: string;
+  introduction?: string;
+  roles?: Array<{ name: string; keyword?: string }>;
+  [key: string]: unknown;
+}
+
 const useUserStore = defineStore('user', {
-  state: ():IUserState => ({
-    token: getToken(),
+  state: (): IUserState => ({
+    token: getToken() || '',
     userId: '',
     name: '',
+    mail: '',
     avatar: '',
     introduction: '',
     roles: []
   }),
-  getters: {},
   actions: {
-    // user login
-    login(userInfo):Promise<void> {
+    async login(userInfo: { username: string; password: string }) {
       const { username, password } = userInfo;
-      return new Promise((resolve, reject) => {
-        apiLogin({ username: username.trim(), password: password }).then(response => {
-          const { data } = response;
-          this.token = data.token;
-          setToken(data.token);
-          resolve();
-        }).catch(error => {
-          reject(error);
-        });
-      });
+      const { data } = await apiLogin({ username: username.trim(), password });
+      this.token = data.token;
+      setToken(data.token);
     },
 
-    // get user info
-    getInfo() {
-      return new Promise((resolve, reject) => {
-        apiGetInfo().then(response => {
-          const { data } = response;
+    async getInfo(): Promise<IUserInfo> {
+      const response = await apiGetInfo();
+      const data = response?.data as IUserInfo | null;
+      if (!data) {
+        throw new Error('Verification failed, please Login again.');
+      }
 
-          if (!data) {
-            reject('Verification failed, please Login again.');
-          }
+      const { ID, roles, username, mail, avatar, introduction } = data;
+      // roles must be a non-empty array
+      if (!roles || roles.length <= 0) {
+        throw new Error('getInfo: roles must be a non-null array!');
+      }
 
-          const { roles, name, avatar, introduction } = data;
-
-          // roles must be a non-empty array
-          if (!roles || roles.length <= 0) {
-            reject('getInfo: roles must be a non-null array!');
-          }
-
-          this.roles = roles;
-          this.name = name;
-          this.avatar = avatar;
-          this.introduction = introduction;
-          resolve(data);
-        }).catch(error => {
-          reject(error);
-        });
-      });
+      this.userId = ID;
+      this.roles = roles.map(r => r.name);
+      this.name = username;
+      this.mail = mail || '';
+      this.avatar = avatar || '';
+      this.introduction = introduction || '';
+      return data;
     },
 
-    // user logout
-    logout():Promise<void> {
-      return new Promise((resolve, reject) => {
-        apiLogout().then(() => {
-          this.token = '';
-          this.roles = [];
-          removeToken();
-          resetRouter();
+    async logout() {
+      try {
+        await apiLogout();
+      } finally {
+        // 即使后端登出失败，也要清掉本地状态
+        this.resetToken();
+        resetRouter();
+        usePermissionStore().generateRoutesAnonymous();
+        // reset visited views and cached views
+        // to fixed https://github.com/PanJiaChen/vue-element-admin/issues/2485
+        tagsViewStore().delAllViews();
+      }
+    },
 
-          // reset visited views and cached views
-          // to fixed https://github.com/PanJiaChen/vue-element-admin/issues/2485
-          tagsViewStore().delAllViews();
-
-          resolve();
-        }).catch(error => {
-          reject(error);
-        });
-      });
+    async refreshToken() {
+      const { data } = await apiRefreshToken();
+      this.token = data.token;
+      setToken(data.token);
     },
 
     // remove token
     resetToken() {
       this.token = '';
+      this.userId = '';
+      this.name = '';
+      this.mail = '';
+      this.avatar = '';
+      this.introduction = '';
       this.roles = [];
       removeToken();
     },
 
-    // dynamically modify permissions
+    // 重新拉取用户信息和菜单，刷新动态路由
     async resetAccessRouter() {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const infoRes = await this.getInfo() as any;
-      console.log('current user:', infoRes);
-
-      // set new routes
+      const info = await this.getInfo();
       resetRouter();
-      // generate accessible routes map based on backend menu for the user
-      const accessRoutes = await usePermissionStore().generateRoutes(infoRes);
-      // dynamically add accessible routes
-      // router.addRoutes(accessRoutes);
-      accessRoutes.forEach(item => {
-        router.addRoute(item);
-      });
-
-      // reset visited views and cached views
+      const accessRoutes = await usePermissionStore().generateRoutes(info);
+      addDynamicRoutes(accessRoutes);
       tagsViewStore().delAllViews();
     }
   }

@@ -9,7 +9,6 @@ function loopFindParentDialog(el) {
 }
 
 export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   mounted(el, binding, vnode) {
     const dialogEl = loopFindParentDialog(el);
     const dialogHeaderEl = dialogEl.querySelector('.el-dialog__header');
@@ -49,8 +48,8 @@ export default {
       let styT = getStyle(dragDom, 'top');
 
       if (styL.includes('%')) {
-        styL = +document.body.clientWidth * (+styL.replace(/\%/g, '') / 100);
-        styT = +document.body.clientHeight * (+styT.replace(/\%/g, '') / 100);
+        styL = +document.body.clientWidth * (+styL.replace(/%/g, '') / 100);
+        styT = +document.body.clientHeight * (+styT.replace(/%/g, '') / 100);
       } else {
         styL = +styL.replace(/\px/g, '');
         styT = +styT.replace(/\px/g, '');

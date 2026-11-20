@@ -15,7 +15,7 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button :loading="loading" type="primary" @click="search"><el-icon><Search /></el-icon>{{ $t('role.611p12povjw0') }}</el-button>
+          <el-button :loading="loading" type="primary" @click="search"><el-icon><SearchIcon /></el-icon>{{ $t('role.611p12povjw0') }}</el-button>
         </el-form-item>
         <el-form-item>
           <el-button :loading="loading" type="warning" @click="create"><el-icon><Plus /></el-icon>{{ $t('role.611p12povn40') }}</el-button>
@@ -46,11 +46,13 @@
               <el-button size="small" circle type="warning" @click="updatePermission(scope.row.ID)" ><el-icon><Lock /></el-icon></el-button>
             </el-tooltip>
             <el-tooltip :content="$t('role.611p12powpk0')" effect="dark" placement="top">
-              <el-popconfirm style="margin-left:10px" :title="$t('role.611p12powrw0')" @confirm="singleDelete(scope.row.ID)">
-                <template #reference>
-                  <el-button size="small" circle type="danger" ><el-icon><Delete /></el-icon></el-button>
-                </template>
-              </el-popconfirm>
+              <span>
+                <el-popconfirm style="margin-left:10px" :title="$t('role.611p12powrw0')" @confirm="singleDelete(scope.row.ID)">
+                  <template #reference>
+                    <el-button size="small" circle type="danger" ><el-icon><Delete /></el-icon></el-button>
+                  </template>
+                </el-popconfirm>
+              </span>
             </el-tooltip>
           </template>
         </el-table-column>
@@ -144,7 +146,7 @@ import { Search, Plus, Delete, Edit, Lock } from '@element-plus/icons-vue';
 export default defineComponent({
   name: 'Role',
   components: {
-    Search,
+    SearchIcon: Search,
     Plus,
     Delete,
     Edit,
@@ -355,7 +357,7 @@ export default defineComponent({
     },
     async getRoleMenusById(roleId) {
       this.permissionLoading = true;
-      let rseData = [];
+      let rseData;
       const params = {};
       params.roleId = roleId;
       try {
@@ -374,7 +376,7 @@ export default defineComponent({
     },
     async getRoleApisById(roleId) {
       this.permissionLoading = true;
-      let rseData = [];
+      let rseData;
       const params = {};
       params.roleId = roleId;
       try {
