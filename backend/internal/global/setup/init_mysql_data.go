@@ -354,7 +354,7 @@ func InitData() {
 			Method:   "POST",
 			Path:     "/base/changePwd",
 			Category: "base",
-			Remark:   "通过邮箱修改密码",
+			Remark:   "通过邮箱验证码重置密码",
 			Creator:  "System",
 		},
 		{
@@ -716,100 +716,100 @@ func InitData() {
 		},
 		{
 			Method:   "GET",
-			Path:     "/sitenav/list",
+			Path:     "/sitenav/getnav",
 			Category: "sitenav",
-			Remark:   "导航配置获取列表",
+			Remark:   "导航页-获取全部分组和站点",
 			Creator:  "System",
 		},
 		{
 			Method:   "POST",
 			Path:     "/sitenav/group/add",
 			Category: "sitenav",
-			Remark:   "网址导航-组增加",
+			Remark:   "导航页-新增分组",
 			Creator:  "System",
 		},
 		{
 			Method:   "POST",
 			Path:     "/sitenav/group/update",
 			Category: "sitenav",
-			Remark:   "网址导航-组更新",
+			Remark:   "导航页-更新分组",
 			Creator:  "System",
 		},
 		{
 			Method:   "POST",
 			Path:     "/sitenav/group/delete",
 			Category: "sitenav",
-			Remark:   "网址导航-组删除",
+			Remark:   "导航页-删除分组",
 			Creator:  "System",
 		},
 		{
 			Method:   "POST",
 			Path:     "/sitenav/site/add",
 			Category: "sitenav",
-			Remark:   "网址导航-站点增加",
+			Remark:   "导航页-新增站点",
 			Creator:  "System",
 		},
 		{
 			Method:   "POST",
 			Path:     "/sitenav/site/update",
 			Category: "sitenav",
-			Remark:   "网址导航-站点更新",
+			Remark:   "导航页-更新站点",
 			Creator:  "System",
 		},
 		{
 			Method:   "POST",
 			Path:     "/sitenav/site/delete",
 			Category: "sitenav",
-			Remark:   "网址导航-站点删除",
+			Remark:   "导航页-删除站点",
 			Creator:  "System",
 		},
 		{
-			Method:   "POST",
+			Method:   "GET",
 			Path:     "/dns/getall",
-			Category: "sitenav",
-			Remark:   "网址导航-站点删除",
+			Category: "dns",
+			Remark:   "DNS-获取全部域名及解析记录",
 			Creator:  "System",
 		},
 		{
 			Method:   "POST",
 			Path:     "/dns/zone/add",
-			Category: "sitenav",
-			Remark:   "网址导航-站点删除",
+			Category: "dns",
+			Remark:   "DNS-新增域名(Zone)",
 			Creator:  "System",
 		},
 		{
 			Method:   "POST",
 			Path:     "/dns/zone/update",
-			Category: "sitenav",
-			Remark:   "网址导航-站点删除",
+			Category: "dns",
+			Remark:   "DNS-更新域名(Zone)",
 			Creator:  "System",
 		},
 		{
 			Method:   "POST",
 			Path:     "/dns/zone/delete",
-			Category: "sitenav",
-			Remark:   "网址导航-站点删除",
+			Category: "dns",
+			Remark:   "DNS-删除域名(Zone)",
 			Creator:  "System",
 		},
 		{
 			Method:   "POST",
 			Path:     "/dns/record/add",
-			Category: "sitenav",
-			Remark:   "网址导航-站点删除",
+			Category: "dns",
+			Remark:   "DNS-新增解析记录",
 			Creator:  "System",
 		},
 		{
 			Method:   "POST",
 			Path:     "/dns/record/update",
-			Category: "sitenav",
-			Remark:   "网址导航-站点删除",
+			Category: "dns",
+			Remark:   "DNS-更新解析记录",
 			Creator:  "System",
 		},
 		{
 			Method:   "POST",
 			Path:     "/dns/record/delete",
-			Category: "sitenav",
-			Remark:   "网址导航-站点删除",
+			Category: "dns",
+			Remark:   "DNS-删除解析记录",
 			Creator:  "System",
 		},
 		{
@@ -875,7 +875,7 @@ func InitData() {
 	// 			"/user/resetTotpSecret",
 	// 			"/user/changePwd",
 	// 			"/menu/access/tree",
-	// 			"/sitenav/list",
+	// 			"/sitenav/getnav",
 	// 		}
 
 	// 		if funk.ContainsString(basePaths, api.Path) {
@@ -930,7 +930,7 @@ func InitData() {
 			"/user/resetTotpSecret",
 			"/user/changePwd",
 			"/menu/access/tree",
-			"/sitenav/list",
+			"/sitenav/getnav",
 			"/notice/getall",
 		}
 
@@ -1027,11 +1027,14 @@ func InitData() {
 	// 		global.Log.Infof("写入分组数据成功: %v", newGroups)
 	// 	}
 	// }
-	err = global.DB.Create(&groups).Error
-	if err != nil {
-		global.Log.Errorf("写入分组数据失败：%s", err)
-	} else {
-		global.Log.Info("写入分组数据成功")
+	// 没有配置钉钉/企业微信/飞书时没有需要写入的分组（空切片插入会报错）
+	if len(groups) > 0 {
+		err = global.DB.Create(&groups).Error
+		if err != nil {
+			global.Log.Errorf("写入分组数据失败：%s", err)
+		} else {
+			global.Log.Info("写入分组数据成功")
+		}
 	}
 
 	sitenavGroup := sitenavModel.NavGroup{
@@ -1050,7 +1053,7 @@ func InitData() {
 		Name:        "jenkins",
 		NavGroupID:  1,
 		Description: "project01 Jenkins",
-		IconUrl:     "/ui/assets/logo/jenkins.png",
+		IconUrl:     "si:jenkins",
 		Link:        "http://127.0.0.1:8080/",
 		DocUrl:      "https://www.jenkins.io/doc/",
 		Creator:     "System",
