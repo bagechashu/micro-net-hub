@@ -6,10 +6,8 @@
   "scripts": {
     "dev": "vite --mode dev_test",
     "dev:prod": "vite --mode dev_prod",
-    "build": "vite build --mode build_prod",
-    "build:test": "vite build --mode build_test",
+    "build": "vite build",
     "type-check": "vue-tsc --noEmit -p tsconfig.app.json",
-    "preview": "vite preview --port 4173",
     "lint": "eslint . --fix",
     "gen:brands": "node scripts/gen-brand-icons.mjs",
     "build:ui": "npm run build && node scripts/sync-ui.mjs"

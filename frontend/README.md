@@ -8,20 +8,22 @@ Micro Net Hub 的管理后台前端，由旧版 Vue 2 + Element UI 前端迁移�
 
 ```bash
 npm ci
-npm run dev          # http://localhost:8001，/api 代理到 http://localhost:9000
+npm run dev          # http://localhost:8001，读取 .env.dev_test
+npm run dev:prod     # 同上，读取 .env.dev_prod（用于连另一个后端）
 ```
 
-可在 `.env.dev_test` 等文件中设置：
+`.env.dev_test` / `.env.dev_prod` 里唯一被用到的配置项：
 
-- `VITE_PROXY_TARGET`：开发代理的后端地址（默认 `http://localhost:9000/`）
+- `VITE_PROXY_TARGET`：开发服务器把 `/api` 代理到的后端地址（默认 `http://localhost:9000/`）
 
-登录、改密时加密口令用的 RSA 公钥不再在构建时配置，前端运行时从后端 `GET /api/base/pubkey` 获取（见 `src/utils/rsa.ts`）。`VITE_PUBLIC_KEY` 已不再使用。
+构建不读取任何 `.env` 文件。登录、改密时加密口令用的 RSA 公钥在运行时从后端 `GET /api/base/pubkey` 获取（见 `src/utils/rsa.ts`）。
 
 ## 构建
 
 ```bash
 npm run build        # 产物输出到 dist/，base 为 /ui/
 npm run build:ui     # 构建并同步到 ../backend/ui，供后端 go:embed 嵌入
+npm run gen:brands   # 修改 scripts/gen-brand-icons.mjs 里的品牌列表后，重新生成 src/icons/brands.ts
 ```
 
 仓库根目录的 `make fe` 会执行 `npm ci && npm run build:ui`。
