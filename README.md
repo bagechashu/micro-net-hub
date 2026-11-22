@@ -1,5 +1,4 @@
 <!-- @format -->
-![](docs/logo/micro-net-hub.png)
 
 A tool for managing your OpenLDAP/DNS/Navigation at a private network.
 
