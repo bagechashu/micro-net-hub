@@ -2,7 +2,7 @@
 
 Docker image: `xianleeti/micro-net-hub:<version>` (linux/amd64).
 
-## Unreleased
+## v0.6.11 (2026-11-22)
 
 Log files.
 

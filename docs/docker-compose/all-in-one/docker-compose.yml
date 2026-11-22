@@ -76,7 +76,7 @@ services:
         condition: service_healthy
       openldap:
         condition: service_started
-    image: xianleeti/micro-net-hub:v0.6.10
+    image: xianleeti/micro-net-hub:v0.6.11
     container_name: "micro-net-hub"
     restart: always
     volumes:
