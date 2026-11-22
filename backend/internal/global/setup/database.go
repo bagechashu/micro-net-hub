@@ -21,15 +21,20 @@ import (
 	"moul.io/zapgorm2"
 )
 
-// 初始化数据库
+// 初始化数据库：连接并迁移表结构
 func InitDB() {
+	ConnectDB()
+	dbAutoMigrate()
+}
+
+// ConnectDB 只连接数据库，不迁移表结构（供 rotate-rsa-key 等维护命令使用，避免改动数据库）
+func ConnectDB() {
 	switch config.Conf.Database.Driver {
 	case "mysql":
 		global.DB = ConnMysql()
 	case "sqlite3":
 		global.DB = ConnSqlite()
 	}
-	dbAutoMigrate()
 }
 
 // 自动迁移表结构

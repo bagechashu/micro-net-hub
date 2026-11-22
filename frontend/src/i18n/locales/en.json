@@ -82,7 +82,8 @@
     "confirmNewPassErr": "Passwords do not match",
     "changePasswordSuccess": "Password changed successfully, please log in again",
     "changePasswordErr": "Failed to change password",
-    "capsLockOn": "Caps Lock is on"
+    "capsLockOn": "Caps Lock is on",
+    "encryptFailed": "Failed to get the encryption key. Please try again later."
   },
   "profile": {
     "profile": "Profile",

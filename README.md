@@ -10,12 +10,39 @@ just for functional experience
 git clone https://github.com/bagechashu/micro-net-hub.git
 cd micro-net-hub/docs/docker-compose/simple
 
+# RSA keys are generated into config/app/keys/ on first start; the container runs as uid 1000
+sudo chown 1000:1000 config/app/keys
+
 # Install "docker" first; If you use old version "docker", install "docker-compose" also.
 docker compose up -d
 
 ```
 
-[Installation Manual](docs/README.md)
+[Installation Manual](docs/README.md) · [Release notes](RELEASE.md)
+
+# RSA key and key rotation
+
+Micro-Net-Hub uses an RSA key pair to encrypt the passwords sent by the login form and to store user passwords.
+
+- **New deployment**: the key pair is generated on first start (2048-bit), as long as the key files don't exist and the database has no users yet. With docker-compose the keys go to `config/app/keys/`. **Back up this directory**: if the keys are lost, existing users can no longer log in.
+- **Existing deployment**: if the service logs `当前使用的是仓库里提交过的公开 RSA 密钥` at startup, it still uses the public key pair that used to ship with this repository. Rotate it:
+
+  ```shell
+  # docker-compose: stop the service, check first, then rotate, then start
+  docker compose stop micro-net-hub
+  docker compose run --rm --entrypoint ./micro-net-hub micro-net-hub rotate-rsa-key --dry-run
+  docker compose run --rm --entrypoint ./micro-net-hub micro-net-hub rotate-rsa-key
+  docker compose start micro-net-hub
+
+  # binary
+  ./micro-net-hub-linux-amd64 rotate-rsa-key --dry-run
+  ./micro-net-hub-linux-amd64 rotate-rsa-key
+  ```
+
+  Rotation generates a new key pair, re-encrypts every stored user password and the encrypted passwords in `config.yml`, and backs up the old keys and config to `rsa-backup-<time>/` next to the private key. **Users keep their passwords**; LDAP passwords are not touched.
+- **Passwords in `config.yml`** (`ldap.admin-pass`, `ldap.user-init-password`) can be written in plain text with the `plain:` prefix, e.g. `admin-pass: "plain:your-password"`, or as ciphertext encrypted with this deployment's public key.
+
+More details: [Installation Manual → RSA key](docs/README.md#rsa-key).
 
 # How to set Ocserv Authentication with Radius which build in Micro-Net-Hub.
 

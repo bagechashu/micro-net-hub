@@ -66,13 +66,13 @@ services:
     depends_on:
       - mysql
       - openldap
-    image: xianleeti/micro-net-hub:v0.5.6
+    image: xianleeti/micro-net-hub:v0.6.8
     container_name: "micro-net-hub"
     restart: always
     volumes:
       - ./config/app/config.yml:/app/config.yml
-      - ./config/app/auth-pub.pem:/app/auth-pub.pem
-      - ./config/app/auth-priv-rsa.pem:/app/auth-priv-rsa.pem
+      # RSA 密钥目录：首次启动自动生成，务必备份；目录需对容器内用户 uid 1000 可写
+      - ./config/app/keys/:/app/keys/
       - ./config/app/entrypoint.sh:/entrypoint.sh
       - ./data/notice/:/notice/
     entrypoint: ["sh", "/entrypoint.sh"]

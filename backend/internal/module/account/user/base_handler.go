@@ -142,6 +142,12 @@ func SiteInfo(c *gin.Context) {
 	helper.Success(c, gin.H{"name": config.SiteName(), "logo": logo})
 }
 
+// PublicKey 返回当前 RSA 公钥（无需登录）。前端用它加密登录、改密时提交的口令；
+// 运行时获取而不是构建时写死，每个部署才能用自己的密钥，换密钥也不用重新编译前端。
+func PublicKey(c *gin.Context) {
+	helper.Success(c, gin.H{"publicKey": string(config.Conf.System.RSAPublicBytes)})
+}
+
 // SiteLogo 返回 system.site-logo 配置的 logo 图片（无需登录）
 func SiteLogo(c *gin.Context) {
 	path, contentType, modTime, ok := config.SiteLogoFile()

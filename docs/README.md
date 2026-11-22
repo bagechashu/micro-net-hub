@@ -10,6 +10,8 @@
 git clone https://github.com/bagechashu/micro-net-hub.git
 
 cd micro-net-hub/docs/docker-compose/all-in-one
+# RSA keys are generated into config/app/keys/ on first start; the container runs as uid 1000
+sudo chown 1000:1000 config/app/keys
 docker-compose up -d
 
 # Notice: openldap will start successfully until more than 5min later. check the log to get the detail.
@@ -94,8 +96,10 @@ make all
 cd /data
 cp /data/micro-net-hub/bin/micro-net-hub-linux-amd64 /data
 cp /data/micro-net-hub/backend/config.yml /data
-cp /data/micro-net-hub/backend/auth-pub.pem /data
-cp /data/micro-net-hub/backend/auth-priv-rsa.pem /data
+# Don't copy backend/auth-*.pem: those keys are public. A new key pair is generated on first start.
+# In /data/config.yml set the LDAP passwords in plain text, e.g.
+#   admin-pass: "plain:<ldap admin password>"
+#   user-init-password: "plain:<initial user password>"
 
 # run micro-net-hub
 chmod +x /data/micro-net-hub-linux-amd64
@@ -107,6 +111,28 @@ Administrator of Micro-Net-Hub Dashboard:
 
 - username: admin
 - password: admin_pass (default password)
+
+## RSA key
+
+Micro-Net-Hub uses an RSA key pair to encrypt passwords sent by the login form and to store user passwords.
+
+- **New deployment**: the key pair is generated automatically on first start (when the key files don't exist and the database has no users yet). With docker-compose the keys are written to `config/app/keys/`. **Back up this directory**: without it, existing users can no longer log in. Make sure the directory is writable by the container user (uid 1000): `sudo chown 1000:1000 config/app/keys`.
+- **Passwords in config.yml** (`ldap.admin-pass`, `ldap.user-init-password`) can be written in plain text with the `plain:` prefix, e.g. `admin-pass: "plain:your-ldap-admin-password"`, or as ciphertext encrypted with this deployment's public key.
+- **Existing deployments still using the key from this repository** (the service logs a warning at startup): stop the service, then run the rotation command. It generates a new key pair, re-encrypts all stored user passwords and the encrypted values in `config.yml`, and backs up the old keys and config to `rsa-backup-<time>/` next to the private key. Users keep their passwords.
+
+```shell
+# docker-compose (all-in-one)
+docker compose stop micro-net-hub
+docker compose run --rm --entrypoint ./micro-net-hub micro-net-hub rotate-rsa-key --dry-run   # check first
+docker compose run --rm --entrypoint ./micro-net-hub micro-net-hub rotate-rsa-key
+docker compose start micro-net-hub
+
+# binary
+./micro-net-hub-linux-amd64 rotate-rsa-key --dry-run
+./micro-net-hub-linux-amd64 rotate-rsa-key
+```
+
+> Older docker-compose files mounted `auth-pub.pem` / `auth-priv-rsa.pem` as single files. Rotation works with them too; afterwards you can switch to the `keys/` directory mount used by the current compose files.
 
 ## 3. Install Ocserv
 

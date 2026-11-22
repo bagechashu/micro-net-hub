@@ -29,3 +29,11 @@ export function getSiteInfo() {
     method: 'get'
   });
 }
+
+// 当前 RSA 公钥（无需登录），用于加密提交的口令，见 utils/rsa.ts
+export function getPublicKey() {
+  return request({
+    url: '/api/base/pubkey',
+    method: 'get'
+  });
+}

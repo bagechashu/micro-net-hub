@@ -34,7 +34,7 @@ func OperationLogMiddleware() gin.HandlerFunc {
 		method := c.Request.Method
 
 		// 不审计 UI 访问，以及每次打开页面都会请求的站点名称、logo
-		if strings.HasPrefix(c.FullPath(), "/ui") || path == "/base/siteinfo" || path == "/base/sitelogo" {
+		if strings.HasPrefix(c.FullPath(), "/ui") || path == "/base/siteinfo" || path == "/base/sitelogo" || path == "/base/pubkey" {
 			return
 		}
 		// 审计 GET 日志, 默认不审计

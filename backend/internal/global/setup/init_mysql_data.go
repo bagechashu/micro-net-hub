@@ -9,6 +9,7 @@ import (
 	accountModel "micro-net-hub/internal/module/account/model"
 	apiMgrModel "micro-net-hub/internal/module/apimgr/model"
 	sitenavModel "micro-net-hub/internal/module/sitenav/model"
+	"micro-net-hub/internal/tools"
 
 	"github.com/thoas/go-funk"
 	"gorm.io/gorm"
@@ -279,7 +280,7 @@ func InitData() {
 		{
 			Model:         gorm.Model{ID: 1},
 			Username:      "admin",
-			Password:      config.Conf.Ldap.AdminPass,
+			Password:      tools.NewGenPasswd(tools.ParseConfigSecret(config.Conf.Ldap.AdminPass)),
 			Nickname:      "Super Admin",
 			GivenName:     "Super Admin",
 			Mail:          "admin@" + config.Conf.Ldap.DefaultEmailSuffix,

@@ -354,7 +354,7 @@ import { Search, Plus, Delete, Upload, Download, Edit, IconEye, IconEyeOff } fro
 import TreeSelect from '@zanmato/vue3-treeselect';
 import RowDetail from '@/components/RowDetail/index.vue';
 import '@zanmato/vue3-treeselect/dist/vue3-treeselect.min.css';
-import JSEncrypt from 'jsencrypt';
+import { encryptPassword } from '@/utils/rsa';
 import { getGroupTree } from '@/api/personnel/group';
 import {
   batchDeleteUserByIds,
@@ -381,7 +381,6 @@ function groupLabel(group: { groupName?: string; groupDn?: string }) {
   return first.includes('=') ? first.split('=')[1] : first;
 }
 
-const publicKey = import.meta.env.VITE_PUBLIC_KEY;
 
 // username is not editable when updating (backend ldap-user-name-modify config)
 const disabled = ref(false);
@@ -595,13 +594,16 @@ const submitForm = async () => {
 
   submitLoading.value = true;
   const payload: any = { ...form };
-  if (form.password !== '') {
-    // RSA-encrypt password
-    const encryptor = new JSEncrypt();
-    encryptor.setPublicKey(publicKey);
-    payload.password = encryptor.encrypt(form.password);
-  }
   try {
+    if (form.password !== '') {
+      // 口令用后端当前公钥加密后提交
+      try {
+        payload.password = await encryptPassword(form.password);
+      } catch {
+        ElMessage({ showClose: true, message: t('loginform.encryptFailed'), type: 'error' });
+        return;
+      }
+    }
     const res = dialogType.value === 'create'
       ? await createUser(payload)
       : await updateUserById(payload);

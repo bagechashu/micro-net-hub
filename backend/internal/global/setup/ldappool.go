@@ -12,6 +12,6 @@ func InitLdapPool() {
 		config.Conf.Ldap.MaxConn,
 		config.Conf.Ldap.Url,
 		config.Conf.Ldap.AdminDN,
-		tools.NewParsePasswd(config.Conf.Ldap.AdminPass),
+		tools.ParseConfigSecret(config.Conf.Ldap.AdminPass),
 	)
 }

@@ -20,6 +20,7 @@ func InitBaseRoutes(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) gi
 		base.POST("/changePwd", ForgetPwd) // 修改用户密码
 		base.GET("/siteinfo", SiteInfo)    // 站点名称等公开信息，无需鉴权
 		base.GET("/sitelogo", SiteLogo)    // 自定义 logo 图片，无需鉴权
+		base.GET("/pubkey", PublicKey)     // 当前 RSA 公钥（前端加密口令用），无需鉴权
 	}
 	return r
 }

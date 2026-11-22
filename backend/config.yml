@@ -18,6 +18,8 @@ system:
   max-header-MBytes: 1
   # 是否初始化数据(没有初始数据时使用, 已发布正式版改为false)
   init-data: true
+  # RSA 密钥文件路径（相对工作目录，也可以填绝对路径）。这里的 auth-*.pem 是仓库里公开的开发用密钥，只用于本地开发；
+  # 生产部署不要复制它们：文件不存在且库里还没有用户时会自动生成新密钥，已有部署可停服后执行 `micro-net-hub rotate-rsa-key` 轮换。
   # rsa公钥文件路径(config.yml相对路径, 也可以填绝对路径)
   rsa-public-key: auth-pub.pem
   # rsa私钥文件路径(config.yml相对路径, 也可以填绝对路径)
@@ -150,7 +152,7 @@ ldap:
   base-dn: "dc=example,dc=com"
   # ldap管理员DN
   admin-dn: "cn=admin,dc=example,dc=com"
-  # ldap管理员密码, go run cmd/gen_pass/main.go -encode -pass admin_pass
+  # ldap管理员密码：用当前公钥加密的密文（go run cmd/gen_pass/main.go -encode -pass admin_pass），或 plain: 前缀的明文
   admin-pass: "KRedEx1ed2QAtUpgOQP8f1adxh3VYe4aHnIAarJfyae1d4hWX1uTi9rXvi8RA6UF17JgfYrH1LSFUUCZa3jIeggDCdpzUTkNxqFXvDvVSDbpcSxe0i7GnTH3H3mdVxCS1NgGggHvWAp+EfJBNhk8m0A8o9ZE1bw9miHmLu1nNm8="
   # ldap用户OU
   user-dn: "ou=people,dc=example,dc=com"

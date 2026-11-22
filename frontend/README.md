@@ -13,8 +13,9 @@ npm run dev          # http://localhost:8001，/api 代理到 http://localhost:9
 
 可在 `.env.dev_test` 等文件中设置：
 
-- `VITE_PUBLIC_KEY`：登录时加密口令用的 RSA 公钥（与后端 `system.rsa-public-key` 对应）
 - `VITE_PROXY_TARGET`：开发代理的后端地址（默认 `http://localhost:9000/`）
+
+登录、改密时加密口令用的 RSA 公钥不再在构建时配置，前端运行时从后端 `GET /api/base/pubkey` 获取（见 `src/utils/rsa.ts`）。`VITE_PUBLIC_KEY` 已不再使用。
 
 ## 构建
 

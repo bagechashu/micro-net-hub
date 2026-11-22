@@ -102,7 +102,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import JSEncrypt from 'jsencrypt';
+import { encryptPassword } from '@/utils/rsa';
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus';
 import { changePwd } from '@/api/system/user';
 import useUserStore from '@/store/modules/user';
@@ -111,7 +111,6 @@ import { IconKey, IconCircle, IconCircleCheck } from '@tabler/icons-vue';
 
 const { t } = useI18n();
 
-const publicKey = import.meta.env.VITE_PUBLIC_KEY;
 
 const dialogFormRef = ref<FormInstance>();
 const submitLoading = ref(false);
@@ -210,17 +209,20 @@ async function submitForm() {
     return;
   }
 
-  // 密码RSA加密处理
-  const encryptor = new JSEncrypt();
-  encryptor.setPublicKey(publicKey);
-  const payload = {
-    oldPassword: encryptor.encrypt(dialogFormData.oldPassword),
-    newPassword: encryptor.encrypt(dialogFormData.newPassword),
-    confirmPassword: encryptor.encrypt(dialogFormData.confirmPassword)
-  };
-
   submitLoading.value = true;
   try {
+    // 口令用后端当前公钥加密后提交
+    let payload;
+    try {
+      payload = {
+        oldPassword: await encryptPassword(dialogFormData.oldPassword),
+        newPassword: await encryptPassword(dialogFormData.newPassword),
+        confirmPassword: await encryptPassword(dialogFormData.confirmPassword)
+      };
+    } catch {
+      ElMessage({ showClose: true, message: t('loginform.encryptFailed'), type: 'error' });
+      return;
+    }
     await changePwd(payload);
     ElMessage({
       showClose: true,

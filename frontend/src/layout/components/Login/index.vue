@@ -60,7 +60,8 @@
 
 <script>
 import { defineComponent } from 'vue';
-import JSEncrypt from 'jsencrypt';
+import { ElMessage } from 'element-plus';
+import { encryptPassword } from '@/utils/rsa';
 import userStore from '@/store/modules/user';
 import { IconUser, IconLock, IconEye, IconEyeOff } from '@/icons/tabler';
 
@@ -92,8 +93,6 @@ export default defineComponent({
         password: [{ required: true, trigger: 'blur', validator: validatePassword }],
       },
       passwordType: 'password',
-      // use Vite public key env var if provided
-      publicKey: import.meta.env.VITE_PUBLIC_KEY,
       capsTooltip: false,
       loading: false,
       redirect: undefined,
@@ -161,20 +160,15 @@ export default defineComponent({
       this.$refs.loginForm.validate(async (valid) => {
         if (valid) {
           this.loading = true;
-          let payload = { ...this.loginForm };
+          // 口令用后端当前公钥加密后提交（公钥运行时获取）
+          let payload;
           try {
-            if (!this.publicKey) {
-              console.warn('VITE_PUBLIC_KEY is empty — password will be sent plaintext');
-            }
-            const encryptor = new JSEncrypt();
-            if (this.publicKey) encryptor.setPublicKey(this.publicKey);
-            const encPassword = this.publicKey ? encryptor.encrypt(this.loginForm.password) : null;
-            if (encPassword) {
-              payload = { username: this.loginForm.username, password: encPassword };
-            }
+            payload = { username: this.loginForm.username, password: await encryptPassword(this.loginForm.password) };
           } catch (err) {
-            // fallback to plain password
-            console.warn('Password encryption failed, sending plain password', err);
+            this.loading = false;
+            ElMessage.error(this.$t('loginform.encryptFailed'));
+            console.warn('encrypt password failed', err);
+            return;
           }
 
           userStore()
