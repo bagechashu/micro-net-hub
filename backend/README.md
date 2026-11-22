@@ -10,24 +10,11 @@ Base on [go-ldap-admin](https://github.com/eryajf/go-ldap-admin), but **change t
 
 [Click to see SQL](internal/module/sitenav/model/README.md)
 
-##### RSA key pairs
+##### Config directory and RSA key pairs
 
-> http://ldapdoc.eryajf.net/pages/119ea3/
+Config directory: the service reads `config.yml` from the `conf/` directory next to the binary (`/app/conf/` in the container), or from the directory given with `-conf <dir>` (e.g. `micro-net-hub -conf /etc/micro-net-hub`, also `rotate-rsa-key -conf <dir>`). Without `-conf` it falls back to `config.yml` next to the binary, then `conf/config.yml` / `config.yml` in the working directory (for `go run`). Relative paths in `config.yml` (RSA keys, `site-logo`) are relative to the directory of `config.yml`; `logs.path` and the sqlite `database.source` stay relative to the working directory.
 
-Empty database after use new RSA key pairs.
-
-```shell
-# Please ensure that the generated RSA key does not exceed 1024 bits in size, as the password is too long to be inserted into the database.
-$ openssl genrsa -out auth-priv.pem 1024
-
-# Openssl3 convert to traditional format
-$ openssl rsa -in auth-priv.pem -out auth-priv-rsa.pem -traditional
-
-# generate public key
-$ openssl rsa -in auth-priv.pem -pubout -out auth-pub.pem
-# YYHkG5kAFOyvJmmyVEt6rdDWM5q46F+Rkh3oxosFXHA86JMk4QhJQeVBknMNwvyFWLoGme2gF4eIp2WhpLUj9kxDQKrLj7AwnhILJrFmcykPPXgfBpVGA5aPrtrlucHuIsCBgyrSavHLhnKjdE0O5SbtamiVgfC+PBABY19vX2s=  # admin_pass
-
-```
+For local development `conf/config.yml` is used (`go run ./cmd/micro-net-hub` from `backend/`). `conf/*.pem` are not committed (`conf/.gitignore`): on a fresh database a key pair is generated there on first start. Existing deployments rotate keys with `micro-net-hub rotate-rsa-key` (see the [README](../README.md#rsa-key-and-key-rotation)).
 
 ##### Gen encrypted password string
 

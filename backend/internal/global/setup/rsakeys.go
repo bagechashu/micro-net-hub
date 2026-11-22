@@ -13,11 +13,6 @@ import (
 	"micro-net-hub/internal/tools"
 )
 
-const (
-	defaultRSAPublicKeyFile  = "auth-pub.pem"
-	defaultRSAPrivateKeyFile = "auth-priv-rsa.pem"
-)
-
 // InitRSAKeys 检查并加载 RSA 密钥（用于登录时加密传输口令、可逆存储用户口令）。需在 InitDB 之后调用。
 //   - 两个密钥文件都不存在、且数据库里还没有用户（全新部署）：自动生成 2048 位密钥对并写入配置的路径。
 //   - 都不存在但已有用户：拒绝启动。多半是漏挂载了密钥文件，此时生成新密钥会让所有已有用户无法登录。
@@ -32,10 +27,10 @@ func InitRSAKeys() {
 func initRSAKeys() error {
 	sys := config.Conf.System
 	if sys.RSAPublicKey == "" {
-		sys.RSAPublicKey = defaultRSAPublicKeyFile
+		sys.RSAPublicKey = config.ResolvePath(config.DefaultRSAPublicKeyFile)
 	}
 	if sys.RSAPrivateKey == "" {
-		sys.RSAPrivateKey = defaultRSAPrivateKeyFile
+		sys.RSAPrivateKey = config.ResolvePath(config.DefaultRSAPrivateKeyFile)
 	}
 	pubExists, err := regularFileExists(sys.RSAPublicKey)
 	if err != nil {

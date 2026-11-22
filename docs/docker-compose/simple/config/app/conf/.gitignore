@@ -1,0 +1,4 @@
+# 首次启动时在这里生成的 RSA 密钥对和 rotate-rsa-key 的备份，不要提交到仓库
+*.pem
+rsa-backup-*/
+*.tmp-rotate

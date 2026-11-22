@@ -44,11 +44,11 @@
 
 ### P0（期限 2026-11-29）
 
-- [ ] **SEC-001 JWT 签名密钥为默认值，可伪造任意用户令牌**（`backend/config.yml:77`，docs 下两套 compose 的 config.yml 同）
+- [ ] **SEC-001 JWT 签名密钥为默认值，可伪造任意用户令牌**（`backend/conf/config.yml:78`，docs 下两套 compose 的 config.yml 同）
   - 后端启动时校验 `jwt.key`：为空、等于 `secret key` 或过短时，release 模式下拒绝启动，debug 模式下告警。
   - 部署样例改为占位值，README 写明必须修改；或首次启动自动生成随机密钥并写回/提示。
   - 顺带修复 `config.go:67` 的 `AutomaticEnv` 不生效，让密钥可以通过环境变量注入。
-- [ ] **SEC-002 默认超级管理员口令可由仓库配置还原**（`backend/config.yml:154`，`init_mysql_data.go:280`）
+- [ ] **SEC-002 默认超级管理员口令可由仓库配置还原**（`backend/conf/config.yml:154`，`init_mysql_data.go:280`）
   - 初始化时 admin 口令不再直接取 `ldap.admin-pass`：改为随机生成并在首次启动日志里输出一次，或要求通过环境变量提供。
   - 增加首次登录强制改密。
 - [ ] **SEC-003 all-in-one 样例把 MySQL/LDAP 以默认口令暴露到宿主所有网卡**（`docs/docker-compose/all-in-one/docker-compose.yml:11-56`，另见 mysql、openldap 两个分步样例）
@@ -61,7 +61,7 @@
 - [ ] **SEC-004 OpenLDAP 同步的用户口令为空，可直接登录**（`backend/internal/module/goldap/usermgr/ldap.go:62-79`）
   - 同步时为新用户生成随机口令（或标记为“需重置”），登录和改密都拒绝空口令。
   - 这是攻击链 CHAIN-2（空口令账户经 RADIUS 爆破 TOTP 接入 VPN）的最佳阻断点。
-- [x] **SEC-005 RSA 私钥提交在仓库，用户口令可整体还原**（第 1–4 步已完成；长期项未做）（`backend/auth-priv-rsa.pem` 等）
+- [x] **SEC-005 RSA 私钥提交在仓库，用户口令可整体还原**（第 1–4 步已完成；长期项未做）（`backend/conf/auth-priv-rsa.pem` 等）
   - 根因：前端在**构建时**把公钥写死（`frontend/.env.*` 里的 `VITE_PUBLIC_KEY`），镜像里的前端只认仓库这把公钥，所以每个用官方镜像的部署都被迫使用仓库里的私钥。
   - 修复：
     1. 后端新增公开接口（如 `GET /api/base/pubkey`）返回当前公钥；前端登录、改密、用户管理三处改为运行时获取，去掉 `VITE_PUBLIC_KEY`。之后换密钥不用重新编译前端。
@@ -71,7 +71,7 @@
   - 已完成：`GET /api/base/pubkey` + 前端运行时取公钥；启动时自动生成 2048 位密钥（已有用户却缺密钥时拒绝启动）、使用仓库公开密钥时告警；部署样例改为 `keys/` 目录挂载、口令支持 `plain:` 明文写法；`micro-net-hub rotate-rsa-key [--dry-run]` 轮换密钥（重新加密库里的用户口令和 config.yml 里的加密口令，并自动备份）。
   - [ ] 线上部署执行一次 `rotate-rsa-key`，替换仓库公开密钥（见 docs/README.md 的 RSA key 一节）。
   - 长期：口令改用 bcrypt/argon2 存储（目前是可逆加密，见报告 U004-4），RSA 只用于传输；TOTP 种子加密存储。
-- [ ] **SEC-006 数据库使用 root 账户和弱默认口令**（`backend/config.yml:52`）
+- [ ] **SEC-006 数据库使用 root 账户和弱默认口令**（`backend/conf/config.yml:53`）
   - 部署样例改用专用库账户（只授权 `micro_net_hub` 库）和随机口令，与 SEC-003 一起改。
 
 其余中低危问题（如 `GET /dns/getall` 未鉴权、找回密码接口无限频、内置 DNS 开放递归、ocserv-users-web 若干问题）见报告，排在这些之后处理。

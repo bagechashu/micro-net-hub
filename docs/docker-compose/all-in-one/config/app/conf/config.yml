@@ -18,11 +18,10 @@ system:
   max-header-MBytes: 1
   # 是否初始化数据(没有初始数据时使用, 已发布正式版改为false)
   init-data: true
-  # RSA 密钥文件路径（相对工作目录，也可以填绝对路径）。这里的 auth-*.pem 是仓库里公开的开发用密钥，只用于本地开发；
-  # 生产部署不要复制它们：文件不存在且库里还没有用户时会自动生成新密钥，已有部署可停服后执行 `micro-net-hub rotate-rsa-key` 轮换。
-  # rsa公钥文件路径(config.yml相对路径, 也可以填绝对路径)
+  # RSA 密钥文件路径（相对 config.yml 所在目录，即容器里的 /app/conf；也可以填绝对路径），用于加密登录口令和保存用户口令。
+  # 文件不存在且数据库里还没有用户时（首次部署），启动时自动生成 2048 位密钥对；请备份整个 conf/ 目录。
+  # 已有部署更换密钥：停止服务后执行 `micro-net-hub rotate-rsa-key`（会同时重新加密库里的用户口令，备份写到 conf/rsa-backup-<时间>/）。
   rsa-public-key: auth-pub.pem
-  # rsa私钥文件路径(config.yml相对路径, 也可以填绝对路径)
   rsa-private-key: auth-priv-rsa.pem
 
 logs:
@@ -55,7 +54,7 @@ mysql:
   # 数据库名
   database: micro_net_hub
   # 主机地址
-  host: localhost
+  host: mysql
   # 端口
   port: 3306
   # 连接字符串参数
@@ -109,7 +108,7 @@ notice:
   default-notice-switch: true
   # 默认通知消息发送角色的关键字, 在[角色管理]查看.
   default-notice-role-keyword: "admin"
-  account-created-notice-dir: ../tmp/
+  account-created-notice-dir: /notice/
   account-created-notice-save: false
   header-html: |-
     <div>
@@ -145,19 +144,19 @@ ldap:
   # 是否开启ldap管理功能
   enable-manage: true
   # ldap服务器地址, TODO: ldaps that use private SSL need adapt
-  url: ldap://localhost:389
+  url: ldap://openldap:389
   # ladp最大连接数设置
   max-conn: 10
   # ldap服务器基础DN
   base-dn: "dc=example,dc=com"
   # ldap管理员DN
   admin-dn: "cn=admin,dc=example,dc=com"
-  # ldap管理员密码：用当前公钥加密的密文（go run cmd/gen_pass/main.go -encode -pass admin_pass），或 plain: 前缀的明文
-  admin-pass: "KRedEx1ed2QAtUpgOQP8f1adxh3VYe4aHnIAarJfyae1d4hWX1uTi9rXvi8RA6UF17JgfYrH1LSFUUCZa3jIeggDCdpzUTkNxqFXvDvVSDbpcSxe0i7GnTH3H3mdVxCS1NgGggHvWAp+EfJBNhk8m0A8o9ZE1bw9miHmLu1nNm8="
+  # ldap管理员密码。plain: 前缀表示明文；也可以写成用本部署公钥加密的密文（cmd/gen_pass -encode）。请改成实际口令
+  admin-pass: "plain:admin_pass"
   # ldap用户OU
   user-dn: "ou=people,dc=example,dc=com"
-  # ldap用户初始默认密码, go run cmd/gen_pass/main.go -encode -pass Ldap-init-passwd
-  user-init-password: "bMJkvFrRdARtcn/nCReJ1vNa+OBiBucyJiZjHj8HJCIis1P1W2ClXA49V9PfDBYUVMNpN9niZs0MFBCSzfpHivg0T8FAGJeIRAcLiIybEFxZ1r+AuoxyrpW92KEUF81CUf3E60o9gNKhIzS6mHC0j0fd8cYSMW0FPcVByY8hOgY="
+  # ldap用户初始默认密码（钉钉/企微/飞书同步的新用户使用），写法同 admin-pass。请改成实际口令
+  user-init-password: "plain:Ldap-init-passwd"
   # 是否允许更改分组DN
   group-name-modify: false
   # 是否允许更改用户DN

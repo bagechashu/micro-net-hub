@@ -33,8 +33,16 @@ func main() {
 		os.Exit(runRotateRSAKey(os.Args[2:]))
 	}
 
+	fs := flag.NewFlagSet("micro-net-hub", flag.ExitOnError)
+	confDir := confDirFlag(fs)
+	fs.Usage = func() {
+		fmt.Fprintf(fs.Output(), "用法:\n  %[1]s [-conf 目录]\n  %[1]s rotate-rsa-key [-conf 目录] [--dry-run]\n\n", os.Args[0])
+		fs.PrintDefaults()
+	}
+	_ = fs.Parse(os.Args[1:])
+
 	// 加载配置文件到全局配置结构体
-	config.InitConfig()
+	config.InitConfigFrom(*confDir)
 
 	// 初始化日志
 	setup.InitLogger()
@@ -95,19 +103,25 @@ func main() {
 	}
 }
 
+// confDirFlag 配置目录参数：目录下放 config.yml、RSA 密钥等；不指定时用二进制文件所在目录下的 conf/
+func confDirFlag(fs *flag.FlagSet) *string {
+	return fs.String("conf", "", "配置目录（其中的 config.yml、RSA 密钥等），默认为二进制文件所在目录下的 conf/")
+}
+
 // runRotateRSAKey 轮换 RSA 密钥：生成新密钥对，并把数据库里的用户口令和 config.yml 里加密的口令改用新密钥加密。
 //
-//	micro-net-hub rotate-rsa-key [--dry-run]
+//	micro-net-hub rotate-rsa-key [-conf 目录] [--dry-run]
 //
 // 执行前请先停止服务（运行中的服务仍持有旧密钥和用户缓存），执行后再启动。
 func runRotateRSAKey(args []string) int {
 	fs := flag.NewFlagSet("rotate-rsa-key", flag.ContinueOnError)
 	dryRun := fs.Bool("dry-run", false, "只检查并统计，不做任何修改")
+	confDir := confDirFlag(fs)
 	if err := fs.Parse(args); err != nil {
 		return 2
 	}
 
-	config.InitConfig()
+	config.InitConfigFrom(*confDir)
 	setup.InitLogger()
 	setup.ConnectDB() // 只连接，不迁移表结构
 

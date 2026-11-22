@@ -9,8 +9,9 @@ just for functional experience
 git clone https://github.com/bagechashu/micro-net-hub.git
 cd micro-net-hub/docs/docker-compose/simple
 
-# RSA keys are generated into config/app/keys/ on first start; the container runs as uid 1000
-sudo chown 1000:1000 config/app/keys
+# config/app/conf/ holds config.yml, the RSA keys (generated on first start) and rotation backups;
+# the container runs as uid 1000
+sudo chown -R 1000:1000 config/app/conf
 
 # Install "docker" first; If you use old version "docker", install "docker-compose" also.
 docker compose up -d
@@ -23,7 +24,7 @@ docker compose up -d
 
 Micro-Net-Hub uses an RSA key pair to encrypt the passwords sent by the login form and to store user passwords.
 
-- **New deployment**: the key pair is generated on first start (2048-bit), as long as the key files don't exist and the database has no users yet. With docker-compose the keys go to `config/app/keys/`. **Back up this directory**: if the keys are lost, existing users can no longer log in.
+- **New deployment**: the key pair is generated on first start (2048-bit), as long as the key files don't exist and the database has no users yet. With docker-compose the keys go to `config/app/conf/`, next to `config.yml`. **Back up this directory**: if the keys are lost, existing users can no longer log in.
 - **Existing deployment**: if the service logs `当前使用的是仓库里提交过的公开 RSA 密钥` at startup, it still uses the public key pair that used to ship with this repository. Rotate it:
 
   ```shell
@@ -38,8 +39,10 @@ Micro-Net-Hub uses an RSA key pair to encrypt the passwords sent by the login fo
   ./micro-net-hub-linux-amd64 rotate-rsa-key
   ```
 
-  Rotation generates a new key pair, re-encrypts every stored user password and the encrypted passwords in `config.yml`, and backs up the old keys and config to `rsa-backup-<time>/` next to the private key. **Users keep their passwords**; LDAP passwords are not touched.
+  Rotation generates a new key pair, re-encrypts every stored user password and the encrypted passwords in `config.yml`, and backs up the old keys and config to `rsa-backup-<time>/` next to the private key (with docker-compose: `config/app/conf/rsa-backup-<time>/` on the host). **Users keep their passwords**; LDAP passwords are not touched.
 - **Passwords in `config.yml`** (`ldap.admin-pass`, `ldap.user-init-password`) can be written in plain text with the `plain:` prefix, e.g. `admin-pass: "plain:your-password"`, or as ciphertext encrypted with this deployment's public key.
+
+- **Config directory**: the service reads `config.yml` from the `conf/` directory next to the binary (`/app/conf/` in the container), or from the directory given with `-conf <dir>` (e.g. `micro-net-hub -conf /etc/micro-net-hub`, also `rotate-rsa-key -conf <dir>`). Without `-conf` it falls back to `config.yml` next to the binary, then `conf/config.yml` / `config.yml` in the working directory (for `go run`). Relative paths in `config.yml` (RSA keys, `site-logo`) are relative to the directory of `config.yml`; `logs.path` and the sqlite `database.source` stay relative to the working directory.
 
 More details: [Installation Manual → RSA key](docs/README.md#rsa-key).
 

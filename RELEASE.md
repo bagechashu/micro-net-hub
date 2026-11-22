@@ -2,6 +2,19 @@
 
 Docker image: `xianleeti/micro-net-hub:<version>` (linux/amd64).
 
+## v0.6.10 (2026-11-22)
+
+Config directory: `config.yml`, the RSA keys and the rotation backups now live together in `conf/`, so docker-compose mounts one directory and `rotate-rsa-key` backups land on the host.
+
+- The service reads `config.yml` from `conf/` next to the binary (`/app/conf/config.yml` in the container), or from the directory given with the new `-conf <dir>` option (`micro-net-hub -conf <dir>`, `micro-net-hub rotate-rsa-key -conf <dir>`). Without `-conf` it falls back to `config.yml` next to the binary, then to `conf/config.yml` / `config.yml` in the working directory.
+- Relative paths in `config.yml` (`system.rsa-public-key`, `system.rsa-private-key`, `system.site-logo`) are resolved against the directory of `config.yml`, as the config comments already said (they used to be resolved against the working directory). For a `config.yml` in the working directory nothing changes.
+- docker-compose examples mount `./config/app/conf/:/app/conf/`; the keys are generated there and `rotate-rsa-key` writes `rsa-backup-<time>/` there.
+- In the repository, the development config moved to `backend/conf/config.yml`. The development RSA keys are no longer committed (`backend/conf/.gitignore`); the LDAP passwords in the development config use the `plain:` form.
+
+**Upgrade notes**
+
+- Existing deployments keep working without changes (`/app/config.yml` is still read). With the old single-file mounts the rotation backup is written inside the container; switch to the `conf/` directory mount before rotating, see [Installation Manual → RSA key](docs/README.md#rsa-key).
+
 ## v0.6.9 (2026-11-22)
 
 Fix for v0.6.8 on MySQL: the `users.password` column was `varchar(255)`, but a password encrypted with a 2048-bit key is 344 characters long.

@@ -9,8 +9,9 @@ RUN apk upgrade --no-cache \
 
 WORKDIR /app
 COPY --chown=app:app --chmod=755 bin/micro-net-hub-linux-amd64 ./micro-net-hub
-# 程序会在工作目录下写 logs/；配置文件和 RSA 密钥运行时挂载到 /app，需要对 uid 1000 可读
-RUN mkdir -p /app/logs /app/keys && chown -R app:app /app
+# 程序会在工作目录下写 logs/；配置目录挂载到 /app/conf（config.yml、RSA 密钥、轮换备份），需要对 uid 1000 可写。
+# 旧的部署方式（/app/config.yml 单文件挂载）仍然兼容。
+RUN mkdir -p /app/logs /app/conf && chown -R app:app /app
 
 USER app
 EXPOSE 9000

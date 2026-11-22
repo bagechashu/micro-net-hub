@@ -10,8 +10,9 @@
 git clone https://github.com/bagechashu/micro-net-hub.git
 
 cd micro-net-hub/docs/docker-compose/all-in-one
-# RSA keys are generated into config/app/keys/ on first start; the container runs as uid 1000
-sudo chown 1000:1000 config/app/keys
+# config/app/conf/ holds config.yml, the RSA keys (generated on first start) and rotation backups;
+# the container runs as uid 1000
+sudo chown -R 1000:1000 config/app/conf
 docker-compose up -d
 
 # Notice: openldap will start successfully until more than 5min later. check the log to get the detail.
@@ -95,15 +96,17 @@ make all
 
 cd /data
 cp /data/micro-net-hub/bin/micro-net-hub-linux-amd64 /data
-cp /data/micro-net-hub/backend/config.yml /data
-# Don't copy backend/auth-*.pem: those keys are public. A new key pair is generated on first start.
-# In /data/config.yml set the LDAP passwords in plain text, e.g.
+mkdir -p /data/conf
+cp /data/micro-net-hub/backend/conf/config.yml /data/conf/
+# conf/ next to the binary is the default config directory; another one can be given with -conf <dir>.
+# A new key pair is generated in /data/conf/ on first start.
+# In /data/conf/config.yml set the LDAP passwords in plain text, e.g.
 #   admin-pass: "plain:<ldap admin password>"
 #   user-init-password: "plain:<initial user password>"
 
-# run micro-net-hub
+# run micro-net-hub (reads /data/conf/config.yml; logs/ is written to the working directory)
 chmod +x /data/micro-net-hub-linux-amd64
-/data/micro-net-hub-linux-amd64
+cd /data && ./micro-net-hub-linux-amd64
 
 ```
 
@@ -116,9 +119,9 @@ Administrator of Micro-Net-Hub Dashboard:
 
 Micro-Net-Hub uses an RSA key pair to encrypt passwords sent by the login form and to store user passwords.
 
-- **New deployment**: the key pair is generated automatically on first start (when the key files don't exist and the database has no users yet). With docker-compose the keys are written to `config/app/keys/`. **Back up this directory**: without it, existing users can no longer log in. Make sure the directory is writable by the container user (uid 1000): `sudo chown 1000:1000 config/app/keys`.
+- **New deployment**: the key pair is generated automatically on first start (when the key files don't exist and the database has no users yet). They are written next to `config.yml` (relative key paths are relative to the directory of `config.yml`); with docker-compose that is `config/app/conf/`. **Back up this directory**: without it, existing users can no longer log in. Make sure the directory is writable by the container user (uid 1000): `sudo chown -R 1000:1000 config/app/conf`.
 - **Passwords in config.yml** (`ldap.admin-pass`, `ldap.user-init-password`) can be written in plain text with the `plain:` prefix, e.g. `admin-pass: "plain:your-ldap-admin-password"`, or as ciphertext encrypted with this deployment's public key.
-- **Existing deployments still using the key from this repository** (the service logs a warning at startup): stop the service, then run the rotation command. It generates a new key pair, re-encrypts all stored user passwords and the encrypted values in `config.yml`, and backs up the old keys and config to `rsa-backup-<time>/` next to the private key. Users keep their passwords.
+- **Existing deployments still using the key from this repository** (the service logs a warning at startup): stop the service, then run the rotation command. It generates a new key pair, re-encrypts all stored user passwords and the encrypted values in `config.yml`, and backs up the old keys and config to `rsa-backup-<time>/` next to the private key (with docker-compose: `config/app/conf/rsa-backup-<time>/` on the host). Users keep their passwords.
 
 ```shell
 # docker-compose (all-in-one)
@@ -132,7 +135,20 @@ docker compose start micro-net-hub
 ./micro-net-hub-linux-amd64 rotate-rsa-key
 ```
 
-> Older docker-compose files mounted `auth-pub.pem` / `auth-priv-rsa.pem` as single files. Rotation works with them too; afterwards you can switch to the `keys/` directory mount used by the current compose files.
+> Older docker-compose files mounted `/app/config.yml` and the keys (`/app/keys/` or single `auth-*.pem` files) separately. They keep working: without `/app/conf/config.yml` the service falls back to `/app/config.yml`. But with single-file mounts the rotation backup stays inside the container and is lost with it; switch to the `conf/` directory mount first:
+>
+> ```shell
+> docker compose stop micro-net-hub
+> mkdir -p config/app/conf
+> mv config/app/config.yml config/app/conf/
+> mv config/app/keys config/app/conf/keys   # key paths `keys/auth-*.pem` in config.yml still resolve
+> # (single-file key mounts: move the .pem files into config/app/conf/ and set
+> #  rsa-public-key: auth-pub.pem / rsa-private-key: auth-priv-rsa.pem)
+> sudo chown -R 1000:1000 config/app/conf
+> # in docker-compose.yml replace the config.yml / keys / pem mounts with
+> #   - ./config/app/conf/:/app/conf/
+> docker compose up -d micro-net-hub
+> ```
 
 ## 3. Install Ocserv
 

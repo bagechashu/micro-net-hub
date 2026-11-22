@@ -37,15 +37,40 @@ type config struct {
 	FeiShu    *FeiShu    `mapstructure:"feishu" json:"feiShu"`
 }
 
-// 设置读取配置信息
+// ConfigDirName 默认配置目录名：config.yml、RSA 密钥、自定义 logo 等放在二进制文件所在目录下的 conf/，
+// 方便 Docker 整个目录挂载（rotate-rsa-key 的备份也会落在这里）。可用启动参数 -conf 指定其他目录。
+const ConfigDirName = "conf"
+
+// 默认的 RSA 密钥文件名（相对配置文件所在目录）
+const (
+	DefaultRSAPublicKeyFile  = "auth-pub.pem"
+	DefaultRSAPrivateKeyFile = "auth-priv-rsa.pem"
+)
+
+// configDir config.yml 所在目录，配置里的相对路径（RSA 密钥、site-logo）以它为准
+var configDir string
+
+// InitConfig 按默认位置查找并读取 config.yml，见 InitConfigFrom
 func InitConfig() {
-	workDir, err := os.Getwd()
-	if err != nil {
-		panic(fmt.Errorf("读取应用目录失败:%s", err))
-	}
-	viper.SetConfigName("config")
+	InitConfigFrom("")
+}
+
+// InitConfigFrom 读取配置信息。
+//
+// dir 不为空（启动参数 -conf）时只读取 <dir>/config.yml。为空时依次查找：
+//  1. 二进制文件所在目录下的 conf/config.yml（默认位置）
+//  2. 二进制文件所在目录下的 config.yml（旧的部署方式）
+//  3. 工作目录下的 conf/config.yml、config.yml（go run 时二进制在临时目录，开发时用这两项）
+func InitConfigFrom(dir string) {
 	viper.SetConfigType("yml")
-	viper.AddConfigPath(workDir + "/")
+	if dir != "" {
+		viper.SetConfigFile(filepath.Join(dir, "config.yml"))
+	} else {
+		viper.SetConfigName("config")
+		for _, p := range defaultSearchPaths() {
+			viper.AddConfigPath(p)
+		}
+	}
 
 	// 在读取配置文件前设置默认值
 	viper.SetDefault("sync.ldap-sync-time", "0 */2 * * * *")
@@ -59,7 +84,7 @@ func InitConfig() {
 	viper.SetDefault("logs.audit-get-requests", true)
 
 	// 读取配置信息
-	err = viper.ReadInConfig()
+	err := viper.ReadInConfig()
 	if err != nil {
 		panic(fmt.Errorf("读取配置文件失败:%s", err))
 	}
@@ -68,9 +93,11 @@ func InitConfig() {
 	viper.AutomaticEnv()
 
 	// 将读取的配置信息保存至全局变量Conf
+	configDir = filepath.Dir(viper.ConfigFileUsed())
 	if err := viper.Unmarshal(Conf); err != nil {
 		panic(fmt.Errorf("初始化配置文件失败:%s", err))
 	}
+	resolvePaths()
 	// 读取rsa key
 	Conf.System.RSAPublicBytes = RSAReadKeyFromFile(Conf.System.RSAPublicKey)
 	Conf.System.RSAPrivateBytes = RSAReadKeyFromFile(Conf.System.RSAPrivateKey)
@@ -82,11 +109,64 @@ func InitConfig() {
 		if err := viper.Unmarshal(Conf); err != nil {
 			panic(fmt.Errorf("热加载配置文件失败:%s", err))
 		}
+		resolvePaths()
 		// 读取rsa key
 		Conf.System.RSAPublicBytes = RSAReadKeyFromFile(Conf.System.RSAPublicKey)
 		Conf.System.RSAPrivateBytes = RSAReadKeyFromFile(Conf.System.RSAPrivateKey)
 		global.Log.Info("热加载配置文件完成!")
 	})
+}
+
+// defaultSearchPaths 未指定配置目录时查找 config.yml 的目录（按优先级，去重）
+func defaultSearchPaths() []string {
+	var bases []string
+	if exe, err := os.Executable(); err == nil {
+		if real, err := filepath.EvalSymlinks(exe); err == nil {
+			exe = real
+		}
+		bases = append(bases, filepath.Dir(exe))
+	}
+	if wd, err := os.Getwd(); err == nil {
+		bases = append(bases, wd)
+	}
+	var paths []string
+	seen := map[string]bool{}
+	for _, b := range bases {
+		for _, p := range []string{filepath.Join(b, ConfigDirName), b} {
+			if !seen[p] {
+				seen[p] = true
+				paths = append(paths, p)
+			}
+		}
+	}
+	return paths
+}
+
+// resolvePaths 把配置里的文件路径（RSA 密钥、site-logo）解析成以 config.yml 所在目录为基准的路径。
+// 旧部署的 config.yml 就在工作目录，解析结果和原来相同。
+func resolvePaths() {
+	sys := Conf.System
+	if sys == nil {
+		return
+	}
+	if strings.TrimSpace(sys.RSAPublicKey) == "" {
+		sys.RSAPublicKey = DefaultRSAPublicKeyFile
+	}
+	if strings.TrimSpace(sys.RSAPrivateKey) == "" {
+		sys.RSAPrivateKey = DefaultRSAPrivateKeyFile
+	}
+	sys.RSAPublicKey = ResolvePath(sys.RSAPublicKey)
+	sys.RSAPrivateKey = ResolvePath(sys.RSAPrivateKey)
+	sys.SiteLogo = ResolvePath(sys.SiteLogo)
+}
+
+// ResolvePath 相对路径以 config.yml 所在目录为基准；空串和绝对路径原样返回
+func ResolvePath(p string) string {
+	p = strings.TrimSpace(p)
+	if p == "" || filepath.IsAbs(p) || configDir == "" {
+		return p
+	}
+	return filepath.Join(configDir, p)
 }
 
 // 从文件中读取RSA key
@@ -110,7 +190,7 @@ func RSAReadKeyFromFile(filename string) []byte {
 type System struct {
 	// 页面上显示的站点名称（顶部品牌、浏览器标题），为空时使用 DefaultSiteName
 	SiteName string `mapstructure:"site-name" json:"siteName"`
-	// 自定义 logo 图片文件（svg/png/jpg/webp/ico），相对路径以工作目录（config.yml 所在目录）为准；为空用内置 logo
+	// 自定义 logo 图片文件（svg/png/jpg/webp/ico），相对路径以 config.yml 所在目录为准；为空用内置 logo
 	SiteLogo        string        `mapstructure:"site-logo" json:"siteLogo"`
 	Mode            string        `mapstructure:"mode" json:"mode"`
 	UrlPathPrefix   string        `mapstructure:"url-path-prefix" json:"urlPathPrefix"`
