@@ -2,6 +2,18 @@
 
 Docker image: `xianleeti/micro-net-hub:<version>` (linux/amd64).
 
+## Unreleased
+
+Log files.
+
+- Fixed file names `<logs.path>/info.log` (below Error) and `<logs.path>/error.log` (Error and above), still also written to stdout. They used to be `info/<date>.log` / `error/<date>.log` with the date of the service start, so a long-running service never switched files and old files were never cleaned up.
+- Rotated every day at midnight (local time) and when a file exceeds `logs.max-size`. Rotated files are named like `info-2026-11-22T00-00-00.000.log` (local time of the rotation) and cleaned up by `logs.max-backups` / `logs.max-age`.
+- `logs.level` now works for every level (-1 Debug, 0 Info, 1 Warn, 2 Error); before, only values ≥ 2 had an effect. Changes are applied on config hot reload.
+
+**Upgrade notes**
+
+- Old files under `logs/info/` and `logs/error/` are no longer written or cleaned up; delete them when no longer needed.
+
 ## v0.6.10 (2026-11-22)
 
 Config directory: `config.yml`, the RSA keys and the rotation backups now live together in `conf/`, so docker-compose mounts one directory and `rotate-rsa-key` backups land on the host.

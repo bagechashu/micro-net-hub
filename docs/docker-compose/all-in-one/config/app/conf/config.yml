@@ -25,17 +25,17 @@ system:
   rsa-private-key: auth-priv-rsa.pem
 
 logs:
-  # 日志等级(-1:Debug, 0:Info, 1:Warn, 2:Error, 3:DPanic, 4:Panic, 5:Fatal, -1<=level<=5, 参照zap.level源码)
+  # 日志等级：-1 Debug, 0 Info, 1 Warn, 2 Error（只记录该等级及以上），修改后热加载生效
   level: -1
-  # 日志路径
+  # 日志目录（相对工作目录，也可以填绝对路径）：info.log 记录 Error 以下的日志，error.log 记录 Error 及以上；同时输出到 stdout
   path: logs
-  # 文件最大大小, M
+  # 每天 0 点或文件超过 max-size（MB）时切割，切下来的文件如 info-2026-11-22T00-00-00.000.log（切割时刻，本地时间）
   max-size: 50
-  # 备份数
+  # 切下来的文件最多保留个数（info、error 分别计算）
   max-backups: 100
-  # 存放时间, 天
+  # 切下来的文件保留天数
   max-age: 30
-  # 是否压缩
+  # 切下来的文件是否 gzip 压缩
   compress: false
   # 是否审计 GET 日志
   audit-get-requests: true

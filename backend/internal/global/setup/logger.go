@@ -1,8 +1,8 @@
 package setup
 
 import (
-	"fmt"
 	"os"
+	"path/filepath"
 	"time"
 
 	"micro-net-hub/internal/config"
@@ -13,29 +13,20 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-/**
- * 初始化日志
- * filename 日志文件路径
- * level 日志级别
- * maxSize 每个日志文件保存的最大尺寸 单位：M
- * maxBackups 日志文件最多保存多少个备份
- * maxAge 文件最多保存多少天
- * compress 是否压缩
- * serviceName 服务名
- * 由于zap不具备日志切割功能, 这里使用lumberjack配合
- */
+// InitLogger 初始化日志（zap 输出，lumberjack 负责切割）。
+//
+//   - <logs.path>/info.log：logs.level 及以上、Error 以下的日志
+//   - <logs.path>/error.log：Error 及以上的日志
+//   - 两份同时输出到 stdout
+//
+// 每天 0 点（本地时间）和文件超过 logs.max-size 时切割，切下来的文件名形如 info-2026-11-22T00-00-00.000.log
+// （时间为切割时刻，本地时间），按 logs.max-backups、logs.max-age 清理，logs.compress 为 true 时压缩。
+// logs.level 修改后热加载生效。
 func InitLogger() {
-	now := time.Now()
-	infoLogFileName := fmt.Sprintf("%s/info/%04d-%02d-%02d.log", config.Conf.Logs.Path, now.Year(), now.Month(), now.Day())
-	errorLogFileName := fmt.Sprintf("%s/error/%04d-%02d-%02d.log", config.Conf.Logs.Path, now.Year(), now.Month(), now.Day())
-	var coreArr []zapcore.Core
+	logsConf := config.Conf.Logs
+	global.LogLevel.SetLevel(logsConf.Level)
 
-	// 获取编码器
-	//encoderConfig := zap.NewProductionEncoderConfig()
-	//encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder        // 指定时间格式
-	//encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder // ，不需要的话取值zapcore.CapitalLevelEncoder就可以了
-	////encoderConfig.EncodeCaller = zapcore.FullCallerEncoder        // 显示完整文件路径
-	encoderConfig := zapcore.EncoderConfig{
+	encoder := zapcore.NewConsoleEncoder(zapcore.EncoderConfig{
 		MessageKey:    "msg",
 		LevelKey:      "level",
 		TimeKey:       "time",
@@ -48,62 +39,57 @@ func InitLogger() {
 		EncodeTime: func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 			enc.AppendString(t.Format("2006-01-02 15:04:05"))
 		},
-		//EncodeTime: zapcore.ISO8601TimeEncoder, // ISO8601 UTC 时间格式
-		//EncodeDuration: func(d time.Duration, enc zapcore.PrimitiveArrayEncoder) {
-		//	enc.AppendInt64(int64(d) / 1000000)
-		//},
 		EncodeDuration: zapcore.SecondsDurationEncoder,
 		EncodeCaller:   zapcore.ShortCallerEncoder,
-		//EncodeCaller: zapcore.FullCallerEncoder,
-		//EncodeName:       nil,
-		//ConsoleSeparator: "",
+	})
+
+	newFile := func(name string) *lumberjack.Logger {
+		return &lumberjack.Logger{
+			Filename:   filepath.Join(logsConf.Path, name), // 目录不存在时自动创建
+			MaxSize:    logsConf.MaxSize,                   // 单位 MB
+			MaxAge:     logsConf.MaxAge,                    // 切下来的文件保留天数
+			MaxBackups: logsConf.MaxBackups,                // 切下来的文件最多保留个数
+			LocalTime:  true,                               // 切下来的文件名用本地时间
+			Compress:   logsConf.Compress,
+		}
 	}
-	encoder := zapcore.NewConsoleEncoder(encoderConfig)
+	infoFile, errorFile := newFile("info.log"), newFile("error.log")
 
-	// 日志级别
-	highPriority := zap.LevelEnablerFunc(func(level zapcore.Level) bool {
-		return level >= zap.ErrorLevel
+	// info.log：配置的级别及以上、Error 以下；error.log：Error 及以上（配置的级别高于 Error 时以配置为准）
+	infoLevel := zap.LevelEnablerFunc(func(l zapcore.Level) bool {
+		return global.LogLevel.Enabled(l) && l < zapcore.ErrorLevel
 	})
-	lowPriority := zap.LevelEnablerFunc(func(level zapcore.Level) bool {
-		return level < zap.ErrorLevel && level >= zap.DebugLevel
+	errorLevel := zap.LevelEnablerFunc(func(l zapcore.Level) bool {
+		return global.LogLevel.Enabled(l) && l >= zapcore.ErrorLevel
 	})
+	stdout := zapcore.AddSync(os.Stdout)
+	core := zapcore.NewTee(
+		zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(zapcore.AddSync(infoFile), stdout), infoLevel),
+		zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(zapcore.AddSync(errorFile), stdout), errorLevel),
+	)
 
-	// 当yml配置中的等级大于Error时，lowPriority级别日志停止记录
-	if config.Conf.Logs.Level >= 2 {
-		lowPriority = zap.LevelEnablerFunc(func(level zapcore.Level) bool {
-			return false
-		})
-	}
-
-	// info文件writeSyncer
-	infoFileWriteSyncer := zapcore.AddSync(&lumberjack.Logger{
-		Filename:   infoLogFileName,             //日志文件存放目录，如果文件夹不存在会自动创建
-		MaxSize:    config.Conf.Logs.MaxSize,    //文件大小限制,单位MB
-		MaxAge:     config.Conf.Logs.MaxAge,     //日志文件保留天数
-		MaxBackups: config.Conf.Logs.MaxBackups, //最大保留日志文件数量
-		LocalTime:  false,
-		Compress:   config.Conf.Logs.Compress, //是否压缩处理
-	})
-	// 第三个及之后的参数为写入文件的日志级别,ErrorLevel模式只记录error级别的日志
-	infoFileCore := zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(infoFileWriteSyncer, zapcore.AddSync(os.Stdout)), lowPriority)
-
-	// error文件writeSyncer
-	errorFileWriteSyncer := zapcore.AddSync(&lumberjack.Logger{
-		Filename:   errorLogFileName,            //日志文件存放目录
-		MaxSize:    config.Conf.Logs.MaxSize,    //文件大小限制,单位MB
-		MaxAge:     config.Conf.Logs.MaxAge,     //日志文件保留天数
-		MaxBackups: config.Conf.Logs.MaxBackups, //最大保留日志文件数量
-		LocalTime:  false,
-		Compress:   config.Conf.Logs.Compress, //是否压缩处理
-	})
-	// 第三个及之后的参数为写入文件的日志级别,ErrorLevel模式只记录error级别的日志
-	errorFileCore := zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(errorFileWriteSyncer, zapcore.AddSync(os.Stdout)), highPriority)
-
-	coreArr = append(coreArr, infoFileCore)
-	coreArr = append(coreArr, errorFileCore)
-
-	logger := zap.New(zapcore.NewTee(coreArr...), zap.AddCaller())
+	logger := zap.New(core, zap.AddCaller())
 	global.BasicLog = logger
 	global.Log = logger.Sugar()
-	global.Log.Info("初始化zap日志完成!")
+
+	go rotateDaily(infoFile, errorFile)
+	global.Log.Infof("初始化zap日志完成! 日志目录: %s，级别: %s", logsConf.Path, global.LogLevel.Level())
+}
+
+// rotateDaily 每天 0 点（本地时间）切割日志；空文件不切，避免每天产生空的备份
+func rotateDaily(files ...*lumberjack.Logger) {
+	for {
+		now := time.Now()
+		next := time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 0, 0, now.Location())
+		time.Sleep(time.Until(next))
+		rotateNonEmpty(files...)
+	}
+}
+
+func rotateNonEmpty(files ...*lumberjack.Logger) {
+	for _, f := range files {
+		if fi, err := os.Stat(f.Filename); err == nil && fi.Size() > 0 {
+			_ = f.Rotate()
+		}
+	}
 }

@@ -110,6 +110,7 @@ func InitConfigFrom(dir string) {
 			panic(fmt.Errorf("热加载配置文件失败:%s", err))
 		}
 		resolvePaths()
+		global.LogLevel.SetLevel(Conf.Logs.Level)
 		// 读取rsa key
 		Conf.System.RSAPublicBytes = RSAReadKeyFromFile(Conf.System.RSAPublicKey)
 		Conf.System.RSAPrivateBytes = RSAReadKeyFromFile(Conf.System.RSAPrivateKey)

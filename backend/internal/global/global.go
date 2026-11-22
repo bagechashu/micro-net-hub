@@ -22,6 +22,9 @@ var DB *gorm.DB
 var Log *zap.SugaredLogger
 var BasicLog *zap.Logger
 
+// LogLevel 日志级别（对应 logs.level），修改后立即生效
+var LogLevel = zap.NewAtomicLevel()
+
 // 全局Validate数据校验实列
 var Validate *validator.Validate
 
