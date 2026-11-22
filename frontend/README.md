@@ -1,6 +1,6 @@
 # Micro Net Hub UI (Vue 3)
 
-Micro Net Hub 的管理后台前端，由 `vue2/`（Vue 2 + Element UI，已停止维护）迁移而来。
+Micro Net Hub 的管理后台前端，由旧版 Vue 2 + Element UI 前端迁移而来（旧版已移除）。
 
 技术栈：Vue 3、Vite、TypeScript、Element Plus、Pinia、Vue Router、vue-i18n。
 
