@@ -10,9 +10,16 @@ Log files.
 - Rotated every day at midnight (local time) and when a file exceeds `logs.max-size`. Rotated files are named like `info-2026-11-22T00-00-00.000.log` (local time of the rotation) and cleaned up by `logs.max-backups` / `logs.max-age`.
 - `logs.level` now works for every level (-1 Debug, 0 Info, 1 Warn, 2 Error); before, only values ≥ 2 had an effect. Changes are applied on config hot reload.
 
+docker-compose examples.
+
+- Removed `entrypoint.sh` (`sleep 30` before starting). It ran the service as a child of `sh`, so `docker stop` did not reach it and the container was killed after 10 s; every start also waited 30 s. The image's own command is used now.
+- all-in-one: MySQL has a healthcheck and `micro-net-hub` starts once MySQL accepts connections (`depends_on: condition: service_healthy`, needs Docker Compose v2). If OpenLDAP is not ready yet, `restart: always` restarts the service.
+- Rotation command: `docker compose run --rm micro-net-hub ./micro-net-hub rotate-rsa-key` (the old `--entrypoint ./micro-net-hub` form still works).
+
 **Upgrade notes**
 
 - Old files under `logs/info/` and `logs/error/` are no longer written or cleaned up; delete them when no longer needed.
+- Existing docker-compose deployments can keep `entrypoint.sh`; to drop it, remove the `entrypoint.sh` mount and the `entrypoint:` line, or at least change its last line to `exec /app/micro-net-hub`.
 
 ## v0.6.10 (2026-11-22)
 

@@ -10,8 +10,6 @@ services:
       # 配置目录：config.yml、RSA 密钥（首次启动自动生成）、rotate-rsa-key 的备份都在这里，务必备份；
       # 目录需对容器内用户 uid 1000 可写：sudo chown -R 1000:1000 config/app/conf
       - ./config/app/conf/:/app/conf/
-      - ./config/app/entrypoint.sh:/entrypoint.sh
-    entrypoint: ["sh", "/entrypoint.sh"]
     ports:
       - 9000:9000
       - 1812:1812/udp

@@ -30,8 +30,8 @@ Micro-Net-Hub uses an RSA key pair to encrypt the passwords sent by the login fo
   ```shell
   # docker-compose: stop the service, check first, then rotate, then start
   docker compose stop micro-net-hub
-  docker compose run --rm --entrypoint ./micro-net-hub micro-net-hub rotate-rsa-key --dry-run
-  docker compose run --rm --entrypoint ./micro-net-hub micro-net-hub rotate-rsa-key
+  docker compose run --rm micro-net-hub ./micro-net-hub rotate-rsa-key --dry-run
+  docker compose run --rm micro-net-hub ./micro-net-hub rotate-rsa-key
   docker compose start micro-net-hub
 
   # binary
