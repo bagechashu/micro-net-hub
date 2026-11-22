@@ -6,8 +6,8 @@ toolchain go1.27.4
 
 require (
 	github.com/appleboy/gin-jwt/v2 v2.10.3
-	github.com/casbin/casbin/v2 v2.135.0
-	github.com/casbin/gorm-adapter/v3 v3.39.0
+	github.com/casbin/casbin/v3 v3.11.0
+	github.com/casbin/gorm-adapter/v3 v3.41.0
 	github.com/chyroc/lark v0.0.113
 	github.com/fsnotify/fsnotify v1.10.1
 	github.com/gin-gonic/gin v1.12.0
@@ -61,7 +61,6 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 // indirect
 	github.com/golang-sql/sqlexp v0.1.0 // indirect
-	github.com/golang/mock v1.6.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect

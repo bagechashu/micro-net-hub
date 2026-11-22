@@ -3,7 +3,7 @@ package global
 import (
 	"micro-net-hub/internal/pkg/ldappool"
 
-	"github.com/casbin/casbin/v2"
+	"github.com/casbin/casbin/v3"
 	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
