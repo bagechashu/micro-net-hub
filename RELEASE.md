@@ -2,6 +2,18 @@
 
 Docker image: `xianleeti/micro-net-hub:<version>` (linux/amd64).
 
+## v0.6.9 (2026-11-22)
+
+Fix for v0.6.8 on MySQL: the `users.password` column was `varchar(255)`, but a password encrypted with a 2048-bit key is 344 characters long.
+
+- `users.password` is now `varchar(1024)`. The normal startup migration widens existing columns automatically; existing data is kept.
+- `rotate-rsa-key` checks the column first and widens it when it is too short (`--dry-run` only reports it), so rotation also works when run directly after upgrading.
+- Fixes: on v0.6.8, `rotate-rsa-key` failed with `Data too long for column 'password'` (the transaction was rolled back, nothing was changed), and a fresh MySQL deployment could not create the initial admin or new users.
+
+**Upgrade notes**
+
+- If `rotate-rsa-key` failed on v0.6.8: nothing was changed, keep running as before. Upgrade to v0.6.9 and run the rotation again. The `rsa-backup-<time>/` directory left by the failed run only contains unused keys and can be deleted.
+
 ## v0.6.8 (2026-11-22)
 
 RSA key handling: each deployment now uses its own key, and existing deployments can rotate away from the key that used to ship with this repository.

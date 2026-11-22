@@ -3,7 +3,7 @@
 version: "3"
 services:
   micro-net-hub:
-    image: xianleeti/micro-net-hub:v0.6.8
+    image: xianleeti/micro-net-hub:v0.6.9
     container_name: "micro-net-hub"
     restart: always
     volumes:

@@ -525,7 +525,7 @@ CREATE TABLE `users` (
   `updated_at` datetime(3) DEFAULT NULL,
   `deleted_at` datetime(3) DEFAULT NULL,
   `username` varchar(50) COLLATE utf8mb4_general_ci NOT NULL COMMENT '''用户名''',
-  `password` varchar(255) COLLATE utf8mb4_general_ci NOT NULL COMMENT '''用户密码''',
+  `password` varchar(1024) COLLATE utf8mb4_general_ci NOT NULL COMMENT '''用户密码''',
   `nickname` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '''中文名''',
   `given_name` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '''花名''',
   `mail` varchar(100) COLLATE utf8mb4_general_ci NOT NULL COMMENT '''邮箱''',

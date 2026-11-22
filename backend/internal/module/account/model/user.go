@@ -66,7 +66,7 @@ const (
 type User struct {
 	gorm.Model
 	Username      string         `gorm:"type:varchar(50);not null;unique;comment:'用户名'" json:"username"` // 用户名
-	Password      string         `gorm:"size:255;not null;comment:'用户密码'" json:"-"`                      // 用户密码
+	Password      string         `gorm:"size:1024;not null;comment:'用户密码'" json:"-"`                     // 用户密码（RSA 密文 base64，2048 位密钥为 344 字符）
 	Nickname      string         `gorm:"type:varchar(50);comment:'中文名'" json:"nickname"`                 // 昵称
 	GivenName     string         `gorm:"type:varchar(50);comment:'花名'" json:"givenName"`                 // 花名，如果有的话，没有的话用昵称占位
 	Mail          string         `gorm:"type:varchar(100);not null;unique;comment:'邮箱'" json:"mail"`     // 邮箱

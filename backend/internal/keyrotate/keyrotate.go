@@ -155,6 +155,11 @@ func Run(db *gorm.DB, opt Options) error {
 	} else {
 		fmt.Fprintln(out, "config.yml: 没有需要重新加密的口令（未配置或使用 plain: 明文写法）")
 	}
+	// 新密钥的密文更长（2048 位为 344 字符），旧库的 users.password 可能是 varchar(255)，需要先放宽
+	widen, colLen, need := passwordColumnTooShort(db, plan)
+	if widen {
+		fmt.Fprintf(out, "users.password 列长 %d，新密文需要 %d：执行时会先按当前模型放宽该列\n", colLen, need)
+	}
 	if opt.DryRun {
 		fmt.Fprintln(out, "dry-run：没有做任何修改")
 		return nil
@@ -189,7 +194,13 @@ func Run(db *gorm.DB, opt Options) error {
 	}
 	fmt.Fprintf(out, "已备份旧密钥、旧配置和新密钥到 %s\n", backupDir)
 
-	// 2. 数据库
+	// 2. 数据库（放宽列是 DDL，在事务之外执行；之后事务失败时列仍保持放宽，不影响使用）
+	if widen {
+		if err := db.Migrator().AlterColumn(&accountModel.User{}, "Password"); err != nil {
+			return fmt.Errorf("放宽 users.password 列失败: %w（数据库未修改，密钥和配置也未修改）", err)
+		}
+		fmt.Fprintln(out, "已放宽 users.password 列")
+	}
 	if err := ApplyUsers(db, plan); err != nil {
 		return fmt.Errorf("%w（数据库未修改，密钥和配置也未修改）", err)
 	}
@@ -221,6 +232,29 @@ func Run(db *gorm.DB, opt Options) error {
 	}
 	fmt.Fprintln(out, "密钥文件和 config.yml 已更新。请启动（或重启）服务使新密钥生效；用户口令不变，无需重新设置")
 	return nil
+}
+
+// passwordColumnTooShort 判断 users.password 列是否放不下新密文。
+// SQLite 不检查字符串长度，不需要也不应该改表（SQLite 改列会重建整张表）。
+func passwordColumnTooShort(db *gorm.DB, plan *Plan) (widen bool, colLen int64, need int) {
+	for _, enc := range plan.Users {
+		need = max(need, len(enc))
+	}
+	if need == 0 || db.Dialector.Name() == "sqlite" {
+		return false, 0, need
+	}
+	cols, err := db.Migrator().ColumnTypes(&accountModel.User{})
+	if err != nil {
+		return false, 0, need
+	}
+	for _, c := range cols {
+		if strings.EqualFold(c.Name(), "password") {
+			if l, ok := c.Length(); ok && l > 0 && l < int64(need) {
+				return true, l, need
+			}
+		}
+	}
+	return false, 0, need
 }
 
 // replaceFile 替换文件内容：优先写临时文件再改名（原子替换）；
