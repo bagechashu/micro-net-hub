@@ -3,6 +3,7 @@
     <AppHeader />
     <AppNav />
     <AppMain />
+    <SessionExpired />
   </div>
 </template>
 
@@ -10,6 +11,7 @@
 import AppHeader from './components/AppHeader.vue';
 import AppNav from './components/AppNav.vue';
 import AppMain from './components/AppMain.vue';
+import SessionExpired from './components/SessionExpired.vue';
 
 defineOptions({ name: 'LayoutIndex' });
 </script>

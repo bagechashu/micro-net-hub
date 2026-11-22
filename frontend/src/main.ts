@@ -6,6 +6,9 @@ import { setupStore } from './store';
 import i18n from '@/i18n';
 import useThemeStore from '@/store/modules/theme';
 
+// ElMessage / ElMessageBox 是在 JS 里直接调用的，按需引入插件不会自动带上它们的样式
+import 'element-plus/es/components/message/style/css';
+import 'element-plus/es/components/message-box/style/css';
 import '@/styles/index.scss';
 import SvgIcon from './icons'; // icon
 import './permission'; // permission control

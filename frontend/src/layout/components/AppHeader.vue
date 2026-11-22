@@ -41,17 +41,16 @@
             </el-dropdown-menu>
           </template>
         </el-dropdown>
-        <el-button v-else type="primary" class="app-header__login" @click="loginVisible = true">
+        <el-button v-else type="primary" class="app-header__login" @click="app.loginDialogVisible = true">
           {{ $t('loginform.login') }}
         </el-button>
       </div>
     </div>
-    <Login v-model="loginVisible" />
+    <Login v-model="app.loginDialogVisible" />
   </header>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { ArrowDown, Document, SwitchButton, User } from '@/icons/tabler';
 import useUserStore from '@/store/modules/user';
@@ -66,7 +65,6 @@ defineOptions({ name: 'AppHeader' });
 const user = useUserStore();
 const app = useAppStore();
 const router = useRouter();
-const loginVisible = ref(false);
 const defaultAvatar = 'https://q1.qlogo.cn/g?b=qq&nk=10002&s=100';
 
 async function logout() {

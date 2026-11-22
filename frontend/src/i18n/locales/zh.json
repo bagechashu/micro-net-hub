@@ -584,5 +584,11 @@
         "forbiddenDesc": "当前账号没有权限访问这个页面。如需开通，请联系管理员。",
         "back": "返回上一页",
         "home": "回到首页"
+    },
+    "session": {
+        "expiredTitle": "登录已过期",
+        "expiredDesc": "为了账号安全，登录状态已失效。请重新登录后继续操作。",
+        "relogin": "重新登录",
+        "backHome": "回到首页"
     }
 }

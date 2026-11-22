@@ -1,8 +1,8 @@
 import axios from 'axios';
 import type { AxiosError, AxiosResponse } from 'axios';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import { ElMessage } from 'element-plus';
 import router from '@/router';
-import userStore from '@/store/modules/user';
+import useAppStore from '@/store/modules/app';
 import { getToken } from '@/utils/auth';
 
 /**
@@ -40,19 +40,9 @@ function showError(message: string) {
   ElMessage({ showClose: true, message, type: 'error', duration: 5 * 1000 });
 }
 
-let expiredDialogOpen = false;
-
+// 登录过期：显示 layout/components/SessionExpired.vue（多个请求同时过期只提示一次）
 function handleTokenExpired() {
-  if (expiredDialogOpen) return;
-  expiredDialogOpen = true;
-  ElMessageBox.alert('登录状态过期, 请重新登录.', '登录状态过期', {
-    confirmButtonText: '确定',
-    type: 'warning'
-  }).finally(async () => {
-    expiredDialogOpen = false;
-    await userStore().logout().catch(() => undefined);
-    router.push('/');
-  });
+  useAppStore().sessionExpired = true;
 }
 
 service.interceptors.response.use(

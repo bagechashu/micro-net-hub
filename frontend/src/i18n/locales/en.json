@@ -584,5 +584,11 @@
     "forbiddenDesc": "Your account doesn't have permission to view this page. Contact an administrator if you need access.",
     "back": "Go back",
     "home": "Back to home"
+  },
+  "session": {
+    "expiredTitle": "Session expired",
+    "expiredDesc": "For your security, you have been signed out. Please sign in again to continue.",
+    "relogin": "Sign in again",
+    "backHome": "Back to home"
   }
 }

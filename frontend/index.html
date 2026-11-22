@@ -15,22 +15,11 @@
           if (dark) document.documentElement.classList.add('dark');
         } catch (e) {}
       })();
-      // 站点名称和 logo（system.site-name / site-logo）：先用上次缓存的值，避免闪现默认名称和图标
+      // 站点名称（system.site-name）：先用上次缓存的名称作为标题，避免闪现默认名
       (function () {
         try {
           var name = localStorage.getItem('site-name');
           if (name) document.title = name;
-          var logo = localStorage.getItem('site-logo');
-          if (logo && logo.charAt(0) === '/' && logo.charAt(1) !== '/') {
-            var links = document.querySelectorAll('link[rel~="icon"]');
-            for (var i = 0; i < links.length; i++) {
-              // 记下默认图标，配置取消后由 src/store/modules/app.ts 的 applyFavicon 恢复
-              links[i].setAttribute('data-default', links[i].getAttribute('href') || '');
-              links[i].setAttribute('data-default-type', links[i].getAttribute('type') || '');
-              links[i].setAttribute('href', logo);
-              links[i].removeAttribute('type');
-            }
-          }
         } catch (e) {}
       })();
     </script>
